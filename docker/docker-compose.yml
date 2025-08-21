@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./server
+    container_name: interior_backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      - frontend
+
+  frontend:
+    build: ./client
+    container_name: interior_frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./client/.env
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: npm start
