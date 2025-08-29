@@ -1,28 +1,29 @@
 version: "3.8"
 
 services:
-  backend:
-    build: ./server
-    container_name: interior_backend
+  mongo:
+    image: mongo:8.0.12
+    container_name: desynflow-mongo
     ports:
-      - "5000:5000"
-    env_file:
-      - ./server/.env
+      - "27017:27017"
     volumes:
-      - ./server:/app
-      - /app/node_modules
-    command: npm run dev
-    depends_on:
-      - frontend
+      - mongo-data:/data/db
+    restart: unless-stopped
 
-  frontend:
-    build: ./client
-    container_name: interior_frontend
+  backend:
+    build: ../server
+    container_name: desynflow-backend
     ports:
-      - "3000:3000"
+      - "4000:4000"
     env_file:
-      - ./client/.env
+      - ../server/.env
     volumes:
-      - ./client:/app
+      - ../server:/app
       - /app/node_modules
+    depends_on:
+      - mongo
     command: npm start
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
