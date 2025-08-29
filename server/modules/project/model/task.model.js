@@ -1,28 +1,14 @@
 import mongoose from "mongoose";
 
-const taskSchema = new mongoose.Schema(
 
-    {
-        projectId: {
-            type : mongoose.Schema.Types.ObjectId,
-            ref: "Project",
-            required: true
-        },
-
-        title : {type: String, required: true},
-        description : {type : String},
-        priority : {type : String, enum: ['Low', 'Medium', 'High'], default: 'Medium'},
-        weight : {type : Number, required: true}, // percentage weight
-        deadline : {type : Date, required: true},
-        status : {type : String, enum: ['Not Started', 'In Progress', 'Completed'], default: 'Not Started'},
-        assignedTo: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        },
-    },
-    {timestamps: true}
-
-);
-
-export const Task = mongoose.model("Task", taskSchema);
+const TaskSchema = new Schema({
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project', index: true },
+  sprintId: { type: Schema.Types.ObjectId, ref: 'Sprint', index: true, sparse: true },
+  name: { type: String },
+  description: { type: String },
+  assignedTo: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+  weight: { type: Number, default: 0 },
+  status: { type: String, enum: ['Pending', 'In Progress', 'Done', 'Blocked'], index: true, default: 'Pending' },
+  completedAt: { type: Date },
+  progressPercentage: { type: Number, default: 0 }
+}, { timestamps: true });
