@@ -17,6 +17,7 @@ const ProjectSchema = new Schema({
     description: { type: String }
   }],
   archived: { type: Boolean, default: false },
+  attachments: [{ type: String }], // URLs or file paths to inspection report PDFs
   finalDesign3DUrl: { type: String },
   designAccessRestriction: { type: Boolean, default: false }
 }, { timestamps: true });
