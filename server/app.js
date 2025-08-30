@@ -1,4 +1,3 @@
-//Bootstrap express, middlewares and a health route
 
 import express from 'express';
 import cors from 'cors';
@@ -23,12 +22,13 @@ app.use(cors()); // from allowing cors API can request different origins(not res
 app.use(express.json({limit: '2mb'})); // parse json body
 app.use(express.urlencoded({ extended: true })); // parse urlencoded body
 
+
 import authRouter from "./modules/auth/routes/authRouter.js";
-// If you have a userRouter, import it as well:
-// import userRouter from "./modules/auth/routes/userRouter.js";
+import userRouter from "./modules/auth/routes/userRouter.js";
+
 
 app.use("/api/auth", authRouter);
-// app.use("/api/user", userRouter); // Uncomment and import if userRouter exists
+app.use("/api/user", userRouter);
 
 app.get("/health", (req, res) => {
   res.json({
