@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const WarrantyClaimSchema = new Schema({
     warrantyId: { type: Schema.Types.ObjectId, ref: 'Warranty', index: true },
     clientId: { type: Schema.Types.ObjectId, ref: 'User' },

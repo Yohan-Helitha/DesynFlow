@@ -6,6 +6,9 @@ import pinoHttp from "pino-http";
 import { logger } from './config/logger.js';
 import { env } from './config/env.js';
 
+// Import purchase order routes
+const purchaseOrderRoutes = require('./modules/finance/routes/purchaseOrderRoutes');
+
 const app = express();
 
 app.use(
@@ -22,6 +25,9 @@ app.use(
 app.use(cors()); // from allowing cors API can request different origins(not restrcit to one port)
 app.use(express.json({limit: '2mb'})); // parse json body
 app.use(express.urlencoded({ extended: true })); // parse urlencoded body
+
+// Mount finance purchase order routes
+app.use('/api/finance', purchaseOrderRoutes);
 
 app.get("/health", (req, res) => {
   res.json({
