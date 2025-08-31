@@ -23,6 +23,15 @@ services:
     command: npm start
     restart: unless-stopped
 
+  staff-dashboard:
+    build: ../frontend/staff-dashboard
+    container_name: desynflow-staff-dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   mongo-data:
 
