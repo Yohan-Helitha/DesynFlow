@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+const { Schema } = mongoose;
 
 const TaskSchema = new Schema({
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', index: true },
@@ -12,3 +12,5 @@ const TaskSchema = new Schema({
   completedAt: { type: Date },
   progressPercentage: { type: Number, default: 0 }
 }, { timestamps: true });
+
+export default mongoose.model('Task', TaskSchema);

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 const MeetingSchema = new Schema({
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', index: true },
@@ -7,3 +8,5 @@ const MeetingSchema = new Schema({
   scheduledAt: { type: Date, index: true },
   notes: { type: String }
 }, { timestamps: true });
+
+export default mongoose.model('Meeting', MeetingSchema);

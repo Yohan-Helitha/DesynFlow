@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-
+const { Schema } = mongoose;
 
 const ProjectSchema = new Schema({
-  projectId: { type: Schema.Types.ObjectId, required: true },
+  projectId: { type: Schema.Types.ObjectId, required: true, default: () => new mongoose.Types.ObjectId() },
   projectName: { type: String, required: true },
   inspectionId: { type: Schema.Types.ObjectId, ref: 'InspectionRequest', unique: true, sparse: true },
   projectManagerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
@@ -21,3 +21,5 @@ const ProjectSchema = new Schema({
   finalDesign3DUrl: { type: String },
   designAccessRestriction: { type: Boolean, default: false }
 }, { timestamps: true });
+
+export default mongoose.model('Project', ProjectSchema);

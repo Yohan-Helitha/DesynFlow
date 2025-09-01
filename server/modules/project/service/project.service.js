@@ -26,11 +26,11 @@ export const createProject = async (projectName, clientId, inspectionId) => {
 };
 
 export const getProjectsService = async () => {
-  return await Project.find().populate('projectManagerId clientId assignedTeamId milestones');
+  return await Project.find().populate('assignedTeamId milestones');
 };
 
 export const getProjectByIdService = async (id) => {
-  return await Project.findById(id).populate('projectManagerId clientId assignedTeamId milestones');
+  return await Project.findById(id).populate('assignedTeamId milestones');
 };
 
 export const updateProjectService = async (id, updateData) => {

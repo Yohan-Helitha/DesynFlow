@@ -1,12 +1,11 @@
 import Team from '../model/team.model.js';
-import User from '../../user/model/user.model.js';
 
 export const getTeamsService = async () => {
-  return await Team.find().populate('leaderId members.userId');
+  return await Team.find();
 };
 
 export const assignTeamLeaderService = async (id, leaderId) => {
-  return await Team.findByIdAndUpdate(id, { leaderId }, { new: true }).populate('leaderId');
+  return await Team.findByIdAndUpdate(id, { leaderId }, { new: true });
 };
 
 export const updateTeamMemberRoleService = async (id, memberId, role) => {

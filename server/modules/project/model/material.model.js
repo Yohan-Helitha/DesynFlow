@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
+const MaterialRequestItemSchema = new Schema({
+  materialId: { type: Schema.Types.ObjectId, ref: 'Material', required: true },
+  qty: { type: Number, required: true },
+  neededBy: { type: Date }
+}, { _id: false });
 
 const ManpowerRequestSchema = new Schema({
   role: { type: String },
@@ -16,8 +22,4 @@ const MaterialRequestSchema = new Schema({
   warehouseNote: { type: String }
 }, { timestamps: true });
 
-const MaterialRequestItemSchema = new Schema({
-  materialId: { type: Schema.Types.ObjectId, ref: 'Material', required: true },
-  qty: { type: Number, required: true },
-  neededBy: { type: Date }
-}, { _id: false });
+export default mongoose.model('MaterialRequest', MaterialRequestSchema);

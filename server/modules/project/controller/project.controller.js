@@ -5,6 +5,7 @@ export const createProject = async (req, res) => {
     
     //creating new project
     try {
+        console.log('Create project request body:', req.body);
 
         const { projectName, clientId, inspectionId } = req.body;
 
@@ -32,6 +33,7 @@ export const createProject = async (req, res) => {
         res.status(201).json(newProject); //201 is standard HTTP status code for "Created"; for adding new resource successfully.  
 
     }catch(error){
+        console.error('Project creation error:', error);
         res.status(500).json({ message: 'Error creating project', error: error.message }); //standard HTTP status code for Internal error
     }
 
@@ -41,7 +43,7 @@ export const getProjects = async (req, res) => {
 
     try{
 
-        const projects = await Project.find().populate('projectManagerId clientId assignedTeamId milestones');
+        const projects = await Project.find().populate('assignedTeamId milestones');
         res.json(projects);
 
     }catch(error){
@@ -57,7 +59,7 @@ export const getProjectById = async (req, res) => {
     try{
 
         const{ id } = req.params;
-        const project = await Project.findById(id).populate('projectManagerId clientId assignedTeamId milestones');
+        const project = await Project.findById(id).populate('assignedTeamId milestones');
         if(!project){
             return res.status(404).json({ message: 'Project not found' });
         }
@@ -86,7 +88,7 @@ export const updateProject = async (req, res) => {
         }
 
         const updatedProject = await Project.findByIdAndUpdate(id, updateData, { new: true });
-        if( !updateProject ){
+        if( !updatedProject ){
             return res.status(404).json({ message: 'Project not found' });
         }
         res.json(updatedProject);
