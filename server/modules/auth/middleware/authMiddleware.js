@@ -28,7 +28,6 @@ export const authMiddleware = async (req, res, next) => {
 	}
 };
 
-// Role-based access control middleware
 export const roleMiddleware = (roles = []) => {
 
 	return (req, res, next) => {

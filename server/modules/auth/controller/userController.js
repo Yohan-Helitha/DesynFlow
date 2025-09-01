@@ -23,7 +23,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Password must be at least 8 characters and include upper/lowercase, number, and symbol." });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
+    const cleanEmail = email.trim();
     const userExists = await User.findOne({ $or: [{ email: cleanEmail }, { phone }] });
 
     if (userExists){
@@ -61,7 +61,9 @@ export const verifyEmail = async (req, res) => {
   try {
     const user = await User.findOne({ verificationToken: token });
 
-    if (!user) return res.status(400).json({ message: "Invalid or expired verification token." });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired verification token." });
+    }
 
     user.isActive = true;
     user.verificationToken = undefined;
@@ -83,7 +85,7 @@ export const loginUser = async (req, res) => {
   try {
     const user = await User.findOne({
       $or: [
-        { email: emailOrPhone.toLowerCase().trim() },
+        { email: emailOrPhone.trim() },
         { phone: emailOrPhone }
       ]
     });
@@ -112,8 +114,12 @@ export const loginUser = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+
+      return res.status(404).json({ message: "User not found" });
+    }
     res.json(user);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -122,9 +128,12 @@ export const getUserProfile = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const updates = {};
-    if (req.body.username) updates.username = req.body.username;
-    if (req.body.phone) updates.phone = req.body.phone;
-    if (req.body.email) updates.email = req.body.email.toLowerCase().trim();
+    if (req.body.username) 
+      updates.username = req.body.username;
+    if (req.body.phone) 
+      updates.phone = req.body.phone;
+    if (req.body.email) 
+      updates.email = req.body.email.trim();
     if (req.body.password) {
       if (!isStrongPassword(req.body.password)) {
         return res.status(400).json({ message: "Password must be at least 8 characters and include upper/lowercase, number, and symbol." });
@@ -149,9 +158,13 @@ export const setActiveStatus = async (req, res) => {
   const { userId, isActive } = req.body;
   try {
     const user = await User.findByIdAndUpdate(userId, { isActive }, { new: true });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
     res.json({ message: `User ${isActive ? "activated" : "deactivated"}.`, user });
+
   } catch (error) {
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -160,7 +173,25 @@ export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
     res.json(users);
+    
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const deleteAccount = async(req, res)=> {
+
+  try{
+    const user = await User.findByIdAndDelete(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      else{
+        res.json({ message: "Account deleted successfully" });
+      }
+  } catch {
+    res.status(500).json({ message: "Internal server error" });
+  }
+
+
+}

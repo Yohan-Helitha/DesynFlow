@@ -4,10 +4,15 @@ export const loginUser = async (req, res) => {
   try {
     const cleanEmail = email.toLowerCase().trim();
     const user = await User.findOne({ email: cleanEmail });
-    if (!user) return res.status(400).json({ message: "Invalid email or password" });
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
     
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
     user.twoFactorPin = pin;
@@ -31,11 +36,14 @@ export const verify2FA = async (req, res) => {
   try {
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user || !user.twoFactorPin || !user.twoFactorExpires) {
+
       return res.status(400).json({ message: "2FA not initiated." });
     }
     if (user.twoFactorPin !== pin || user.twoFactorExpires < Date.now()) {
+      
       return res.status(400).json({ message: "Invalid or expired PIN." });
     }
+
     user.twoFactorPin = undefined;
     user.twoFactorExpires = undefined;
     await user.save();
@@ -44,7 +52,7 @@ export const verify2FA = async (req, res) => {
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "30min" });
     res.json({ token });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
   }
 };
 
@@ -59,7 +67,7 @@ export const registerUser = async (req, res) => {
   const { username, email, password, phone } = req.body;
   try {
 
-    const cleanEmail = email.toLowerCase().trim();
+    const cleanEmail = email.trim();
     const userExists = await User.findOne({ email: cleanEmail });
 
     if (userExists) {

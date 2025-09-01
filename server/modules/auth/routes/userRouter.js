@@ -4,7 +4,8 @@ import {
 	getUserProfile,
 	updateUserProfile,
 	getAllUsers,
-	setActiveStatus
+	setActiveStatus,
+	deleteAccount
 } from "../controller/userController.js";
 
 
@@ -17,8 +18,10 @@ router.get("/profile", authMiddleware, getUserProfile);
 
 router.put("/profile", authMiddleware, updateUserProfile);
 
-router.get("/", authMiddleware, roleMiddleware(["admin"]), getAllUsers);
+router.get("/", authMiddleware, roleMiddleware(["admin", "customer service representative"]), getAllUsers);
 
 router.patch("/activate", authMiddleware, roleMiddleware(["admin"]), setActiveStatus);
+
+router.delete("/account", authMiddleware, roleMiddleware(["client"]), deleteAccount);
 
 export default router;
