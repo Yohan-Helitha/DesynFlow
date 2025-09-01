@@ -1,12 +1,10 @@
-//Bootstrap express, middlewares and a health route
-
 import express from 'express';
 import cors from 'cors';
 import pinoHttp from "pino-http";
 import { logger } from './config/logger.js';
 import { env } from './config/env.js';
 
-// Import models to register them with Mongoose
+
 import './modules/project/model/project.model.js';
 import './modules/project/model/task.model.js';
 import './modules/project/model/team.model.js';
@@ -15,7 +13,7 @@ import './modules/project/model/material.model.js';
 import './modules/project/model/meeting.model.js';
 import './modules/project/model/progressupdate.model.js';
 
-// Import route modules
+//Routes
 import projectRoutes from './modules/project/routes/project.routes.js';
 import taskRoutes from './modules/project/routes/task.routes.js';
 import teamRoutes from './modules/project/routes/team.routes.js';
