@@ -26,27 +26,11 @@ const inspectionRequestSchema = new mongoose.Schema({
     },
     paymentReceiptUrl: {
         type: String,
-        required: true
-    },
-    inspectionDate: {
-        type: Date,
-        required: true
-    },
-    status: {
-        type: String,
-        enum: ['pending', 'completed', 'canceled'],
-        default: 'pending'
-    },
-    paymentReceiptUrl: {
-        type: String,
-        required: true
-    },
-    status: { 
-        type: String, enum: ['pending', 'verified', 'assigned', 'inspected', 'completed'], 
-        default: 'pending' 
+        required: false
     },
     createdAt: { 
-        type: Date, default: Date.now 
+        type: Date, 
+        default: Date.now 
     }
 });
 
