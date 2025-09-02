@@ -1,5 +1,5 @@
 import express from 'express';
-import { addSupplier, updateSupplier, approveSupplier, getSuppliers } from '../controller/supplier.controller.js';
+import { addSupplier, updateSupplier, getSuppliers, deleteSupplier } from '../controller/supplier.controller.js';
 
 const router = express.Router();
 
@@ -9,10 +9,10 @@ router.post('/', addSupplier);
 // Update supplier details
 router.put('/:id', updateSupplier);
 
-// Approve or reject supplier registration
-router.patch('/:id/approve', approveSupplier);
-
 // Get all suppliers
 router.get('/', getSuppliers);
+
+// Delete supplier
+router.delete('/:id', deleteSupplier);
 
 export default router;

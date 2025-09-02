@@ -1,3 +1,4 @@
+
 import SupplierService from '../service/supplier.service.js';
 
 // Add new supplier
@@ -20,16 +21,6 @@ export const updateSupplier = async (req, res) => {
   }
 };
 
-// Approve or reject supplier registration
-export const approveSupplier = async (req, res) => {
-  try {
-    const supplier = await SupplierService.approveSupplier(req.params.id, req.body.status);
-    res.status(200).json(supplier);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
-
 // Get all suppliers
 export const getSuppliers = async (req, res) => {
   try {
@@ -39,3 +30,12 @@ export const getSuppliers = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+  // Delete supplier
+  export const deleteSupplier = async (req, res) => {
+    try {
+      await SupplierService.deleteSupplier(req.params.id);
+      res.status(204).send();
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  };
