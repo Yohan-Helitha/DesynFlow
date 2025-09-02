@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 // Import expenses controller
-const expensesController = require('../controllers/expensesController');
+import * as expensesController from '../controller/expensesController.js';
 
 // GET all expenses
 router.get('/', expensesController.getAllExpenses);
@@ -11,4 +11,4 @@ router.get('/filter', expensesController.getExpensesByProjectAndCategory);
 
 router.post('/:id', expensesController.updateMiscExpense);
 
-module.exports = router;
+export default router;

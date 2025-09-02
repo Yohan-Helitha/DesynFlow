@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+const { Schema } = mongoose;
+
 const ExpenseSchema = new Schema({
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', index: true },
   category: { type: String, enum: ['Labor', 'Procurement', 'Transport', 'Misc'] },

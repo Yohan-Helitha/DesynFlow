@@ -1,4 +1,4 @@
-const expenseService = require('../services/expensesService');
+import * as expenseService from '../service/expensesService.js';
 
 // Get all expenses
 const getAllExpenses = async (req, res, next) => {
@@ -74,7 +74,7 @@ const updateMiscExpense = async (req, res, next) => {
 };
 
 
-module.exports = {
+export {
     getAllExpenses,
     updateMiscExpense,
     getExpensesByProjectAndCategory

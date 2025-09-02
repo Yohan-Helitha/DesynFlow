@@ -1,6 +1,5 @@
-import { get } from 'mongoose';
-
-const Expense = require('../model/expenses');
+import mongoose from 'mongoose';
+import Expense from '../model/expenses.js';
 
 // Get all expenses
 const getAllExpenses = async () => {
@@ -26,7 +25,7 @@ const updateExpenseByProjectAndCategory = async (projectId, category, updateData
     );
 };
 
-module.exports = {
+export {
     getAllExpenses,
     updateExpense,
     getExpensesByProjectAndCategory,

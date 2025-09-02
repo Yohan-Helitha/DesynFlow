@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import * as controller from '../controller/inspectionEstimationController.js';
+
 const router = express.Router();
-const controller = require('../controller/inspectionEstimationController');
 
 // View inspection requests with status 'Pending'
 router.get('/pending', controller.getPendingRequests);
@@ -17,4 +18,4 @@ router.get('/waiting', controller.getWaitingRequests);
 // Approve/reject payment
 router.post('/:inspectionRequestId/verify-payment', controller.verifyPayment);
 
-module.exports = router;
+export default router;

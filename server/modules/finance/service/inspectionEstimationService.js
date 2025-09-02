@@ -1,40 +1,42 @@
-const InspectionRequest = require('../../model/inspection_estimation');
-const InspectionEstimation = require('../../model/inspection_estimation');
+import InspectionEstimation from '../model/inspection_estimation.js';
 
-module.exports = {
-  async getRequestsByStatus(status) {
-    // Find requests by status
-    return InspectionRequest.find({ status });
-  },
+export async function getRequestsByStatus(status) {
+  // Find requests by status
+  return InspectionEstimation.find({ status });
+}
 
-  async getRequestDetails(inspectionRequestId) {
-    // Find request and estimation by ID
-    const request = await InspectionRequest.findOne({ inspectionRequestId });
-    const estimation = await InspectionEstimation.findOne({ inspectionRequestId });
-    return { request, estimation };
-  },
+export async function getRequestDetails(inspectionRequestId) {
+  // Find estimation by ID
+  const estimation = await InspectionEstimation.findOne({ inspectionRequestId });
+  return { estimation };
+}
 
-  async generateEstimate(inspectionRequestId, distance) {
-    // Example cost calculation
-    const estimatedCost = 1000 + (distance * 10);
-    // Create estimation
-    const estimation = await InspectionEstimation.create({ inspectionRequestId, distance, estimatedCost });
-    // Update request status
-    await InspectionRequest.updateOne({ inspectionRequestId }, { status: 'PaymentPending' });
-    return { estimation };
-  },
+export async function generateEstimate(inspectionRequestId, distance) {
+  // Example cost calculation
+  const estimatedCost = 1000 + (distance * 10);
+  // Create estimation
+  const estimation = await InspectionEstimation.create({ 
+    inspectionRequestId, 
+    distanceKm: distance, 
+    estimatedCost 
+  });
+  return { estimation };
+}
 
-  async verifyPayment(inspectionRequestId, paymentAmount) {
-    const estimation = await InspectionEstimation.findOne({ inspectionRequestId });
-    if (!estimation) throw new Error('Estimation not found');
-    let status;
-    if (paymentAmount >= estimation.estimatedCost) {
-      status = 'PayemntVerified';
-    } else {
-      status = 'PaymentRejected';
-    }
-    await InspectionRequest.updateOne({ inspectionRequestId }, { status });
-    await InspectionEstimation.updateOne({ inspectionRequestId }, { paymentAmount, status });
-    return { status };
+export async function verifyPayment(inspectionRequestId, paymentAmount) {
+  const estimation = await InspectionEstimation.findOne({ inspectionRequestId });
+  if (!estimation) throw new Error('Estimation not found');
+  
+  let status;
+  if (paymentAmount >= estimation.estimatedCost) {
+    status = 'PaymentVerified';
+  } else {
+    status = 'PaymentRejected';
   }
-};
+  
+  await InspectionEstimation.updateOne(
+    { inspectionRequestId }, 
+    { paymentAmount, status }
+  );
+  return { status };
+}

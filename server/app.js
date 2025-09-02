@@ -6,14 +6,11 @@ import pinoHttp from "pino-http";
 import { logger } from './config/logger.js';
 import { env } from './config/env.js';
 
-
-
-
-// Import expenses routes
+// Import finance routes
 import expensesRoute from './modules/finance/routes/expensesRoutes.js';
+import inspectionEstimationRoute from './modules/finance/routes/inspectionEstimationRoutes.js';
 
 const app = express();
-
 
 app.use(
   pinoHttp({
@@ -30,8 +27,6 @@ app.use(cors()); // from allowing cors API can request different origins(not res
 app.use(express.json({limit: '2mb'})); // parse json body
 app.use(express.urlencoded({ extended: true })); // parse urlencoded body
 
-
-
 app.get("/health", (req, res) => {
   res.json({
     name: env.APP_NAME,
@@ -41,12 +36,8 @@ app.get("/health", (req, res) => {
   });
 });
 
-
-// Mount finance purchase order routes
-app.use('/api/payments', paymentRoutes);
-// Expenses routes
+// Finance module routes
 app.use('/api/expenses', expensesRoute);
+app.use('/api/inspection-estimation', inspectionEstimationRoute);
 
 export { app };
-
-
