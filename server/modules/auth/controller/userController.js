@@ -31,7 +31,7 @@ export const registerUser = async (req, res) => {
         return res.status(400).json({ message: "Email or phone already registered." });
     } 
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, 8);
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
     const newUser = new User({
@@ -138,7 +138,7 @@ export const updateUserProfile = async (req, res) => {
       if (!isStrongPassword(req.body.password)) {
         return res.status(400).json({ message: "Password must be at least 8 characters and include upper/lowercase, number, and symbol." });
       }
-      updates.password = await bcrypt.hash(req.body.password, 12);
+      updates.password = await bcrypt.hash(req.body.password, 8);
     }
 
     const user = await User.findByIdAndUpdate(
