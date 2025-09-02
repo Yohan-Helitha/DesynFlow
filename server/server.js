@@ -23,8 +23,10 @@ async function start() {
         
         await connectDB();
 
-        const server = app.listen(env.PORT, () => {
-            logger.info(`${env.APP_NAME} running on http://localhost:${env.PORT}`);   
+        const app = require('./app');
+        const PORT = env.PORT || 3000;
+        const server = app.listen(PORT, () => {
+            logger.info(`${env.APP_NAME} running on http://localhost:${PORT}`);   
 
         });
 

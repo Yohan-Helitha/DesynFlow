@@ -1,2 +1,5 @@
 #ignore environment variable
 server/.env
+
+server.js
+app.js

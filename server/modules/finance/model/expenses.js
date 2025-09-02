@@ -5,5 +5,9 @@ const ExpenseSchema = new Schema({
   category: { type: String, enum: ['Labor', 'Procurement', 'Transport', 'Misc'] },
   amount: { type: Number },
   description: { type: String },
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User' }
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  proof: { type: String, default: null }
 }, { timestamps: true });
+
+//Created
+export default mongoose.model('Expense', ExpenseSchema);
