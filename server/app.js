@@ -8,6 +8,7 @@ import { env } from './config/env.js';
 
 const app = express();
 
+//middleware
 app.use(
   pinoHttp({
     logger,
