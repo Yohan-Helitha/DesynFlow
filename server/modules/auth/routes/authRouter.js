@@ -18,5 +18,6 @@ router.get("/verify-email", verifyEmail);
 router.post("/logout", logoutUser);
 router.post("/request-password-reset", requestPasswordReset);
 router.post("/reset-password", resetPassword);
+router.post("/verify-otp", verify2FA);
 
 export default router;
