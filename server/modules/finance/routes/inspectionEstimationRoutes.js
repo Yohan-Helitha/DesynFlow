@@ -3,19 +3,22 @@ import * as controller from '../controller/inspectionEstimationController.js';
 
 const router = express.Router();
 
-// View inspection requests with status 'Pending'
+// 1. View inspection requests with status 'Pending'
 router.get('/pending', controller.getPendingRequests);
 
-// View inspection request details by inspectionRequestId
+// 2. View inspection request details by inspectionRequestId
 router.get('/:inspectionRequestId', controller.getRequestDetails);
 
-// Generate estimate based on distance
+// 3. Generate estimate based on distance
 router.post('/:inspectionRequestId/estimate', controller.generateEstimate);
 
-// View inspection requests with status 'Waiting'
-router.get('/waiting', controller.getWaitingRequests);
-
-// Approve/reject payment
+// 4. Approve/reject payment
 router.post('/:inspectionRequestId/verify-payment', controller.verifyPayment);
+
+// 5. View inspection requests with status 'PaymentVerified' or 'PaymentRejected'
+router.get('/payment-status/filter', controller.getByPaymentStatus);
+
+// View inspection requests with status 'PaymentPending'
+router.get('/payment-pending', controller.getPaymentPendingRequests);
 
 export default router;

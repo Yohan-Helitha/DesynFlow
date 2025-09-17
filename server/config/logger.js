@@ -4,7 +4,7 @@ import { env } from "./env.js";
 
 const isDev = env.NODE_ENV !== "production";
 
-export const logger = pino({
+export const logger = pino(/*{
   name: env.APP_NAME,
   level: env.LOG_LEVEL,
   transport: isDev
@@ -17,4 +17,4 @@ export const logger = pino({
         },
       }
     : undefined,
-});
+}*/);

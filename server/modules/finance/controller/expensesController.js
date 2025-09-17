@@ -37,28 +37,25 @@ const getExpensesByProjectAndCategory = async (req, res, next) => {
     return res.status(200).json({ expenses });
 };
 
-// Update expense
+// Update expense by _id
 const updateMiscExpense = async (req, res, next) => {
-    const { projectId, category } = req.body; // identify the expense
     const { amount, description } = req.body;
     let proof;
 
     // If file is uploaded
     if (req.file) {
-        proof = req.file.path; // or req.file.filename depending on your upload setup
+        proof = req.file.path;
     }
 
-    if (!projectId || !category) {
-        return res.status(400).json({ message: "projectId and category are required to update an expense" });
+    const { id } = req.params;
+    if (!id) {
+        return res.status(400).json({ message: "Expense _id is required to update an expense" });
     }
 
     let expense;
-
     try {
-        // Call service function that updates by projectId and category
-        expense = await expenseService.updateExpenseByProjectAndCategory(
-            projectId,
-            category,
+        expense = await expenseService.updateExpenseById(
+            id,
             { amount, description, proof }
         );
     } catch (err) {
