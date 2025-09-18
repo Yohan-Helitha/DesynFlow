@@ -1,3 +1,7 @@
+// Get all payments
+export async function getAllPayments() {
+  return Payment.find();
+}
 import Payment from '../model/payment.js';
 import QuotationEstimation from '../model/quotation_estimation.js';
 import mongoose from 'mongoose';

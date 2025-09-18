@@ -16,8 +16,8 @@ const ProjectEstimationSchema = new Schema({
 
 ProjectEstimationSchema.index({ projectId: 1, version: 1 }, { unique: true });
 
-// Auto-calculate total before save
-ProjectEstimationSchema.pre('save', function(next) {
+// Auto-calculate total before validation so 'required' passes
+ProjectEstimationSchema.pre('validate', function(next) {
   this.total = (this.laborCost || 0) + (this.materialCost || 0) + (this.serviceCost || 0) + (this.contingencyCost || 0);
   next();
 });

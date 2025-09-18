@@ -3,6 +3,9 @@ import * as controller from '../controller/projectEstimationController.js';
 
 const router = express.Router();
 
+// Get all project estimations (for frontend table)
+router.get('/', controller.getAllEstimates);
+
 // Create or update estimate (new version)
 router.post('/', controller.createOrUpdateEstimate);
 

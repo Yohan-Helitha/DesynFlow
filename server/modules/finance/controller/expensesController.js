@@ -5,12 +5,12 @@ const getAllExpenses = async (req, res, next) => {
     try {
         const expenses = await expenseService.getAllExpenses();
         if (!expenses || expenses.length === 0) {
-            return res.status(404).json({ message: "No Expenses Found" });
+            return res.status(404).json([]);
         }
-        return res.status(200).json({ expenses });
+        return res.status(200).json(expenses);
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ message: "Server Error" });
+        return res.status(500).json([]);
     }
 };
 

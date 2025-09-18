@@ -1,3 +1,12 @@
+// Get all payments
+export async function getAllPayments(req, res) {
+  try {
+    const payments = await paymentService.getAllPayments();
+    res.json(payments);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 import * as paymentService from '../service/paymentService.js';
 
 // Display all pending payments

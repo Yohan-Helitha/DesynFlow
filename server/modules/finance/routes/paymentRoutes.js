@@ -3,6 +3,9 @@ import * as controller from '../controller/paymentController.js';
 
 const router = express.Router();
 
+// Get all payments
+router.get('/', controller.getAllPayments);
+
 // Display all pending payments
 router.get('/pending', controller.getPendingPayments);
 
