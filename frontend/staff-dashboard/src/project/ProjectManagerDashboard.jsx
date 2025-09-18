@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../components/Layout";
 import DashboardOverview from "../components/DashboardOverview";
+import AssignTeams from "../components/AssignTeams";
 
 export default function ProjectManagerDashboard() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -10,7 +11,7 @@ export default function ProjectManagerDashboard() {
       case 0:
         return <DashboardOverview />;
       case 1:
-        return <div className="text-brown-primary">Assign Teams - Coming Soon</div>;
+        return <AssignTeams />;
       case 2:
         return <div className="text-brown-primary">Manage Resources - Coming Soon</div>;
       case 3:
