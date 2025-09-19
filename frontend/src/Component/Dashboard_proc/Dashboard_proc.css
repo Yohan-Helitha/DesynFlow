@@ -1,0 +1,207 @@
+/* --- Reset & Fonts --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.dashboard-page {
+  display: flex;
+  height: 100vh;
+  background: #F7EED3;
+  color: #2c2c2c;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 240px;
+  background: #674636;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+.sidebar h2 {
+  margin-bottom: 40px;
+  font-size: 20px;
+  text-align: center;
+  color: #FFF8E8;
+}
+.nav {
+  list-style: none;
+  flex: 1;
+}
+.nav li {
+  margin-bottom: 12px;
+}
+.nav a {
+  display: block;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #FFF8E8;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background 0.3s, color 0.3s;
+}
+.nav a:hover,
+.nav a.active {
+  background: #FFF8E8;
+  color: #674636;
+}
+
+/* --- Main Content --- */
+.main {
+  flex: 1;
+  padding: 28px;
+  overflow-y: auto;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  position: relative;
+}
+.topbar h1 {
+  font-size: 24px;
+  color: #674636;
+}
+.user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+}
+.user img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #674636;
+}
+.user span {
+  color: #674636;
+  font-weight: bold;
+}
+
+/* --- Notification Icon --- */
+.notification {
+  position: relative;
+  cursor: pointer;
+  font-size: 22px;
+  color: #674636;
+}
+.notification .badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #e63946;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+/* --- Notification Panel --- */
+.notification-panel {
+  position: fixed;
+  top: 0;
+  right: -400px; /* hidden */
+  width: 350px;
+  height: 100vh;
+  background: #FFF8E8;
+  box-shadow: -4px 0 12px rgba(0,0,0,0.15);
+  transition: right 0.4s ease;
+  padding: 20px;
+  overflow-y: auto;
+  z-index: 999;
+}
+.notification-panel.active {
+  right: 0;
+}
+.notification-panel h2 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  color: #674636;
+  border-bottom: 2px solid #F7EED3;
+  padding-bottom: 8px;
+}
+.panel-close {
+  display: block;
+  text-align: right;
+  margin-bottom: 15px;
+}
+.panel-close button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #674636;
+  cursor: pointer;
+}
+.note {
+  background: #F7EED3;
+  border-left: 4px solid #674636;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+.note:hover {
+  background: #eae2c7;
+}
+.note p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+.note small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* --- Cards --- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: #FFF8E8;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+.card:hover {
+  transform: translateY(-3px);
+}
+.card h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #674636;
+}
+.card p {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  margin-top: 12px;
+  border-radius: 6px;
+  border: none;
+  background: #674636;
+  color: #FFF8E8;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.3s;
+}
+.btn:hover {
+  background: #50352b;
+}
