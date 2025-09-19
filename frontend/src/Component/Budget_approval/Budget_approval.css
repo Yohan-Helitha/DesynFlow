@@ -1,0 +1,110 @@
+body {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: linear-gradient(135deg, #f4f0e9, #faf9f7);
+  margin: 0;
+  padding: 40px;
+  color: #2c2c2c;
+}
+
+.budget-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Header */
+.budget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.budget-header h2 {
+  font-size: 28px;
+  color: #333;
+}
+
+.new-request-btn {
+  background: linear-gradient(135deg, #674636, #8c5a45);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  font-size: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.new-request-btn:hover {
+  background: linear-gradient(135deg, #50352b, #704739);
+}
+
+/* Sections Layout */
+.budget-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.budget-section h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+/* Budget Cards */
+.budget-card {
+  background: #fff;
+  padding: 18px 20px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.budget-card:hover {
+  transform: translateY(-3px);
+}
+
+.budget-card .title {
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0;
+  color: #333;
+}
+
+.budget-card .amount {
+  font-size: 14px;
+  color: #555;
+  margin-top: 4px;
+}
+
+/* Status Tags */
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status.approved {
+  background: #d1f7d1;
+  color: #267326;
+}
+
+.status.processing {
+  background: #fff3c9;
+  color: #8a6d1f;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .budget-sections {
+    grid-template-columns: 1fr;
+  }
+}
