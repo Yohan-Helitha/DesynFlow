@@ -3,3 +3,4 @@ server/.env
 
 server.js
 app.js
+node_modules
