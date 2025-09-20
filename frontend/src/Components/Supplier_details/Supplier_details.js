@@ -4,7 +4,9 @@ import "./Supplier_details.css";
 
 const URL = "http//localhost:3000/Supplier_details";
 
-
+const fetchHandler = async () => {
+  return await axios.get(URL).then((res) => res.data);
+}
 
 function Supplier_details() {
   const [suppliers, setSuppliers] = useState([]);

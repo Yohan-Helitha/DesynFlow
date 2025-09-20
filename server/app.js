@@ -1,39 +1,18 @@
-//Bootstrap express, middlewares and a health route
+//2iWElcKr29ZOpPPf
 
-import express from 'express';
-import cors from 'cors';
-import pinoHttp from "pino-http";
-import { logger } from './config/logger.js';
-import { env } from './config/env.js';
+import express from "express";
+import mongoose from "mongoose"; 
 
 const app = express();
-const cors = require("cors");
 
-//middleware
-app.use(
-  pinoHttp({
-    logger,
-    customLogLevel: function (res, err) {
-      if (res.statusCode >= 500 || err) return "error";
-      if (res.statusCode >= 400) return "warn";
-      return "info";
-    },
-  })
-);
+// Middleware
+app.use("/", (req, res, next)=>{
+  res.send("Its working");
+})
 
-app.use(cors()); // from allowing cors API can request different origins(not restrcit to one port)
-app.use(express.json({limit: '2mb'})); // parse json body
-app.use(express.urlencoded({ extended: true })); // parse urlencoded body
-
-app.use(cors());
-
-app.get("/health", (req, res) => {
-  res.json({
-    name: env.APP_NAME,
-    env: env.NODE_ENV,
-    status: "ok",
-    time: new Date().toISOString(),
-  });
-});
-
-export { app };
+mongoose.connect("mongodb+srv://supplier_management:2iWElcKr29ZOpPPf@cluster0.dkewxhj.mongodb.net/") 
+.then(() => console.log("connected to MongoDB"))
+.then(() => {
+   app.listen(3000);
+ }) 
+.catch((err) => console.log((err)));
