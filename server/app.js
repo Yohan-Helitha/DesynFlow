@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import pinoHttp from "pino-http";
@@ -25,10 +24,16 @@ app.use(express.urlencoded({ extended: true })); // parse urlencoded body
 
 import authRouter from "./modules/auth/routes/authRouter.js";
 import userRouter from "./modules/auth/routes/userRouter.js";
+import paymentReceiptRoutes from "./modules/auth/routes/paymentReceiptRoutes.js";
+import inspectorLocationRoutes from "./modules/auth/routes/inspectorLocationRoutes.js";
+import assignmentRoutes from "./modules/auth/routes/assignmentRoutes.js";
 
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/payment-receipt", paymentReceiptRoutes);
+app.use("/api/inspector-location", inspectorLocationRoutes);
+app.use("/api/assignment", assignmentRoutes);
 
 app.get("/health", (req, res) => {
   res.json({
