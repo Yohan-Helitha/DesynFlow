@@ -8,7 +8,7 @@ export default function DashboardOverview() {
   const [loadingProjects, setLoadingProjects] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/projects')
+  fetch('/api/projects')
       .then(res => res.json())
       .then(data => {
         // Stats
@@ -51,7 +51,7 @@ export default function DashboardOverview() {
         // Fetch recent tasks for these projects
         Promise.all(
           sorted.slice(0, 5).map(project =>
-            fetch(`http://localhost:4000/api/tasks/project/${project._id}`)
+            fetch(`/api/tasks/project/${project._id}`)
               .then(res => res.json())
               .then(tasks => ({ project, tasks }))
               .catch(() => ({ project, tasks: [] }))
@@ -74,7 +74,7 @@ export default function DashboardOverview() {
   const [loadingTeams, setLoadingTeams] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/teams')
+  fetch('/api/teams')
       .then(res => res.json())
       .then(data => {
         setTeams(data);

@@ -27,7 +27,7 @@ services:
     build: ../frontend/staff-dashboard
     container_name: desynflow-staff-dashboard
     ports:
-      - "3000:80"
+      - "5173:5173"
     depends_on:
       - backend
     restart: unless-stopped
