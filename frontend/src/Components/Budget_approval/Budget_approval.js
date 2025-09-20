@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "./Budget_approval.css";
 
 function Budget_approval() {
@@ -7,7 +8,9 @@ function Budget_approval() {
       {/* Header */}
       <div className="budget-header">
         <h2>Budget Approvals</h2>
-        <button className="new-request-btn">+ New Budget Request</button>
+        <Link to = "/Budget_approval_form">
+          <button className="new-request-btn">+ New Budget Request</button>
+        </Link>
       </div>
 
       {/* Sections */}

@@ -1,36 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./Supplier_details.css";
 
-function Supplier_details() {
-  const suppliers = {
-    "Global Interiors Ltd": {
-      desc: "Premium furniture and luxury interior solutions.",
-      items: ["Sofas", "Dining Tables", "Wardrobes"],
-      rating: "★★★★☆ (4.5)"
-    },
-    "EcoLiving Supplies": {
-      desc: "Sustainable and eco-friendly interior materials.",
-      items: ["Bamboo Flooring", "Eco Paint", "Recycled Panels"],
-      rating: "★★★★☆ (4.0)"
-    },
-    "BrightSpaces Lighting": {
-      desc: "Smart and elegant lighting solutions for modern spaces.",
-      items: ["LED Chandeliers", "Smart Bulbs", "Track Lights"],
-      rating: "★★★★★ (5.0)"
-    },
-    "Prime Decor Hub": {
-      desc: "Trendy décor for homes and offices.",
-      items: ["Wall Art", "Rugs", "Curtains"],
-      rating: "★★★☆☆ (3.8)"
-    }
-  };
+const URL = "http//localhost:3000/Supplier_details";
 
+
+
+function Supplier_details() {
+  const [suppliers, setSuppliers] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [search, setSearch] = useState("");
+
+  // Fetch suppliers from backend
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/api/suppliers") 
+      .then((res) => setSuppliers(res.data))
+      .catch((err) => console.error("Error fetching suppliers:", err));
+  }, []);
 
   // Search filter
-  const [search, setSearch] = useState("");
-  const filteredSuppliers = Object.keys(suppliers).filter((name) =>
-    name.toLowerCase().includes(search.toLowerCase())
+  const filteredSuppliers = suppliers.filter((s) =>
+    s.companyName.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -53,33 +44,30 @@ function Supplier_details() {
           <tr>
             <th>ID</th>
             <th>Supplier Name</th>
-            <th>Years with Us</th>
+            <th>Contact</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Materials</th>
+            <th>Regions</th>
             <th>Rating</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {filteredSuppliers.map((name, index) => (
-            <tr key={index}>
+          {filteredSuppliers.map((s, index) => (
+            <tr key={s._id}>
               <td>SUP-00{index + 1}</td>
-              <td>{name}</td>
-              <td>
-                {index === 0
-                  ? "5 years"
-                  : index === 1
-                  ? "3 years"
-                  : index === 2
-                  ? "7 years"
-                  : "2 years"}
-              </td>
-              <td>
-                <span className="rating">{suppliers[name].rating.split(" ")[0]}</span>{" "}
-                {suppliers[name].rating.split(" ")[1]}
-              </td>
+              <td>{s.companyName}</td>
+              <td>{s.contactName}</td>
+              <td>{s.email}</td>
+              <td>{s.phone}</td>
+              <td>{s.materialTypes?.join(", ")}</td>
+              <td>{s.deliveryRegions?.join(", ")}</td>
+              <td>{s.rating}</td>
               <td>
                 <button
                   className="info-btn"
-                  onClick={() => setSelectedSupplier(name)}
+                  onClick={() => setSelectedSupplier(s)}
                 >
                   More Info
                 </button>
@@ -88,10 +76,6 @@ function Supplier_details() {
           ))}
         </tbody>
       </table>
-
-      <div className="Manage-btn-wrapper">
-        <button className="Manage-btn">Manage Suppliers</button>
-      </div>
 
       {/* Modal */}
       {selectedSupplier && (
@@ -103,16 +87,13 @@ function Supplier_details() {
             >
               &times;
             </span>
-            <h3>{selectedSupplier}</h3>
-            <p>{suppliers[selectedSupplier].desc}</p>
-            <ul>
-              {suppliers[selectedSupplier].items.map((i, idx) => (
-                <li key={idx}>{i}</li>
-              ))}
-            </ul>
-            <p>
-              <b>Rating:</b> {suppliers[selectedSupplier].rating}
-            </p>
+            <h3>{selectedSupplier.companyName}</h3>
+            <p><b>Contact:</b> {selectedSupplier.contactName}</p>
+            <p><b>Email:</b> {selectedSupplier.email}</p>
+            <p><b>Phone:</b> {selectedSupplier.phone}</p>
+            <p><b>Materials:</b> {selectedSupplier.materialTypes?.join(", ")}</p>
+            <p><b>Regions:</b> {selectedSupplier.deliveryRegions?.join(", ")}</p>
+            <p><b>Rating:</b> {selectedSupplier.rating}</p>
             <button className="place-order-btn">Place Order</button>
           </div>
         </div>

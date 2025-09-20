@@ -8,6 +8,7 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js';
+import { Link } from "react-router-dom";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -53,10 +54,10 @@ function Dashboard_proc() {
           <button className="close-btn" onClick={toggleSidebar}>×</button>
         </div>
         <ul className="nav">
-          <li><a href="#" className="active">Overview</a></li>
-          <li><a href="#">Suppliers</a></li>
-          <li><a href="#">Orders</a></li>
-          <li><a href="#">Budget</a></li>
+          <li>Overview</li>
+          <li><Link to ="/Supplier_details">Suppliers</Link></li>
+          <li><Link to = "/Orders">Orders</Link></li>
+          <li><Link to = "/Budget_approval">Budget Approval</Link></li>
         </ul>
       </aside>
 

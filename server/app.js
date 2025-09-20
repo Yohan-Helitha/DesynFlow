@@ -7,6 +7,7 @@ import { logger } from './config/logger.js';
 import { env } from './config/env.js';
 
 const app = express();
+const cors = require("cors");
 
 //middleware
 app.use(
@@ -23,6 +24,8 @@ app.use(
 app.use(cors()); // from allowing cors API can request different origins(not restrcit to one port)
 app.use(express.json({limit: '2mb'})); // parse json body
 app.use(express.urlencoded({ extended: true })); // parse urlencoded body
+
+app.use(cors());
 
 app.get("/health", (req, res) => {
   res.json({

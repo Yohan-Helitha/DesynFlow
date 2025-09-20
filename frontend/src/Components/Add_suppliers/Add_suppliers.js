@@ -4,11 +4,12 @@ import "./Add_suppliers.css";
 
 function Add_suppliers() {
   const [formData, setFormData] = useState({
-    name: "",
-    years: "",
-    description: "",
-    items: "",
-    rating: ""
+    companyName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    materialTypes: "",
+    deliveryRegions: ""
   });
 
   const handleChange = (e) => {
@@ -18,9 +19,30 @@ function Add_suppliers() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Supplier Added:", formData);
-    alert(`Supplier "${formData.name}" has been added successfully!`);
-    setFormData({ name: "", years: "", description: "", items: "", rating: "" });
+
+    // Convert comma-separated fields into arrays for schema
+    const formattedData = {
+      ...formData,
+      materialTypes: formData.materialTypes
+        .split(",")
+        .map((item) => item.trim()),
+      deliveryRegions: formData.deliveryRegions
+        .split(",")
+        .map((region) => region.trim()),
+    };
+
+    console.log("Supplier Added:", formattedData);
+    alert(`Supplier "${formData.companyName}" has been added successfully!`);
+
+    // Reset form
+    setFormData({
+      companyName: "",
+      contactName: "",
+      email: "",
+      phone: "",
+      materialTypes: "",
+      deliveryRegions: ""
+    });
   };
 
   return (
@@ -28,80 +50,90 @@ function Add_suppliers() {
       <h2>Add New Supplier</h2>
 
       <form className="add-supplier-form" onSubmit={handleSubmit}>
-        {/* Supplier Name */}
+        {/* Company Name */}
         <div className="form-group">
-          <label>Supplier Name</label>
+          <label>Company Name</label>
           <input
             type="text"
-            name="name"
-            value={formData.name}
+            name="companyName"
+            value={formData.companyName}
             onChange={handleChange}
-            placeholder="Enter supplier name"
+            placeholder="Enter company name"
             required
           />
         </div>
 
-        {/* Years with Us */}
+        {/* Contact Name */}
         <div className="form-group">
-          <label>Years with Us</label>
-          <input
-            type="number"
-            name="years"
-            value={formData.years}
-            onChange={handleChange}
-            placeholder="e.g. 5"
-            required
-          />
-        </div>
-
-        {/* Description */}
-        <div className="form-group">
-          <label>Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Brief description of the supplier"
-            required
-          ></textarea>
-        </div>
-
-        {/* Items Supplied */}
-        <div className="form-group">
-          <label>Items Supplied</label>
+          <label>Contact Person</label>
           <input
             type="text"
-            name="items"
-            value={formData.items}
+            name="contactName"
+            value={formData.contactName}
             onChange={handleChange}
-            placeholder="Comma-separated items (e.g. Sofas, Curtains, Lights)"
+            placeholder="Enter contact person's name"
             required
           />
         </div>
 
-        {/* Rating */}
+        {/* Email */}
         <div className="form-group">
-          <label>Rating (1–5)</label>
+          <label>Email</label>
           <input
-            type="number"
-            name="rating"
-            value={formData.rating}
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
-            min="1"
-            max="5"
-            step="0.1"
-            placeholder="e.g. 4.5"
+            placeholder="Enter email address"
+            required
+          />
+        </div>
+
+        {/* Phone */}
+        <div className="form-group">
+          <label>Phone</label>
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="Enter phone number"
+            required
+          />
+        </div>
+
+        {/* Material Types */}
+        <div className="form-group">
+          <label>Material Types</label>
+          <input
+            type="text"
+            name="materialTypes"
+            value={formData.materialTypes}
+            onChange={handleChange}
+            placeholder="e.g. Wood, Glass, Metal"
+            required
+          />
+        </div>
+
+        {/* Delivery Regions */}
+        <div className="form-group">
+          <label>Delivery Regions</label>
+          <input
+            type="text"
+            name="deliveryRegions"
+            value={formData.deliveryRegions}
+            onChange={handleChange}
+            placeholder="e.g. Colombo, Kandy, Galle"
             required
           />
         </div>
 
         {/* Submit Button */}
-       <div className="form-actions">
-  <Link to="/Supplier_details">
-    <button type="button" className="submit-btn">Add Supplier (local)</button>
-  </Link>
-</div>
-
+        <div className="form-actions">
+          <button type="submit" className="submit-btn">
+            ➕ Add Supplier
+          </button>
+        </div>
       </form>
     </div>
   );
