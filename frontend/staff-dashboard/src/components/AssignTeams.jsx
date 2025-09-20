@@ -1,5 +1,3 @@
-  const [editProjectId, setEditProjectId] = useState(null);
-
 import React, { useState, useEffect } from "react";
 
 export default function AssignTeams() {
@@ -15,6 +13,7 @@ export default function AssignTeams() {
     report: null,
   });
   const [uploading, setUploading] = useState(false);
+  const [editProjectId, setEditProjectId] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -146,7 +145,11 @@ export default function AssignTeams() {
         <h2 className="text-xl font-bold text-brown-primary">Assign Teams</h2>
         <button
           className="bg-brown-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90"
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            setModalOpen(true);
+            setEditProjectId(null);
+            setForm({ name: "", client: "", team: "", report: null });
+          }}
         >
           + Create Project
         </button>
@@ -199,7 +202,8 @@ export default function AssignTeams() {
                     </td>
                     <td className="py-2 px-3 flex gap-2">
                       <button
-                        className="text-brown-primary hover:text-green-primary"
+                        className="p-2 rounded hover:bg-cream-light"
+                        title="Edit"
                         onClick={() => {
                           setModalOpen(true);
                           setEditProjectId(project._id);
@@ -211,10 +215,14 @@ export default function AssignTeams() {
                           });
                         }}
                       >
-                        <i className="fas fa-edit" />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L5 11.828a2 2 0 010-2.828L9 13z" /></svg>
                       </button>
-                      <button className="text-brown-primary hover:text-red-600" onClick={() => handleDelete(project._id)}>
-                        <i className="fas fa-trash" />
+                      <button
+                        className="p-2 rounded hover:bg-cream-light"
+                        title="Delete"
+                        onClick={() => handleDelete(project._id)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
                     </td>
                   </tr>
@@ -227,56 +235,71 @@ export default function AssignTeams() {
 
       {modalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h3 className="text-lg font-bold text-brown-primary mb-4">{editProjectId ? "Edit Project" : "Create New Project"}</h3>
+          <div className="bg-white rounded-lg p-8 w-full max-w-lg shadow-lg">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-brown-primary">{editProjectId ? "Edit Project" : "Create New Project"}</h3>
+              <button className="text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => { setModalOpen(false); setError(null); setForm({ name: "", client: "", team: "", report: null }); setEditProjectId(null); }}>&times;</button>
+            </div>
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-3 text-sm">{error}</div>
             )}
-            <div className="mb-3">
-              <label className="block text-brown-primary font-semibold mb-1">Project Name *</label>
-              <input
-                type="text"
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="Enter project name"
-              />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-brown-primary font-semibold mb-1">Project Name *</label>
+                <input
+                  type="text"
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  placeholder="Enter project name"
+                />
+              </div>
+              <div>
+                <label className="block text-brown-primary font-semibold mb-1">Client *</label>
+                <input
+                  type="text"
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                  value={form.client}
+                  onChange={e => setForm({ ...form, client: e.target.value })}
+                  placeholder="Enter client name"
+                />
+              </div>
+              <div>
+                <label className="block text-brown-primary font-semibold mb-1">Assigned Team</label>
+                <select
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                  value={form.team}
+                  onChange={e => setForm({ ...form, team: e.target.value })}
+                >
+                  <option value="">No Team Assigned</option>
+                  {teams.map(team => (
+                    <option key={team._id} value={team._id}>
+                      {team.teamName} ({team.members?.length || 0} members)
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-brown-primary font-semibold mb-1">Inspection Report (PDF)</label>
+                <div
+                  className="border-2 border-dashed border-brown-primary rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer bg-cream-light hover:bg-cream-primary"
+                  onClick={() => document.getElementById('project-report-input').click()}
+                  style={{ minHeight: '100px' }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-brown-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  <span className="text-brown-primary text-sm">Drag & drop your PDF here<br /><span className="underline">or click to browse files</span></span>
+                  <input
+                    id="project-report-input"
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={e => setForm({ ...form, report: e.target.files[0] })}
+                  />
+                  {form.report && <span className="mt-2 text-green-700 text-xs">{form.report.name}</span>}
+                </div>
+              </div>
             </div>
-            <div className="mb-3">
-              <label className="block text-brown-primary font-semibold mb-1">Client *</label>
-              <input
-                type="text"
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
-                value={form.client}
-                onChange={e => setForm({ ...form, client: e.target.value })}
-                placeholder="Enter client name"
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-brown-primary font-semibold mb-1">Assigned Team</label>
-              <select
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
-                value={form.team}
-                onChange={e => setForm({ ...form, team: e.target.value })}
-              >
-                <option value="">No Team Assigned</option>
-                {teams.map(team => (
-                  <option key={team._id} value={team._id}>
-                    {team.teamName} ({team.members?.length || 0} members)
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-3">
-              <label className="block text-brown-primary font-semibold mb-1">Project Report (optional)</label>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,.xlsx,.xls,.jpg,.png,.jpeg"
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
-                onChange={e => setForm({ ...form, report: e.target.files[0] })}
-              />
-            </div>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 mt-8">
               <button
                 className="px-4 py-2 rounded bg-gray-200 text-brown-primary font-semibold hover:bg-gray-300"
                 onClick={() => {
@@ -293,7 +316,7 @@ export default function AssignTeams() {
                 onClick={handleCreate}
                 disabled={!form.name || !form.client || uploading}
               >
-                {uploading ? "Uploading..." : "Create Project"}
+                {uploading ? (editProjectId ? "Updating..." : "Uploading...") : (editProjectId ? "Update Project" : "Create Project")}
               </button>
             </div>
           </div>
