@@ -22,17 +22,19 @@ export const addManuProduct = async (productData) => {
       body: JSON.stringify(productData)
     });
 
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || "Failed to add product");
-    }
+    const data = await res.json(); // parse response
+    console.log("Fetched products:", data); // <--- add this
 
-    const newProduct = await res.json();
-    return newProduct;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
+      if (!res.ok) {
+        // throw the full backend object, so frontend can access 'errors'
+        throw data;
+      }
+
+      return data; // success response
+    } catch (err) {
+      console.error("Add product error:", err);
+      throw err; // propagate to React form
+    }
 };
 
 export const fetchManuProductById = async (id) => {
@@ -58,17 +60,18 @@ export const updateManuProduct = async (id, data) => {
       body: JSON.stringify(data)
     });
 
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || 'Failed to update product');
-    }
+    const result = await res.json(); // parse response
 
-    const updatedProduct = await res.json();
-    return updatedProduct;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
+      if (!res.ok) {
+        // throw the full backend object, so frontend can access 'errors'
+        throw result;
+      }
+
+      return result; // success response
+    } catch (err) {
+      console.error("Update product error:", err);
+      throw err; // propagate to React form
+    }
 };
 
 // Delete product

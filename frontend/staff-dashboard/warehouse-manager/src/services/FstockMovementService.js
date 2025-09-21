@@ -11,7 +11,7 @@ export const fetchStockMovements = async () => {
   }
 };
 
-// Add new product
+// Add new movement
 export const addStockMovement = async (movementData) => {
   try {
     const res = await fetch(`http://localhost:5000/stock_movement`, {
@@ -22,17 +22,18 @@ export const addStockMovement = async (movementData) => {
       body: JSON.stringify(movementData)
     });
 
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || "Failed to stock movement");
-    }
+    const data = await res.json(); // parse response
 
-    const newMovement = await res.json();
-    return newMovement;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
+      if (!res.ok) {
+        // throw the full backend object, so frontend can access 'errors'
+        throw data;
+      }
+
+      return data; // success response
+    } catch (err) {
+      console.error("Add location error:", err);
+      throw err; // propagate to React form
+    }
 };
 
 export const fetchStockMovementById = async (id) => {
@@ -58,17 +59,18 @@ export const updateStockMovement = async (id, data) => {
       body: JSON.stringify(data)
     });
 
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || 'Failed to update stock movement');
-    }
+    const result = await res.json(); // parse response
 
-    const updatedMovement = await res.json();
-    return updatedMovement;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
+      if (!res.ok) {
+        // throw the full backend object, so frontend can access 'errors'
+        throw result;
+      }
+
+      return result; // success response
+    } catch (err) {
+      console.error("Update product error:", err);
+      throw err; // propagate to React form
+    }
 };
 
 // Delete product

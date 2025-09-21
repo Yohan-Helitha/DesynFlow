@@ -11,7 +11,7 @@ export const fetchInvLocation = async () => {
   }
 };
 
-// Add new product
+// Add new location
 export const addInvLocation = async (locationData) => {
   try {
     const res = await fetch(`http://localhost:5000/inv_locations`, {
@@ -22,17 +22,18 @@ export const addInvLocation = async (locationData) => {
       body: JSON.stringify(locationData)
     });
 
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || "Failed to add location");
-    }
+    const data = await res.json(); // parse response
 
-    const newLocation = await res.json();
-    return newLocation;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
+      if (!res.ok) {
+        // throw the full backend object, so frontend can access 'errors'
+        throw data;
+      }
+
+      return data; // success response
+    } catch (err) {
+      console.error("Add location error:", err);
+      throw err; // propagate to React form
+    }
 };
 
 export const fetchInvLocationById = async (id) => {
@@ -58,17 +59,18 @@ export const updateInvLocation = async (id, data) => {
       body: JSON.stringify(data)
     });
 
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || 'Failed to update location');
-    }
+    const result = await res.json(); // parse response
 
-    const updatedLocation = await res.json();
-    return updatedLocation;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
+      if (!res.ok) {
+        // throw the full backend object, so frontend can access 'errors'
+        throw result;
+      }
+
+      return result; // success response
+    } catch (err) {
+      console.error("Update product error:", err);
+      throw err; // propagate to React form
+    }
 };
 
 // Delete location

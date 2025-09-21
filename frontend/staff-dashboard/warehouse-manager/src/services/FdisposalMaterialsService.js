@@ -1,25 +1,25 @@
-// src/services/FrawMaterialsService.js
-export const fetchRawMaterial = async () => {
+// src/services/FdisposalMaterialsService.js
+export const fetchDisposalMaterials = async () => {
   try {
-    const res = await fetch("http://localhost:5000/raw_materials");
-    if (!res.ok) throw new Error("Failed to fetch raw materials");
+    const res = await fetch("http://localhost:5000/disposal_materials");
+    if (!res.ok) throw new Error("Failed to fetch disposal materials");
     const data = await res.json();
-    return data.raw_materials;
+    return data.disposal_materials;
   } catch (err) {
     console.error(err);
     return [];
   }
 };
 
-// Add new product
-export const addRawMaterial = async (materialData) => {
+// Add material
+export const addDisposalMaterial = async (disposalMaterialData) => {
   try {
-    const res = await fetch(`http://localhost:5000/raw_materials`, {
+    const res = await fetch(`http://localhost:5000/disposal_materials`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(materialData)
+      body: JSON.stringify(disposalMaterialData)
     });
 
     const data = await res.json(); // parse response
@@ -36,12 +36,13 @@ export const addRawMaterial = async (materialData) => {
     }
 };
 
-export const fetchRawMaterialById = async (id) => {
+export const fetchDisposalMaterialsById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:5000/raw_materials/${id}`);
+    const res = await fetch(`http://localhost:5000/disposal_materials/${id}`);
+    
     if (!res.ok) throw new Error("Failed to fetch material");
     const data = await res.json();
-    console.log("Fetched material:", data); // debug
+    console.log("Fetched location:", data); // debug
     return data;
   } catch (err) {
     console.error(err);
@@ -49,9 +50,24 @@ export const fetchRawMaterialById = async (id) => {
   }
 };
 
-export const updateRawMaterial = async (id, data) => {
+export const fetchDisposalRecordById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:5000/raw_materials/${id}`, {
+    const res = await fetch(`http://localhost:5000/disposal_materials/record/${id}`);
+    
+    if (!res.ok) throw new Error("Failed to fetch material");
+    const data = await res.json();
+    console.log("Fetched location:", data); // debug
+    return data;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+};
+
+
+export const updateDisposalMaterial = async (id, data) => {
+  try {
+    const res = await fetch(`http://localhost:5000/disposal_materials/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -68,15 +84,15 @@ export const updateRawMaterial = async (id, data) => {
 
       return result; // success response
     } catch (err) {
-      console.error("Update material error:", err);
+      console.error("Update product error:", err);
       throw err; // propagate to React form
     }
 };
 
-// Delete product
-export const deleteRawMaterial = async (id) => {
+// Delete location
+export const deleteDisposalMaterial = async (id) => {
   try {
-    const res = await fetch(`http://localhost:5000/raw_materials/${id}`, {
+    const res = await fetch(`http://localhost:5000/disposal_materials/${id}`, {
       method: "DELETE"
     });
 

@@ -1,10 +1,10 @@
-// src/services/FtransferRequestService.js
-export const fetchTransferRequests = async () => {
+// src/services/FsReorderRequestService.js
+export const fetchSReorderRequests = async () => {
   try {
-    const res = await fetch("http://localhost:5000/transfer_request");
-    if (!res.ok) throw new Error("Failed to fetch transfer requests");
+    const res = await fetch("http://localhost:5000/s_reorder_requests");
+    if (!res.ok) throw new Error("Failed to fetch stock reorder requests");
     const data = await res.json();
-    return data.transfer_request;
+    return data.s_reorder_requests;
   } catch (err) {
     console.error(err);
     return [];
@@ -12,9 +12,9 @@ export const fetchTransferRequests = async () => {
 };
 
 // Add new product
-export const addTransferRequest = async (requestData) => {
+export const addSReorderRequest = async (requestData) => {
   try {
-    const res = await fetch(`http://localhost:5000/transfer_request`, {
+    const res = await fetch(`http://localhost:5000/s_reorder_requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -31,15 +31,15 @@ export const addTransferRequest = async (requestData) => {
 
       return data; // success response
     } catch (err) {
-      console.error("Add location error:", err);
+      console.error("Add request error:", err);
       throw err; // propagate to React form
     }
 };
 
-export const fetchTransferRequestById = async (id) => {
+export const fetchSReorderRequestById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:5000/transfer_request/${id}`);
-    if (!res.ok) throw new Error("Failed to fetch stock request");
+    const res = await fetch(`http://localhost:5000/s_reorder_requests/${id}`);
+    if (!res.ok) throw new Error("Failed to fetch stock reorder request");
     const data = await res.json();
     console.log("Fetched request:", data); // debug
     return data;
@@ -49,9 +49,9 @@ export const fetchTransferRequestById = async (id) => {
   }
 };
 
-export const updateTransferRequest = async (id, data) => {
+export const updateSReorderRequest = async (id, data) => {
   try {
-    const res = await fetch(`http://localhost:5000/transfer_request/${id}`, {
+    const res = await fetch(`http://localhost:5000/s_reorder_requests/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -68,15 +68,15 @@ export const updateTransferRequest = async (id, data) => {
 
       return request; // success response
     } catch (err) {
-      console.error("Add location error:", err);
+      console.error("Add request error:", err);
       throw err; // propagate to React form
     }
 };
 
 // Delete product
-export const deleteTransferRequest = async (id) => {
+export const deleteSReorderRequest = async (id) => {
   try {
-    const res = await fetch(`http://localhost:5000/transfer_request/${id}`, {
+    const res = await fetch(`http://localhost:5000/s_reorder_requests/${id}`, {
       method: "DELETE"
     });
 
