@@ -123,6 +123,8 @@ function Dashboard_proc() {
         </div>
       </main>
 
+      
+
       {/* Notifications */}
       <div className={`notification-panel ${panelOpen ? 'active' : ''}`} id="panel">
         <div className="panel-close">

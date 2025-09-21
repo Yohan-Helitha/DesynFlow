@@ -79,6 +79,8 @@ function Supplier_details() {
         </tbody>
       </table>
 
+      <button className="add-supplier-btn">Add New Supplier</button>
+
       {/* Modal */}
       {selectedSupplier && (
         <div className="modal">

@@ -1,17 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './Orders.css';
+import axios from "axios";
+import { Link } from "react-router-dom";
+
+const URL = "http//localhost:3000/Orders";
+
+const fetchHandler = async () => {
+  return await axios.get(URL).then((res) => res.data);
+}
 
 function Orders() {
-  // Search function
-  function searchOrders() {
-    let input = document.getElementById("search").value.toLowerCase();
-    let rows = document.querySelectorAll("#ordersTable tbody tr");
-    rows.forEach(row => {
-      let supplier = row.cells[3].innerText.toLowerCase();
-      let material = row.cells[1].innerText.toLowerCase();
-      row.style.display = supplier.includes(input) || material.includes(input) ? "" : "none";
-    });
-  }
+  const [orders, setOrders] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Fetch purchase orders from backend
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/purchase-orders"); // backend API
+        const data = await res.json();
+        setOrders(data);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      }
+    };
+    fetchOrders();
+  }, []);
+
+  // Filtered orders by supplier or material
+  const filteredOrders = orders.filter(order => {
+    const supplier = order.supplierId?.name?.toLowerCase() || "";
+    const materialList = order.items?.map(i => i.materialName?.toLowerCase()).join(" ") || "";
+    return supplier.includes(searchTerm.toLowerCase()) || materialList.includes(searchTerm.toLowerCase());
+  });
 
   return (
     <div className="orders-container">
@@ -19,11 +40,11 @@ function Orders() {
 
       {/* Search bar */}
       <div className="search-bar">
-        <input 
-          type="text" 
-          id="search" 
-          placeholder=" Search by Supplier or Material..." 
-          onKeyUp={searchOrders} 
+        <input
+          type="text"
+          placeholder="Search by Supplier or Material..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
@@ -32,42 +53,46 @@ function Orders() {
         <thead>
           <tr>
             <th>Order ID</th>
-            <th>Material</th>
+            <th>Materials</th>
             <th>Quantity</th>
             <th>Supplier</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>ORD-301</td>
-            <td>Granite Tiles</td>
-            <td>200</td>
-            <td>Global Interiors Ltd</td>
-            <td><span className="status completed">Completed</span></td>
-          </tr>
-          <tr>
-            <td>ORD-302</td>
-            <td>Eco Paint</td>
-            <td>50</td>
-            <td>EcoLiving Supplies</td>
-            <td><span className="status pending">Pending</span></td>
-          </tr>
-          <tr>
-            <td>ORD-303</td>
-            <td>LED Chandeliers</td>
-            <td>20</td>
-            <td>BrightSpaces Lighting</td>
-            <td><span className="status inprogress">In Progress</span></td>
-          </tr>
-          <tr>
-            <td>ORD-304</td>
-            <td>Rugs & Curtains</td>
-            <td>120</td>
-            <td>Prime Decor Hub</td>
-            <td><span className="status completed">Completed</span></td>
-          </tr>
+          {filteredOrders.length > 0 ? (
+            filteredOrders.map((order, index) => (
+              <tr key={order._id || index}>
+                <td>{order._id}</td>
+                <td>
+                  {order.items?.map((item, i) => (
+                    <div key={i}>{item.materialName}</div>
+                  ))}
+                </td>
+                <td>
+                  {order.items?.map((item, i) => (
+                    <div key={i}>{item.quantity}</div>
+                  ))}
+                </td>
+                <td>{order.supplierId?.name || "Unknown Supplier"}</td>
+                <td>
+                  <span className={`status ${order.status?.toLowerCase()}`}>
+                    {order.status}
+                  </span>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="5" style={{ textAlign: "center" }}>
+                No orders found
+              </td>
+            </tr>
+          )}
         </tbody>
+          
+          <button><Link to ="/OrderForm">Place an Order</Link></button>
+
       </table>
     </div>
   );
