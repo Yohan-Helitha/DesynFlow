@@ -11,7 +11,7 @@ const Counter = mongoose.model("ManuProductsCounter", counterSchema);
 const manuProductsSchema = new Schema({
     materialId: { 
         type: String, 
-        unique: true 
+        required: false,
     },
     materialName: { 
         type: String, 
@@ -45,7 +45,7 @@ const manuProductsSchema = new Schema({
         type: String,
         required: true,
     },
-    inventoryId: { 
+    inventoryName: { 
         type: String, 
         required: true 
     },
@@ -75,18 +75,9 @@ const manuProductsSchema = new Schema({
 manuProductsSchema.pre("save", async function(next) {
     if (!this.isNew) return next();
 
-    // ---- Auto-generate materialId (MP001, MP002...) ----
-    let counter = await Counter.findOne();
-    if (!counter) {
-        counter = new Counter({ seq: 0 });
-        await counter.save();
-    }
+    
 
-    counter.seq += 1;
-    await counter.save();
-
-    const seqNum = counter.seq.toString().padStart(3, "0"); // 001, 002, ...
-    this.materialId = `MP${seqNum}`;
+    
 
     // ---- Auto-fill Month & Year ----
     const now = new Date();

@@ -29,10 +29,10 @@ const thresholdAlertSchema = new Schema({
         type: Number,
         required: true
     },
-    inventoryId: {
-        type: String,
-        required: true
-    },
+    // inventoryId: {
+    //     type: String,
+    //     required: true
+    // },
     inventoryName: {
         type: String,
         required: true

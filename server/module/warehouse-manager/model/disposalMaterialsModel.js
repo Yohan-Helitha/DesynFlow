@@ -11,7 +11,7 @@ const disposalMaterialsCounter = mongoose.model("disposalMaterialsCounter", disp
 const disposalMaterialsSchema = new Schema({
     disposalId: { 
         type: String, 
-        unique: true 
+        unique: true,
     },
     materialId: { 
         type: String,
@@ -21,7 +21,7 @@ const disposalMaterialsSchema = new Schema({
         type: String, 
         required: true 
     },
-    inventoryId: { 
+    inventoryName: { 
         type: String, 
         required: true 
     },
@@ -29,7 +29,7 @@ const disposalMaterialsSchema = new Schema({
         type: Number, 
         required: true 
     },
-    type: { 
+    unit: { 
         type: String, 
         required: true 
     },

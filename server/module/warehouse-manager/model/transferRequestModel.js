@@ -39,7 +39,6 @@ const transferRequestSchema = new Schema({
     },
     approvedBy: { 
         type: String, 
-        required: true 
     },
     status: { 
         type: String, 

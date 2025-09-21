@@ -16,6 +16,18 @@ const sReorderRequestsSchema = new Schema({
     inventoryId: { 
         type: String, 
         required: true 
+    },    
+    inventoryName: { 
+        type: String, 
+        required: true 
+    },
+    inventoryAddress: { 
+        type: String, 
+        required: true
+    },    
+    inventoryContact: {
+        type: String,
+        required: true,
     },
     materialId: { 
         type: String, 
@@ -32,6 +44,10 @@ const sReorderRequestsSchema = new Schema({
     type: {
         type: String, 
         required: true 
+    },
+    unit: { 
+        type: String, 
+        required: true
     },
     expectedDate: { 
         type: Date, 

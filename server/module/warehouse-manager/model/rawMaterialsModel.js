@@ -11,7 +11,7 @@ const rawMaterialsCounter = mongoose.model("rawMaterialsCounter", rawMaterialsco
 const rawMaterialsSchema = new Schema({
     materialId: { 
         type: String, 
-        unique: true 
+        required: false,
     },
     materialName: { 
         type: String, 
@@ -41,7 +41,7 @@ const rawMaterialsSchema = new Schema({
         type: Number, 
         required: true 
     },
-    inventoryId: { 
+    inventoryName: { 
         type: String, 
         required: true 
     },
@@ -70,19 +70,6 @@ const rawMaterialsSchema = new Schema({
 // Pre-save hook to auto-fill fields
 rawMaterialsSchema.pre("save", async function(next) {
     if (!this.isNew) return next();
-
-    // ---- Auto-generate materialId (MP001, MP002...) ----
-    let rmcounter = await rawMaterialsCounter.findOne();
-    if (!rmcounter) {
-        rmcounter = new rawMaterialsCounter({ seq: 0 });
-        await rmcounter.save();
-    }
-
-    rmcounter.seq += 1;
-    await rmcounter.save();
-
-    const seqNum = rmcounter.seq.toString().padStart(3, "0"); // 001, 002, ...
-    this.materialId = `RM${seqNum}`;
 
     // ---- Auto-fill Month & Year ----
     const now = new Date();
