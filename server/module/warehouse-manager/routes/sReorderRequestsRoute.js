@@ -1,27 +1,26 @@
 import express from "express";
 const route = express.Router();
 
-//Insert Model
-import sReorderRequests from "../model/sReorderRequestsModel.js";
-
 //Insert Controller
 import { 
   getAllsReorderRequests, 
+  getSReorderRequestById,
   addsReorderRequests, 
   updatesReorderRequests, 
   deletesReorderRequests 
 } from "../controller/sReorderRequestsController.js";
 
-// import { 
-//   validateSReorderRequestsInsertMW, validateSReorderRequestsUpdateMW 
-// } from "../middleware/sReorderRequestsMiddleware.js";
+ import { 
+   validateSReorderRequestInsertMW, validateSReorderRequestUpdateMW 
+ } from "../middleware/sReorderRequestsMiddleware.js";
 
 route.get("/",getAllsReorderRequests);
+route.get("/:id",getSReorderRequestById);
 route.post("/",
-  //validateSReorderRequestsInsertMW, 
+  validateSReorderRequestInsertMW, 
   addsReorderRequests);
 route.put("/:id",
-  //validateSReorderRequestsUpdateMW, 
+  validateSReorderRequestUpdateMW, 
   updatesReorderRequests);
 route.delete("/:id",deletesReorderRequests);
 

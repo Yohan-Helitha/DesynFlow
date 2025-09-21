@@ -1,9 +1,6 @@
 import express from "express";
 const route = express.Router();
 
-//Insert Model
-import manuProducts from "../model/manuProductsModel.js";
-
 //Insert Controller
 import { 
   getAllManuProducts,
@@ -13,17 +10,17 @@ import {
   deleteManuProducts 
 } from "../controller/manuProductsController.js";
 
-// import { 
-//   validateManuProductInsertMW, validateManuProductUpdateMW 
-// } from "../middleware/manuProductsMiddleware.js";
+import { 
+  validateManuProductInsertMW, validateManuProductUpdateMW 
+} from "../middleware/manuProductsMiddleware.js";
 
 route.get("/",getAllManuProducts);
 route.get("/:id", getManuProductById); 
 route.post("/",
-  //validateManuProductInsertMW,
+  validateManuProductInsertMW,
   addManuProducts);
 route.put("/:id",
-  //validateManuProductUpdateMW, 
+  validateManuProductUpdateMW, 
   updateManuProducts);
 route.delete("/:id",deleteManuProducts);
 

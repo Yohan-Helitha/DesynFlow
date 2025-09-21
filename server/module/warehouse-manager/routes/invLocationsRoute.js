@@ -13,17 +13,17 @@ import {
   deleteInvLocations 
 } from "../controller/invLocationsController.js";
 
-// import { 
-//   validateInvLocationsInsertMW, validateInvLocationsUpdateMW 
-// } from "../middleware/invLocationsMiddleware.js";
+ import { 
+   validateInvLocationsInsertMW, validateInvLocationsUpdateMW 
+ } from "../middleware/invLocationsMiddleware.js";
 
 route.get("/",getAllInvLocations);
 route.get("/:id", getInvLocationById); 
 route.post("/",
-  //validateInvLocationsInsertMW, 
+  validateInvLocationsInsertMW, 
   addInvLocations);
 route.put("/:id",
-  //validateInvLocationsUpdateMW, 
+  validateInvLocationsUpdateMW, 
   updateInvLocations);
 route.delete("/:id",deleteInvLocations);
 

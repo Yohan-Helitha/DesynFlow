@@ -1,9 +1,6 @@
 import express from "express";
 const route = express.Router();
 
-//Insert Model
-import transferRequest from "../model/transferRequestModel.js";
-
 //Insert Controller
 import { 
   getAllTransferRequest, 
@@ -13,17 +10,17 @@ import {
   deleteTransferRequest 
 } from "../controller/transferRequestController.js";
 
-// import { 
-//   validateTransferRequestInsertMW, validateTransferRequestUpdateMW 
-// } from "../middleware/transferRequestMiddleware.js";
+ import { 
+   validateTransferRequestInsertMW, validateTransferRequestUpdateMW 
+ } from "../middleware/transferRequestMiddleware.js";
 
 route.get("/",getAllTransferRequest);
 route.get("/:id",getTransferRequestById);
 route.post("/",
-  //validateTransferRequestInsertMW, 
+  validateTransferRequestInsertMW, 
   addTransferRequest);
 route.put("/:id",
-  //validateTransferRequestUpdateMW, 
+  validateTransferRequestUpdateMW, 
   updateTransferRequest);
 route.delete("/:id",deleteTransferRequest);
 
