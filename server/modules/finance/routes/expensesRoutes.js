@@ -9,6 +9,7 @@ router.get('/', expensesController.getAllExpenses);
 // GET expense by ID
 router.get('/filter', expensesController.getExpensesByProjectAndCategory);
 
+// UPDATE expense by ID
 router.post('/:id', expensesController.updateMiscExpense);
 
 export default router;

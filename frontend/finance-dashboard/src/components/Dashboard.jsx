@@ -1,92 +1,50 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Header } from './Header'
-import { SummaryCard } from './SummaryCard'
-import { IncomeChart } from './IncomeChart'
+import React from 'react';
+import { Header } from './Header';
+import { SummaryCard } from './SummaryCard';
+import { IncomeChart } from './IncomeChart';
+// import { BudgetUtilizationChart } from './BudgetUtilizationChart';
 import {
   Wallet,
   DollarSign,
   ClipboardCheck,
   CreditCard,
   FileText,
-  BarChart2,
-} from 'lucide-react'
+  ShoppingCart,
+} from 'lucide-react';
+
+import { useEffect, useState } from 'react';
 
 export const Dashboard = () => {
-  const [pendingInspectionCount, setPendingInspectionCount] = useState(0)
-  const [loadingPending, setLoadingPending] = useState(false)
-  const [pendingError, setPendingError] = useState(null)
-  const navigate = useNavigate();
-
-  const handleCardClick = (destination) => {
-    if (destination === 'inspection-estimates') {
-      navigate('/inspection-management');
-    } else {
-      // You can add more navigation logic for other cards here
-      console.log(`Navigating to ${destination}`);
-    }
-  }
-
-  const apiBase = process.env.REACT_APP_API_BASE || ''
-
-  const loadPending = useCallback(async () => {
-    setLoadingPending(true)
-    setPendingError(null)
-    try {
-      const url = `${apiBase}/api/inspection-estimation/pending`
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } })
-      const text = await res.text()
-      let data
-      try {
-        data = text ? JSON.parse(text) : []
-      } catch (parseErr) {
-        console.warn('Non-JSON response for pending inspections', { text })
-        if (text && text.includes('<!DOCTYPE html')) {
-          throw new Error('Proxy/URL issue: received HTML instead of JSON')
-        }
-        throw new Error('Invalid JSON from server')
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      if (Array.isArray(data)) setPendingInspectionCount(data.length)
-      else if (data && Array.isArray(data.results)) setPendingInspectionCount(data.results.length)
-      else if (data && Array.isArray(data.items)) setPendingInspectionCount(data.items.length)
-      else setPendingInspectionCount(0)
-    } catch (e) {
-      console.error('Failed to load pending inspections', e)
-      setPendingInspectionCount(0)
-      setPendingError(e.message)
-    } finally {
-      setLoadingPending(false)
-    }
-  }, [apiBase])
+  const [pendingCount, setPendingCount] = useState(null);
 
   useEffect(() => {
-    loadPending()
-  }, [loadPending])
+    fetch('/api/inspection-estimation/pending')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPendingCount(data.length);
+        } else {
+          setPendingCount(0);
+        }
+      })
+      .catch(() => setPendingCount(0));
+  }, []);
+
+  const handleCardClick = (destination) => {
+    console.log(`Navigating to ${destination}`);
+  };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto bg-[#FFF8E8]">
       <Header title="Dashboard" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        <SummaryCard
-          title="Total Balance"
-          value="632,000"
-          icon={
-            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
-              <Wallet size={20} />
-            </div>
-          }
-          change="+1.29%"
-          changeType="positive"
-          onClick={() => handleCardClick('balance')}
-        />
-
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mt-6">
         <SummaryCard
           title="Total Income"
           value="632,000"
           icon={
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+            <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636]">
               <DollarSign size={20} />
             </div>
           }
@@ -96,10 +54,23 @@ export const Dashboard = () => {
         />
 
         <SummaryCard
-          title="Inspection Estimate Generations Pendings"
-          count={loadingPending ? '…' : pendingError ? 'ERR' : pendingInspectionCount}
+          title="Total Balance"
+          value="845,000"
           icon={
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500">
+            <div className="w-10 h-10 rounded-full bg-[#AAB396] flex items-center justify-center text-white">
+              <Wallet size={20} />
+            </div>
+          }
+          change="+2.36%"
+          changeType="positive"
+          onClick={() => handleCardClick('balance')}
+        />
+
+        <SummaryCard
+          title="Pending Inspection Estimates"
+          count={pendingCount === null ? '...' : pendingCount}
+          icon={
+            <div className="w-10 h-10 rounded-full bg-[#674636] flex items-center justify-center text-white">
               <ClipboardCheck size={20} />
             </div>
           }
@@ -107,10 +78,10 @@ export const Dashboard = () => {
         />
 
         <SummaryCard
-          title="Payment Approval Pendings"
-          count={3}
+          title="Pending Payment Approvals"
+          count={5}
           icon={
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500">
+            <div className="w-10 h-10 rounded-full bg-[#AAB396] flex items-center justify-center text-white">
               <CreditCard size={20} />
             </div>
           }
@@ -118,29 +89,66 @@ export const Dashboard = () => {
         />
 
         <SummaryCard
-          title="Quotation Generations Pendings"
-          count={3}
+          title="Pending Purchase Requests"
+          count={2}
           icon={
-            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500">
+            <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636]">
+              <ShoppingCart size={20} />
+            </div>
+          }
+          onClick={() => handleCardClick('purchase-requests')}
+        />
+
+        <SummaryCard
+          title="Pending Quotations"
+          count={4}
+          icon={
+            <div className="w-10 h-10 rounded-full bg-[#674636] flex items-center justify-center text-white">
               <FileText size={20} />
             </div>
           }
           onClick={() => handleCardClick('quotations')}
         />
-
-        <SummaryCard
-          title="Extra"
-          count={5}
-          icon={
-            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500">
-              <BarChart2 size={20} />
-            </div>
-          }
-          onClick={() => handleCardClick('extra')}
-        />
       </div>
 
-      <IncomeChart />
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div className="lg:col-span-2">
+          <IncomeChart />
+        </div>
+        {/* <div className="lg:col-span-1">
+          <BudgetUtilizationChart />
+        </div> */}
+      </div>
+
+      {/* Recent Activity */}
+      <div className="mt-6">
+        <div className="bg-[#F7EED3] rounded-md p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-4 text-[#674636]">Recent Activity</h2>
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <div
+                key={item}
+                className="flex items-start p-3 border-b border-[#AAB396]"
+              >
+                <div className="w-8 h-8 rounded-full bg-[#674636] flex items-center justify-center text-white mr-3">
+                  {item % 2 === 0 ? <CreditCard size={16} /> : <FileText size={16} />}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-[#674636]">
+                    {item % 2 === 0
+                      ? `Payment of $${(Math.random() * 10000).toFixed(2)} approved`
+                      : `New quotation #QT-2023-${100 + item} generated`}
+                  </p>
+                  <p className="text-xs text-[#AAB396] mt-1">
+                    {`${Math.floor(Math.random() * 24)} hours ago`}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};

@@ -1,255 +1,269 @@
-
-import React, { useEffect, useState } from 'react';
-import { Eye } from 'lucide-react';
-import { ViewHistoryModal } from './ViewHistoryModal';
+import React, { useState, useEffect } from 'react';
+import { ClipboardCheck, Filter, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { GenerateEstimateModal } from './GenerateEstimateModal';
 
 export const PendingInspections = () => {
-  const [pending, setPending] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [showHistory, setShowHistory] = useState(false);
-  const [historyData, setHistoryData] = useState([]);
-  const [historyType, setHistoryType] = useState('estimate');
+  // State for estimate history
+  const [estimateHistory, setEstimateHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [errorHistory, setErrorHistory] = useState(null);
 
+  // Fetch estimate history on mount
   useEffect(() => {
+    setLoadingHistory(true);
+    fetch('/api/inspection-estimation/all-estimation-details')
+      .then((res) => res.json())
+      .then((data) => {
+        setEstimateHistory(Array.isArray(data) ? data : []);
+        setLoadingHistory(false);
+      })
+      .catch((err) => {
+        setErrorHistory('Failed to load estimate history');
+        setLoadingHistory(false);
+      });
+  }, []);
+  const [pendingInspections, setPendingInspections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedInspection, setSelectedInspection] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('requestedDate');
+  const [sortDirection, setSortDirection] = useState('desc');
+
+  // Fetch pending inspections (can be called on demand)
+  const fetchPendingInspections = () => {
     setLoading(true);
-    setError(null);
     fetch('/api/inspection-estimation/pending')
-      .then(res => res.ok ? res.json() : Promise.reject(res.statusText))
-      .then(data => setPending(Array.isArray(data) ? data : []))
-      .catch(e => setError('Failed to load pending inspections'))
-      .finally(() => setLoading(false));
+      .then((res) => res.json())
+      .then((data) => {
+        setPendingInspections(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError('Failed to load pending inspections');
+        setLoading(false);
+      });
+  };
+  useEffect(() => {
+    fetchPendingInspections();
   }, []);
 
-  const handleViewEstimateHistory = async (inspectionRequestId) => {
-    setLoading(true);
-    setError(null);
-    setHistoryType('estimate');
-    try {
-      const res = await fetch(`/api/inspection-estimation/${inspectionRequestId}`);
-      if (!res.ok) throw new Error('Failed to fetch details');
-      const details = await res.json();
-      // For demo, treat the single estimate as history; extend as needed
-      const est = details.estimation;
-      setHistoryData(est ? [{
-        distance: est.distanceKm,
-        estimatedCost: est.estimatedCost,
-        generatedBy: est.createdBy || '-',
-        date: est.createdAt ? new Date(est.createdAt).toLocaleDateString() : '-'
-      }] : []);
-      setShowHistory(true);
-    } catch (e) {
-      setError('Failed to load estimate history');
-    } finally {
-      setLoading(false);
+  // Fetch estimate history (can be called on demand)
+  const fetchEstimateHistory = () => {
+    setLoadingHistory(true);
+    fetch('/api/inspection-estimation/all-estimation-details')
+      .then((res) => res.json())
+      .then((data) => {
+        setEstimateHistory(Array.isArray(data) ? data : []);
+        setLoadingHistory(false);
+      })
+      .catch((err) => {
+        setErrorHistory('Failed to load estimate history');
+        setLoadingHistory(false);
+      });
+  };
+  // Generic callback to refresh all data after modal actions
+  const handleDataChanged = () => {
+    fetchPendingInspections();
+    fetchEstimateHistory();
+  };
+
+  const handleGenerate = (inspection) => {
+    setSelectedInspection(inspection);
+    setShowGenerateModal(true);
+  };
+
+
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
 
+  const filteredInspections = pendingInspections
+    .filter(
+      (inspection) =>
+        (inspection.id || inspection._id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (inspection.clientName || inspection.client_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (inspection.siteLocation || inspection.site_location || '').toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if ((a[sortField] || '') < (b[sortField] || '')) return sortDirection === 'asc' ? -1 : 1;
+      if ((a[sortField] || '') > (b[sortField] || '')) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredInspections.length / itemsPerPage);
+  const paginatedInspections = filteredInspections.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Pending Inspections</h2>
-      {loading && <div>Loading…</div>}
-      {error && <div className="text-red-500 mb-2">{error}</div>}
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Site Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {pending.length === 0 && !loading ? (
+      {loading && (
+        <div className="text-center text-gray-500 py-8">Loading pending inspections...</div>
+      )}
+      {error && (
+        <div className="text-center text-red-500 py-8">{error}</div>
+      )}
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-3">
+            <ClipboardCheck size={20} />
+          </div>
+          <h2 className="text-xl font-semibold">Pending Inspections</h2>
+        </div>
+        <div className="flex space-x-2">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search inspections..."
+              className="pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <Filter size={16} className="text-gray-400" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      {!loading && !error && (
+        <div className="bg-white shadow-sm rounded-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                    No pending inspections
-                  </td>
+                  {/* Only show Inspection ID and Client Name as sortable columns */}
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('id')}
+                  >
+                    <div className="flex items-center capitalize">
+                      Inspection ID
+                      <ArrowUpDown size={14} className="ml-1" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client ID</th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('clientName')}
+                  >
+                    <div className="flex items-center capitalize">
+                      Client Name
+                      <ArrowUpDown size={14} className="ml-1" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Site Location</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Property Type</th>
+                  {/* Removed Floors column */}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
-              ) : (
-                pending.map((item) => (
-                  <tr key={item.inspectionRequestId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.clientName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.phone}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.siteLocation}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.propertyType}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.status}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {paginatedInspections.map((inspection) => (
+                  <tr key={inspection.id || inspection._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{inspection.inspectionRequestId || inspection.id || inspection._id}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{inspection.clientId || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{inspection.clientName || inspection.client_name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{inspection.email}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{inspection.phone}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{inspection.siteLocation || inspection.site_location}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{inspection.propertyType || inspection.property_type}</td>
+                    {/* Removed Floors column */}
+                    <td className="px-6 py-4">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        {inspection.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm font-medium">
                       <button
-                        onClick={() => handleViewEstimateHistory(item.inspectionRequestId)}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        onClick={() => handleGenerate(inspection)}
+                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md mr-2"
                       >
-                        <Eye size={16} className="inline mr-1" /> Estimate History
+                        Generate
                       </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ))}
+                {paginatedInspections.length === 0 && (
+                  <tr>
+                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
+                      No inspections found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-      {showHistory && (
-        <ViewHistoryModal
-          historyData={historyData}
-          type={historyType}
-          onClose={() => setShowHistory(false)}
+      )}
+
+      {/* Pagination */}
+      {filteredInspections.length > 0 && (
+        <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+          <div className="text-sm text-gray-500">
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+            {Math.min(currentPage * itemsPerPage, filteredInspections.length)} of{' '}
+            {filteredInspections.length} entries
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-md ${
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-8 h-8 rounded-md ${
+                  currentPage === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-md ${
+                currentPage === totalPages
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+
+      {/* Modals */}
+      {showGenerateModal && (
+        <GenerateEstimateModal
+          inspection={selectedInspection}
+          onClose={() => setShowGenerateModal(false)}
+          onDataChanged={handleDataChanged}
         />
       )}
     </div>
   );
 };
-
-export const PaymentActionModal = ({ payment, actionType, onClose }) => {
-  const [rejectionReason, setRejectionReason] = useState('')
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // In a real app, you would update the payment status in your backend
-    console.log('Updating payment status:', {
-      paymentId: payment.id,
-      action: actionType,
-      ...(actionType === 'reject' && {
-        reason: rejectionReason,
-      }),
-    })
-    onClose()
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-lg font-medium">
-            {actionType === 'approve' ? 'Approve Payment' : 'Reject Payment'}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-2">
-                Client Details
-              </h4>
-              <div className="bg-gray-50 p-4 rounded-md">
-                <p className="text-sm mb-1">
-                  <span className="font-medium">Name:</span> {payment.clientName}
-                </p>
-                <p className="text-sm mb-1">
-                  <span className="font-medium">Email:</span> {payment.clientEmail}
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Phone:</span> {payment.clientPhone}
-                </p>
-              </div>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-2">
-                Payment Details
-              </h4>
-              <div className="bg-gray-50 p-4 rounded-md">
-                <p className="text-sm mb-1">
-                  <span className="font-medium">Amount:</span> ${payment.amountPaid}
-                </p>
-                <p className="text-sm mb-1">
-                  <span className="font-medium">Submission Date:</span> {payment.submittedDate}
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Receipt:</span>{' '}
-                  <a
-                    href={payment.paymentReceipt}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 hover:text-indigo-900"
-                  >
-                    View Receipt
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            {actionType === 'approve' ? (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md flex items-start">
-                <Check size={20} className="text-green-500 mr-3 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-green-800">
-                    Confirm Payment Approval
-                  </p>
-                  <p className="text-sm text-green-700 mt-1">
-                    You are about to approve a payment of ${payment.amountPaid}{' '}
-                    for inspection {payment.id}. This action cannot be undone.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md flex items-start">
-                  <AlertTriangle size={20} className="text-red-500 mr-3 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-red-800">
-                      Confirm Payment Rejection
-                    </p>
-                    <p className="text-sm text-red-700 mt-1">
-                      You are about to reject a payment of ${payment.amountPaid}{' '}
-                      for inspection {payment.id}. This action cannot be undone.
-                    </p>
-                  </div>
-                </div>
-                <div className="mb-6">
-                  <label
-                    htmlFor="rejectionReason"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Rejection Reason
-                  </label>
-                  <textarea
-                    id="rejectionReason"
-                    value={rejectionReason}
-                    onChange={(e) => setRejectionReason(e.target.value)}
-                    rows={3}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    required
-                    placeholder="Please provide a reason for rejecting this payment"
-                  ></textarea>
-                </div>
-              </>
-            )}
-
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className={`px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 ${
-                  actionType === 'approve'
-                    ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                    : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-                }`}
-              >
-                {actionType === 'approve' ? 'Approve Payment' : 'Reject Payment'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  )
-}

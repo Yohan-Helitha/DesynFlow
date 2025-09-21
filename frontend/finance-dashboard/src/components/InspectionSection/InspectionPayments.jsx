@@ -1,319 +1,185 @@
-import React, { useState } from 'react'
-import { CreditCard, Check, X, Eye } from 'lucide-react'
-import { PaymentActionModal } from './PaymentActionModal'
-import { ViewHistoryModal } from './ViewHistoryModal'
 
-// Mock data for inspection payments
-const inspectionPayments = [
-  {
-    id: 'INS-001',
-    clientName: 'John Smith',
-    amountPaid: 1500,
-    paymentReceipt: 'https://example.com/receipt/001.pdf',
-    status: 'PendingApproval',
-    submittedDate: '2023-06-16',
-    clientEmail: 'john@example.com',
-    clientPhone: '555-123-4567',
-  },
-  {
-    id: 'INS-002',
-    clientName: 'Sarah Johnson',
-    amountPaid: 1200,
-    paymentReceipt: 'https://example.com/receipt/002.pdf',
-    status: 'PendingApproval',
-    submittedDate: '2023-06-19',
-    clientEmail: 'sarah@example.com',
-    clientPhone: '555-987-6543',
-  },
-  {
-    id: 'INS-004',
-    clientName: 'David Wilson',
-    amountPaid: 2000,
-    paymentReceipt: 'https://example.com/receipt/004.pdf',
-    status: 'Approved',
-    submittedDate: '2023-06-15',
-    clientEmail: 'david@example.com',
-    clientPhone: '555-456-7890',
-  },
-  {
-    id: 'INS-005',
-    clientName: 'Emily Davis',
-    amountPaid: 1800,
-    paymentReceipt: 'https://example.com/receipt/005.pdf',
-    status: 'Rejected',
-    submittedDate: '2023-06-14',
-    clientEmail: 'emily@example.com',
-    clientPhone: '555-789-0123',
-  },
-]
-
-// Mock data for payment history
-const paymentHistory = [
-  {
-    id: 'INS-001',
-    history: [
-      {
-        amount: 1500,
-        receiptLink: 'https://example.com/receipt/001.pdf',
-        status: 'PendingApproval',
-        actionBy: '-',
-        date: '2023-06-16',
-      },
-    ],
-  },
-  {
-    id: 'INS-004',
-    history: [
-      {
-        amount: 2000,
-        receiptLink: 'https://example.com/receipt/004.pdf',
-        status: 'Approved',
-        actionBy: 'Ali Raza',
-        date: '2023-06-15',
-      },
-    ],
-  },
-  {
-    id: 'INS-005',
-    history: [
-      {
-        amount: 1800,
-        receiptLink: 'https://example.com/receipt/005.pdf',
-        status: 'Rejected',
-        actionBy: 'Ali Raza',
-        date: '2023-06-14',
-        reason: 'Invalid receipt',
-      },
-    ],
-  },
-]
+import React, { useState, useEffect } from 'react';
+import { CreditCard, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PaymentActionModal } from './PaymentActionModal';
 
 export const InspectionPayments = () => {
-  const [showActionModal, setShowActionModal] = useState(false)
-  const [showHistoryModal, setShowHistoryModal] = useState(false)
-  const [selectedPayment, setSelectedPayment] = useState(null)
-  const [actionType, setActionType] = useState(null)
-  const [selectedHistory, setSelectedHistory] = useState([])
+  const [pendingPayments, setPendingPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [sortField, setSortField] = useState('inspectionRequestId');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
-  const handleAction = (payment, action) => {
-    setSelectedPayment(payment)
-    setActionType(action)
-    setShowActionModal(true)
-  }
+  const fetchPendingPayments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/inspection-estimation/payment-pending');
+      if (!res.ok) throw new Error('Failed to fetch pending payments');
+      const data = await res.json();
+      setPendingPayments(data);
+    } catch (err) {
+      setError(err.message || 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchPendingPayments();
+  }, []);
 
-  const handleViewHistory = (paymentId) => {
-    const history = paymentHistory.find((h) => h.id === paymentId)?.history || []
-    setSelectedHistory(history)
-    setShowHistoryModal(true)
-  }
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
 
-  const pendingPayments = inspectionPayments.filter((p) => p.status === 'PendingApproval')
-  const approvedPayments = inspectionPayments.filter((p) => p.status === 'Approved')
-  const rejectedPayments = inspectionPayments.filter((p) => p.status === 'Rejected')
+  const sortedPayments = [...pendingPayments].sort((a, b) => {
+    if (!a[sortField] || !b[sortField]) return 0;
+    if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
+    if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedPayments.length / itemsPerPage);
+  const paginatedPayments = sortedPayments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleAction = (payment) => {
+    setSelectedPayment(payment);
+    setShowActionModal(true);
+  };
+
+  const handleActionModalClose = (shouldRefresh = false) => {
+    setShowActionModal(false);
+    setSelectedPayment(null);
+    if (shouldRefresh) fetchPendingPayments();
+  };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mr-3">
-            <CreditCard size={20} />
-          </div>
-          <h2 className="text-xl font-semibold">Inspection Payments</h2>
+      {/* Header */}
+      <div className="flex items-center mb-6">
+        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 mr-3">
+          <CreditCard size={20} />
         </div>
+        <h2 className="text-xl font-semibold">Pending Payments</h2>
       </div>
 
-      {/* Pending Approval Payments */}
-      <h3 className="text-lg font-medium mb-4">Pending Approval</h3>
-      <div className="bg-white shadow-sm rounded-md overflow-hidden mb-8">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inspection ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Paid</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Receipt</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted Date</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {pendingPayments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{payment.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.clientName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.amountPaid}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <a href={payment.paymentReceipt} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-900">
-                      View Receipt
-                    </a>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                      Pending Approval
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.submittedDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleAction(payment, 'approve')}
-                      className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md mr-2"
-                    >
-                      <Check size={16} className="inline mr-1" /> Approve
-                    </button>
-                    <button
-                      onClick={() => handleAction(payment, 'reject')}
-                      className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md mr-2"
-                    >
-                      <X size={16} className="inline mr-1" /> Reject
-                    </button>
-                    <button
-                      onClick={() => handleViewHistory(payment.id)}
-                      className="text-gray-600 hover:text-gray-900"
-                    >
-                      <Eye size={16} className="inline" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {pendingPayments.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                    No pending payments to approve
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Approved Payments */}
-      <h3 className="text-lg font-medium mb-4">Approved Payments</h3>
-      <div className="bg-white shadow-sm rounded-md overflow-hidden mb-8">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inspection ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Paid</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Receipt</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted Date</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {approvedPayments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{payment.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.clientName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.amountPaid}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <a href={payment.paymentReceipt} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-900">
-                      View Receipt
-                    </a>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      Approved
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.submittedDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleViewHistory(payment.id)}
-                      className="text-gray-600 hover:text-gray-900"
-                    >
-                      <Eye size={16} className="inline" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {approvedPayments.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                    No approved payments
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Rejected Payments */}
-      <h3 className="text-lg font-medium mb-4">Rejected Payments</h3>
+      {/* Table */}
       <div className="bg-white shadow-sm rounded-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inspection ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Paid</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Receipt</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted Date</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inspection Request ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Site Location</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Property Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estimated Cost</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Receipt</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {rejectedPayments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{payment.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.clientName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.amountPaid}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <a href={payment.paymentReceipt} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-900">
-                      View Receipt
-                    </a>
+              {paginatedPayments.map((payment) => (
+                <tr key={payment._id || payment.inspectionRequestId} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{payment.inspectionRequestId}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{payment.clientId || (payment.client && payment.client._id)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{payment.clientName || (payment.client && payment.client.name)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{payment.email}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{payment.phone}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{payment.siteLocation}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{payment.propertyType}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{payment.estimation && payment.estimation.estimatedCost !== undefined ? payment.estimation.estimatedCost : '-'}</td>
+                  <td className="px-6 py-4 text-sm text-indigo-600 underline cursor-pointer">
+                    {payment.paymentReceiptUrl ? (
+                      <a href={payment.paymentReceiptUrl} target="_blank" rel="noopener noreferrer">
+                        View Receipt
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">No Receipt</span>
+                    )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                      Rejected
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.submittedDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-right text-sm font-medium">
                     <button
-                      onClick={() => handleViewHistory(payment.id)}
-                      className="text-gray-600 hover:text-gray-900"
+                      onClick={() => handleAction(payment)}
+                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md"
                     >
-                      <Eye size={16} className="inline" />
+                      Take Action
                     </button>
                   </td>
                 </tr>
               ))}
-              {rejectedPayments.length === 0 && (
+              {paginatedPayments.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                    No rejected payments
+                  <td colSpan={11} className="px-6 py-4 text-center text-gray-500">
+                    No pending payments found
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {sortedPayments.length > 0 && (
+          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+            <div className="text-sm text-gray-500">
+              Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+              {Math.min(currentPage * itemsPerPage, sortedPayments.length)} of {sortedPayments.length} entries
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-md ${
+                  currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-md ${
+                    currentPage === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-md ${
+                  currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Modals */}
+      {/* Action Modal */}
       {showActionModal && (
-        <PaymentActionModal
-          payment={selectedPayment}
-          actionType={actionType}
-          onClose={() => setShowActionModal(false)}
-        />
-      )}
-      {showHistoryModal && (
-        <ViewHistoryModal
-          historyData={selectedHistory}
-          type="payment"
-          onClose={() => setShowHistoryModal(false)}
-        />
+        <PaymentActionModal payment={selectedPayment} onClose={handleActionModalClose} />
       )}
     </div>
-  )
-}
+  );
+};

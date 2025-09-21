@@ -1,5 +1,4 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import React from 'react';
 import {
   LayoutDashboard,
   ClipboardCheck,
@@ -10,72 +9,42 @@ import {
   DollarSign,
   Shield,
   ChevronDown,
-} from 'lucide-react'
+  LogOut,
+  Settings,
+} from 'lucide-react';
 
-export const Sidebar = ({ onNavigate }) => {
-  const navigate = useNavigate();
+export const Sidebar = ({ onNavigate, currentSection }) => {
   const navItems = [
-    {
-      name: 'Dashboard',
-      icon: <LayoutDashboard size={18} />,
-      active: true,
-      section: 'dashboard',
-    },
-    {
-      name: 'Inspection Management',
-      icon: <ClipboardCheck size={18} />,
-      section: 'inspections',
-    },
-    {
-      name: 'Estimations',
-      icon: <Calculator size={18} />,
-    },
-    {
-      name: 'Quotations',
-      icon: <FileText size={18} />,
-    },
-    {
-      name: 'Payments',
-      icon: <CreditCard size={18} />,
-    },
-    {
-      name: 'Purchase Orders',
-      icon: <ShoppingCart size={18} />,
-    },
-    {
-      name: 'Expenses',
-      icon: <DollarSign size={18} />,
-    },
-    {
-      name: 'Warranty',
-      icon: <Shield size={18} />,
-    },
-  ]
+    { name: 'Dashboard', icon: <LayoutDashboard size={18} />, section: 'dashboard' },
+    { name: 'Inspection Management', icon: <ClipboardCheck size={18} />, section: 'inspections' },
+    { name: 'Estimations', icon: <Calculator size={18} />, section: 'estimations' },
+    { name: 'Quotations', icon: <FileText size={18} />, section: 'quotations' },
+    { name: 'Payments', icon: <CreditCard size={18} />, section: 'payments' },
+    { name: 'Purchase Orders', icon: <ShoppingCart size={18} />, section: 'purchaseOrders' },
+    { name: 'Expenses', icon: <DollarSign size={18} />, section: 'expenses' },
+    { name: 'Warranty', icon: <Shield size={18} />, section: 'warranty' },
+  ];
 
   const handleNavItemClick = (section) => {
-    // Use react-router navigation for main sections
-    if (section === 'dashboard') {
-      navigate('/');
-    } else if (section === 'inspections') {
-      navigate('/inspection-management');
-    } else if (onNavigate) {
-      onNavigate(section);
-    }
-  }
+    if (onNavigate) onNavigate(section);
+  };
 
   return (
-    <div className="w-60 bg-indigo-600 text-white flex flex-col h-full">
-      <div className="p-6 text-2xl font-bold">DesynFlow</div>
-      <nav className="flex-1">
+    <div className="w-60 bg-[#674636] text-[#FFF8E8] flex flex-col h-full">
+      {/* Logo / Title */}
+      <div className="p-6 text-2xl font-bold border-b border-[#AAB396]">DesynFlow</div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto">
         <ul>
           {navItems.map((item, index) => (
             <li key={index}>
               <a
                 href="#"
-                className={`flex items-center px-6 py-3 hover:bg-indigo-700 transition-colors ${
-                  item.active ? 'bg-indigo-700' : ''
+                className={`flex items-center px-6 py-3 hover:bg-[#AAB396] hover:text-[#674636] transition-colors ${
+                  currentSection === item.section ? 'bg-[#AAB396] text-[#674636]' : ''
                 }`}
-                onClick={() => handleNavItemClick(item.section || '')}
+                onClick={() => handleNavItemClick(item.section)}
               >
                 <span className="mr-3">{item.icon}</span>
                 {item.name}
@@ -84,16 +53,30 @@ export const Sidebar = ({ onNavigate }) => {
           ))}
         </ul>
       </nav>
-      <div className="p-4 border-t border-indigo-500 flex items-center">
-        <div className="w-10 h-10 rounded-full bg-indigo-400 flex items-center justify-center text-indigo-800 font-bold mr-3">
+
+      {/* Settings & Logout */}
+      <div className="p-4 border-t border-[#AAB396]">
+        <div className="flex items-center mb-4 cursor-pointer hover:bg-[#AAB396] hover:text-[#674636] p-2 rounded-md">
+          <Settings size={18} className="mr-3 text-[#F7EED3]" />
+          <span className="text-sm">Settings</span>
+        </div>
+        <div className="flex items-center cursor-pointer hover:bg-[#AAB396] hover:text-[#674636] p-2 rounded-md">
+          <LogOut size={18} className="mr-3 text-[#F7EED3]" />
+          <span className="text-sm">Logout</span>
+        </div>
+      </div>
+
+      {/* User Profile */}
+      <div className="p-4 border-t border-[#AAB396] flex items-center">
+        <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] font-bold mr-3">
           AR
         </div>
         <div>
           <div className="font-medium">Ali Raza</div>
-          <div className="text-xs text-indigo-200">Web Developer</div>
+          <div className="text-xs text-[#F7EED3]">Finance Manager</div>
         </div>
-        <ChevronDown size={16} className="ml-auto" />
+        <ChevronDown size={16} className="ml-auto text-[#F7EED3]" />
       </div>
     </div>
-  )
-}
+  );
+};

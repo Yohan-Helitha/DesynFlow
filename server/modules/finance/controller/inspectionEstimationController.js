@@ -1,16 +1,17 @@
-// View inspection requests with status 'PaymentPending'
+import * as InspectionEstimationService from '../service/inspectionEstimationService.js';
+
+//View inspection requests with status 'PaymentPending'
 export async function getPaymentPendingRequests(req, res) {
   try {
-    const requests = await InspectionEstimationService.getRequestsByStatus('PaymentPending');
-    res.json(requests);
+    const results = await InspectionEstimationService.getPaymentPendingWithEstimation();
+    res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-import * as InspectionEstimationService from '../service/inspectionEstimationService.js';
 
-// 1. View inspection requests status 'Pending'
+//View inspection requests status 'Pending'
 export async function getPendingRequests(req, res) {
   try {
     const requests = await InspectionEstimationService.getRequestsByStatus('Pending');
@@ -20,30 +21,30 @@ export async function getPendingRequests(req, res) {
   }
 }
 
-// 2. View inspection request details by inspectionRequestId (from both tables)
+//View inspection request details by inspectionRequestId (from both tables)
 export async function getRequestDetails(req, res) {
   try {
-    const { inspectionRequestId } = req.params;
-    const details = await InspectionEstimationService.getRequestDetails(inspectionRequestId);
+    // Ignore req.params.inspectionRequestId, return all estimations with related request data
+    const details = await InspectionEstimationService.getRequestDetails();
     res.json(details);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-// 3. Generate estimate based on distance, update status to 'PaymentPending'
+// Generate estimate based on distance and estimatedCost, update status to 'PaymentPending'
 export async function generateEstimate(req, res) {
   try {
     const { inspectionRequestId } = req.params;
-    const { distance } = req.body;
-    const result = await InspectionEstimationService.generateEstimateAndUpdateStatus(inspectionRequestId, distance);
+    const { distance, estimatedCost } = req.body;
+    const result = await InspectionEstimationService.generateEstimateAndUpdateStatus(inspectionRequestId, distance, estimatedCost);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-// 4. Approve/reject payment, update status accordingly
+//Approve/reject payment, update status accordingly
 export async function verifyPayment(req, res) {
   try {
     const { inspectionRequestId } = req.params;
@@ -67,8 +68,9 @@ export async function getByPaymentStatus(req, res) {
         return res.status(400).json({ error: 'Invalid status' });
       }
     }
-    const requests = await InspectionEstimationService.getRequestsByStatuses(statuses);
-    res.json(requests);
+    // Fetch from inspection_request, then for each inspectionRequestId fetch estimation
+    const results = await InspectionEstimationService.getRequestsAndEstimationsByStatuses(statuses);
+    res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

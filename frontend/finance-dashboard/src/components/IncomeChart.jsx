@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -7,8 +7,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from 'recharts'
-import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+} from 'recharts';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 
 const data = [
   { name: 'Jan', income: 40000, outcome: 30000 },
@@ -19,7 +19,7 @@ const data = [
   { name: 'Jun', income: 25000, outcome: 32000 },
   { name: 'Jul', income: 22000, outcome: 30000 },
   { name: 'Aug', income: 24000, outcome: 32000 },
-]
+];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -28,19 +28,19 @@ const CustomTooltip = ({ active, payload, label }) => {
         <p className="font-medium">{`${label} 2020`}</p>
         <p className="text-sm">${payload[0].value?.toLocaleString()}</p>
       </div>
-    )
+    );
   }
-  return null
-}
+  return null;
+};
 
 export const IncomeChart = () => {
-  const [year, setYear] = useState('2020')
+  const [year, setYear] = useState('2020');
 
   return (
     <div className="bg-white rounded-md p-6 shadow-sm mt-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="text-xl font-semibold">Analytics</div>
+
         <div className="flex items-center">
           <div className="flex items-center space-x-4 mr-4">
             <div className="flex items-center">
@@ -52,6 +52,7 @@ export const IncomeChart = () => {
               <span className="text-sm">Outcome</span>
             </div>
           </div>
+
           <div className="relative">
             <select
               className="appearance-none bg-gray-50 border border-gray-200 rounded px-3 py-1.5 pr-8 text-sm"
@@ -69,25 +70,12 @@ export const IncomeChart = () => {
         </div>
       </div>
 
-      {/* Chart */}
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={data}
-            margin={{
-              top: 20,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
+          <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="name" axisLine={false} tickLine={false} />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(value) => `${value / 1000}k`}
-            />
+            <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `${value / 1000}k`} />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="income" fill="#6366F1" radius={[4, 4, 0, 0]} />
             <Bar dataKey="outcome" fill="#22D3EE" radius={[4, 4, 0, 0]} />
@@ -95,7 +83,6 @@ export const IncomeChart = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
         <button className="p-1 rounded-full border border-gray-300">
           <ChevronLeft size={16} />
@@ -108,5 +95,5 @@ export const IncomeChart = () => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};

@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 export const SummaryCard = ({
   title,
@@ -26,6 +26,7 @@ export const SummaryCard = ({
           </span>
         )}
       </div>
+
       <div className="text-sm text-gray-500 mb-1">{title}</div>
       {value ? (
         <div className="text-2xl font-bold">${value}</div>
@@ -33,5 +34,5 @@ export const SummaryCard = ({
         <div className="text-2xl font-bold">{count}</div>
       )}
     </div>
-  )
-}
+  );
+};
