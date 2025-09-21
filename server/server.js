@@ -1,11 +1,11 @@
 
-const express = require("express");
-const dotenv = require("dotenv");
-const { connectDB, disconnectedDB } = require("./config/db.js");
+import express from "express";
+import dotenv from "dotenv";
+import { connectDB, disconnectedDB } from "./config/db.js";
 
-const { logger } = require("./config/logger.js");
-const { app } = require("./app.js");
-const { env } = require("./config/env.js");
+import { logger } from "./config/logger.js";
+import { app } from "./app.js";
+import { env } from "./config/env.js";
 
 dotenv.config();
 

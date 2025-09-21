@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-import sendVerificationEmail from "../utils/emailService.js";
+import { sendEmail } from "../../../utils/emailService.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.NODE_ENV === "production" ? "7d" : "24h";

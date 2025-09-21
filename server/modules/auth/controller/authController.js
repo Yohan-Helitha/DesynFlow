@@ -60,7 +60,7 @@ import User from "../model/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { sendEmail } from "../../utils/emailService.js";
+import { sendEmail } from "../../../utils/emailService.js";
 
 export const registerUser = async (req, res) => {
 

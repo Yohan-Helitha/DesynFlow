@@ -1,5 +1,5 @@
-import mongoose from"mongoose";
-import bcrypt from"bcrypt";
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
 
@@ -38,11 +38,4 @@ const userSchema = new mongoose.Schema({
 
     };
 
-   const express = require("express");
-    const { registerUser, loginUser } = require("../controllers/authController");
-    const router = express.Router();
-
-    router.post("/register", registerUser);
-    router.post("/login", loginUser);
-
-module.exports = router;
+export default mongoose.model("User", userSchema);

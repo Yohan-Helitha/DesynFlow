@@ -34,4 +34,4 @@ const inspectionRequestSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('InspectionRequest', inspectionRequestSchema);
+export default mongoose.model('InspectionRequest', inspectionRequestSchema);

@@ -27,6 +27,8 @@ import userRouter from "./modules/auth/routes/userRouter.js";
 import paymentReceiptRoutes from "./modules/auth/routes/paymentReceiptRoutes.js";
 import inspectorLocationRoutes from "./modules/auth/routes/inspectorLocationRoutes.js";
 import assignmentRoutes from "./modules/auth/routes/assignmentRoutes.js";
+import reportRoutes from "./modules/auth/routes/reportRoutes.js";
+import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
 
 
 app.use("/api/auth", authRouter);
@@ -34,6 +36,8 @@ app.use("/api/user", userRouter);
 app.use("/api/payment-receipt", paymentReceiptRoutes);
 app.use("/api/inspector-location", inspectorLocationRoutes);
 app.use("/api/assignment", assignmentRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/inspection-request", inspectionRequestRoutes);
 
 app.get("/health", (req, res) => {
   res.json({
