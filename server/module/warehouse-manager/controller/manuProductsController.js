@@ -39,9 +39,9 @@ export const addManuProducts = async (req, res) => {
     return res.status(201).json({ message: "Product added", manu_product });
   } catch (err) {
     console.error(err);
-    // if (err.status === 400 && err.errors) {
-    //   return res.status(400).json({ message: "Validation failed", errors: err.errors });
-    // }
+     if (err.status === 400 && err.errors) {
+       return res.status(400).json({ errors: err.errors });
+     }
     return res.status(500).json({ message: "Unable to insert data" });
   }
 };
@@ -58,9 +58,9 @@ export const updateManuProducts = async (req, res) => {
     return res.status(200).json({ manu_product });
   } catch (err) {
     console.error(err);
-    // if (err.status === 400 && err.errors) {
-    //   return res.status(400).json({ message: "Validation failed", errors: err.errors });
-    // }
+     if (err.status === 400 && err.errors) {
+       return res.status(400).json({ errors: err.errors });
+     }
     return res.status(500).json({ message: "Server error" });
   }
 };

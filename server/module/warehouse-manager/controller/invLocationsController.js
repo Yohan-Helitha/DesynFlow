@@ -38,8 +38,10 @@ export const addInvLocations = async (req, res) => {
     const inv_locations = await addInvLocationsService(req.body);
     return res.status(201).json({ message: "Inventory Location added", inv_locations });
   } catch (err) {
-    console.error(err);
-    return res.status(err.status || 500).json({ message: err.message || "Unable to insert data" });
+    if (err.status === 400 && err.errors) {
+       return res.status(400).json({ errors: err.errors });
+     }
+    return res.status(500).json({ message: "Unable to insert data" });
   }
 };
 
@@ -47,13 +49,18 @@ export const addInvLocations = async (req, res) => {
 export const updateInvLocations = async (req, res) => {
   try {
     const inv_locations = await updateInvLocationsService(req.params.id, req.body);
+
     if (!inv_locations) {
       return res.status(404).json({ message: "Unable to update Inventory Locations" });
     }
+
     return res.status(200).json({ inv_locations });
   } catch (err) {
     console.error(err);
-    return res.status(err.status || 500).json({ message: err.message || "Server error" });
+     if (err.status === 400 && err.errors) {
+       return res.status(400).json({ errors: err.errors });
+     }
+    return res.status(500).json({ message: "Server error" });
   }
 };
 

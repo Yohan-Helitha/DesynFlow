@@ -1,5 +1,6 @@
 import {
     getAllsReorderRequestsService,
+    getSReorderRequestByIdService,
     addsReorderRequestsService,
     updatesReorderRequestsService,
     deletesReorderRequestsService
@@ -19,6 +20,18 @@ export const getAllsReorderRequests = async (req, res) => {
         console.error(err);
         return res.status(500).json({ message: "Server error" });
     }
+};
+
+// Get  by ID
+export const getSReorderRequestById = async (req, res) => {
+  try {
+    const request = await getSReorderRequestByIdService(req.params.id);
+    if (!request) return res.status(404).json({ message: "Stock Reorder Request not found" });
+    return res.status(200).json(request);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Add new stock reorder request

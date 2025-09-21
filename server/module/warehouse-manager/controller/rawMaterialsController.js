@@ -39,9 +39,9 @@ export const addRawMaterials = async (req, res) => {
         return res.status(201).json({ message: "Material added", raw_materials });
     } catch (err) {
         console.error(err);
-        // if (err.status === 400 && err.errors) {
-        //     return res.status(400).json({ message: "Validation failed", errors: err.errors });
-        // }
+         if (err.status === 400 && err.errors) {
+             return res.status(400).json({ errors: err.errors });
+         }
         return res.status(500).json({ message: "Unable to insert data" });
     }
 };
@@ -50,16 +50,19 @@ export const addRawMaterials = async (req, res) => {
 export const updateRawMaterials = async (req, res) => {
     try {
         const raw_materials = await updateRawMaterialsService(req.params.id, req.body, req.userId);
+        
         if (!raw_materials) {
             return res.status(404).json({ message: "Unable to update Raw Material" });
         }
+
         return res.status(200).json({ raw_materials });
     } catch (err) {
         console.error(err);
-        // if (err.status === 400 && err.errors) {
-        //     return res.status(400).json({ message: "Validation failed", errors: err.errors });
-        // }
+        if (err.status === 400 && err.errors) {
+            return res.status(400).json({ errors: err.errors });
+        }
         return res.status(500).json({ message: "Server error" });
+
     }
 };
 

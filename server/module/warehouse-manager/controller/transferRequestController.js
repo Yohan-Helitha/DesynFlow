@@ -56,7 +56,7 @@ export const addTransferRequest = async (req, res) => {
         const transfer_request = await addTransferRequestService(
             req.body,
             req.warehouseManagerName,
-            req.managerName
+           
         );
         return res.status(201).json({ message: "Transfer Request added", transfer_request });
     } catch (err) {
@@ -68,12 +68,10 @@ export const addTransferRequest = async (req, res) => {
 // Update transfer request
 export const updateTransferRequest = async (req, res) => {
     try {
-        // const errors = await validateTransferRequestUpdate(req.body, checkStock);
-        // if (errors.length > 0) {
-        //     return res.status(400).json({ message: "Validation failed", errors });
-        // }
+        
 
-        const transfer_request = await updateTransferRequestService(req.params.id, req.body);
+        const transfer_request = await updateTransferRequestService(req.params.id, req.body,  req.managerName);
+        
         if (!transfer_request) {
             return res.status(404).json({ message: "Unable to update Transfer Request" });
         }
