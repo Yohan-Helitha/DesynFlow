@@ -44,14 +44,14 @@ const InvLocation = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold mt-6 mb-10">Inventory Locations</h1>
           <button
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
+            className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
             onClick={() => navigate("/add-location")}
           >
             + Add Location
           </button>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto text-xs">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-200">
@@ -64,16 +64,16 @@ const InvLocation = () => {
                 <th className="border border-gray-300 px-4 py-2 sticky left-64 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">
                   Inventory Name
                 </th>
-                <th className="border border-gray-300 px-4 py-2">Address</th>
-                <th className="border border-gray-300 px-4 py-2">Country</th>
-                <th className="border border-gray-300 px-4 py-2">Capacity (m³)</th>
-                <th className="border border-gray-300 px-4 py-2">Contact</th>
-                <th className="border border-gray-300 px-4 py-2">Warehouse Manager</th>
-                <th className="border border-gray-300 px-4 py-2">Created At</th>
+                <th className="border border-gray-300 px-4 py-2 w-56">Address</th>
+                <th className="border border-gray-300 px-4 py-2 w-16">Country</th>
+                <th className="border border-gray-300 px-4 py-2 w-16">Capacity (m³)</th>
+                <th className="border border-gray-300 px-4 py-2 w-16">Contact</th>
+                <th className="border border-gray-300 px-4 py-2 w-32">Warehouse Manager</th>
+                <th className="border border-gray-300 px-4 py-2 w-40">Created At</th>
               </tr>
             </thead>
 
-            <tbody className="text-center align-middle">
+            <tbody className="text-center align-middle text-xs bg-white">
               {inventories.length > 0 ? (
                 inventories.map((inv) => (
                   <tr key={inv._id}>
@@ -83,28 +83,28 @@ const InvLocation = () => {
                           className="cursor-pointer"
                           onClick={() => navigate(`/update-location/${inv._id}`)}
                         >
-                          <Edit2 className="w-5 h-5 text-blue-500 hover:text-blue-700" />
+                          <Edit2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
                         </div>
                         <div
                           className="cursor-pointer"
                           onClick={() => handleDelete(inv._id)}
                         >
-                          <Trash2 className="w-5 h-5 text-red-500 hover:text-red-700" />
+                          <Trash2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
                         </div>
                       </div>
                     </td>
                     <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">
                       {inv.inventoryId}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2 sticky left-64 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">
+                    <td className="border border-gray-300 px-4 py-2 sticky w-32 left-64 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">
                       {inv.inventoryName}
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">{inv.inventoryAddress}</td>
-                    <td className="border border-gray-300 px-4 py-2">{inv.country}</td>
-                    <td className="border border-gray-300 px-4 py-2">{inv.capacity}</td>
-                    <td className="border border-gray-300 px-4 py-2">{inv.inventoryContact}</td>
-                    <td className="border border-gray-300 px-4 py-2">{inv.warehouseManagerName}</td>
-                    <td className="border border-gray-300 px-4 py-2">
+                    <td className="border border-gray-300 px-4 py-2 w-56">{inv.inventoryAddress}</td>
+                    <td className="border border-gray-300 px-4 py-2 w-16">{inv.country}</td>
+                    <td className="border border-gray-300 px-4 py-2 w-16">{inv.capacity}</td>
+                    <td className="border border-gray-300 px-4 py-2 w-32">{inv.inventoryContact}</td>
+                    <td className="border border-gray-300 px-4 py-2 w-32">{inv.warehouseManagerName}</td>
+                    <td className="border border-gray-300 px-4 py-2 w-40">
                       {new Date(inv.createdAt).toLocaleString()}
                     </td>
                   </tr>
