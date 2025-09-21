@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Supplier_details.css";
+import { Link } from "react-router-dom";
 
 const URL = "http//localhost:3000/Supplier_details";
 
@@ -78,8 +79,11 @@ function Supplier_details() {
           ))}
         </tbody>
       </table>
+      
+        <button className="add-supplier-btn"><Link to ="/Add_suppliers">Add New Supplier</Link></button>
+      
 
-      <button className="add-supplier-btn">Add New Supplier</button>
+      <button className="update-delete-supplier-btn"><Link to ="/Update_delete_suppliers">manage suppliers</Link></button>
 
       {/* Modal */}
       {selectedSupplier && (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import "./Add_suppliers.css";
+import { Link } from "react-router-dom";
 
 function Add_suppliers() {
   const [formData, setFormData] = useState({
@@ -131,7 +131,7 @@ function Add_suppliers() {
         {/* Submit Button */}
         <div className="form-actions">
           <button type="submit" className="submit-btn">
-            ➕ Add Supplier
+             Add Supplier
           </button>
         </div>
       </form>

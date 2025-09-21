@@ -1,11 +1,10 @@
-import NotificationService from '../service/notification.service.js';
+// notification.route.js
+import express from 'express';
+import { sendNotification, getNotifications } from '../controller/notification.controller.js';
 
-// Send a notification (no model changes)
-export const sendNotification = async (req, res) => {
-  try {
-    const result = await NotificationService.sendNotification(req.body);
-    res.status(200).json(result);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+const router = express.Router();
+
+router.post('/', sendNotification);
+router.get('/', getNotifications);
+
+export default router;
