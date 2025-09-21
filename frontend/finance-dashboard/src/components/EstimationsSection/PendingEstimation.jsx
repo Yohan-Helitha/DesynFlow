@@ -17,7 +17,7 @@ export const PendingEstimation = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEstimation, setSelectedEstimation] = useState(null);
 
-  const itemsPerPage = 3;
+  const itemsPerPage = 10;
 
   const handleSort = (field) => {
     if (sortField === field) {

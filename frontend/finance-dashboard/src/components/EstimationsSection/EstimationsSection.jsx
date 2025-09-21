@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Header } from '../Header';
 import { PendingEstimation } from './PendingEstimation';
-import { ApproveEstimation } from './ApproveEstimation';
+import { EstimationsHistory } from './EstimationsHistory';
 
 export const EstimationsSection = () => {
   const [activeTab, setActiveTab] = useState('pending');
@@ -36,7 +36,7 @@ export const EstimationsSection = () => {
 
       {/* Content */}
       <div className="mt-4 bg-[#F7EED3] p-4 rounded-md shadow-sm">
-        {activeTab === 'pending' ? <PendingEstimation /> : <ApproveEstimation />}
+  {activeTab === 'pending' ? <PendingEstimation /> : <EstimationsHistory />}
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { EstimateToEstimateModal } from './EstimateToEstimateModal';
 
 import { useEffect } from 'react';
 
-export const ApproveEstimation = () => {
+export const EstimationsHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('createdAt');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -50,7 +50,7 @@ export const ApproveEstimation = () => {
     }
   };
 
-  const itemsPerPage = 3;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchEstimations = async () => {
