@@ -17,7 +17,7 @@ function Budget_approval() {
       <div className="budget-sections">
         {/* Approved Section */}
         <div className="budget-section">
-          <h3>✅ Approved</h3>
+          <h3> Approved</h3>
           <div className="budget-card approved">
             <div>
               <p className="title">Office Renovation</p>
@@ -30,14 +30,14 @@ function Budget_approval() {
             <div>
               <p className="title">Marketing Campaign</p>
               <p className="amount">LKR 10,500</p>
-            </div>
+            </div>1
             <span className="status approved">Approved</span>
           </div>
         </div>
 
         {/* Processing Section */}
         <div className="budget-section">
-          <h3>⏳ Processing</h3>
+          <h3> Processing</h3>
           <div className="budget-card processing">
             <div>
               <p className="title">New IT Equipment</p>

@@ -70,6 +70,12 @@ function Dashboard_proc() {
           <li>
             <Link to="/Budget_approval">Budget Approval</Link>
           </li>
+          <li>
+            <Link to="/Sample_order">Samples</Link>
+          </li>
+          <li>
+            <Link to="/Dashboard_sup">Supplier Dashboard</Link>
+          </li>
         </ul>
       </aside>
 

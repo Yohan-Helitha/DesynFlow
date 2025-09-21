@@ -11,7 +11,10 @@ import Budget_approval_form from "./Components/Budget_approval_form/Budget_appro
 import OrderForm from "./Components/OrderForm/OrderForm";
 import Update_delete_suppliers from "./Components/Update_delete_suppliers/Update_delete_suppliers";
 import Add_suppliers from "./Components/Add_suppliers/Add_suppliers";
-import Notifications_proc from "./Components/Notifications_proc/Notifications_proc";  
+import Notifications_proc from "./Components/Notifications_proc/Notifications_proc"; 
+import Sample_order from "./Components/Sample_order/Sample_order"; 
+import Dashboard_sup from "./Components/Dashboard_sup/Dashboard_sup";
+import OrderDetailsSup from "./Components/Order_details_sup/Order_details_sup";
 
 
 
@@ -27,6 +30,9 @@ function App() {
       <Route path="/Update_delete_suppliers" element={<Update_delete_suppliers />} />
       <Route path="/Add_suppliers" element={<Add_suppliers />} />
       <Route path="/Notifications_proc" element={<Notifications_proc />} />
+      <Route path="/Sample_order" element={<Sample_order />} />
+      <Route path="/Dashboard_sup" element={<Dashboard_sup />} />
+      <Route path="/Order_details_sup" element={<OrderDetailsSup />} />
     </Routes>
   );
 }
