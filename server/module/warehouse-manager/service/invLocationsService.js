@@ -1,5 +1,5 @@
 import InvLocations from '../model/invLocationsModel.js';
-//import { validateInvLocationsInsert, validateInvLocationsUpdate } from '../validators/invLocationsValidator.js';
+import { validateInvLocationsUpdate } from '../validators/invLocationsValidator.js';
 
 // Get all inventory locations
 export const getAllInvLocationsService = async () => {
@@ -32,20 +32,21 @@ export const addInvLocationsService = async (data) => {
 
   const inv_locations = new InvLocations({ ...data });
   await inv_locations.save();
+
   return inv_locations;
 };
 
 // Update inventory location
 export const updateInvLocationsService = async (id, data) => {
-  // Validate
-  // const errors = validateInvLocationsUpdate(data);
-  // if (errors.length > 0) {
-  //   const error = new Error(errors.join(', '));
-  //   error.status = 400;
-  //   throw error;
-  // }
+  
+
+  const errors = validateInvLocationsUpdate(data);
+      if (Object.keys(errors).length > 0) {
+          throw { status: 400, errors };
+      }
 
   const inv_locations = await InvLocations.findByIdAndUpdate(id, { ...data }, { new: true });
+  
   if (!inv_locations) return null;
 
   return inv_locations;

@@ -1,5 +1,7 @@
 import StockMovement from "../model/stockMovementModel.js";
 import AuditLog from "../model/auditLogModel.js";
+import { validateStockMovementUpdate } from '../validators/stockMovementValidator.js';
+
 
 // Get all stock movements
 export const getAllStockMovementService = async () => {
@@ -48,7 +50,13 @@ export const addStockMovementService = async (data, warehouseManagerName, manage
 
 // Update stock movement
 export const updateStockMovementService = async (id, data, warehouseManagerName) => {
-    let stock_movement = await StockMovement.findByIdAndUpdate(id, data, { new: true });
+    //Validate update fields
+    const errors = validateStockMovementUpdate(data);
+    if (Object.keys(errors).length > 0) {
+        throw { status: 400, errors };
+    }
+
+    const stock_movement = await StockMovement.findByIdAndUpdate(id, data, { new: true });
     if (!stock_movement) return null;
 
     await AuditLog.create({

@@ -17,15 +17,33 @@ export const addTransferRequestService = async (data, warehouseManagerName, mana
     const transfer_request = new TransferRequest({
         ...data,
         requestedBy: warehouseManagerName || "WM001",
-        approvedBy: managerName || "M102"
+        approvedBy: ""
     });
 
     await transfer_request.save();
 
+    // Convert Mongoose document to plain object
+const rawData = transfer_request.toObject ? transfer_request.toObject() : transfer_request;
+
+// Create keyInfo object
+const keyInfo = {
+    TransferRequestID: rawData.transferRequestId,
+    MaterialID: rawData.materialId,
+    FromLocation: rawData.fromLocation,
+    ToLocation: rawData.toLocation,
+    Quantity: rawData.quantity,
+    Reason: rawData.reason,
+    RequestedBy: rawData.requestedBy,
+    ApprovedBy: rawData.approvedBy,
+    Status: rawData.status,
+    RequiredBy: rawData.requiredBy,
+    UpdatedAt: rawData.updatedAt
+};
+
     await AuditLog.create({
         entity: "Transfer Request",
         action: "insert",
-        keyInfo: JSON.stringify(transfer_request),
+        keyInfo: JSON.stringify(keyInfo),
         createdBy: warehouseManagerName || "WM001"
     });
 
@@ -33,21 +51,40 @@ export const addTransferRequestService = async (data, warehouseManagerName, mana
 };
 
 // Update transfer request
-export const updateTransferRequestService = async (id, data) => {
+export const updateTransferRequestService = async (id, data, managerName) => {
     let transfer_request = await TransferRequest.findByIdAndUpdate(id, {
         ...data,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
+        approvedBy: managerName
     }, { new: true });
 
     if (!transfer_request) return null;
 
     await transfer_request.save();
 
+    // Convert Mongoose document to plain object
+const rawData = transfer_request.toObject ? transfer_request.toObject() : transfer_request;
+
+// Create keyInfo object
+const keyInfo = {
+    TransferRequestID: rawData.transferRequestId,
+    MaterialID: rawData.materialId,
+    FromLocation: rawData.fromLocation,
+    ToLocation: rawData.toLocation,
+    Quantity: rawData.quantity,
+    Reason: rawData.reason,
+    RequestedBy: rawData.requestedBy,
+    ApprovedBy: rawData.approvedBy,
+    Status: rawData.status,
+    RequiredBy: rawData.requiredBy,
+    UpdatedAt: rawData.updatedAt
+};
+
     await AuditLog.create({
         entity: "Transfer Request",
         action: "update",
-        keyInfo: JSON.stringify(transfer_request),
-        createdBy: data.requestedBy || "WM001"
+        keyInfo: JSON.stringify(keyInfo),
+        createdBy: data.requestedBy || "WM002"
     });
 
     return transfer_request;
@@ -58,10 +95,28 @@ export const deleteTransferRequestService = async (id) => {
     const transfer_request = await TransferRequest.findByIdAndDelete(id);
     if (!transfer_request) return null;
 
+    // Convert Mongoose document to plain object
+const rawData = transfer_request.toObject ? transfer_request.toObject() : transfer_request;
+
+// Create keyInfo object
+const keyInfo = {
+    TransferRequestID: rawData.transferRequestId,
+    MaterialID: rawData.materialId,
+    FromLocation: rawData.fromLocation,
+    ToLocation: rawData.toLocation,
+    Quantity: rawData.quantity,
+    Reason: rawData.reason,
+    RequestedBy: rawData.requestedBy,
+    ApprovedBy: rawData.approvedBy,
+    Status: rawData.status,
+    RequiredBy: rawData.requiredBy,
+    UpdatedAt: rawData.updatedAt
+};
+
     await AuditLog.create({
         entity: "Transfer Request",
         action: "delete",
-        keyInfo: `MaterialId: ${transfer_request.materialId}, from: ${transfer_request.fromLocation}, to: ${transfer_request.toLocation}, qty: ${transfer_request.quantity}`,
+        keyInfo: JSON.stringify(keyInfo),
         createdBy: transfer_request.requestedBy || "WM001"
     });
 

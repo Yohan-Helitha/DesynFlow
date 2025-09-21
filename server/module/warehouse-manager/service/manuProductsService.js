@@ -1,7 +1,8 @@
+import mongoose from "mongoose";
 import ManuProducts from '../model/manuProductsModel.js';
 import AuditLog from '../model/auditLogModel.js';
 import ThresholdAlert from '../model/thresholdAlertModel.js';
-//import { validateManuProductInsert, validateManuProductUpdate } from '../validators/manuProductsValidator.js';
+import { validateManuProductUpdate } from '../validators/manuProductsValidator.js';
 
 // Get all manufactured products
 export const getAllManuProductsService = async () => {
@@ -15,58 +16,107 @@ export const getManuProductByIdService = async (id) => {
 
 // Add new manufactured product
 export const addManuProductsService = async (data, createdBy) => {
-  // Validate data
-  // const errors = validateManuProductInsert(data);
-  // if (errors.length > 0) {
-  //   throw { status: 400, errors }; // throw an error to be handled by controller
-  // }
 
+  let materialIdToUse = data.materialId;
+
+  // If new product, auto-generate materialId
+  if (!materialIdToUse) {
+    // Use the Counter model inside the same file
+    const Counter = mongoose.model("ManuProductsCounter");
+
+    const counter = await Counter.findOneAndUpdate(
+      {}, 
+      { $inc: { seq: 1 } }, 
+      { new: true, upsert: true }
+    );
+
+    const seqNum = counter.seq.toString().padStart(3, "0"); // 001, 002, ...
+    materialIdToUse = `MP${seqNum}`;
+  }
+
+  
   // Set currentLevel = restockLevel automatically
   data.currentLevel = data.restockLevel;
 
-  const now = new Date();
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+  
 
   const manu_product = new ManuProducts({
     ...data,
-    month: monthNames[now.getMonth()],
-    year: now.getFullYear(),
-    createdBy: createdBy || "WM001"
+    materialId: materialIdToUse,
+    createdBy: createdBy || "WM001" 
   });
 
   await manu_product.save();
+
+  // Convert Mongoose document to plain object (if needed)
+const rawData = manu_product.toObject ? manu_product.toObject() : manu_product;
+
+// Create keyInfo dynamically
+const keyInfo = {
+    MaterialID: rawData.materialId,
+    MaterialName: rawData.materialName,
+    Category: rawData.category,
+    Type: rawData.type,
+    Unit: rawData.unit,
+    RestockLevel: rawData.restockLevel,
+    ReorderLevel: rawData.reorderLevel,
+    CurrentLevel: rawData.currentLevel,
+    WarrantyPeriod: rawData.warrantyPeriod,
+    InventoryName: rawData.inventoryName,
+    Month: rawData.month,
+    Year: rawData.year,
+    CreatedBy: rawData.createdBy
+};
 
   // Create audit log
   await AuditLog.create({
     entity: "Manufactured Products",
     action: "insert",
-    keyInfo: JSON.stringify(manu_product),
+    keyInfo: JSON.stringify(keyInfo),
     createdBy: createdBy || "WM001"
   });
 
   return manu_product;
 };
 
+
 // Update manufactured product
-export const updateManuProductsService = async (id, data, updatedBy) => {
-  // Validate update fields
-  // const errors = validateManuProductUpdate(data);
-  // if (errors.length > 0) {
-  //   throw { status: 400, errors }; // throw an error to be handled by controller
-  // }
+export const updateManuProductsService = async (id, data, userId) => {
+   //Validate update fields
+   const errors = validateManuProductUpdate(data);
+    if (Object.keys(errors).length > 0) {
+        throw { status: 400, errors };
+    }
 
   const manu_product = await ManuProducts.findByIdAndUpdate(id, { ...data }, { new: true });
 
   if (!manu_product) return null;
 
+  // Convert Mongoose document to plain object (if needed)
+const rawData = manu_product.toObject ? manu_product.toObject() : manu_product;
+
+// Create keyInfo dynamically
+const keyInfo = {
+    MaterialID: rawData.materialId,
+    MaterialName: rawData.materialName,
+    Category: rawData.category,
+    Type: rawData.type,
+    Unit: rawData.unit,
+    RestockLevel: rawData.restockLevel,
+    ReorderLevel: rawData.reorderLevel,
+    CurrentLevel: rawData.currentLevel,
+    WarrantyPeriod: rawData.warrantyPeriod,
+    InventoryName: rawData.inventoryName,
+    Month: rawData.month,
+    Year: rawData.year,
+    CreatedBy: rawData.createdBy
+};
+
   await AuditLog.create({
     entity: "Manufactured Products",
     action: "update",
-    keyInfo: JSON.stringify(manu_product),
-    createdBy: updatedBy || "WM001"
+    keyInfo: JSON.stringify(keyInfo),
+    createdBy: userId || "WM001"
   });
 
   // Auto-create threshold alert if needed
@@ -98,10 +148,30 @@ export const deleteManuProductsService = async (id, deletedBy) => {
 
   if (!manu_product) return null;
 
+  // Convert Mongoose document to plain object (if needed)
+const rawData = manu_product.toObject ? manu_product.toObject() : manu_product;
+
+// Create keyInfo dynamically
+const keyInfo = {
+    MaterialID: rawData.materialId,
+    MaterialName: rawData.materialName,
+    Category: rawData.category,
+    Type: rawData.type,
+    Unit: rawData.unit,
+    RestockLevel: rawData.restockLevel,
+    ReorderLevel: rawData.reorderLevel,
+    CurrentLevel: rawData.currentLevel,
+    WarrantyPeriod: rawData.warrantyPeriod,
+    InventoryName: rawData.inventoryName,
+    Month: rawData.month,
+    Year: rawData.year,
+    CreatedBy: rawData.createdBy
+};
+
   await AuditLog.create({
     entity: "Manufactured Products",
     action: "delete",
-    keyInfo: JSON.stringify(manu_product),
+    keyInfo: JSON.stringify(keyInfo),
     createdBy: deletedBy || "WM001"
   });
 

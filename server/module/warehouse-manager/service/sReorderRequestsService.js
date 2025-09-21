@@ -6,6 +6,12 @@ export const getAllsReorderRequestsService = async () => {
     return await sReorderRequests.find();
 };
 
+// Get request  by ID
+export const getSReorderRequestByIdService = async (id) => {
+  const request = await sReorderRequests.findById(id);
+  return request;
+};
+
 // Add new stock reorder request
 export const addsReorderRequestsService = async (data, warehouseManagerName) => {
     const s_reorder_request = new sReorderRequests({
