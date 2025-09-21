@@ -1,88 +1,98 @@
-import React, { useState } from 'react';
-import "tailwindcss";
-import { 
-  Home, 
-  Package, 
-  Layers, 
-  MapPin, 
-  MoveRight, 
-  Send, 
-  RotateCcw, 
-  Trash2, 
-  FileText, 
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Home,
+  Package,
+  Layers,
+  MapPin,
+  MoveRight,
+  Send,
+  RotateCcw,
+  Trash2,
+  FileText,
   Bell,
   Building2,
   User,
-  ClipboardList
-} from 'lucide-react';
+} from "lucide-react";
+import { useNotifications } from "../context/notificationContext.jsx"; // import context
 
 const Navbar = () => {
-  const [activeIcon, setActiveIcon] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { unread } = useNotifications(); // get unread state
 
   const navigationIcons = [
-    { icon: Home, label: 'Home' },
-    { icon: Package, label: 'Manufactured Products' },
-    { icon: Layers, label: 'Raw Materials' },
-    { icon: MapPin, label: 'Warehouse Locations' },
-    { icon: MoveRight, label: 'Stock Movements' },
-    { icon: Send, label: 'Transfer Requests' },
-    { icon: RotateCcw, label: 'Stock Reorder Requests' },
-    { icon: Trash2, label: 'Disposal Materials' },
-    { icon: FileText, label: 'Audit Log' },
-    { icon: Bell, label: 'Notifications' },
+    { icon: Home, label: "Home", path: "/home" },
+    { icon: Package, label: "Manufactured Products", path: "/manu-products" },
+    { icon: Layers, label: "Raw Materials", path: "/raw-materials" },
+    { icon: MapPin, label: "Warehouse Locations", path: "/inv-location" },
+    { icon: MoveRight, label: "Stock Movements", path: "/stock-movement" },
+    { icon: Send, label: "Transfer Requests", path: "/transfer-request" },
+    { icon: RotateCcw, label: "Stock Reorder Requests", path: "/s-reorder-requests" },
+    { icon: Trash2, label: "Disposal Materials", path: "/disposal-materials" },
+    { icon: FileText, label: "Audit Log", path: "/audit-logs" },
+    { icon: Bell, label: "Notifications", path: "/notifications" },
   ];
 
   return (
-    <div className="bg-white shadow-sm border-b border-gray-200">
+    <div className="shadow-sm border-b border-gray-700" style={{ backgroundColor: "#2B1B0E" }}>
       {/* Top Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        {/* Left side - Logo and Title */}
         <div className="flex items-center space-x-3">
-          <div className="bg-blue-500 p-2 rounded-lg">
-            <Building2 className="w-6 h-6 text-white" />
+          <div className="p-2 rounded-lg" style={{ backgroundColor: "#FFF8E8" }}>
+            <Building2 className="w-6 h-6" style={{ color: "#2B1B0E" }} />
           </div>
-          <h1 className="text-xl font-semibold text-gray-800">
+          <h1 className="text-xl font-semibold" style={{ color: "#FFFFFF" }}>
             Warehouse Management
           </h1>
         </div>
 
-        {/* Right side - User Info */}
         <div className="flex items-center space-x-3">
-          <div className="bg-blue-100 p-2 rounded-full">
-            <User className="w-5 h-5 text-blue-600" />
+          <div className="p-2 rounded-full" style={{ backgroundColor: "#FFF8E8" }}>
+            <User className="w-5 h-5" style={{ color: "#2B1B0E" }} />
           </div>
-          <span className="text-gray-700 font-medium">
-            Warehouse Manager
+          <span className="font-medium" style={{ color: "#FFFFFF" }}>
+            Profile
           </span>
         </div>
       </div>
 
       {/* Bottom Navigation Icons */}
       <div className="px-6 pb-4">
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center space-x-4">
           {navigationIcons.map((item, index) => {
             const IconComponent = item.icon;
-            const isActive = index === activeIcon;
-            
+            const isActive = location.pathname === item.path;
+
             return (
               <button
                 key={index}
-                onClick={() => setActiveIcon(index)}
+                onClick={() => navigate(item.path)}
                 className={`
-                  p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 relative group
-                  ${isActive 
-                    ? 'bg-blue-100 text-blue-600 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-800'
-                  }
+                  relative group flex items-center px-3 py-2 rounded-lg transition-all duration-200
+                  ${isActive ? "bg-[#D3DAD9] text-[#37353E]" : "text-white hover:bg-[#3D2914]"}
                 `}
-                title={item.label}
               >
                 <IconComponent className="w-5 h-5" />
-                
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                  {item.label}
-                </div>
+
+                {/* Red dot for unread notifications */}
+                {item.label === "Notifications" && unread && (
+                  <span className="absolute top-0 right-2 block w-2 h-2 rounded-full bg-red-500 "></span>
+                )}
+
+                {isActive && <span className="ml-2 text-sm">{item.label}</span>}
+
+                {/* Tooltip on hover if not active */}
+                {!isActive && (
+                  <div
+                    className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 
+                                px-2 py-1 bg-white text-black text-xs rounded opacity-0 
+                                group-hover:opacity-100 transition-opacity duration-200 
+                                whitespace-nowrap pointer-events-none"
+                  >
+                    {item.label}
+                  </div>
+                )}
               </button>
             );
           })}
