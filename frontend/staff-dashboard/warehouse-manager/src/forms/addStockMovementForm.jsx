@@ -1,11 +1,13 @@
-// src/pages/addStockMovement.jsx
+// src/forms/addStockMovementForm.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../component/navbar.jsx";
 import { addStockMovement } from "../services/FstockMovementService.js";
 import { fetchInvLocation } from "../services/FinvLocationService.js";
+import { fetchRawMaterial } from "../services/FrawMaterialsService.js";
+import { fetchManuProducts } from "../services/FmanuProductsService.js";
 
-const AddStockMovement = ({ loggedInUserId }) => {
+const AddStockMovementForm = ({ loggedInUserId }) => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -20,20 +22,52 @@ const AddStockMovement = ({ loggedInUserId }) => {
     dispatchedDate: "",
   });
 
-  const [locations, setLocations] = useState([]);
+  const [fromLocations, setFromLocations] = useState([]);
+  const [allLocations, setAllLocations] = useState([]);
+  const [errors, setErrors] = useState({});
 
-  // Fetch locations on load
+  // Units
+  const units = ["pcs", "kg", "m"];
+
+  // 🔹 Fetch locations and filter based on material
   useEffect(() => {
-    const getLocations = async () => {
+    const getLocationsForMaterial = async () => {
       try {
-        const data = await fetchInvLocation();
-        setLocations(data || []);
+        const allInventories = await fetchInvLocation();
+        setAllLocations(allInventories); // for To Location
+
+        if (!formData.materialId) {
+          setFromLocations([]);
+          return;
+        }
+
+        const [rawMaterials, manuProducts] = await Promise.all([
+          fetchRawMaterial(),
+          fetchManuProducts(),
+        ]);
+
+        const rawInvNames = rawMaterials
+          .filter((rm) => rm.materialId === formData.materialId)
+          .map((rm) => rm.inventoryName);
+
+        const manuInvNames = manuProducts
+          .filter((mp) => mp.materialId === formData.materialId)
+          .map((mp) => mp.inventoryName);
+
+        const validFromInvNames = [...new Set([...rawInvNames, ...manuInvNames])];
+
+        const filteredFrom = allInventories.filter((inv) =>
+          validFromInvNames.includes(inv.inventoryName)
+        );
+
+        setFromLocations(filteredFrom);
       } catch (err) {
         console.error("Failed to fetch locations:", err);
       }
     };
-    getLocations();
-  }, []);
+
+    getLocationsForMaterial();
+  }, [formData.materialId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,6 +79,7 @@ const AddStockMovement = ({ loggedInUserId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
 
     const payload = {
       ...formData,
@@ -56,19 +91,31 @@ const AddStockMovement = ({ loggedInUserId }) => {
       alert("Stock movement added successfully!");
       navigate("/stock-movement");
     } catch (err) {
-      console.error(err);
-      alert("Failed to add stock movement");
+      if (err.errors) {
+        setErrors(err.errors);
+      } else {
+        setErrors({ general: err.message || "Failed to add stock movement" });
+      }
     }
   };
+
+  const inputClass = (field) =>
+    `w-full px-3 py-2 border rounded-md bg-white disabled:bg-gray-100 ${
+      errors[field] ? "border-red-500" : "border-gray-300"
+    }`;
 
   return (
     <div>
       <Navbar />
       <div className="m-6">
-        <div className="border-2 border-gray-300 m-auto p-8 w-3xl rounded shadow">
+        <div className="border-2 border-gray-300 m-auto p-8 w-xl shadow">
           <h1 className="text-2xl font-bold mb-6">Add Stock Movement</h1>
-          <form onSubmit={handleSubmit} className="space-y-4">
 
+          {errors.general && (
+            <p className="text-red-600 font-semibold mb-4">{errors.general}</p>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4 text-sm max-w-3xl">
             {/* Material ID */}
             <div>
               <label className="block mb-2 font-medium text-gray-700">
@@ -80,11 +127,14 @@ const AddStockMovement = ({ loggedInUserId }) => {
                 value={formData.materialId}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("materialId")}
               />
+              {errors.materialId && (
+                <p className="text-red-500 text-sm mt-1">{errors.materialId}</p>
+              )}
             </div>
 
-            {/* From Location (Dropdown) */}
+            {/* From Location */}
             <div>
               <label className="block mb-2 font-medium text-gray-700">
                 From Location <span className="text-red-500">*</span>
@@ -94,18 +144,21 @@ const AddStockMovement = ({ loggedInUserId }) => {
                 value={formData.fromLocation}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("fromLocation")}
               >
                 <option value="">-- Select From Location --</option>
-                {locations.map((loc) => (
+                {fromLocations.map((loc) => (
                   <option key={loc._id} value={loc.inventoryName}>
                     {loc.inventoryName} ({loc.inventoryId})
                   </option>
                 ))}
               </select>
+              {errors.fromLocation && (
+                <p className="text-red-500 text-sm mt-1">{errors.fromLocation}</p>
+              )}
             </div>
 
-            {/* To Location (Dropdown) */}
+            {/* To Location */}
             <div>
               <label className="block mb-2 font-medium text-gray-700">
                 To Location <span className="text-red-500">*</span>
@@ -115,15 +168,20 @@ const AddStockMovement = ({ loggedInUserId }) => {
                 value={formData.toLocation}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("toLocation")}
               >
                 <option value="">-- Select To Location --</option>
-                {locations.map((loc) => (
-                  <option key={loc._id} value={loc.inventoryName}>
-                    {loc.inventoryName} ({loc.inventoryId})
-                  </option>
-                ))}
+                {allLocations
+                  .filter((loc) => loc.inventoryName !== formData.fromLocation)
+                  .map((loc) => (
+                    <option key={loc._id} value={loc.inventoryName}>
+                      {loc.inventoryName} ({loc.inventoryId})
+                    </option>
+                  ))}
               </select>
+              {errors.toLocation && (
+                <p className="text-red-500 text-sm mt-1">{errors.toLocation}</p>
+              )}
             </div>
 
             {/* Unit */}
@@ -131,14 +189,23 @@ const AddStockMovement = ({ loggedInUserId }) => {
               <label className="block mb-2 font-medium text-gray-700">
                 Unit <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="unit"
                 value={formData.unit}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
+                className={inputClass("unit")}
+              >
+                <option value="">-- Select Unit --</option>
+                {units.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
+              {errors.unit && (
+                <p className="text-red-500 text-sm mt-1">{errors.unit}</p>
+              )}
             </div>
 
             {/* Quantity */}
@@ -153,8 +220,11 @@ const AddStockMovement = ({ loggedInUserId }) => {
                 onChange={handleChange}
                 required
                 min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("quantity")}
               />
+              {errors.quantity && (
+                <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>
+              )}
             </div>
 
             {/* Reason */}
@@ -168,8 +238,11 @@ const AddStockMovement = ({ loggedInUserId }) => {
                 value={formData.reason}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("reason")}
               />
+              {errors.reason && (
+                <p className="text-red-500 text-sm mt-1">{errors.reason}</p>
+              )}
             </div>
 
             {/* Employee ID */}
@@ -183,8 +256,11 @@ const AddStockMovement = ({ loggedInUserId }) => {
                 value={formData.employeeId}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("employeeId")}
               />
+              {errors.employeeId && (
+                <p className="text-red-500 text-sm mt-1">{errors.employeeId}</p>
+              )}
             </div>
 
             {/* Vehicle Info */}
@@ -198,30 +274,43 @@ const AddStockMovement = ({ loggedInUserId }) => {
                 value={formData.vehicleInfo}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("vehicleInfo")}
               />
+              {errors.vehicleInfo && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.vehicleInfo}
+                </p>
+              )}
             </div>
 
-            {/* Dispatched Date */}
-            <div>
-              <label className="block mb-2 font-medium text-gray-700">
-                Dispatched Date <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="dispatchedDate"
-                value={formData.dispatchedDate}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+            {/* Dispatched date */}
+          <div>
+            <label className="block mb-2 font-medium text-gray-700">
+              Dispatched Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              name="dispatchedDate"
+              value={formData.dispatchedDate}
+              onChange={handleChange}
+              required
+              className={inputClass("dispatchedDate")}
+              // Restrict date selection
+              max={new Date().toISOString().split("T")[0]} // today
+              min={new Date(new Date().setDate(new Date().getDate() - 3))
+                .toISOString()
+                .split("T")[0]} // 3 days before today
+            />
+            {errors.dispatchedDate && (
+              <p className="text-red-500 text-sm mt-1">{errors.dispatchedDate}</p>
+            )}
+          </div>
 
             {/* Buttons */}
             <div className="flex gap-4 pt-6">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-md"
+                className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Add Stock Movement
               </button>
@@ -240,4 +329,4 @@ const AddStockMovement = ({ loggedInUserId }) => {
   );
 };
 
-export default AddStockMovement;
+export default AddStockMovementForm;

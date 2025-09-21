@@ -1,13 +1,19 @@
 // src/pages/updateTransferRequestForm.jsx
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../component/navbar.jsx";
-import { fetchTransferRequestById, updateTransferRequest } from "../services/FtransferRequestService.js";
+import {
+  fetchTransferRequestById,
+  updateTransferRequest,
+} from "../services/FtransferRequestService.js";
 import { fetchInvLocation } from "../services/FinvLocationService.js";
+import { fetchRawMaterial } from "../services/FrawMaterialsService.js";
+import { fetchManuProducts } from "../services/FmanuProductsService.js";
 
-const UpdateTransferRequest = ({ loggedInUserId }) => {
-  const navigate = useNavigate();
+const UpdateTransferRequestForm = ({ loggedInUserId }) => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     materialId: "",
@@ -15,47 +21,77 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
     toLocation: "",
     quantity: "",
     reason: "",
-    status: "Pending",
     requiredBy: "",
+    status: ""
   });
 
-  const [locations, setLocations] = useState([]);
+  const [fromLocations, setFromLocations] = useState([]);
+  const [allLocations, setAllLocations] = useState([]);
+  const [errors, setErrors] = useState({});
 
-  // Fetch locations on load
-  useEffect(() => {
-    const getLocations = async () => {
-      try {
-        const data = await fetchInvLocation();
-        setLocations(data || []);
-      } catch (err) {
-        console.error("Failed to fetch locations:", err);
-      }
-    };
-    getLocations();
-  }, []);
 
-  // Fetch the existing transfer request
+
+
+  // 🔹 Fetch existing transfer request by ID
   useEffect(() => {
     const getTransferRequest = async () => {
       try {
         const data = await fetchTransferRequestById(id);
-        if (data) {
-          setFormData({
-            materialId: data.materialId || "",
-            fromLocation: data.fromLocation || "",
-            toLocation: data.toLocation || "",
-            quantity: data.quantity || "",
-            reason: data.reason || "",
-            status: data.status || "Pending",
-            requiredBy: data.requiredBy ? data.requiredBy.split("T")[0] : "", // format date for input
-          });
-        }
+        
+        // Convert requiredBy to YYYY-MM-DD format for input type="date"
+      if (data.requiredBy) {
+        const date = new Date(data.requiredBy);
+        const formattedDate = date.toISOString().split("T")[0];
+        data.requiredBy = formattedDate;
+      }
+
+        setFormData(data);
       } catch (err) {
         console.error("Failed to fetch transfer request:", err);
       }
     };
     getTransferRequest();
   }, [id]);
+
+  // 🔹 Fetch all locations for To Location & filter From Locations based on material
+  useEffect(() => {
+    const getLocationsForMaterial = async () => {
+      try {
+        const allInventories = await fetchInvLocation();
+        setAllLocations(allInventories);
+
+        if (!formData.materialId) {
+          setFromLocations([]);
+          return;
+        }
+
+        const [rawMaterials, manuProducts] = await Promise.all([
+          fetchRawMaterial(),
+          fetchManuProducts(),
+        ]);
+
+        const rawInvNames = rawMaterials
+          .filter((rm) => rm.materialId === formData.materialId)
+          .map((rm) => rm.inventoryName);
+
+        const manuInvNames = manuProducts
+          .filter((mp) => mp.materialId === formData.materialId)
+          .map((mp) => mp.inventoryName);
+
+        const validFromInvNames = [...new Set([...rawInvNames, ...manuInvNames])];
+
+        const filteredFrom = allInventories.filter((inv) =>
+          validFromInvNames.includes(inv.inventoryName)
+        );
+
+        setFromLocations(filteredFrom);
+      } catch (err) {
+        console.error("Failed to fetch locations:", err);
+      }
+    };
+
+    getLocationsForMaterial();
+  }, [formData.materialId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,10 +103,25 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
+
+    // Frontend validation
+    const newErrors = {};
+    if (!formData.fromLocation) newErrors.fromLocation = "From Location is required";
+    if (!formData.toLocation) newErrors.toLocation = "To Location is required";
+    if (!formData.quantity) newErrors.quantity = "Quantity is required";
+    if (!formData.reason) newErrors.reason = "Reason is required";
+    if (!formData.requiredBy) newErrors.requiredBy = "Required By date is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return; // stop submission
+    }
 
     const payload = {
       ...formData,
-      updatedBy: loggedInUserId || "WM001",
+      requestedBy: loggedInUserId || "WM001",
+      approvedBy: loggedInUserId || "M002",
     };
 
     try {
@@ -78,19 +129,31 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
       alert("Transfer Request updated successfully!");
       navigate("/transfer-request");
     } catch (err) {
-      console.error(err);
-      alert("Failed to update transfer request");
+      if (err.errors) {
+        setErrors(err.errors);
+      } else {
+        setErrors({ general: err.message || "Failed to update transfer request" });
+      }
     }
   };
+
+  const inputClass = (field) =>
+    `w-full px-3 py-2 border rounded-md bg-white disabled:bg-gray-100 ${
+      errors[field] ? "border-red-500" : "border-gray-300"
+    }`;
 
   return (
     <div>
       <Navbar />
       <div className="m-6">
-        <div className="border-2 border-gray-300 m-auto p-8 w-3xl rounded shadow">
+        <div className="border-2 border-gray-300 m-auto p-8 w-xl shadow">
           <h1 className="text-2xl font-bold mb-6">Update Transfer Request</h1>
-          <form onSubmit={handleSubmit} className="space-y-4">
 
+          {errors.general && (
+            <p className="text-red-600 font-semibold mb-4">{errors.general}</p>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4 text-sm max-w-3xl ">
             {/* Material ID */}
             <div>
               <label className="block mb-2 font-medium text-gray-700">
@@ -100,10 +163,10 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
                 type="text"
                 name="materialId"
                 value={formData.materialId}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                disabled
+                className={inputClass("materialId")}
               />
+              {errors.materialId && <p className="text-red-500 text-sm mt-1">{errors.materialId}</p>}
             </div>
 
             {/* From Location */}
@@ -116,15 +179,16 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
                 value={formData.fromLocation}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("fromLocation")}
               >
                 <option value="">-- Select From Location --</option>
-                {locations.map((loc) => (
+                {fromLocations.map((loc) => (
                   <option key={loc._id} value={loc.inventoryName}>
                     {loc.inventoryName} ({loc.inventoryId})
                   </option>
                 ))}
               </select>
+              {errors.fromLocation && <p className="text-red-500 text-sm mt-1">{errors.fromLocation}</p>}
             </div>
 
             {/* To Location */}
@@ -137,17 +201,20 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
                 value={formData.toLocation}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("toLocation")}
               >
                 <option value="">-- Select To Location --</option>
-                {locations.map((loc) => (
-                  <option key={loc._id} value={loc.inventoryName}>
-                    {loc.inventoryName} ({loc.inventoryId})
-                  </option>
-                ))}
+                {allLocations
+                  .filter((loc) => loc.inventoryName !== formData.fromLocation)
+                  .map((loc) => (
+                    <option key={loc._id} value={loc.inventoryName}>
+                      {loc.inventoryName} ({loc.inventoryId})
+                    </option>
+                  ))}
               </select>
+              {errors.toLocation && <p className="text-red-500 text-sm mt-1">{errors.toLocation}</p>}
             </div>
-
+            
             {/* Quantity */}
             <div>
               <label className="block mb-2 font-medium text-gray-700">
@@ -160,8 +227,9 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
                 onChange={handleChange}
                 required
                 min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("quantity")}
               />
+              {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
             </div>
 
             {/* Reason */}
@@ -175,8 +243,26 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
                 value={formData.reason}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className={inputClass("reason")}
               />
+              {errors.reason && <p className="text-red-500 text-sm mt-1">{errors.reason}</p>}
+            </div>
+
+            {/* Required By */}
+            <div>
+              <label className="block mb-2 font-medium text-gray-700">
+                Required By <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="requiredBy"
+                value={formData.requiredBy}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                min={new Date().toISOString().split("T")[0]} // <-- Only future dates allowed
+              />
+              {errors.requiredBy && <p className="text-red-500 text-sm mt-1">{errors.requiredBy}</p>}
             </div>
 
             {/* Status */}
@@ -192,32 +278,18 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="Pending">Pending</option>
-                <option value="Dispatched">Dispatched</option>
+                <option value="Approved">Approved</option>
               </select>
-            </div>
-
-            {/* Required By */}
-            <div>
-              <label className="block mb-2 font-medium text-gray-700">
-                Required By <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="requiredBy"
-                value={formData.requiredBy}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
+              {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
             </div>
 
             {/* Buttons */}
             <div className="flex gap-4 pt-6">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-md"
+                className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-6 rounded-md"
               >
-                Update Transfer Request
+                Update Stock Movement
               </button>
               <button
                 type="button"
@@ -234,4 +306,4 @@ const UpdateTransferRequest = ({ loggedInUserId }) => {
   );
 };
 
-export default UpdateTransferRequest;
+export default UpdateTransferRequestForm;
