@@ -29,7 +29,7 @@ app.use("/disposal_materials",disposalMaterialsRoute);
 app.use("/audit_log",auditLogRoute);
 app.use("/threshold_alert",thresholdAlertRoute);
 
-mongoose.connect("mongodb+srv://Warehouse_Manager:8Dm4kDgWR1ejBffM@cluster0.gsaq3bj.mongodb.net/WarehouseManagement")
+mongoose.connect("mongodb+srv://Warehouse_Manager:Lakni@cluster0.gsaq3bj.mongodb.net/WarehouseManagement")
 .then(() => console.log("Connected to MongoDB"))
 .then(() => {
     app.listen(5000);
