@@ -8,6 +8,8 @@ const TaskSchema = new Schema({
   description: { type: String },
   assignedTo: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   weight: { type: Number, default: 0 },
+  priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+  dueDate: { type: Date },
   status: { type: String, enum: ['Pending', 'In Progress', 'Done', 'Blocked'], index: true, default: 'Pending' },
   completedAt: { type: Date },
   progressPercentage: { type: Number, default: 0 }

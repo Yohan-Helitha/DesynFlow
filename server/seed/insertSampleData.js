@@ -5,6 +5,9 @@ import Team from '../modules/project/model/team.model.js';
 import Milestone from '../modules/project/model/milestone.model.js';
 import Material from '../modules/project/model/material.model.js';
 import Meeting from '../modules/project/model/meeting.model.js';
+import Attendance from '../modules/project/model/attendance.model.js';
+import MaterialRequest from '../modules/project/model/material.model.js';
+import Report from '../modules/project/model/report.model.js';
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/desynflow';
 
@@ -21,7 +24,10 @@ async function seedDatabase() {
       Team.deleteMany({}),
       Milestone.deleteMany({}),
       Material.deleteMany({}),
-      Meeting.deleteMany({})
+      Meeting.deleteMany({}),
+      Attendance.deleteMany({}),
+      MaterialRequest.deleteMany({}),
+      Report.deleteMany({})
     ]);
     console.log('🧹 Cleared existing data');
 
@@ -315,11 +321,8 @@ async function seedDatabase() {
       }
     ];
 
-    await Promise.all(materials.map(m => new Material(m).save()));
-    console.log('✅ Created 2 sample material requests');
-
-    await Promise.all(materials.map(m => new Material(m).save()));
-    console.log('✅ Created 5 sample material requests');
+    const savedMaterials = await Promise.all(materials.map(m => new Material(m).save()));
+    console.log('✅ Created sample materials');
 
     // Create sample interior design meetings
     const meetings = [
@@ -381,9 +384,105 @@ async function seedDatabase() {
     console.log(`   Teams: 2 (Interior Design & Project Management)`);
     console.log(`   Projects: 3 (Living Room, Office, Bedroom)`);
     console.log(`   Milestones: 5 (Design phases and deliverables)`);
+    
+    // Create sample attendance records
+    const attendanceRecords = [
+      new Attendance({
+        teamId: team1._id,
+        userId: team1.members[0].userId,
+        date: new Date('2023-11-06'),
+        status: 'present',
+        checkIn: new Date('2023-11-06T09:00:00Z'),
+        checkOut: new Date('2023-11-06T17:00:00Z'),
+        reason: 'Training'
+      }),
+      new Attendance({
+        teamId: team1._id,
+        userId: team1.members[1].userId,
+        date: new Date('2023-11-06'),
+        status: 'present',
+        checkIn: new Date('2023-11-06T09:15:00Z'),
+        checkOut: new Date('2023-11-06T17:30:00Z')
+      }),
+      new Attendance({
+        teamId: team2._id,
+        userId: team2.members[0].userId,
+        date: new Date('2023-11-06'),
+        status: 'off-duty',
+        reason: 'Medical'
+      })
+    ];
+    
+    const savedAttendance = await Attendance.insertMany(attendanceRecords);
+    console.log(`✅ Created ${savedAttendance.length} sample attendance records`);
+
+    // Create sample material requests
+    const materialRequests = [
+      new MaterialRequest({
+        projectId: project1._id,
+        requestedBy: team1.leaderId,
+        items: [{
+          materialId: savedMaterials[0]._id,
+          qty: 50,
+          neededBy: new Date('2023-12-01')
+        }],
+        status: 'Pending'
+      }),
+      new MaterialRequest({
+        projectId: project2._id,
+        requestedBy: team2.leaderId,
+        items: [{
+          materialId: savedMaterials[1]._id,
+          qty: 25,
+          neededBy: new Date('2023-11-20')
+        }],
+        status: 'Approved'
+      })
+    ];
+    
+    const savedMaterialRequests = await MaterialRequest.insertMany(materialRequests);
+    console.log(`✅ Created ${savedMaterialRequests.length} sample material requests`);
+
+    // Create sample reports
+    const reports = [
+      new Report({
+        projectId: project1._id,
+        submittedBy: team1.leaderId,
+        reportType: 'Weekly Progress Report',
+        dateRange: {
+          start: new Date('2023-11-01'),
+          end: new Date('2023-11-07')
+        },
+        summary: 'Design phase completed, moving to planning stage',
+        includeProgress: true,
+        includeIssues: false,
+        includeResourceUsage: true,
+        status: 'completed'
+      }),
+      new Report({
+        projectId: project2._id,
+        submittedBy: team2.leaderId,
+        reportType: 'Project Status Report',
+        dateRange: {
+          start: new Date('2023-10-15'),
+          end: new Date('2023-10-30')
+        },
+        summary: 'Foundation work on schedule, electrical planning in progress',
+        includeProgress: true,
+        includeIssues: true,
+        status: 'draft'
+      })
+    ];
+    
+    const savedReports = await Report.insertMany(reports);
+    console.log(`✅ Created ${savedReports.length} sample reports`);
+
     console.log(`   Tasks: 8 (Interior design specific tasks)`);
     console.log(`   Material Requests: 5 (Furniture, lighting, fixtures)`);
     console.log(`   Meetings: 5 (Client consultations and reviews)`);
+    console.log(`   Attendance: ${savedAttendance.length} (Team member attendance)`);
+    console.log(`   Resource Requests: ${savedMaterialRequests.length} (Material requests)`);
+    console.log(`   Reports: ${savedReports.length} (Progress reports)`);
     console.log('\n🎨 Frontend ready for interior design project management!');
     console.log('\n💡 Sample data includes:');
     console.log('   • Realistic interior design projects');
@@ -392,6 +491,7 @@ async function seedDatabase() {
     console.log('   • Client meeting schedules');
     console.log('   • Team roles (Designers, Project Managers)');
     console.log('   • Progress tracking and status updates');
+    console.log('   • Team Leader features (attendance, resources, reports)');
 
   } catch (error) {
     console.error('❌ Error inserting sample data:', error);

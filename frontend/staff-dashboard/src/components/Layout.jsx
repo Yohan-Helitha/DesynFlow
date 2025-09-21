@@ -1,11 +1,15 @@
 import React from 'react';
-import Sidebar from '../components/Sidebar';
+import SidebarDynamic from '../components/SidebarDynamic';
 import Header from '../components/Header';
 
-export default function Layout({ children, activeIndex, setActiveIndex }) {
+export default function Layout({ children, activeIndex, setActiveIndex, userRole = "project-manager" }) {
   return (
     <div className="flex min-h-screen bg-cream-primary">
-      <Sidebar activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
+      <SidebarDynamic 
+        activeIndex={activeIndex} 
+        setActiveIndex={setActiveIndex} 
+        userRole={userRole}
+      />
       <main className="flex-1 flex flex-col">
         <Header />
         <section className="p-6 flex-1">
