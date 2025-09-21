@@ -89,6 +89,7 @@ export const InspectionPaymentsHistory = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Site Location</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Property Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estimated Cost</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Receipt</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
@@ -104,6 +105,7 @@ export const InspectionPaymentsHistory = () => {
                   <td className="px-6 py-4 text-sm text-gray-900">{payment.siteLocation}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{payment.propertyType}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{payment.estimation && payment.estimation.estimatedCost !== undefined ? payment.estimation.estimatedCost : '-'}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{payment.status || (payment.estimation && payment.estimation.status) || '-'}</td>
                   <td className="px-6 py-4 text-sm text-indigo-600 underline cursor-pointer">
                     {payment.paymentReceiptUrl ? (
                       <a href={payment.paymentReceiptUrl} target="_blank" rel="noopener noreferrer">

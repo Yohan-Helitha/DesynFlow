@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { CheckCircle, Filter, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+
 import { EstimationDetailsModal } from './EstimationDetailsModal';
+import { EstimateToEstimateModal } from './EstimateToEstimateModal';
 
 import { useEffect } from 'react';
 
@@ -14,6 +16,39 @@ export const ApproveEstimation = () => {
   const [estimations, setEstimations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showEstimateToEstimate, setShowEstimateToEstimate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState(null);
+  // Handler for creating a new estimate version
+  const handleCreateEstimate = async (costs) => {
+    if (!selectedEstimation) return;
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const payload = {
+        projectId: selectedEstimation.projectId,
+        materialCost: Number(costs.materialCost),
+        laborCost: Number(costs.laborCost),
+        serviceCost: Number(costs.serviceCost),
+        contingencyCost: Number(costs.contingencyCost),
+        total: Number(costs.totalCost),
+        baseEstimateId: selectedEstimation._id || selectedEstimation.id,
+      };
+      const res = await fetch('/api/project-estimation/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to create new estimate');
+      setShowEstimateToEstimate(false);
+      // Optionally refresh estimations list
+      // await fetchEstimations();
+    } catch (err) {
+      setCreateError(err.message || 'Unknown error');
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const itemsPerPage = 3;
 
@@ -123,7 +158,7 @@ export const ApproveEstimation = () => {
                           View
                         </button>
                         <button
-                          onClick={() => alert('Generate action for ' + item.projectId)}
+                          onClick={() => { setSelectedEstimation(item); setShowEstimateToEstimate(true); }}
                           className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md"
                         >
                           Generate
@@ -188,6 +223,17 @@ export const ApproveEstimation = () => {
       {/* Estimation Details Modal */}
       {showDetailsModal && selectedEstimation && (
         <EstimationDetailsModal estimation={selectedEstimation} onClose={() => setShowDetailsModal(false)} />
+      )}
+      {/* Estimate To Estimate Modal */}
+      {showEstimateToEstimate && selectedEstimation && (
+        <EstimateToEstimateModal
+          estimation={selectedEstimation}
+          onClose={() => setShowEstimateToEstimate(false)}
+          onCreate={handleCreateEstimate}
+        />
+      )}
+      {createError && (
+        <div className="text-center text-red-500 mt-2">{createError}</div>
       )}
     </div>
   );

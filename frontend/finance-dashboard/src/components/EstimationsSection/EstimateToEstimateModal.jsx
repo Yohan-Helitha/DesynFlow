@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export const EstimateToEstimateModal = ({ estimation, onClose }) => {
+export const EstimateToEstimateModal = ({ estimation, onClose, onCreate }) => {
   if (!estimation) return null;
 
   const [materialCost, setMaterialCost] = useState(estimation.materialCost || 0);
@@ -83,12 +83,21 @@ export const EstimateToEstimateModal = ({ estimation, onClose }) => {
           </tbody>
         </table>
 
-        <div className="flex justify-end mt-6">
+        {/* Footer Buttons */}
+        <div className="flex justify-end mt-6 space-x-3">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
           >
             Close
+          </button>
+          <button
+            onClick={() =>
+              onCreate({ materialCost, laborCost, serviceCost, contingencyCost, totalCost })
+            }
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          >
+            Create
           </button>
         </div>
       </div>
