@@ -31,7 +31,7 @@ const floorSchema = new mongoose.Schema({
 }, { _id: false });
 
 // Enhanced inspection request schema
-const inspectionRequestSchema = new mongoose.Schema({
+const enhancedInspectionRequestSchema = new mongoose.Schema({
   // Client Information
   client: {
     type: mongoose.Schema.Types.ObjectId,
@@ -136,29 +136,29 @@ const inspectionRequestSchema = new mongoose.Schema({
 });
 
 // Virtual for total rooms across all floors
-inspectionRequestSchema.virtual('totalRooms').get(function() {
+enhancedInspectionRequestSchema.virtual('totalRooms').get(function() {
   return this.floors.reduce((total, floor) => total + floor.rooms.length, 0);
 });
 
 // Virtual for completion percentage
-inspectionRequestSchema.virtual('completionPercentage').get(function() {
+enhancedInspectionRequestSchema.virtual('completionPercentage').get(function() {
   const steps = Object.values(this.formProgress);
   const completedSteps = steps.filter(step => step === true).length;
   return Math.round((completedSteps / steps.length) * 100);
 });
 
 // Indexes for better query performance
-inspectionRequestSchema.index({ client: 1, createdAt: -1 });
-inspectionRequestSchema.index({ status: 1, createdAt: -1 });
-inspectionRequestSchema.index({ assignedInspector: 1, scheduledDate: 1 });
-inspectionRequestSchema.index({ 'propertyLocation.coordinates': '2dsphere' });
+enhancedInspectionRequestSchema.index({ client: 1, createdAt: -1 });
+enhancedInspectionRequestSchema.index({ status: 1, createdAt: -1 });
+enhancedInspectionRequestSchema.index({ assignedInspector: 1, scheduledDate: 1 });
+enhancedInspectionRequestSchema.index({ 'propertyLocation.coordinates': '2dsphere' });
 
 // Pre-save middleware to update total rooms
-inspectionRequestSchema.pre('save', function(next) {
+enhancedInspectionRequestSchema.pre('save', function(next) {
   this.floors.forEach(floor => {
     floor.totalRooms = floor.rooms.length;
   });
   next();
 });
 
-export default mongoose.model('InspectionRequest', inspectionRequestSchema);
+export default mongoose.model('EnhancedInspectionRequest', enhancedInspectionRequestSchema);
