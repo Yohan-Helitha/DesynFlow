@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import axios from "axios";
 import "./Add_suppliers.css";
 import { Link } from "react-router-dom";
 
@@ -17,7 +19,7 @@ function Add_suppliers() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Convert comma-separated fields into arrays for schema
@@ -31,18 +33,21 @@ function Add_suppliers() {
         .map((region) => region.trim()),
     };
 
-    console.log("Supplier Added:", formattedData);
-    alert(`Supplier "${formData.companyName}" has been added successfully!`);
-
-    // Reset form
-    setFormData({
-      companyName: "",
-      contactName: "",
-      email: "",
-      phone: "",
-      materialTypes: "",
-      deliveryRegions: ""
-    });
+    try {
+      await axios.post("http://localhost:3000/api/suppliers", formattedData);
+      alert(`Supplier "${formData.companyName}" has been added successfully!`);
+      setFormData({
+        companyName: "",
+        contactName: "",
+        email: "",
+        phone: "",
+        materialTypes: "",
+        deliveryRegions: ""
+      });
+    } catch (err) {
+      console.error("Error adding supplier:", err);
+      alert("Failed to add supplier. Please try again.");
+    }
   };
 
   return (
