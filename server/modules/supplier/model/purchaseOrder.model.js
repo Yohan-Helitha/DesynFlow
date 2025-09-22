@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
+
 const PurchaseOrderSchema = new Schema({
   requestOrigin: { type: String, enum: ['ReorderAlert', 'Manual', 'ProjectMR'] },
-  projectId: { type: Schema.Types.ObjectId, ref: 'Project', index: true },
-  supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier', index: true },
-  requestedBy: { type: Schema.Types.ObjectId, ref: 'User', index: true },
-  status: { type: String, enum: ['Draft', 'PendingFinanceApproval', 'Approved', 'Rejected', 'SentToSupplier', 'InProgress', 'Delivered', 'Closed'], index: true, default: 'Draft' },
-  items: [PurchaseOrderItemSchema],
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
+  supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier' },
+  requestedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  status: { type: String, enum: ['Draft', 'PendingFinanceApproval', 'Approved', 'Rejected', 'SentToSupplier', 'InProgress', 'Delivered', 'Closed'], default: 'Draft' },
+  items: [],
   totalAmount: { type: Number },
   financeApproval: {
     approverId: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -14,3 +16,6 @@ const PurchaseOrderSchema = new Schema({
     approvedAt: { type: Date }
   }
 }, { timestamps: true });
+
+const PurchaseOrder = mongoose.model('PurchaseOrder', PurchaseOrderSchema);
+export default PurchaseOrder;

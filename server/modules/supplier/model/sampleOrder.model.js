@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-const SampleSchema = new Schema({
+const { Schema } = mongoose;
+
+const SampleOrderSchema = new Schema({
   supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier' },
   materialId: { type: Schema.Types.ObjectId, ref: 'Material' },
   requestedBy: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -7,3 +9,7 @@ const SampleSchema = new Schema({
   files: [{ type: String }],
   reviewNote: { type: String }
 }, { timestamps: true });
+
+const SampleOrder = mongoose.model('SampleOrder', SampleOrderSchema);
+export default SampleOrder;
+
