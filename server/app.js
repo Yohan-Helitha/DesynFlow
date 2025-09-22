@@ -1,3 +1,4 @@
+import purchaseOrderRouter from "./modules/supplier/routes/purchaseOrder.routes.js";
 //2iWElcKr29ZOpPPf
 
 
@@ -17,6 +18,8 @@ app.use(express.json());
 
 // Mount supplier router
 app.use("/api/suppliers", supplierRouter);
+// Mount purchase order router
+app.use("/api/purchase-orders", purchaseOrderRouter);
 
 const mongoUri = process.env.MONGODB_URI;
 const port = process.env.PORT || 3000;
@@ -29,3 +32,5 @@ mongoose.connect(mongoUri)
     });
   })
   .catch((err) => console.log("MongoDB connection error:", err));
+
+export { app };

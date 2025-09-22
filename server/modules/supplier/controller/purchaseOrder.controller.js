@@ -6,7 +6,8 @@ export const createPurchaseOrder = async (req, res) => {
     const order = await PurchaseOrderService.createPurchaseOrder(req.body);
     res.status(201).json(order);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    // Return specific validation errors
+    res.status(400).json({ error: err.message || 'Order creation failed' });
   }
 };
 

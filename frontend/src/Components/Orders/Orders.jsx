@@ -17,7 +17,7 @@ function Orders() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch("http://localhost:3000/purchase-orders"); // backend API
+        const res = await fetch("http://localhost:3000/api/purchase-orders"); // backend API
         const data = await res.json();
         setOrders(data);
       } catch (err) {
@@ -90,10 +90,10 @@ function Orders() {
             </tr>
           )}
         </tbody>
-          
-          <button><Link to ="/OrderForm">Place an Order</Link></button>
-
       </table>
+
+      {/* Place Order Button outside table */}
+      <button><Link to="/OrderForm">Place an Order</Link></button>
     </div>
   );
 }
