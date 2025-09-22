@@ -70,7 +70,7 @@ export const CompletedPayments = () => {
 
 
   // Pagination
-  const itemsPerPage = 4;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
   const paginatedPayments = filteredPayments.slice(
     (currentPage - 1) * itemsPerPage,
@@ -122,6 +122,7 @@ export const CompletedPayments = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('type')}>Type <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receipt</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('verifiedTime')}>Verified Time <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('status')}>Status <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
@@ -141,6 +142,7 @@ export const CompletedPayments = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.status || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => handleView(payment)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md mr-2">
                       <Eye size={16} className="inline mr-1" /> View
@@ -150,7 +152,7 @@ export const CompletedPayments = () => {
               ))}
               {paginatedPayments.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
                     No reviewed payments found
                   </td>
                 </tr>

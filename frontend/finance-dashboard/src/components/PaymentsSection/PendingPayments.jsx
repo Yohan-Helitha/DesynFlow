@@ -11,44 +11,41 @@ import {
 } from 'lucide-react'
 import { ViewPaymentModal } from './ViewPaymentModal'
 
-// Mock data for pending payments (updated fields)
-const pendingPayments = [
-  {
-    id: 'PAY-001',
-    projectId: 'PRJ-001',
-    clientId: 'USR-001',
-    amount: 5600,
-    method: 'Bank',
-    type: 'InspectionCost',
-    receiptUrl: 'https://example.com/receipts/001.pdf',
-  },
-  {
-    id: 'PAY-002',
-    projectId: 'PRJ-002',
-    clientId: 'USR-002',
-    amount: 2800,
-    method: 'Online',
-    type: 'ProjectPayment',
-    receiptUrl: 'https://example.com/receipts/002.pdf',
-  },
-  {
-    id: 'PAY-003',
-    projectId: 'PRJ-003',
-    clientId: 'USR-003',
-    amount: 1400,
-    method: 'Cash',
-    type: 'Advance',
-    receiptUrl: '',
-  },
-];
+import { useEffect } from 'react';
 
 export const PendingPayments = () => {
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [selectedPayment, setSelectedPayment] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [sortField, setSortField] = useState('paymentDate')
-  const [sortDirection, setSortDirection] = useState('desc')
-  const [currentPage, setCurrentPage] = useState(1)
+  const [pendingPayments, setPendingPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('createdAt');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/payments/pending')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch pending payments');
+        return res.json();
+      })
+      .then((data) => {
+        setPendingPayments(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">Loading pending payments...</div>;
+  }
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
+  }
 
   const handleView = (payment) => {
     setSelectedPayment(payment)
@@ -68,27 +65,27 @@ export const PendingPayments = () => {
   const filteredPayments = pendingPayments
     .filter(
       (payment) =>
-        (payment.id && payment.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (payment.clientName && payment.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (payment.quotationId && payment.quotationId.toLowerCase().includes(searchTerm.toLowerCase()))
+        (payment._id && payment._id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (payment.projectId && payment.projectId.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (payment.clientId && payment.clientId.toString().toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
       if (a[sortField] < b[sortField]) {
-        return sortDirection === 'asc' ? -1 : 1
+        return sortDirection === 'asc' ? -1 : 1;
       }
       if (a[sortField] > b[sortField]) {
-        return sortDirection === 'asc' ? 1 : -1
+        return sortDirection === 'asc' ? 1 : -1;
       }
-      return 0
-    })
+      return 0;
+    });
 
   // Pagination
-  const itemsPerPage = 4
-  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage)
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
   const paginatedPayments = filteredPayments.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  )
+  );
 
   return (
     <div>
@@ -127,6 +124,7 @@ export const PendingPayments = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receipt</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -134,12 +132,13 @@ export const PendingPayments = () => {
 
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedPayments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-gray-50">
+                <tr key={payment._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{payment.projectId}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{payment.clientId}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">${payment.amount.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">${payment.amount?.toLocaleString()}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{payment.method}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{payment.type}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{payment.status}</td>
                   <td className="px-6 py-4 text-sm text-indigo-600 underline cursor-pointer">
                     {payment.receiptUrl ? (
                       <a href={payment.receiptUrl} target="_blank" rel="noopener noreferrer">View Receipt</a>
