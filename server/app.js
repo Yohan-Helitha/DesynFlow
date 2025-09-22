@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import supplierRouter from "./modules/supplier/routes/supplier.routes.js";
+import materialRouter from "./modules/supplier/routes/material.routes.js";
 dotenv.config();
 
 const app = express();
@@ -20,8 +21,10 @@ app.use(express.json());
 app.use("/api/suppliers", supplierRouter);
 // Mount purchase order router
 app.use("/api/purchase-orders", purchaseOrderRouter);
+// Mount material router
+app.use("/api/materials", materialRouter);
 
-const mongoUri = process.env.MONGODB_URI;
+const mongoUri = process.env.MONGO_URI;
 const port = process.env.PORT || 3000;
 
 mongoose.connect(mongoUri)

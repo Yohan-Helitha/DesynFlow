@@ -1,5 +1,7 @@
+
 import mongoose from "mongoose";
 const { Schema } = mongoose;
+import PurchaseOrderItemSchema from "./purchaseOrderItem.model.js";
 
 const PurchaseOrderSchema = new Schema({
   requestOrigin: { type: String, enum: ['ReorderAlert', 'Manual', 'ProjectMR'] },
@@ -7,7 +9,7 @@ const PurchaseOrderSchema = new Schema({
   supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier' },
   requestedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   status: { type: String, enum: ['Draft', 'PendingFinanceApproval', 'Approved', 'Rejected', 'SentToSupplier', 'InProgress', 'Delivered', 'Closed'], default: 'Draft' },
-  items: [],
+  items: [PurchaseOrderItemSchema],
   totalAmount: { type: Number },
   financeApproval: {
     approverId: { type: Schema.Types.ObjectId, ref: 'User' },

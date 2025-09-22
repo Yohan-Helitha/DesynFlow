@@ -97,7 +97,7 @@ function Dashboard_proc() {
               🔔
             </div>
             <span>Admin</span>
-            <img src="" alt="user" />
+            <img src={process.env.PUBLIC_URL + "/avatar.png"} alt="user" />
           </div>
         </div>
 
