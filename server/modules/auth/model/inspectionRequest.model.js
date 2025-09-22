@@ -1,4 +1,4 @@
-import mangoose, { mongo } from 'mongoose';
+import mongoose from 'mongoose';
 
 const inspectionRequestSchema = new mongoose.Schema({
     requestId: {

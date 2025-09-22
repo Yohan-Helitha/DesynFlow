@@ -5,7 +5,8 @@ import {
   getClientInspectionRequests,
   updateInspectionRequestStatus
 } from '../controller/inspectionRequestController.js';
-import authMiddleware from '../middleware/authMiddleware.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
+import roleMiddleware from '../middleware/roleMiddleware.js';
 // import uploadMiddleware from '../middleware/uploadMiddleware.js'; // Uncomment and implement for file uploads
 
 const router = express.Router();
@@ -13,14 +14,16 @@ const router = express.Router();
 // Create a new inspection request (client)
 router.post(
   '/',
-  authMiddleware(['client']),
+  authMiddleware,
+  roleMiddleware(['client']),
   createInspectionRequest
 );
 
 // Upload payment receipt (client)
 router.post(
   '/:requestId/receipt',
-  authMiddleware(['client']),
+  authMiddleware,
+  roleMiddleware(['client']),
   /* uploadMiddleware.single('receipt'), */ // Uncomment and implement for file uploads
   uploadPaymentReceipt
 );
@@ -28,14 +31,16 @@ router.post(
 // Get all inspection requests for the logged-in client
 router.get(
   '/',
-  authMiddleware(['client']),
+  authMiddleware,
+  roleMiddleware(['client']),
   getClientInspectionRequests
 );
 
 // Update status of an inspection request (CSR, finance, or admin)
 router.patch(
   '/:requestId/status',
-  authMiddleware(['csr', 'finance', 'admin']),
+  authMiddleware,
+  roleMiddleware(['csr', 'finance', 'admin']),
   updateInspectionRequestStatus
 );
 
