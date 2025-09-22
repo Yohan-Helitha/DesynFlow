@@ -7,7 +7,7 @@ const URL = "http//localhost:3000/Supplier_details";
 
 const fetchHandler = async () => {
   return await axios.get(URL).then((res) => res.data);
-}
+};
 
 function Supplier_details() {
   const [suppliers, setSuppliers] = useState([]);
@@ -17,7 +17,7 @@ function Supplier_details() {
   // Fetch suppliers from backend
   useEffect(() => {
     axios
-      .get("http://localhost:3000/api/suppliers") 
+      .get("http://localhost:3000/api/suppliers")
       .then((res) => setSuppliers(res.data))
       .catch((err) => console.error("Error fetching suppliers:", err));
   }, []);
@@ -79,29 +79,45 @@ function Supplier_details() {
           ))}
         </tbody>
       </table>
-      
-        <button className="add-supplier-btn"><Link to ="/Add_suppliers">Add New Supplier</Link></button>
-      
 
-      <button className="update-delete-supplier-btn"><Link to ="/Update_delete_suppliers">manage suppliers</Link></button>
+      <button className="add-supplier-btn">
+        <Link to="/Add_suppliers">Add New Supplier</Link>
+      </button>
+
+      <button className="update-delete-supplier-btn">
+        <Link to="/Update_delete_suppliers">Manage Suppliers</Link>
+      </button>
 
       {/* Modal */}
       {selectedSupplier && (
         <div className="modal">
           <div className="modal-content">
-            <span
+            <button
               className="close-btn"
               onClick={() => setSelectedSupplier(null)}
+              aria-label="Close"
             >
-              &times;
-            </span>
+              ×
+            </button>
             <h3>{selectedSupplier.companyName}</h3>
-            <p><b>Contact:</b> {selectedSupplier.contactName}</p>
-            <p><b>Email:</b> {selectedSupplier.email}</p>
-            <p><b>Phone:</b> {selectedSupplier.phone}</p>
-            <p><b>Materials:</b> {selectedSupplier.materialTypes?.join(", ")}</p>
-            <p><b>Regions:</b> {selectedSupplier.deliveryRegions?.join(", ")}</p>
-            <p><b>Rating:</b> {selectedSupplier.rating}</p>
+            <p>
+              <b>Contact:</b> {selectedSupplier.contactName}
+            </p>
+            <p>
+              <b>Email:</b> {selectedSupplier.email}
+            </p>
+            <p>
+              <b>Phone:</b> {selectedSupplier.phone}
+            </p>
+            <p>
+              <b>Materials:</b> {selectedSupplier.materialTypes?.join(", ")}
+            </p>
+            <p>
+              <b>Regions:</b> {selectedSupplier.deliveryRegions?.join(", ")}
+            </p>
+            <p>
+              <b>Rating:</b> {selectedSupplier.rating}
+            </p>
             <button className="place-order-btn">Place Order</button>
           </div>
         </div>

@@ -10,7 +10,7 @@ body {
   padding: 24px;
   border-radius: 12px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  max-width: 900px;
+  max-width: 1000px;
   margin: auto;
 }
 
@@ -39,19 +39,29 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 15px;
+  table-layout: fixed;  /* Ensures columns are consistent */
+}
+
+th, td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e5e5;
+  vertical-align: middle; /* Keep text aligned in a straight line */
+  white-space: nowrap;    /* Prevents text wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Adds "..." if text too long */
 }
 
 th {
-  text-align: left;
-  padding: 14px;
   background: #F7EED3;
   color: #674636;
   font-weight: 600;
+  font-size: 14px;
 }
 
 td {
-  padding: 14px;
-  border-bottom: 1px solid #e5e5e5;
+  font-size: 14px;
+  color: #2c2c2c;
 }
 
 /* Ratings */
@@ -107,6 +117,7 @@ td {
   z-index: 999;
 }
 .modal-content {
+  position: relative;
   background: #FFF8E8;
   padding: 20px;
   border-radius: 10px;
@@ -122,13 +133,24 @@ td {
 .modal-content ul {
   margin: 10px 0 20px 20px;
 }
+
+/* Close Button */
 .close-btn {
-  float: right;
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: none;
   cursor: pointer;
-  font-size: 18px;
-  color: #674636;
+  font-size: 20px;
+  color: #674636;   /* Always brownish */
   font-weight: bold;
+  transition: color 0.3s;
 }
+.close-btn:hover {
+  color: #50352b;   /* Darker brown on hover */
+}
+
 .place-order-btn {
   background: #674636;
   color: #FFF8E8;
