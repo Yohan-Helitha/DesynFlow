@@ -3,152 +3,83 @@ import mongoose from 'mongoose';
 import crypto from 'crypto';
 
 const paymentReceiptSchema = new mongoose.Schema({
-  inspectionRequest: {
+  // Essential reference fields
+  inspectionRequest_ID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InspectionRequest',
     required: true
   },
-  client: {
+  client_ID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  receiptFilePath: {
+  
+  // File and payment details
+  receipt_file_path: {
     type: String,
-    default: ''  // Not required initially, set when file is uploaded
+    default: ''  // Set when file is uploaded via one-time link
   },
   status: {
     type: String,
-    enum: ['awaiting_upload', 'uploaded', 'verified', 'rejected', 'expired'],
-    default: 'awaiting_upload'
+    enum: ['in-progress', 'pending', 'verified', 'rejected'],
+    default: 'in-progress'
   },
   
-  // One-time use link system
+  // One-time email link validation (simplified)
   uploadToken: {
     type: String,
     required: true,
     unique: true
   },
-  tokenExpires: {
+  tokenExpiry: {
     type: Date,
     required: true
   },
-  isTokenUsed: {
-    type: Boolean,
-    default: false
-  },
-  tokenUsedAt: {
-    type: Date,
-    default: null
-  },
-  uploadAttempts: {
-    type: Number,
-    default: 0,
-    max: 3  // Maximum 3 attempts allowed
-  },
   
-  // Payment details from finance calculation
+  // Payment calculation from finance
   calculatedAmount: {
     type: Number,
     required: true
   },
-  currency: {
-    type: String,
-    default: 'USD'
-  },
-  paymentDueDate: {
+  payment_dueDate: {
     type: Date,
     required: true
   },
   
-  // Verification details
+  // Verification tracking
+  verifiedAt: {
+    type: Date,
+    default: null
+  },
   verifiedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
   },
-  verifiedAt: {
-    type: Date,
-    default: null
-  },
   rejectionReason: {
-    type: String,
-    default: ''
-  },
-  financeRemarks: {
-    type: String,
-    default: ''
-  },
-  
-  // Email tracking
-  emailSentAt: {
-    type: Date,
-    default: null
-  },
-  emailSentBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
-  },
-  
-  // Security tracking
-  uploadIP: {
-    type: String,
-    default: ''
-  },
-  uploadUserAgent: {
-    type: String,
-    default: ''
-  },
-  
-  // File details
-  originalFileName: {
-    type: String,
-    default: ''
-  },
-  fileSize: {
-    type: Number,
-    default: 0
-  },
-  fileType: {
     type: String,
     default: ''
   }
   
 }, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  timestamps: true
 });
 
-// Virtual for checking if token is valid
-paymentReceiptSchema.virtual('isTokenValid').get(function() {
-  return !this.isTokenUsed && 
-         this.tokenExpires > new Date() && 
-         this.uploadAttempts < 3 &&
-         this.status === 'awaiting_upload';
-});
-
-// Virtual for upload URL
-paymentReceiptSchema.virtual('uploadUrl').get(function() {
-  if (this.isTokenValid) {
-    return `/api/payment-receipt/upload/${this.uploadToken}`;
-  }
-  return null;
-});
-
-// Pre-save middleware to generate secure token
+// Pre-save middleware to generate secure one-time token
 paymentReceiptSchema.pre('save', function(next) {
   if (this.isNew && !this.uploadToken) {
-    // Generate cryptographically secure token
+    // Generate cryptographically secure one-time token
     this.uploadToken = crypto.randomBytes(32).toString('hex');
+    // Token expires in 7 days for payment upload
+    this.tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   }
   next();
 });
 
-// Index for token lookup
+// Index for efficient lookups
 paymentReceiptSchema.index({ uploadToken: 1 });
-paymentReceiptSchema.index({ client: 1, createdAt: -1 });
-paymentReceiptSchema.index({ status: 1, tokenExpires: 1 });
+paymentReceiptSchema.index({ inspectionRequest_ID: 1 });
+paymentReceiptSchema.index({ client_ID: 1, createdAt: -1 });
 
 export default mongoose.model('PaymentReceipt', paymentReceiptSchema);

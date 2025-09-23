@@ -5,12 +5,20 @@ import {
   getClientInspectionRequests,
   updateInspectionRequestStatus
 } from '../controller/inspectionRequestController.js';
+import {
+  createInspectorForm,
+  updateInspectorForm,
+  getInspectorFormsByRequest,
+  submitInspectorForm,
+  getMyInspectorForms
+} from '../controller/inspectorFormController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import roleMiddleware from '../middleware/roleMiddleware.js';
 // import uploadMiddleware from '../middleware/uploadMiddleware.js'; // Uncomment and implement for file uploads
 
 const router = express.Router();
 
+// CLIENT ROUTES - Simplified inspection requests
 // Create a new inspection request (client)
 router.post(
   '/',
@@ -30,12 +38,54 @@ router.post(
 
 // Get all inspection requests for the logged-in client
 router.get(
-  '/',
+  '/client',
   authMiddleware,
   roleMiddleware(['client']),
   getClientInspectionRequests
 );
 
+// INSPECTOR ROUTES - Dynamic form handling
+// Create inspector form entry (inspector fills after site visit)
+router.post(
+  '/inspector-form',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  createInspectorForm
+);
+
+// Update inspector form entry
+router.put(
+  '/inspector-form/:formId',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  updateInspectorForm
+);
+
+// Submit inspector form (complete inspection)
+router.patch(
+  '/inspector-form/:formId/submit',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  submitInspectorForm
+);
+
+// Get inspector forms by inspection request (for admins/CSR)
+router.get(
+  '/:requestId/inspector-forms',
+  authMiddleware,
+  roleMiddleware(['admin', 'csr', 'inspector']),
+  getInspectorFormsByRequest
+);
+
+// Get inspector's own forms
+router.get(
+  '/inspector-forms/my-forms',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  getMyInspectorForms
+);
+
+// ADMIN/CSR ROUTES - Status management
 // Update status of an inspection request (CSR, finance, or admin)
 router.patch(
   '/:requestId/status',

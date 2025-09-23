@@ -1,40 +1,46 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
-const roomSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  floor: { type: Number, required: true },
-  dimensions: { type: String },
-  preferences: { type: String },
-  materials: { type: String }
-}, { _id: false });
-
+// Report table (matches diagram: report_table)
 const reportSchema = new mongoose.Schema({
-  inspectionRequest: {
+  InspectionRequest_ID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InspectionRequest',
     required: true
   },
-  inspector: {
+  
+  inspector_ID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
+  
   propertyType: { type: String, required: true },
-  siteLocation: { type: String, required: true },
-  inspectionDate: { type: Date, required: true },
-  rooms: [roomSchema],
-  generalNotes: { type: String },
-  reportFilePath: { type: String }, // for uploaded report file (PDF, etc.)
-  status: {
-    type: String,
-    enum: ['draft', 'submitted', 'reviewed', 'approved', 'rejected'],
-    default: 'draft'
-  },
-  submittedAt: { type: Date },
-  reviewedAt: { type: Date },
-  approvedAt: { type: Date },
+  propertyLocation: { type: String, required: true },
+  inspection_Date: { type: Date, required: true },
+  inspection_Date: { type: Date, required: true }, // Completion date
+  rooms: { type: Number, required: true },
+  
+  // Status tracking
+  submittedAt: { type: Date, default: Date.now },
   rejectedAt: { type: Date },
-  remarks: { type: String }
-}, { timestamps: true });
+  approvedAt: { type: Date },
+  
+  // Report content
+  report_content: { type: String },
+  
+  // Verification (keep as requested)
+  verifiedToken: { type: String },
+  validation_status: {
+    type: String,
+    enum: ['pending', 'validated', 'rejected'],
+    default: 'pending'
+  }
+}, { 
+  timestamps: true 
+});
+
+// Indexes
+reportSchema.index({ InspectionRequest_ID: 1 });
+reportSchema.index({ inspector_ID: 1, createdAt: -1 });
 
 export default mongoose.model('Report', reportSchema);

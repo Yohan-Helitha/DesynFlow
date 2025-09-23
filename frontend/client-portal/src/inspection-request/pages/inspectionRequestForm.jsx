@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropertyDetailsForm from '../components/forms/PropertyDetailsForm';
-import FloorManagement from '../components/forms/FloorManagement';
-import DocumentUpload from '../components/forms/DocumentUpload';
+import FloorManagement from '../components/forms/floorManagement';
+import DocumentUpload from '../components/forms/documentUpload';
 import ProgressBar from '../components/ui/ProgressBar';
 import './InspectionRequestForm.css';
 

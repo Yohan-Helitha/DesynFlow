@@ -25,5 +25,21 @@ services:
     command: npm start
     restart: unless-stopped
 
+  frontend:
+    build: ../frontend/client-portal
+    container_name: desynflow-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend/client-portal:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_URL=http://localhost:4000
+    command: npm start
+    restart: unless-stopped
+
 volumes:
   mongo-data:

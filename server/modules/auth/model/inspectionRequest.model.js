@@ -1,164 +1,45 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
-// Room schema for dynamic room management
-const roomSchema = new mongoose.Schema({
-  roomId: { type: String, required: true },
-  roomName: { type: String, required: true },
-  roomNumber: { type: String },
-  roomSize: {
-    length: { type: Number },
-    width: { type: Number },
-    unit: { type: String, enum: ['ft', 'm'], default: 'ft' }
-  },
-  dimensions: { type: String },
-  photos: [{ type: String }], // Array of file paths/URLs
-  designPreferences: {
-    style: { type: String },
-    colors: [{ type: String }],
-    materials: [{ type: String }],
-    specialRequirements: { type: String }
-  },
-  reusedFromRoom: { type: String } // Reference to another room's preferences
-}, { _id: false });
-
-// Floor schema for multi-floor properties
-const floorSchema = new mongoose.Schema({
-  floorNumber: { type: Number, required: true },
-  floorName: { type: String }, // e.g., "Ground Floor", "First Floor"
-  rooms: [roomSchema],
-  floorPlan: { type: String }, // File path/URL to floor plan image
-  totalRooms: { type: Number, default: 0 }
-}, { _id: false });
-
-// Enhanced inspection request schema
+// Simple Client Inspection Request (matches diagram: inspection_request_table)
 const inspectionRequestSchema = new mongoose.Schema({
-  // Client Information
-  client: {
+  // Links to User table
+  client_ID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  clientName: { type: String, required: true },
+  client_name: { type: String, required: true },
   email: { type: String, required: true },
-  phone: { type: String, required: true },
+  phone_number: { type: String, required: true },
   
-  // Property Details
-  propertyLocation: {
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String },
-    zipCode: { type: String },
-    coordinates: {
-      lat: { type: Number },
-      lng: { type: Number }
-    }
+  // Property basics
+  propertyLocation_address: { type: String, required: true },
+  propertyLocation_city: { type: String, required: true },
+  propertyType: { 
+    type: String, 
+    enum: ['residential', 'commercial', 'apartment'],
+    required: true 
   },
+  number_of_floor: { type: Number, default: 1 },
+  number_of_room: { type: Number, required: true },
+  room_name: [String],
   
-  propertyType: {
-    type: String,
-    enum: ['house', 'apartment', 'hotel', 'office', 'commercial', 'warehouse', 'other'],
-    required: true
-  },
-  
-  numberOfFloors: { type: Number, required: true, min: 1 },
-  floors: [floorSchema],
-  
-  // Inspection Preferences
-  preferredInspectionDate: { type: Date, required: true },
-  alternativeDate1: { type: Date },
-  alternativeDate2: { type: Date },
-  
-  // Documents & Images
-  documents: [{
-    fileName: { type: String, required: true },
-    filePath: { type: String, required: true },
-    fileType: { type: String }, // 'sitePlan', 'propertyPhoto', 'document'
-    uploadedAt: { type: Date, default: Date.now }
-  }],
-  
-  // Payment Information
-  paymentReceiptUrl: { type: String },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'uploaded', 'verified', 'rejected'],
-    default: 'pending'
-  },
-  paymentAmount: { type: Number },
-  
-  // Request Status & Workflow
+  // Status
+  inspection_date: { type: Date },
   status: {
     type: String,
-    enum: ['draft', 'pending', 'payment_pending', 'payment_verified', 'assigned', 'scheduled', 'in_progress', 'completed', 'cancelled'],
-    default: 'draft'
+    enum: ['pending', 'assigned', 'in-progress', 'completed', 'cancelled'],
+    default: 'pending'
   },
   
-  // Assignment Information
-  assignedInspector: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  assignedAt: { type: Date },
-  scheduledDate: { type: Date },
-  
-  // Progress Tracking
-  formProgress: {
-    basicDetails: { type: Boolean, default: false },
-    floorDetails: { type: Boolean, default: false },
-    documents: { type: Boolean, default: false },
-    payment: { type: Boolean, default: false }
-  },
-  
-  // Notes & Special Requirements
-  specialInstructions: { type: String },
-  urgency: {
-    type: String,
-    enum: ['low', 'normal', 'high', 'urgent'],
-    default: 'normal'
-  },
-  
-  // Audit Trail
-  statusHistory: [{
-    status: { type: String, required: true },
-    changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    changedAt: { type: Date, default: Date.now },
-    reason: { type: String }
-  }],
-  
-  // Completion Details
-  completedAt: { type: Date },
-  reportGenerated: { type: Boolean, default: false },
-  reportId: { type: mongoose.Schema.Types.ObjectId, ref: 'Report' }
-  
+  // Security
+  verifiedToken: { type: String },
+  tokenExpiry: { type: Date }
 }, { 
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  timestamps: true 
 });
 
-// Virtual for total rooms across all floors
-inspectionRequestSchema.virtual('totalRooms').get(function() {
-  return this.floors.reduce((total, floor) => total + floor.rooms.length, 0);
-});
-
-// Virtual for completion percentage
-inspectionRequestSchema.virtual('completionPercentage').get(function() {
-  const steps = Object.values(this.formProgress);
-  const completedSteps = steps.filter(step => step === true).length;
-  return Math.round((completedSteps / steps.length) * 100);
-});
-
-// Indexes for better query performance
-inspectionRequestSchema.index({ client: 1, createdAt: -1 });
-inspectionRequestSchema.index({ status: 1, createdAt: -1 });
-inspectionRequestSchema.index({ assignedInspector: 1, scheduledDate: 1 });
-inspectionRequestSchema.index({ 'propertyLocation.coordinates': '2dsphere' });
-
-// Pre-save middleware to update total rooms
-inspectionRequestSchema.pre('save', function(next) {
-  this.floors.forEach(floor => {
-    floor.totalRooms = floor.rooms.length;
-  });
-  next();
-});
+inspectionRequestSchema.index({ client_ID: 1, createdAt: -1 });
+inspectionRequestSchema.index({ status: 1 });
 
 export default mongoose.model('InspectionRequest', inspectionRequestSchema);
