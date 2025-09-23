@@ -16,9 +16,21 @@ ChartJS.register(Title, Tooltip, Legend, ArcElement);
 function Dashboard_proc() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const toggleNotifications = () => setPanelOpen(!panelOpen);
+
+  // Check notification count from localStorage
+  React.useEffect(() => {
+    const checkNotifs = () => {
+      const localNotifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+      setNotifCount(localNotifs.length);
+    };
+    checkNotifs();
+    window.addEventListener("storage", checkNotifs);
+    return () => window.removeEventListener("storage", checkNotifs);
+  }, [panelOpen]);
 
   // Pie chart data
   const pieData = {
@@ -93,8 +105,11 @@ function Dashboard_proc() {
         <div className="topbar">
           <h1>Welcome Back</h1>
           <div className="user">
-            <div className="notification" onClick={toggleNotifications}>
+            <div className="notification" onClick={toggleNotifications} style={{ position: 'relative', cursor: 'pointer' }}>
               🔔
+              {notifCount > 0 && (
+                <span style={{ position: 'absolute', top: 0, right: 0, width: '10px', height: '10px', background: 'red', borderRadius: '50%', border: '1px solid #fff', display: 'inline-block' }}></span>
+              )}
             </div>
             <span>Admin</span>
             <img src={process.env.PUBLIC_URL + "/avatar.png"} alt="user" />

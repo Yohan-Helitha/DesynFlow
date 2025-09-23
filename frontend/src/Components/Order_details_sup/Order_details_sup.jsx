@@ -34,6 +34,16 @@ function OrderDetailsSup() {
     try {
       setProcessingId(id);
       await axios.put(`${API_BASE}/${id}`, { status: "Approved" });
+      // Add notification to localStorage
+      const notif = {
+        type: "order",
+        orderId: id,
+        status: "Approved",
+        time: new Date().toISOString(),
+      };
+      const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+      notifs.push(notif);
+      localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
       await fetchOrders();
     } catch (err) {
       console.error("Error approving order:", err);
@@ -46,6 +56,16 @@ function OrderDetailsSup() {
     try {
       setProcessingId(id);
       await axios.put(`${API_BASE}/${id}`, { status: "Rejected" });
+      // Add notification to localStorage
+      const notif = {
+        type: "order",
+        orderId: id,
+        status: "Rejected",
+        time: new Date().toISOString(),
+      };
+      const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+      notifs.push(notif);
+      localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
       await fetchOrders();
     } catch (err) {
       console.error("Error rejecting order:", err);
