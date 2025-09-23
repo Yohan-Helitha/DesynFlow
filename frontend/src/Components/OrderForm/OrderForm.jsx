@@ -1,47 +1,34 @@
 import React, { useState, useEffect } from "react";
 function OrderForm({ onOrderCreated }) {
-  // Permanent price per unit for each material
-  const MATERIAL_PRICES = {
-    wood: 50,
-    fabric: 30,
-    net: 20,
-    glue: 10,
-    glass: 100
-  };
-
   const [suppliers, setSuppliers] = useState([]);
+  const [materials, setMaterials] = useState([]);
   const [formData, setFormData] = useState({
     supplierId: "",
     items: [{ materialId: "", quantity: "", pricePerUnit: 0, total: 0 }],
   });
-  const [materials, setMaterials] = useState([]);
 
-  // Fetch materials from backend
   useEffect(() => {
-    // Fetch suppliers
     fetch("http://localhost:3000/api/suppliers")
       .then(res => res.json())
       .then(data => setSuppliers(data))
       .catch(() => setSuppliers([]));
-    // Fetch materials
-    fetch("http://localhost:3000/api/materials")
-      .then(res => res.json())
-      .then(data => {
-        // Ensure each material has a display name
-        const mapped = data.map(mat => ({
-          _id: mat._id,
-          name: mat.name || mat.materialName || mat.materialType || mat._id,
-          pricePerUnit: mat.pricePerUnit,
-          supplierId: mat.supplierId
-        }));
-        setMaterials(mapped);
-      })
-      .catch(() => setMaterials([]));
   }, []);
+
+  // Fetch materials for selected supplier
+  useEffect(() => {
+    if (formData.supplierId) {
+      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
+        .then(res => res.json())
+        .then(data => setMaterials(data))
+        .catch(() => setMaterials([]));
+    } else {
+      setMaterials([]);
+    }
+  }, [formData.supplierId]);
 
   // handle field change
   const handleChange = (e) => {
-  setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   // handle item change
@@ -78,7 +65,7 @@ function OrderForm({ onOrderCreated }) {
   // submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Format items for backend: only send materialId
+    // Format items for backend: send materialId, qty, unitPrice
     const formattedItems = formData.items
       .filter(item => item.materialId && /^[a-f\d]{24}$/i.test(item.materialId))
       .map(item => ({
@@ -144,11 +131,15 @@ function OrderForm({ onOrderCreated }) {
             ))}
           </select>
         </label>
+        {/* Show Supplier ID (not editable) */}
+        {formData.supplierId && (
+          <div style={{ fontSize: '13px', color: '#674636', marginBottom: '8px' }}>
+            Supplier ID: <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>{formData.supplierId}</span>
+          </div>
+        )}
 
         <h3>Order Items</h3>
         {formData.items.map((item, index) => {
-          // Filter materials by selected supplier
-          const filteredMaterials = materials.filter(mat => mat.supplierId === formData.supplierId);
           return (
             <div key={index} className="order-item">
               <select
@@ -156,16 +147,17 @@ function OrderForm({ onOrderCreated }) {
                 value={item.materialId || ""}
                 onChange={(e) => handleItemChange(index, e)}
                 required
+                
               >
                 <option value="">Select Material</option>
-                {filteredMaterials.map(mat => (
-                  <option key={mat._id} value={mat._id}>{mat.name}</option>
+                {materials.map(mat => (
+                  <option key={mat._id} value={mat._id}>{mat.name || mat.materialName || mat.materialType}</option>
                 ))}
               </select>
               {/* Show selected material name below dropdown for clarity */}
               {item.materialId && (
                 <div style={{ fontSize: '13px', color: '#674636', marginBottom: '4px' }}>
-                  Selected: {filteredMaterials.find(m => m._id === item.materialId)?.name || item.materialId}
+                  Selected: {materials.find(m => m._id === item.materialId)?.name || item.materialId}
                 </div>
               )}
               <input

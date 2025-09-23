@@ -36,34 +36,24 @@ function Orders() {
 
   return (
     <div className="orders-container">
-      <h2>Orders Management</h2>
-
-      {/* Search bar */}
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Search by Supplier or Material..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      {/* Orders Table */}
+      <h2>Orders</h2>
       <table className="orders-table" id="ordersTable">
         <thead>
           <tr>
             <th>Order ID</th>
-            <th>Materials</th>
+            <th>Supplier ID</th>
+            <th>Order Items</th>
+            <th>Price per Unit</th>
             <th>Quantity</th>
-            <th>Supplier</th>
-            <th>Status</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
-          {filteredOrders.length > 0 ? (
-            filteredOrders.map((order, index) => (
-              <tr key={order._id || index}>
-                <td>{order._id}</td>
+          {orders.length > 0 ? (
+            orders.map((order, idx) => (
+              <tr key={order._id || idx}>
+                <td>{idx + 1}</td>
+                <td>{order.supplierId || (order.supplierId?._id || "Unknown")}</td>
                 <td>
                   {order.items?.map((item, i) => (
                     <div key={i}>{item.materialName}</div>
@@ -71,28 +61,30 @@ function Orders() {
                 </td>
                 <td>
                   {order.items?.map((item, i) => (
-                    <div key={i}>{item.quantity}</div>
+                    <div key={i}>{item.unitPrice || item.pricePerUnit}</div>
                   ))}
                 </td>
-                <td>{order.supplierId?.name || "Unknown Supplier"}</td>
                 <td>
-                  <span className={`status ${order.status?.toLowerCase()}`}>
-                    {order.status}
-                  </span>
+                  {order.items?.map((item, i) => (
+                    <div key={i}>{item.qty || item.quantity}</div>
+                  ))}
+                </td>
+                <td>
+                  {order.items?.map((item, i) => (
+                    <div key={i}>{((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity)) || 0}</div>
+                  ))}
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="5" style={{ textAlign: "center" }}>
+              <td colSpan="6" style={{ textAlign: "center" }}>
                 No orders found
               </td>
             </tr>
           )}
         </tbody>
       </table>
-
-      {/* Place Order Button outside table */}
       <button><Link to="/OrderForm">Place an Order</Link></button>
     </div>
   );
