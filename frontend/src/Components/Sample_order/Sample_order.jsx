@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 function Sample_order() {
   const [suppliers, setSuppliers] = useState([]);
+  const [materials, setMaterials] = useState([]);
   const [formData, setFormData] = useState({
     supplierId: "",
     materialId: "",
@@ -19,17 +20,35 @@ function Sample_order() {
       .catch((err) => console.error("Error fetching suppliers:", err));
   }, []);
 
+  // Fetch materials for selected supplier
+  useEffect(() => {
+    if (formData.supplierId) {
+      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
+        .then(res => res.json())
+        .then(data => setMaterials(data))
+        .catch(() => setMaterials([]));
+    } else {
+      setMaterials([]);
+    }
+  }, [formData.supplierId]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    // Only send ObjectIds for materialId, supplierId, requestedBy
+    const payload = {
+      supplierId: formData.supplierId,
+      materialId: formData.materialId,
+      requestedBy: formData.requestedBy,
+      reviewNote: formData.reviewNote
+    };
     fetch("http://localhost:3000/api/samples/upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(payload)
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to request sample");
@@ -73,17 +92,21 @@ function Sample_order() {
           </select>
         </div>
 
-        {/* Material ID */}
+        {/* Material Selection */}
         <div className="form-group">
-          <label>Material ID</label>
-          <input
-            type="text"
+          <label>Material</label>
+          <select
             name="materialId"
             value={formData.materialId}
             onChange={handleChange}
-            placeholder="Enter Material ID"
             required
-          />
+            style={{ color: '#000' }}
+          >
+            <option value="">-- Select Material --</option>
+            {materials.map((mat) => (
+              <option key={mat._id} value={mat._id}>{mat.name || mat.materialName || mat.materialType}</option>
+            ))}
+          </select>
         </div>
 
         {/* Optional Note */}

@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import supplierRouter from "./modules/supplier/routes/supplier.routes.js";
 import materialRouter from "./modules/supplier/routes/material.routes.js";
+import sampleRouter from "./modules/supplier/routes/sample.routes.js";
 dotenv.config();
 
 const app = express();
@@ -23,6 +24,8 @@ app.use("/api/suppliers", supplierRouter);
 app.use("/api/purchase-orders", purchaseOrderRouter);
 // Mount material router
 app.use("/api/materials", materialRouter);
+// Mount sample router
+app.use("/api/samples", sampleRouter);
 
 const mongoUri = process.env.MONGO_URI;
 const port = process.env.PORT || 3000;

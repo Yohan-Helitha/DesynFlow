@@ -13,8 +13,19 @@ function Dashboard_sup() {
     // Fetch sample requests from backend
     fetch("http://localhost:3000/api/samples/123") // replace 123 with supplierId (auth/session later)
       .then((res) => res.json())
-      .then((data) => setRequests(data))
-      .catch((err) => console.error("Error fetching sample requests:", err));
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setRequests(data);
+        } else if (data && Array.isArray(data.samples)) {
+          setRequests(data.samples);
+        } else {
+          setRequests([]);
+        }
+      })
+      .catch((err) => {
+        setRequests([]);
+        console.error("Error fetching sample requests:", err);
+      });
   }, []);
 
   const handleNoted = (id) => {
@@ -39,7 +50,7 @@ function Dashboard_sup() {
         <ul className="nav">
           <li>Overview</li>
           <li><Link to="/Order_details_sup">Orders</Link></li>
-          <li>Samples</li>
+          <li><Link to="/Sample_order_list">Samples</Link></li>
           <li>Profile</li>
         </ul>
       </aside>
