@@ -11,68 +11,42 @@ import {
 } from 'lucide-react'
 import { ViewPurchaseOrderModal } from './ViewPurchaseOrderModal'
 
-// Mock data for pending purchase orders
-const pendingPurchaseOrders = [
-  {
-    id: 'PO-001',
-    projectId: 'PRJ-001',
-    projectName: 'Commercial Building Renovation',
-    requestedBy: 'John Smith',
-    requestedDate: '2023-06-15',
-    vendor: 'ABC Supplies Inc.',
-    totalAmount: 2500,
-    deliveryDate: '2023-06-25',
-    status: 'Pending Approval',
-    priority: 'High',
-    items: [
-      { id: 1, name: 'Premium Paint', quantity: 10, unitPrice: 50, total: 500 },
-      { id: 2, name: 'Construction Materials', quantity: 5, unitPrice: 200, total: 1000 },
-      { id: 3, name: 'Tools', quantity: 2, unitPrice: 500, total: 1000 },
-    ],
-  },
-  {
-    id: 'PO-002',
-    projectId: 'PRJ-002',
-    projectName: 'Residential Kitchen Remodeling',
-    requestedBy: 'Sarah Johnson',
-    requestedDate: '2023-06-16',
-    vendor: 'XYZ Home Supplies',
-    totalAmount: 3800,
-    deliveryDate: '2023-06-28',
-    status: 'Pending Approval',
-    priority: 'Medium',
-    items: [
-      { id: 1, name: 'Kitchen Cabinets', quantity: 5, unitPrice: 400, total: 2000 },
-      { id: 2, name: 'Countertop Material', quantity: 3, unitPrice: 500, total: 1500 },
-      { id: 3, name: 'Fixtures', quantity: 6, unitPrice: 50, total: 300 },
-    ],
-  },
-  {
-    id: 'PO-003',
-    projectId: 'PRJ-003',
-    projectName: 'Office Space Renovation',
-    requestedBy: 'Michael Brown',
-    requestedDate: '2023-06-18',
-    vendor: 'Office Supplies Co.',
-    totalAmount: 5200,
-    deliveryDate: '2023-06-30',
-    status: 'Pending Approval',
-    priority: 'Low',
-    items: [
-      { id: 1, name: 'Office Partitions', quantity: 8, unitPrice: 300, total: 2400 },
-      { id: 2, name: 'Lighting Fixtures', quantity: 20, unitPrice: 80, total: 1600 },
-      { id: 3, name: 'Electrical Supplies', quantity: 1, unitPrice: 1200, total: 1200 },
-    ],
-  },
-]
+import { useEffect } from 'react';
 
 export const PendingPurchaseOrders = () => {
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [selectedPO, setSelectedPO] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [sortField, setSortField] = useState('requestedDate')
-  const [sortDirection, setSortDirection] = useState('desc')
-  const [currentPage, setCurrentPage] = useState(1)
+  const [pendingPurchaseOrders, setPendingPurchaseOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedPO, setSelectedPO] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('createdAt');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/purchase-orders?status=PendingFinanceApproval')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch pending purchase orders');
+        return res.json();
+      })
+      .then((data) => {
+        setPendingPurchaseOrders(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">Loading pending purchase orders...</div>;
+  }
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
+  }
 
   const handleView = (po) => {
     setSelectedPO(po)
@@ -92,27 +66,26 @@ export const PendingPurchaseOrders = () => {
   const filteredPOs = pendingPurchaseOrders
     .filter(
       (po) =>
-        po.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        po.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        po.vendor.toLowerCase().includes(searchTerm.toLowerCase()),
+        (po._id && po._id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (po.projectId && po.projectId.toString().toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
       if (a[sortField] < b[sortField]) {
-        return sortDirection === 'asc' ? -1 : 1
+        return sortDirection === 'asc' ? -1 : 1;
       }
       if (a[sortField] > b[sortField]) {
-        return sortDirection === 'asc' ? 1 : -1
+        return sortDirection === 'asc' ? 1 : -1;
       }
-      return 0
-    })
+      return 0;
+    });
 
   // Pagination
-  const itemsPerPage = 3
-  const totalPages = Math.ceil(filteredPOs.length / itemsPerPage)
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredPOs.length / itemsPerPage);
   const paginatedPOs = filteredPOs.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  )
+    currentPage * itemsPerPage
+  );
 
   return (
     <div>
@@ -145,123 +118,33 @@ export const PendingPurchaseOrders = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('id')}
-                >
-                  <div className="flex items-center">
-                    PO Number
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('projectName')}
-                >
-                  <div className="flex items-center">
-                    Project
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('vendor')}
-                >
-                  <div className="flex items-center">
-                    Vendor
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('totalAmount')}
-                >
-                  <div className="flex items-center">
-                    Total Amount
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('requestedDate')}
-                >
-                  <div className="flex items-center">
-                    Requested Date
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('deliveryDate')}
-                >
-                  <div className="flex items-center">
-                    Delivery Date
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('priority')}
-                >
-                  <div className="flex items-center">
-                    Priority
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Origin</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Finance Approval Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">View</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedPOs.map((po) => (
-                <tr key={po.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {po.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {po.projectName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {po.vendor}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${po.totalAmount.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {po.requestedDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {po.deliveryDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        po.priority === 'High'
-                          ? 'bg-red-100 text-red-800'
-                          : po.priority === 'Medium'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}
-                    >
-                      {po.priority}
-                    </span>
-                  </td>
+                <tr key={po._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{po._id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.projectId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.supplierId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.requestOrigin}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${po.totalAmount?.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.financeApproval?.status || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.createdAt ? `${new Date(po.createdAt).toLocaleDateString()} ${new Date(po.createdAt).toLocaleTimeString()}` : '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleView(po)}
-                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md mr-2"
+                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md"
                     >
                       <Eye size={16} className="inline mr-1" />
                       View
-                    </button>
-                    <button className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md mr-2">
-                      <Check size={16} className="inline mr-1" />
-                      Approve
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md">
-                      <X size={16} className="inline mr-1" />
-                      Reject
                     </button>
                   </td>
                 </tr>
