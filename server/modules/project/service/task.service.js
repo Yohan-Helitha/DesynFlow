@@ -8,6 +8,11 @@ export const createTaskService = async (taskData) => {
   return newTask;
 };
 
+// Get all tasks
+export const getAllTasksService = async () => {
+  return await Task.find().populate('assignedTo', 'name').populate('projectId', 'projectName');
+};
+
 // Get all tasks for a project, with status and completion percentage
 export const getTasksByProjectService = async (projectId) => {
   return await Task.find({ projectId });

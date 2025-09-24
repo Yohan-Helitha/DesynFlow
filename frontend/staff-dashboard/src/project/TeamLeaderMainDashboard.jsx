@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../components/Layout";
 import LeaderDashboard from "./leaderDashboard";
+import TaskBoard from "../components/task";
 import TeamAttendance from "../components/TeamAttendance";
 import ResourceRequests from "../components/ResourceRequests";
 import ProgressReports from "../components/ProgressReports";
@@ -13,12 +14,14 @@ export default function TeamLeaderMainDashboard() {
       case 0:
         return <LeaderDashboard />;
       case 1:
-        return <TeamAttendance />;
+        return <TaskBoard />;
       case 2:
-        return <ResourceRequests />;
+        return <TeamAttendance />;
       case 3:
-        return <ProgressReports />;
+        return <ResourceRequests />;
       case 4:
+        return <ProgressReports />;
+      case 5:
         return <div className="text-brown-primary">Team Settings - Coming Soon</div>;
       default:
         return <LeaderDashboard />;

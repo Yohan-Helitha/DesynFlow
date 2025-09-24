@@ -7,8 +7,8 @@ import ProgressBar from "../components/ProgressBar";
 import DocumentList from "../components/DocumentList";
 
 export default function LeaderDashboard() {
-  // Hardcoded leaderId for demo (replace with logged-in user later)
-  const leaderId = "sampleLeaderId";
+  // Use real leaderId from database (Interior Design Team)
+  const leaderId = "68cffc1dbede29e639b6c757";
   const [team, setTeam] = useState(null);
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -152,8 +152,8 @@ export default function LeaderDashboard() {
       <TeamOverviewCard team={team} tasks={tasks} attendance={attendance} />
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <h3 className="text-lg font-semibold text-brown-primary mb-2">Milestones</h3>
-          <MilestoneList milestones={project.milestones} />
+          <h3 className="text-lg font-semibold text-brown-primary mb-2">Timeline</h3>
+          <MilestoneList milestones={project.timeline} />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-brown-primary mb-2">Progress</h3>

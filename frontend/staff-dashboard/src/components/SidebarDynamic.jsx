@@ -2,6 +2,7 @@ import React from 'react';
 
 const teamLeaderNavItems = [
   { label: "Team Overview", icon: "🏠", id: "overview" },
+  { label: "Tasks", icon: "✅", id: "tasks" },
   { label: "Attendance Management", icon: "📅", id: "attendance" },
   { label: "Resource Requests", icon: "📦", id: "resources" },
   { label: "Progress Reports", icon: "📊", id: "reports" },

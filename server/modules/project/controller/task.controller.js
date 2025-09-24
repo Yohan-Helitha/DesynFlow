@@ -1,6 +1,7 @@
 import {
   createTaskService,
   getTasksByProjectService,
+  getAllTasksService,
   updateTaskStatusService
 } from '../service/task.service.js';
 
@@ -12,6 +13,16 @@ export const createTask = async (req, res) => {
     res.status(201).json(newTask);
   } catch (error) {
     res.status(500).json({ message: 'Error creating task', error: error.message });
+  }
+};
+
+// Get all tasks
+export const getAllTasks = async (req, res) => {
+  try {
+    const tasks = await getAllTasksService();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching all tasks', error: error.message });
   }
 };
 

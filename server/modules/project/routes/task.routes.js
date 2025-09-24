@@ -1,11 +1,15 @@
 import express from 'express';
 import {
   createTask,
+  getAllTasks,
   getTasksByProject,
   updateTaskStatus
 } from '../controller/task.controller.js';
 
 const router = express.Router();
+
+// Get all tasks
+router.get('/tasks', getAllTasks);
 
 // Create a new task (assign to team or member)
 router.post('/tasks', createTask);
