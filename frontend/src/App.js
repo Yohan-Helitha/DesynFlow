@@ -15,7 +15,9 @@ import Notifications_proc from "./Components/Notifications_proc/Notifications_pr
 import Sample_order from "./Components/Sample_order/Sample_order"; 
 import Dashboard_sup from "./Components/Dashboard_sup/Dashboard_sup";
 import OrderDetailsSup from "./Components/Order_details_sup/Order_details_sup";
+
 import Sample_order_list from "./Components/Sample_order_list/Sample_order_list";
+import Sample_order_details from "./Components/Sample_order_details/Sample_order_details";
 
 
 
@@ -34,7 +36,8 @@ function App() {
       <Route path="/Sample_order" element={<Sample_order />} />
       <Route path="/Dashboard_sup" element={<Dashboard_sup />} />
       <Route path="/Order_details_sup" element={<OrderDetailsSup />} />
-      <Route path="/Sample_order_list" element={<Sample_order_list />} />
+  <Route path="/Sample_order_list" element={<Sample_order_list />} />
+  <Route path="/Sample_order_details/:id" element={<Sample_order_details />} />
     </Routes>
   );
 }

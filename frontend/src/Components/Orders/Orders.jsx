@@ -41,39 +41,31 @@ function Orders() {
         <thead>
           <tr>
             <th>Order ID</th>
-            <th>Supplier ID</th>
-            <th>Order Items</th>
-            <th>Price per Unit</th>
+            <th>Supplier</th>
+            <th>Ordered Materials</th>
             <th>Quantity</th>
-            <th>Total</th>
+            <th>Price per Unit</th>
+            <th>Total Price</th>
           </tr>
         </thead>
         <tbody>
           {orders.length > 0 ? (
             orders.map((order, idx) => (
               <tr key={order._id || idx}>
-                <td>{idx + 1}</td>
-                <td>{order.supplierId || (order.supplierId?._id || "Unknown")}</td>
-                <td>
-                  {order.items?.map((item, i) => (
-                    <div key={i}>{item.materialName}</div>
-                  ))}
-                </td>
-                <td>
-                  {order.items?.map((item, i) => (
-                    <div key={i}>{item.unitPrice || item.pricePerUnit}</div>
-                  ))}
-                </td>
-                <td>
-                  {order.items?.map((item, i) => (
-                    <div key={i}>{item.qty || item.quantity}</div>
-                  ))}
-                </td>
-                <td>
-                  {order.items?.map((item, i) => (
-                    <div key={i}>{((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity)) || 0}</div>
-                  ))}
-                </td>
+                <td>{order._id || idx + 1}</td>
+                <td>{order.supplierId?.companyName || order.supplierId || "Unknown"}</td>
+                <td>{order.items?.map((item, i) => (
+                  <div key={i}>{item.materialId}</div>
+                ))}</td>
+                <td>{order.items?.map((item, i) => (
+                  <div key={i}>{item.qty || item.quantity}</div>
+                ))}</td>
+                <td>{order.items?.map((item, i) => (
+                  <div key={i}>{item.unitPrice || item.pricePerUnit}</div>
+                ))}</td>
+                <td>{order.items?.map((item, i) => (
+                  <div key={i}>{((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity)) || 0}</div>
+                ))}</td>
               </tr>
             ))
           ) : (

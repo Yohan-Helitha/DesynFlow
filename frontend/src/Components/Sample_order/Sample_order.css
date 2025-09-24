@@ -59,3 +59,15 @@ textarea {
 .submit-btn:hover {
   background-color: #5c4033;
 }
+
+/* Ensure dropdown options are visible and match palette */
+select {
+  background: #F7EED3;
+  color: #674636;
+  font-weight: bold;
+}
+select option {
+  background: #FFF8E8;
+  color: #674636;
+  font-weight: bold;
+}

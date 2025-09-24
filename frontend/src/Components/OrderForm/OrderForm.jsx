@@ -14,17 +14,15 @@ function OrderForm({ onOrderCreated }) {
       .catch(() => setSuppliers([]));
   }, []);
 
-  // Fetch materials for selected supplier
+  // Use selected supplier's materialTypes for dropdown
   useEffect(() => {
     if (formData.supplierId) {
-      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
-        .then(res => res.json())
-        .then(data => setMaterials(data))
-        .catch(() => setMaterials([]));
+      const supplier = suppliers.find(s => s._id === formData.supplierId);
+      setMaterials(supplier?.materialTypes || []);
     } else {
       setMaterials([]);
     }
-  }, [formData.supplierId]);
+  }, [formData.supplierId, suppliers]);
 
   // handle field change
   const handleChange = (e) => {
@@ -67,7 +65,7 @@ function OrderForm({ onOrderCreated }) {
     e.preventDefault();
     // Format items for backend: send materialId, qty, unitPrice
     const formattedItems = formData.items
-      .filter(item => item.materialId && /^[a-f\d]{24}$/i.test(item.materialId))
+      .filter(item => item.materialId)
       .map(item => ({
         materialId: item.materialId,
         qty: Number(item.quantity),
@@ -147,17 +145,16 @@ function OrderForm({ onOrderCreated }) {
                 value={item.materialId || ""}
                 onChange={(e) => handleItemChange(index, e)}
                 required
-                
               >
                 <option value="">Select Material</option>
-                {materials.map(mat => (
-                  <option key={mat._id} value={mat._id}>{mat.name || mat.materialName || mat.materialType}</option>
+                {materials.map((mat, idx) => (
+                  <option key={idx} value={mat}>{mat}</option>
                 ))}
               </select>
               {/* Show selected material name below dropdown for clarity */}
               {item.materialId && (
                 <div style={{ fontSize: '13px', color: '#674636', marginBottom: '4px' }}>
-                  Selected: {materials.find(m => m._id === item.materialId)?.name || item.materialId}
+                  Selected: {item.materialId}
                 </div>
               )}
               <input

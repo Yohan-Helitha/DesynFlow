@@ -20,17 +20,15 @@ function Sample_order() {
       .catch((err) => console.error("Error fetching suppliers:", err));
   }, []);
 
-  // Fetch materials for selected supplier
+  // Update materials from selected supplier's materialTypes
   useEffect(() => {
     if (formData.supplierId) {
-      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
-        .then(res => res.json())
-        .then(data => setMaterials(data))
-        .catch(() => setMaterials([]));
+      const supplier = suppliers.find(s => s._id === formData.supplierId);
+      setMaterials(supplier?.materialTypes || []);
     } else {
       setMaterials([]);
     }
-  }, [formData.supplierId]);
+  }, [formData.supplierId, suppliers]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,7 +43,8 @@ function Sample_order() {
       requestedBy: formData.requestedBy,
       reviewNote: formData.reviewNote
     };
-    fetch("http://localhost:3000/api/samples/upload", {
+          console.log('Submitting sample order payload:', payload);
+          fetch("http://localhost:3000/api/samples/upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -95,16 +94,22 @@ function Sample_order() {
         {/* Material Selection */}
         <div className="form-group">
           <label>Material</label>
+          {formData.supplierId && materials.length === 0 ? (
+            <div style={{ color: '#674636', background: '#FFF8E8', padding: '8px', borderRadius: '6px', marginBottom: '8px', textAlign: 'center' }}>
+              No materials found for this supplier.
+            </div>
+          ) : null}
           <select
             name="materialId"
             value={formData.materialId}
             onChange={handleChange}
             required
-            style={{ color: '#000' }}
+            style={{ color: '#674636', background: '#F7EED3' }}
+            disabled={materials.length === 0}
           >
             <option value="">-- Select Material --</option>
-            {materials.map((mat) => (
-              <option key={mat._id} value={mat._id}>{mat.name || mat.materialName || mat.materialType}</option>
+            {materials.map((mat, idx) => (
+              <option key={idx} value={mat}>{mat}</option>
             ))}
           </select>
         </div>

@@ -9,9 +9,9 @@ router.get('/', async (req, res) => {
     const { supplierId } = req.query;
     let materials;
     if (supplierId) {
-      materials = await MaterialCatalog.find({ supplierId });
+      materials = await MaterialCatalog.find({ supplierId }).populate('materialId');
     } else {
-      materials = await MaterialCatalog.find();
+      materials = await MaterialCatalog.find().populate('materialId');
     }
     res.json(materials);
   } catch (err) {

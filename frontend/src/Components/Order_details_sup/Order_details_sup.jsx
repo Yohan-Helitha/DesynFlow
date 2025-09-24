@@ -160,14 +160,17 @@ function OrderDetailsSup() {
                   <td>{order._id}</td>
                   <td>{order.supplierId?.companyName || order.supplierId || "Unknown"}</td>
                   <td>{(order.items || []).map((it, i) => (
-                    <span key={i}>{it.materialName || it.materialId}{i < order.items.length - 1 ? ", " : ""}</span>
+                    <span key={i}>{it.materialId}{i < order.items.length - 1 ? ", " : ""}</span>
                   ))}</td>
                   <td>{(order.items || []).map((it, i) => (
-                    <span key={i}>{it.qty}{i < order.items.length - 1 ? ", " : ""}</span>
+                    <span key={i}>{it.qty || it.quantity}{i < order.items.length - 1 ? ", " : ""}</span>
                   ))}</td>
-                  <td>
-                    <span className={`status ${order.status?.toLowerCase()}`}>{order.status}</span>
-                  </td>
+                  <td>{(order.items || []).map((it, i) => (
+                    <span key={i}>{it.unitPrice || it.pricePerUnit}{i < order.items.length - 1 ? ", " : ""}</span>
+                  ))}</td>
+                  <td>{(order.items || []).map((it, i) => (
+                    <span key={i}>{((it.unitPrice || it.pricePerUnit) * (it.qty || it.quantity)) || 0}{i < order.items.length - 1 ? ", " : ""}</span>
+                  ))}</td>
                 </tr>
               ))}
             </tbody>

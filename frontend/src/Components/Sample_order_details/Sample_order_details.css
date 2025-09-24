@@ -1,0 +1,22 @@
+.sample-order-details-page {
+  padding: 32px;
+  background: #FFF8E8;
+  min-height: 100vh;
+  font-family: 'Inter', Arial, sans-serif;
+}
+.details-card {
+  background: #F7EED3;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(170,179,105,0.08);
+  padding: 24px;
+  max-width: 500px;
+  margin: 32px auto;
+}
+.details-card p {
+  font-size: 16px;
+  color: #674636;
+  margin-bottom: 10px;
+}
+.details-card b {
+  color: #AAB369;
+}

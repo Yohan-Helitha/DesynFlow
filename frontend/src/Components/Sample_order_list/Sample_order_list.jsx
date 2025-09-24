@@ -40,14 +40,17 @@ function Sample_order_list() {
           </thead>
           <tbody>
             {samples.map((s, idx) => (
-              <tr key={s._id || idx}>
-                <td>{s.supplierId?.companyName || s.supplierId || "Unknown"}</td>
-                <td>{s.materialId?.name || s.materialId || "Unknown"}</td>
-                <td>{s.requestedBy?.name || s.requestedBy || "Unknown"}</td>
-                <td>{s.status}</td>
-                <td>{s.reviewNote || "-"}</td>
-                <td>{new Date(s.createdAt).toLocaleString()}</td>
-              </tr>
+                <tr key={s._id || idx}>
+                  <td>{s.supplierId?.companyName || s.supplierId || "Unknown"}</td>
+                  <td>{s.materialId?.name || s.materialId || "Unknown"}</td>
+                  <td>{s.requestedBy?.name || s.requestedBy || "Unknown"}</td>
+                  <td>{s.status}</td>
+                  <td>{s.reviewNote || "-"}</td>
+                  <td>{new Date(s.createdAt).toLocaleString()}</td>
+                  <td>
+                    <a href={`/Sample_order_details/${s._id}`} className="details-link">View Details</a>
+                  </td>
+                </tr>
             ))}
           </tbody>
         </table>
