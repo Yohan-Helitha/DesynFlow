@@ -49,6 +49,7 @@ function Orders() {
             <th>Quantity</th>
             <th>Price per Unit</th>
             <th>Total Price</th>
+            <th>Status</th> {/* Added Status column */}
           </tr>
         </thead>
         <tbody>
@@ -69,11 +70,20 @@ function Orders() {
                 <td>{order.items?.map((item, i) => (
                   <div key={i}>{((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity)) || 0}</div>
                 ))}</td>
+                <td>
+                  {order.status === "Approved" ? (
+                    <span style={{ color: '#22c55e', fontWeight: 'bold' }}>Approved</span>
+                  ) : order.status === "Rejected" ? (
+                    <span style={{ color: '#ef4444', fontWeight: 'bold' }}>Rejected</span>
+                  ) : (
+                    <span style={{ color: '#64748b', fontWeight: 'bold' }}>{order.status || "Sent"}</span>
+                  )}
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="6" style={{ textAlign: "center" }}>
+              <td colSpan="7" style={{ textAlign: "center" }}>
                 No orders found
               </td>
             </tr>
