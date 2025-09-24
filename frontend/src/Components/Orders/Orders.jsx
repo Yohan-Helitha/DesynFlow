@@ -29,9 +29,12 @@ function Orders() {
 
   // Filtered orders by supplier or material
   const filteredOrders = orders.filter(order => {
-    const supplier = order.supplierId?.name?.toLowerCase() || "";
-    const materialList = order.items?.map(i => i.materialName?.toLowerCase()).join(" ") || "";
-    return supplier.includes(searchTerm.toLowerCase()) || materialList.includes(searchTerm.toLowerCase());
+    const supplierName = (order.supplierId?.companyName || order.supplierId || "").toString().toLowerCase();
+    const materialList = (order.items || [])
+      .map(i => (i.materialId?.materialName || i.materialName || i.materialId || "").toString().toLowerCase())
+      .join(" ");
+    const term = (searchTerm || "").toLowerCase();
+    return supplierName.includes(term) || materialList.includes(term);
   });
 
   return (
@@ -55,7 +58,7 @@ function Orders() {
                 <td>{order._id || idx + 1}</td>
                 <td>{order.supplierId?.companyName || order.supplierId || "Unknown"}</td>
                 <td>{order.items?.map((item, i) => (
-                  <div key={i}>{item.materialId}</div>
+                  <div key={i}>{item.materialId?.materialName || item.materialName || item.materialId || "Unknown"}</div>
                 ))}</td>
                 <td>{order.items?.map((item, i) => (
                   <div key={i}>{item.qty || item.quantity}</div>
