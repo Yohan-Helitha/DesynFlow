@@ -149,8 +149,10 @@ function OrderDetailsSup() {
               <tr>
                 <th>Order ID</th>
                 <th>Supplier</th>
-                <th>Materials</th>
-                <th>Quantities</th>
+                <th>Ordered Materials</th>
+                <th>Quantity</th>
+                <th>Price per Unit</th>
+                <th>Total Price</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -159,18 +161,27 @@ function OrderDetailsSup() {
                 <tr key={order._id || idx}>
                   <td>{order._id}</td>
                   <td>{order.supplierId?.companyName || order.supplierId || "Unknown"}</td>
-                  <td>{(order.items || []).map((it, i) => (
-                    <span key={i}>{it.materialId}{i < order.items.length - 1 ? ", " : ""}</span>
+                  <td>{(order.items || []).map((item, i) => (
+                    <div key={i}>{item.materialId?.materialName || item.materialName || item.materialId || "Unknown"}</div>
                   ))}</td>
-                  <td>{(order.items || []).map((it, i) => (
-                    <span key={i}>{it.qty || it.quantity}{i < order.items.length - 1 ? ", " : ""}</span>
+                  <td>{(order.items || []).map((item, i) => (
+                    <div key={i}>{item.qty || item.quantity}</div>
                   ))}</td>
-                  <td>{(order.items || []).map((it, i) => (
-                    <span key={i}>{it.unitPrice || it.pricePerUnit}{i < order.items.length - 1 ? ", " : ""}</span>
+                  <td>{(order.items || []).map((item, i) => (
+                    <div key={i}>{item.unitPrice || item.pricePerUnit}</div>
                   ))}</td>
-                  <td>{(order.items || []).map((it, i) => (
-                    <span key={i}>{((it.unitPrice || it.pricePerUnit) * (it.qty || it.quantity)) || 0}{i < order.items.length - 1 ? ", " : ""}</span>
+                  <td>{(order.items || []).map((item, i) => (
+                    <div key={i}>{((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity)) || 0}</div>
                   ))}</td>
+                  <td>
+                    {order.status === "Approved" ? (
+                      <span style={{ color: '#22c55e', fontWeight: 'bold' }}>Approved</span>
+                    ) : order.status === "Rejected" ? (
+                      <span style={{ color: '#ef4444', fontWeight: 'bold' }}>Rejected</span>
+                    ) : (
+                      <span style={{ color: '#64748b', fontWeight: 'bold' }}>{order.status || "Received"}</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

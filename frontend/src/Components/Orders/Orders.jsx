@@ -49,7 +49,7 @@ function Orders() {
             <th>Quantity</th>
             <th>Price per Unit</th>
             <th>Total Price</th>
-            <th>Status</th> {/* Added Status column */}
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
