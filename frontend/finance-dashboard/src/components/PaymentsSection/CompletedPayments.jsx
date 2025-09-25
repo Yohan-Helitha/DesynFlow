@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import PaymentDetailsModal from './PaymentDetailsModal';
 import {
   DollarSign,
   Filter,
@@ -144,7 +145,10 @@ export const CompletedPayments = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.status || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => handleView(payment)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md mr-2">
+                    <button
+                      onClick={() => handleView(payment)}
+                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white flex items-center mr-2"
+                    >
                       <Eye size={16} className="inline mr-1" /> View
                     </button>
                   </td>
@@ -186,26 +190,10 @@ export const CompletedPayments = () => {
 
       {/* Modals */}
       {showViewModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px]">
-            <h3 className="text-lg font-semibold mb-4">Payment Details</h3>
-            {selectedPayment && (
-              <div className="space-y-2">
-                <div><span className="font-medium">Project ID:</span> {selectedPayment.projectId}</div>
-                <div><span className="font-medium">Client ID:</span> {selectedPayment.clientId}</div>
-                <div><span className="font-medium">Amount:</span> ${selectedPayment.amount.toLocaleString()}</div>
-                <div><span className="font-medium">Method:</span> {selectedPayment.method}</div>
-                <div><span className="font-medium">Type:</span> {selectedPayment.type}</div>
-                <div><span className="font-medium">Verified Time:</span> {selectedPayment.verifiedTime}</div>
-                <div><span className="font-medium">Receipt:</span> {selectedPayment.receiptUrl ? (<a href={selectedPayment.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline">View Receipt</a>) : (<span className="text-gray-400">No Receipt</span>)}</div>
-                {selectedPayment.comment && (
-                  <div><span className="font-medium">Comment:</span> {selectedPayment.comment}</div>
-                )}
-              </div>
-            )}
-            <button onClick={() => setShowViewModal(false)} className="mt-6 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Close</button>
-          </div>
-        </div>
+        <PaymentDetailsModal
+          payment={selectedPayment}
+          onClose={() => setShowViewModal(false)}
+        />
       )}
     </div>
   );

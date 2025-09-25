@@ -151,10 +151,9 @@ export const PendingPayments = () => {
                   <td className="px-6 py-4 text-right text-sm font-medium">
                     <button
                       onClick={() => handleView(payment)}
-                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md mr-2"
+                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white mr-2"
                     >
-                      <Eye size={16} className="inline mr-1" />
-                      View
+                      Action
                     </button>
                   </td>
                 </tr>
