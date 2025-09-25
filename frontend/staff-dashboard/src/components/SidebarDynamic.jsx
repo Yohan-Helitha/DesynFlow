@@ -12,8 +12,8 @@ const teamLeaderNavItems = [
 const projectManagerNavItems = [
   { label: "Dashboard Overview", icon: "📊", id: "overview" },
   { label: "Assign Teams", icon: "👥", id: "assign-teams" },
-  { label: "Manage Resources", icon: "📦", id: "manage-resources" },
-  { label: "Track Progress", icon: "📈", id: "track-progress" },
+  { label: "Manage Team", icon: "📦", id: "manage-team" },
+  { label: "Reports", icon: "📈", id: "reports" },
   { label: "Reports & Analytics", icon: "📋", id: "reports" },
   { label: "Settings", icon: "⚙️", id: "settings" },
 ];

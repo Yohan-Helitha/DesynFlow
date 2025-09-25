@@ -3,8 +3,7 @@ import React from 'react';
 const navItems = [
   { label: "Dashboard Overview", icon: "📊", id: "overview" },
   { label: "Assign Teams", icon: "👥", id: "assign-teams" },
-  { label: "Team Leader Dashboard", icon: "👨‍💼", id: "leader-dashboard" },
-  { label: "Manage Resources", icon: "📦", id: "manage-resources" },
+  { label: "Manage Team", icon: "📦", id: "manage-team" },
   { label: "Track Progress", icon: "📈", id: "track-progress" },
   { label: "Reports & Analytics", icon: "📋", id: "reports" },
   { label: "Settings", icon: "⚙️", id: "settings" },
