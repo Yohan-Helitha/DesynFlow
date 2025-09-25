@@ -1,26 +1,36 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "./Supplier_details.css";
 import { Link } from "react-router-dom";
 
-const URL = "http//localhost:3000/Supplier_details";
-
-const fetchHandler = async () => {
-  return await axios.get(URL).then((res) => res.data);
-};
+// Removed unused legacy URL & fetchHandler
 
 function Supplier_details() {
   const [suppliers, setSuppliers] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [search, setSearch] = useState("");
+  const location = useLocation();
 
-  // Fetch suppliers from backend
-  useEffect(() => {
+  const loadSuppliers = () => {
     axios
       .get("http://localhost:3000/api/suppliers")
       .then((res) => setSuppliers(res.data))
       .catch((err) => console.error("Error fetching suppliers:", err));
+  };
+
+  // Fetch suppliers from backend
+  // Initial load
+  useEffect(() => {
+    loadSuppliers();
   }, []);
+
+  // Re-fetch after a rating submission (navigated with state)
+  useEffect(() => {
+    if (location.state?.justRated) {
+      loadSuppliers();
+    }
+  }, [location.state?.justRated]);
 
   // Search filter
   const filteredSuppliers = suppliers.filter((s) =>
@@ -66,7 +76,7 @@ function Supplier_details() {
               <td>{s.phone}</td>
               <td>{s.materialTypes?.join(", ")}</td>
               <td>{s.deliveryRegions?.join(", ")}</td>
-              <td>{s.rating}</td>
+              <td>{typeof s.rating === "number" ? s.rating.toFixed(2) : s.rating}</td>
               <td>
                 <button
                   className="info-btn"

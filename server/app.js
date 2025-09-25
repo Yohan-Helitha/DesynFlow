@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import supplierRouter from "./modules/supplier/routes/supplier.routes.js";
+import supplierRatingRouter from "./modules/supplier/routes/supplierRating.routes.js";
 import materialRouter from "./modules/supplier/routes/material.routes.js";
 import sampleRouter from "./modules/supplier/routes/sample.routes.js";
 dotenv.config();
@@ -20,6 +21,10 @@ app.use(express.json());
 
 // Mount supplier router
 app.use("/api/suppliers", supplierRouter);
+// Mount supplier rating router (primary + legacy path for compatibility)
+app.use("/api/supplierRating", supplierRatingRouter);
+app.use("/supplierRating", supplierRatingRouter); // legacy/non-versioned path
+console.log("Mounted supplierRating routes at /api/supplierRating and /supplierRating");
 // Mount purchase order router
 app.use("/api/purchase-orders", purchaseOrderRouter);
 // Mount material router

@@ -3,24 +3,37 @@ import Supplier from '../model/supplier.model.js';
 
 // Add feedback after delivery
 const addRating = async (data) => {
-  // data: { supplierId, timeliness, productQuality, communication }
-  // Weighted score: 50% timeliness, 30% productQuality, 20% communication
-  const score = (data.timeliness * 0.5) + (data.productQuality * 0.3) + (data.communication * 0.2);
-  const rating = new SupplierRating({ ...data, score });
+  const { supplierId, criteria } = data;
+  const { timeliness, quality, communication } = criteria;
+
+  // Weighted score: 50% timeliness, 30% quality, 20% communication
+  const weightedScore = (timeliness * 0.5) + (quality * 0.3) + (communication * 0.2);
+
+  const rating = new SupplierRating({
+    supplierId,
+    ratedBy: data.ratedBy || null,
+    criteria,
+    weightedScore
+  });
+
   await rating.save();
-  // Optionally update supplier's average rating
-  const ratings = await SupplierRating.find({ supplierId: data.supplierId });
-  const avgScore = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
-  await Supplier.findByIdAndUpdate(data.supplierId, { rating: avgScore });
+
+  // Update supplier's average rating
+  const ratings = await SupplierRating.find({ supplierId });
+  const avgScore = ratings.reduce((sum, r) => sum + r.weightedScore, 0) / ratings.length;
+
+  await Supplier.findByIdAndUpdate(supplierId, { rating: avgScore });
+
   return rating;
 };
 
-// Get top-rated suppliers, green-flagged
+// Get top-rated suppliers
 const getTopRatedSuppliers = async () => {
-  // Get all suppliers sorted by rating descending
   const suppliers = await Supplier.find().sort({ rating: -1 });
-  // Green-flag top-rated suppliers (e.g., rating >= 4.5)
-  return suppliers.map(s => ({ ...s.toObject(), greenFlag: s.rating >= 4.5 }));
+  return suppliers.map(s => ({
+    ...s.toObject(),
+    greenFlag: s.rating >= 4.5
+  }));
 };
 
 export default {
