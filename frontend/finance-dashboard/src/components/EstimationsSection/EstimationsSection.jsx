@@ -35,8 +35,8 @@ export const EstimationsSection = () => {
       </div>
 
       {/* Content */}
-      <div className="mt-4 bg-[#F7EED3] p-4 rounded-md shadow-sm">
-  {activeTab === 'pending' ? <PendingEstimation /> : <EstimationsHistory />}
+      <div className="mt-0">
+        {activeTab === 'pending' ? <PendingEstimation /> : <EstimationsHistory />}
       </div>
     </div>
   );

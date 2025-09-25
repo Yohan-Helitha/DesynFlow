@@ -1,10 +1,20 @@
+
 import * as projectEstimationService from '../service/projectEstimationService.js';
 import mongoose from 'mongoose';
 
-// Create a new project estimate (version 1 or new version)
-export async function createOrUpdateEstimate(req, res) {
+
+async function getApprovedEstimates(req, res) {
   try {
-    const { projectId, laborCost, materialCost, serviceCost, contingencyCost } = req.body;
+    const estimates = await projectEstimationService.getApprovedEstimates();
+    res.json(estimates);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function createOrUpdateEstimate(req, res) {
+  try {
+    const { projectId, laborCost, materialCost, serviceCost, contingencyCost, status } = req.body;
     if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
       return res.status(400).json({ error: 'Invalid projectId' });
     }
@@ -16,15 +26,25 @@ export async function createOrUpdateEstimate(req, res) {
     if ([lc, mc, sc, cc].some(n => Number.isNaN(n))) {
       return res.status(400).json({ error: 'Cost fields must be numbers' });
     }
-    const estimate = await projectEstimationService.createOrUpdateEstimate({ projectId, laborCost: lc, materialCost: mc, serviceCost: sc, contingencyCost: cc });
+    const estimate = await projectEstimationService.createOrUpdateEstimate({ projectId, laborCost: lc, materialCost: mc, serviceCost: sc, contingencyCost: cc, status });
     res.status(201).json(estimate);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-// Retrieve all estimates for a project (version history)
-export async function getEstimatesByProject(req, res) {
+async function updateEstimateStatus(req, res) {
+  try {
+    const { estimateId } = req.params;
+    const { status } = req.body;
+    const updated = await projectEstimationService.setStatus(estimateId, status);
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function getEstimatesByProject(req, res) {
   try {
     const { projectId } = req.params;
     const estimates = await projectEstimationService.getEstimatesByProject(projectId);
@@ -34,8 +54,7 @@ export async function getEstimatesByProject(req, res) {
   }
 }
 
-// Display all estimates (all projects)
-export async function getAllEstimates(req, res) {
+async function getAllEstimates(req, res) {
   try {
     const estimates = await projectEstimationService.getAllEstimates();
     res.json(estimates);
@@ -44,8 +63,7 @@ export async function getAllEstimates(req, res) {
   }
 }
 
-// Get latest estimate for a project
-export async function getLatestEstimate(req, res) {
+async function getLatestEstimate(req, res) {
   try {
     const { projectId } = req.params;
     const estimate = await projectEstimationService.getLatestEstimate(projectId);
@@ -54,3 +72,12 @@ export async function getLatestEstimate(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+
+export {
+  createOrUpdateEstimate,
+  updateEstimateStatus,
+  getEstimatesByProject,
+  getAllEstimates,
+  getLatestEstimate,
+  getApprovedEstimates
+};

@@ -48,39 +48,39 @@ export const PendingEstimation = () => {
   );
 
   return (
-    <div>
+    <div className="p-0 m-0">
       {/* Header with Search */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 mr-3">
+          <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
             <Clock size={20} />
           </div>
-          <h2 className="text-xl font-semibold">Pending Estimations</h2>
+          <h2 className="text-xl font-semibold text-[#674636]">Pending Estimations</h2>
         </div>
         <div className="relative">
           <input
             type="text"
             placeholder="Search estimations..."
-            className="pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#FFF8E8] text-[#674636]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <Filter size={16} className="text-gray-400" />
+            <Filter size={16} className="text-[#AAB396]" />
           </button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      {/* Table Container */}
+      <div className="bg-[#FFF8E8] shadow-sm rounded-md border border-[#AAB396] flex flex-col">
+        <div className="overflow-x-auto flex-grow">
+          <table className="min-w-full w-full divide-y divide-[#AAB396] border-collapse">
+            <thead className="bg-[#F7EED3]">
               <tr>
                 {['id', 'clientName', 'project', 'amount', 'date'].map((field, i) => (
                   <th
                     key={i}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    className="px-4 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort(field)}
                   >
                     <div className="flex items-center capitalize">
@@ -89,23 +89,23 @@ export const PendingEstimation = () => {
                     </div>
                   </th>
                 ))}
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-right text-xs font-medium text-[#674636] uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedEstimations.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{item.clientName}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{item.project}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">${item.amount}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{item.date}</td>
-                  <td className="px-6 py-4 text-right text-sm">
+                <tr key={item.id} className="hover:bg-[#F7EED3]">
+                  <td className="px-4 py-2 text-sm font-medium text-[#674636]">{item.id}</td>
+                  <td className="px-4 py-2 text-sm text-[#674636]">{item.clientName}</td>
+                  <td className="px-4 py-2 text-sm text-[#674636]">{item.project}</td>
+                  <td className="px-4 py-2 text-sm text-[#674636]">${item.amount}</td>
+                  <td className="px-4 py-2 text-sm text-[#674636]">{item.date}</td>
+                  <td className="px-4 py-2 text-right text-sm">
                     <button
                       onClick={() => setSelectedEstimation(item)}
-                      className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md"
+                      className="text-[#FFF8E8] hover:bg-[#AAB396] bg-[#674636] px-3 py-1 rounded-md"
                     >
                       Generate
                     </button>
@@ -114,7 +114,7 @@ export const PendingEstimation = () => {
               ))}
               {paginatedEstimations.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-2 text-center text-[#AAB396]">
                     No pending estimations found
                   </td>
                 </tr>
@@ -125,8 +125,8 @@ export const PendingEstimation = () => {
 
         {/* Pagination */}
         {filteredEstimations.length > 0 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="text-sm text-gray-500">
+          <div className="px-4 py-2 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
+            <div className="text-sm text-[#674636]">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
               {Math.min(currentPage * itemsPerPage, filteredEstimations.length)} of {filteredEstimations.length} entries
             </div>
@@ -135,7 +135,7 @@ export const PendingEstimation = () => {
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
                 className={`p-2 rounded-md ${
-                  currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                  currentPage === 1 ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'
                 }`}
               >
                 <ChevronLeft size={16} />
@@ -145,7 +145,9 @@ export const PendingEstimation = () => {
                   key={page}
                   onClick={() => setCurrentPage(page)}
                   className={`w-8 h-8 rounded-md ${
-                    currentPage === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                    currentPage === page
+                      ? 'bg-[#674636] text-[#FFF8E8]'
+                      : 'text-[#674636] hover:bg-[#FFF8E8]'
                   }`}
                 >
                   {page}
@@ -155,7 +157,9 @@ export const PendingEstimation = () => {
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
                 className={`p-2 rounded-md ${
-                  currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                  currentPage === totalPages
+                    ? 'text-[#AAB396] cursor-not-allowed'
+                    : 'text-[#674636] hover:bg-[#FFF8E8]'
                 }`}
               >
                 <ChevronRight size={16} />

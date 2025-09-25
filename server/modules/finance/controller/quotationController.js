@@ -1,11 +1,25 @@
 import Quotation from '../model/quotation_estimation.js';
 import Material from '../model/material.js';
 import SupplierMaterialCatalog from '../model/supplier_material_catalog.js';
+import { Project } from '../model/project.js'; // Ensure Project model is registered
+
+// Fallback: in case hot-reload or import order caused model not to register
+import mongoose from 'mongoose';
+if (!mongoose.models.Project) {
+  // Re-register using the schema from the imported module (Project.modelName === 'Project')
+  // Normally unnecessary, but keeps endpoint resilient.
+  try {
+    mongoose.model('Project');
+  } catch {
+    // No-op: Project import above should have registered already.
+    console.warn('[quotations] Warning: Project model was not present in mongoose.models at controller load.');
+  }
+}
 
 // Create a new quotation (version 1)
 export const createQuotation = async (req, res) => {
   try {
-    const { projectId, estimateVersion, laborItems, materialItems, serviceItems, contingencyItems, taxes, remarks, fileUrl, createdBy } = req.body;
+  const { projectId, estimateVersion, laborItems, materialItems, serviceItems, contingencyItems, taxes, remarks, fileUrl, createdBy } = req.body;
     // Find latest version for this project/estimate
     const latest = await Quotation.findOne({ projectId, estimateVersion }).sort({ version: -1 });
     const version = latest ? latest.version + 1 : 1;
@@ -21,7 +35,8 @@ export const createQuotation = async (req, res) => {
       status: 'Draft',
       locked: false,
       remarks,
-      createdBy,
+      // createdBy optional: only set if provided (prevents legacy schema cache requiring it)
+      ...(createdBy ? { createdBy } : {}),
       laborItems,
       materialItems,
       serviceItems,
@@ -161,6 +176,46 @@ export const updateQuotation = async (req, res) => {
     quotation.grandTotal = quotation.subtotal + quotation.totalContingency + quotation.totalTax;
     await quotation.save();
     res.json(quotation);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// List quotations with optional filters
+export const getQuotations = async (req, res) => {
+  try {
+    const { status, projectId, estimateVersion, from, to } = req.query;
+    const filter = {};
+    if (status) filter.status = status;
+    if (projectId) filter.projectId = projectId;
+    if (estimateVersion) filter.estimateVersion = Number(estimateVersion);
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) filter.createdAt.$lte = new Date(to);
+    }
+    const docs = await Quotation.find(filter)
+      .populate('projectId', 'projectName status progress')
+      .populate('materialItems.materialId', 'materialId materialName unit type')
+      .populate('createdBy updatedBy sentTo', 'name email')
+      .sort({ createdAt: -1 });
+    res.json(docs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Compute next version number for a project + estimateVersion
+export const getNextQuotationVersion = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { estimateVersion } = req.query;
+    if (!projectId || !estimateVersion) {
+      return res.status(400).json({ error: 'projectId and estimateVersion are required' });
+    }
+    const latest = await Quotation.findOne({ projectId, estimateVersion: Number(estimateVersion) }).sort({ version: -1 });
+    const next = latest ? latest.version + 1 : 1;
+    res.json({ nextVersion: next });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

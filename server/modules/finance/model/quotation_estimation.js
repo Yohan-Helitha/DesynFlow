@@ -49,7 +49,8 @@ const QuotationSchema = new Schema({
   },
   locked: { type: Boolean, default: false },
   remarks: { type: String },
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  // made createdBy optional to allow system-generated quotations when user context not provided
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   sentTo: { type: Schema.Types.ObjectId, ref: 'User' },
   sentAt: { type: Date },

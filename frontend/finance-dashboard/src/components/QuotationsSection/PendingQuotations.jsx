@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   FileText,
   Filter,
@@ -9,111 +9,80 @@ import {
   Check,
   X,
 } from 'lucide-react'
-import { ViewQuotationModal } from './ViewQuotationModal'
+import { QuotationFormModal as CreateQuotationModal } from './CreateQuotationModal'
 
-// Mock data for pending quotations
-const pendingQuotations = [
-  {
-    id: 'QT-001',
-    estimationId: 'EST-007',
-    clientName: 'Robert Anderson',
-    clientEmail: 'robert@example.com',
-    clientPhone: '555-456-7890',
-    projectType: 'Commercial Renovation',
-    totalAmount: 4200,
-    validUntil: '2023-07-14',
-    status: 'Pending',
-    createdDate: '2023-06-14',
-    createdBy: 'Ali Raza',
-  },
-  {
-    id: 'QT-002',
-    estimationId: 'EST-006',
-    clientName: 'Jessica Taylor',
-    clientEmail: 'jessica@example.com',
-    clientPhone: '555-345-6789',
-    projectType: 'Residential Renovation',
-    totalAmount: 1800,
-    validUntil: '2023-07-17',
-    status: 'Pending',
-    createdDate: '2023-06-17',
-    createdBy: 'Ali Raza',
-  },
-  {
-    id: 'QT-003',
-    estimationId: 'EST-010',
-    clientName: 'William Johnson',
-    clientEmail: 'william@example.com',
-    clientPhone: '555-234-5678',
-    projectType: 'Commercial Installation',
-    totalAmount: 3500,
-    validUntil: '2023-07-20',
-    status: 'Pending',
-    createdDate: '2023-06-20',
-    createdBy: 'Ali Raza',
-  },
-  {
-    id: 'QT-004',
-    estimationId: 'EST-011',
-    clientName: 'Elizabeth Brown',
-    clientEmail: 'elizabeth@example.com',
-    clientPhone: '555-876-5432',
-    projectType: 'Residential Installation',
-    totalAmount: 2200,
-    validUntil: '2023-07-22',
-    status: 'Pending',
-    createdDate: '2023-06-22',
-    createdBy: 'Ali Raza',
-  },
-]
+// Fetch approved estimations from backend
+const API_URL = '/api/project-estimation/approved';
 
 export const PendingQuotations = () => {
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [selectedQuotation, setSelectedQuotation] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [sortField, setSortField] = useState('createdDate')
-  const [sortDirection, setSortDirection] = useState('desc')
-  const [currentPage, setCurrentPage] = useState(1)
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedQuotation, setSelectedQuotation] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('createdAt');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [quotations, setQuotations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchQuotations() {
+      setLoading(true);
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error('Failed to fetch approved estimations');
+        const data = await res.json();
+        setQuotations(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchQuotations();
+  }, []);
 
   const handleView = (quotation) => {
-    setSelectedQuotation(quotation)
-    setShowViewModal(true)
-  }
+    setSelectedQuotation(quotation);
+    setShowCreateModal(true);
+  };
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortField(field)
-      setSortDirection('asc')
+      setSortField(field);
+      setSortDirection('asc');
     }
-  }
+	};
 
   // Filter and sort quotations
-  const filteredQuotations = pendingQuotations
-    .filter(
-      (quotation) =>
-        quotation.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        quotation.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        quotation.projectType.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const filteredQuotations = quotations
+    .filter((quotation) => {
+      // You may need to adjust these fields based on your backend response
+      return (
+        (quotation._id && quotation._id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (quotation.clientName && quotation.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (quotation.projectType && quotation.projectType.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    })
     .sort((a, b) => {
       if (a[sortField] < b[sortField]) {
-        return sortDirection === 'asc' ? -1 : 1
+        return sortDirection === 'asc' ? -1 : 1;
       }
       if (a[sortField] > b[sortField]) {
-        return sortDirection === 'asc' ? 1 : -1
+        return sortDirection === 'asc' ? 1 : -1;
       }
-      return 0
-    })
+      return 0;
+    });
 
   // Pagination
-  const itemsPerPage = 4
-  const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage)
+  const itemsPerPage = 4;
+  const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage);
   const paginatedQuotations = filteredQuotations.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  )
+  );
 
   return (
     <div>
@@ -146,29 +115,29 @@ export const PendingQuotations = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {[
-                  { key: 'id', label: 'Quotation ID' },
-                  { key: 'estimationId', label: 'Estimation ID' },
-                  { key: 'clientName', label: 'Client Name' },
-                  { key: 'projectType', label: 'Project Type', sortable: false },
-                  { key: 'totalAmount', label: 'Total Amount' },
-                  { key: 'validUntil', label: 'Valid Until' },
-                ].map((col) => (
-                  <th
-                    key={col.key}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => col.sortable !== false && handleSort(col.key)}
-                  >
-                    <div className="flex items-center">
-                      {col.label}
-                      {col.sortable !== false && (
-                        <ArrowUpDown size={14} className="ml-1" />
-                      )}
-                    </div>
-                  </th>
-                ))}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
+                  <div className="flex items-center">Estimation ID<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>
+                  <div className="flex items-center">Project ID<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('version')}>
+                  <div className="flex items-center">Estimate Version<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('laborCost')}>
+                  <div className="flex items-center">Labor Cost<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('materialCost')}>
+                  <div className="flex items-center">Material Cost<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('serviceCost')}>
+                  <div className="flex items-center">Service Cost<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('contingencyCost')}>
+                  <div className="flex items-center">Contingency Cost<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('total')}>
+                  <div className="flex items-center">Total<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -177,45 +146,38 @@ export const PendingQuotations = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedQuotations.map((quotation) => (
-                <tr key={quotation.id} className="hover:bg-gray-50">
+                <tr key={quotation._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {quotation.id}
+                    {quotation._id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {quotation.estimationId}
+                    {quotation.projectId}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {quotation.clientName}
+                    {quotation.version}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {quotation.projectType}
+                    ${quotation.laborCost?.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${quotation.totalAmount.toLocaleString()}
+                    ${quotation.materialCost?.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {quotation.validUntil}
+                    ${quotation.serviceCost?.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                      {quotation.status}
-                    </span>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${quotation.contingencyCost?.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${quotation.total ? quotation.total.toLocaleString() : '0'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleView(quotation)}
-                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md mr-2"
+                      className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-md mr-2"
                     >
                       <Eye size={16} className="inline mr-1" />
-                      View
-                    </button>
-                    <button className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md mr-2">
-                      <Check size={16} className="inline mr-1" />
-                      Approve
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md">
-                      <X size={16} className="inline mr-1" />
-                      Reject
+                      Generate
                     </button>
                   </td>
                 </tr>
@@ -287,13 +249,15 @@ export const PendingQuotations = () => {
         )}
       </div>
 
-      {/* View Quotation Modal */}
-      {showViewModal && (
-        <ViewQuotationModal
-          quotation={selectedQuotation}
-          onClose={() => setShowViewModal(false)}
+      {/* Create Quotation Modal */}
+      {showCreateModal && selectedQuotation && (
+        <CreateQuotationModal
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={() => setShowCreateModal(false)}
+          projectId={selectedQuotation.projectId}
+          estimateVersion={selectedQuotation.version}
         />
       )}
     </div>
-  )
-}
+  );
+};

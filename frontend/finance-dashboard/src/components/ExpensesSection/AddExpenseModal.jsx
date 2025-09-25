@@ -3,38 +3,49 @@ import { X, Upload } from 'lucide-react'
 
 export const AddExpenseModal = ({ onClose }) => {
   const [formData, setFormData] = useState({
+    projectId: '',
     description: '',
     category: '',
     amount: '',
-    date: '',
-    paymentMethod: 'Credit Card',
-    notes: '',
+    proof: null,
   })
 
+
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
+    const { name, value, files } = e.target;
+    if (name === 'proof') {
+      setFormData((prev) => ({ ...prev, proof: files[0] }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Submitting expense:', formData)
-    // In a real app, you would save the expense to your backend
-    onClose()
-  }
 
-  // Mock categories for dropdown
-  const categories = [
-    'Office Expenses',
-    'Meals & Entertainment',
-    'Transportation',
-    'Software & Tools',
-    'Maintenance',
-    'Training & Development',
-  ]
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData();
+    data.append('projectId', formData.projectId);
+    data.append('description', formData.description);
+    data.append('category', formData.category);
+    data.append('amount', formData.amount);
+    if (formData.proof) data.append('proof', formData.proof);
+    // createdBy is set automatically on backend
+    await fetch('/api/expenses', {
+      method: 'POST',
+      body: data
+    });
+    onClose();
+  };
+
+  // Model categories
+  const categories = ['Labor', 'Procurement', 'Transport', 'Misc'];
+
+  // TODO: Replace with real project list from backend
+  const projects = [
+    { id: '1', name: 'Project Alpha' },
+    { id: '2', name: 'Project Beta' },
+    { id: '3', name: 'Project Gamma' },
+  ];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -53,16 +64,28 @@ export const AddExpenseModal = ({ onClose }) => {
         {/* Form */}
         <form onSubmit={handleSubmit}>
           <div className="p-6">
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               {/* Left column */}
               <div>
                 <div className="mb-4">
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                  <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 mb-1">Project *</label>
+                  <select
+                    id="projectId"
+                    name="projectId"
+                    value={formData.projectId}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
                   >
-                    Description *
-                  </label>
+                    <option value="">Select a project</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>{project.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
                   <input
                     type="text"
                     id="description"
@@ -73,14 +96,8 @@ export const AddExpenseModal = ({ onClose }) => {
                     required
                   />
                 </div>
-
                 <div className="mb-4">
-                  <label
-                    htmlFor="category"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Category *
-                  </label>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
                   <select
                     id="category"
                     name="category"
@@ -91,20 +108,12 @@ export const AddExpenseModal = ({ onClose }) => {
                   >
                     <option value="">Select a category</option>
                     {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
+                      <option key={category} value={category}>{category}</option>
                     ))}
                   </select>
                 </div>
-
                 <div className="mb-4">
-                  <label
-                    htmlFor="amount"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Amount ($) *
-                  </label>
+                  <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">Amount ($) *</label>
                   <input
                     type="number"
                     id="amount"
@@ -118,96 +127,24 @@ export const AddExpenseModal = ({ onClose }) => {
                   />
                 </div>
               </div>
-
               {/* Right column */}
               <div>
                 <div className="mb-4">
-                  <label
-                    htmlFor="date"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Date *
-                  </label>
+                  <label htmlFor="proof" className="block text-sm font-medium text-gray-700 mb-1">Proof (Receipt) *</label>
                   <input
-                    type="date"
-                    id="date"
-                    name="date"
-                    value={formData.date}
+                    type="file"
+                    id="proof"
+                    name="proof"
+                    accept=".jpg,.jpeg,.png,.pdf"
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     required
                   />
-                </div>
-
-                <div className="mb-4">
-                  <label
-                    htmlFor="paymentMethod"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Payment Method *
-                  </label>
-                  <select
-                    id="paymentMethod"
-                    name="paymentMethod"
-                    value={formData.paymentMethod}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="Credit Card">Credit Card</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Company Card">Company Card</option>
-                    <option value="Check">Check</option>
-                  </select>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Receipt *
-                  </label>
-                  <div className="border border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center">
-                    <Upload size={24} className="text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500 mb-1">
-                      Drag and drop your receipt here, or click to browse
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      Supported formats: JPG, PNG, PDF (Max 5MB)
-                    </p>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept=".jpg,.jpeg,.png,.pdf"
-                    />
-                    <button
-                      type="button"
-                      className="mt-3 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-md text-sm font-medium hover:bg-indigo-100"
-                    >
-                      Browse Files
-                    </button>
-                  </div>
+                  {formData.proof && <div className="text-xs text-gray-500 mt-1">Selected: {formData.proof.name}</div>}
                 </div>
               </div>
             </div>
 
-            {/* Notes */}
-            <div className="mb-6">
-              <label
-                htmlFor="notes"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Notes
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                rows={3}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Add any additional details about this expense..."
-              ></textarea>
-            </div>
 
             {/* Footer buttons */}
             <div className="flex justify-end space-x-3">

@@ -1,4 +1,6 @@
-import moonoose from 'mongoose';
+
+import mongoose from 'mongoose';
+const { Schema } = mongoose;
 
 const WarrantySchema = new Schema({
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', index: true },
@@ -8,3 +10,5 @@ const WarrantySchema = new Schema({
   warrantyEnd: { type: Date },
   status: { type: String, enum: ['Active', 'Expired', 'Claimed', 'Replaced'], index: true }
 }, { timestamps: true });
+
+export default mongoose.model('Warranty', WarrantySchema);

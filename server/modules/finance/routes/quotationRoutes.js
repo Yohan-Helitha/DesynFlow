@@ -4,6 +4,9 @@ import * as controller from '../controller/quotationController.js';
 const router = express.Router();
 
 
+// List quotations with optional filters (status, projectId, estimateVersion, date range)
+router.get('/', controller.getQuotations);
+
 // Create a new quotation
 router.post('/', controller.createQuotation);
 
@@ -18,6 +21,9 @@ router.get('/:quotationId', controller.getQuotation);
 
 // Fetch all versions for a project
 router.get('/project/:projectId/versions', controller.getQuotationVersions);
+
+// Get next version number for a project + estimate version
+router.get('/project/:projectId/next-version', controller.getNextQuotationVersion);
 
 // Lock/confirm quotation
 router.patch('/:quotationId/lock', controller.lockQuotation);

@@ -69,54 +69,54 @@ export const InspectionPayments = () => {
     <div>
       {/* Header */}
       <div className="flex items-center mb-6">
-        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 mr-3">
+        <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
           <CreditCard size={20} />
         </div>
-        <h2 className="text-xl font-semibold">Pending Payments</h2>
+        <h2 className="text-xl font-semibold text-[#674636]">Pending Inspection Payments</h2>
       </div>
 
       {/* Table */}
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
+      <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-[#AAB396]">
+            <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inspection Request ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Site Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Property Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estimated Cost</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Receipt</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Inspection Request ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Phone</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Site Location</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Property Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Estimated Cost</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Payment Receipt</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
-                <tr key={payment._id || payment.inspectionRequestId} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{payment.inspectionRequestId}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{payment.clientId || (payment.client && payment.client._id)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{payment.clientName || (payment.client && payment.client.name)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{payment.email}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{payment.phone}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{payment.siteLocation}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{payment.propertyType}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{payment.estimation && payment.estimation.estimatedCost !== undefined ? payment.estimation.estimatedCost : '-'}</td>
-                  <td className="px-6 py-4 text-sm text-indigo-600 underline cursor-pointer">
+                <tr key={payment._id || payment.inspectionRequestId} className="hover:bg-[#F7EED3] transition-colors">
+                  <td className="px-6 py-4 text-sm font-medium text-[#674636] font-mono text-xs">{payment.inspectionRequestId}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] font-mono text-xs">{payment.clientId || (payment.client && payment.client._id)}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.clientName || (payment.client && payment.client.name)}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.email}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.phone}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.siteLocation}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.propertyType}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] font-semibold">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `$${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer">
                     {payment.paymentReceiptUrl ? (
-                      <a href={payment.paymentReceiptUrl} target="_blank" rel="noopener noreferrer">
+                      <a href={payment.paymentReceiptUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#AAB396]">
                         View Receipt
                       </a>
                     ) : (
-                      <span className="text-gray-400">No Receipt</span>
+                      <span className="text-[#AAB396] no-underline">No Receipt</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-right text-sm font-medium">
                     <button
                       onClick={() => handleAction(payment)}
-                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md"
+                      className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md transition-colors"
                     >
                       Take Action
                     </button>
@@ -125,7 +125,7 @@ export const InspectionPayments = () => {
               ))}
               {paginatedPayments.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={10} className="px-6 py-4 text-center text-[#AAB396]">
                     No pending payments found
                   </td>
                 </tr>
@@ -136,8 +136,8 @@ export const InspectionPayments = () => {
 
         {/* Pagination */}
         {sortedPayments.length > 0 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
+            <div className="text-sm text-[#674636]">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
               {Math.min(currentPage * itemsPerPage, sortedPayments.length)} of {sortedPayments.length} entries
             </div>
@@ -146,7 +146,7 @@ export const InspectionPayments = () => {
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
                 className={`p-2 rounded-md ${
-                  currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                  currentPage === 1 ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#AAB396] hover:text-[#FFF8E8] transition-colors'
                 }`}
               >
                 <ChevronLeft size={16} />
@@ -155,8 +155,8 @@ export const InspectionPayments = () => {
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 rounded-md ${
-                    currentPage === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  className={`w-8 h-8 rounded-md transition-colors ${
+                    currentPage === page ? 'bg-[#674636] text-[#FFF8E8]' : 'text-[#674636] hover:bg-[#AAB396] hover:text-[#FFF8E8]'
                   }`}
                 >
                   {page}
@@ -166,7 +166,7 @@ export const InspectionPayments = () => {
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
                 className={`p-2 rounded-md ${
-                  currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                  currentPage === totalPages ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#AAB396] hover:text-[#FFF8E8] transition-colors'
                 }`}
               >
                 <ChevronRight size={16} />

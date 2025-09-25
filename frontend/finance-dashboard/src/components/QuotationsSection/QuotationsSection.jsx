@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Header } from '../Header'
 import { PendingQuotations } from './PendingQuotations'
-import { ApprovedQuotations } from './ApprovedQuotations'
+import { ApprovedQuotations } from './QuotationsHistory'
 
 export const QuotationsSection = () => {
   const [activeTab, setActiveTab] = useState('pending')

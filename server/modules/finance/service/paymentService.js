@@ -17,8 +17,10 @@ export async function getPaymentsByStatuses(statuses) {
 }
 
 // Approve or reject a payment
-export async function updatePaymentStatus(paymentId, status) {
-  return Payment.findByIdAndUpdate(paymentId, { status }, { new: true });
+export async function updatePaymentStatus(paymentId, status, comment) {
+  const update = { status };
+  if (typeof comment !== 'undefined') update.comment = comment;
+  return Payment.findByIdAndUpdate(paymentId, update, { new: true });
 }
 
 // Filter payments by project, client, date

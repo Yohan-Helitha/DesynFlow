@@ -24,7 +24,7 @@ export const PendingPayments = () => {
   const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
+  const fetchPendingPayments = () => {
     setLoading(true);
     fetch('/api/payments/pending')
       .then((res) => {
@@ -39,6 +39,10 @@ export const PendingPayments = () => {
         setError(err.message);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchPendingPayments();
   }, []);
   if (loading) {
     return <div className="p-8 text-center text-gray-500">Loading pending payments...</div>;
@@ -124,7 +128,6 @@ export const PendingPayments = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receipt</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -138,7 +141,6 @@ export const PendingPayments = () => {
                   <td className="px-6 py-4 text-sm text-gray-500">${payment.amount?.toLocaleString()}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{payment.method}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{payment.type}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{payment.status}</td>
                   <td className="px-6 py-4 text-sm text-indigo-600 underline cursor-pointer">
                     {payment.receiptUrl ? (
                       <a href={payment.receiptUrl} target="_blank" rel="noopener noreferrer">View Receipt</a>
@@ -219,7 +221,13 @@ export const PendingPayments = () => {
 
       {/* View Modal */}
       {showViewModal && (
-        <ViewPaymentModal payment={selectedPayment} onClose={() => setShowViewModal(false)} />
+        <ViewPaymentModal
+          payment={selectedPayment}
+          onClose={() => {
+            setShowViewModal(false);
+            fetchPendingPayments();
+          }}
+        />
       )}
     </div>
   )

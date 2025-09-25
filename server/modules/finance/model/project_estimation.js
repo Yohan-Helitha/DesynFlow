@@ -11,7 +11,12 @@ const ProjectEstimationSchema = new Schema({
   serviceCost: { type: Number, required: true },
   contingencyCost: { type: Number, required: true },
   total: { type: Number, required: true },
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User' }
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  status: {
+    type: String,
+    enum: ['Pending', 'Approved', 'Rejected'],
+    default: 'Pending'
+  }
 }, { timestamps: true });
 
 ProjectEstimationSchema.index({ projectId: 1, version: 1 }, { unique: true });

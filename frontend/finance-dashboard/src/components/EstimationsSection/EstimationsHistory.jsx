@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { CheckCircle, Filter, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { EstimationDetailsModal } from './EstimationDetailsModal';
 import { EstimateToEstimateModal } from './EstimateToEstimateModal';
-
-import { useEffect } from 'react';
+import { ViewInspectionEstimationModal } from './ViewInspectionEstimationModal';
 
 export const EstimationsHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,7 +18,22 @@ export const EstimationsHistory = () => {
   const [showEstimateToEstimate, setShowEstimateToEstimate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState(null);
-  // Handler for creating a new estimate version
+
+  const fetchEstimations = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/project-estimation/all');
+      if (!res.ok) throw new Error('Failed to fetch estimations');
+      const data = await res.json();
+      setEstimations(data);
+    } catch (err) {
+      setError(err.message || 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const handleCreateEstimate = async (costs) => {
     if (!selectedEstimation) return;
     setCreating(true);
@@ -41,8 +55,7 @@ export const EstimationsHistory = () => {
       });
       if (!res.ok) throw new Error('Failed to create new estimate');
       setShowEstimateToEstimate(false);
-      // Optionally refresh estimations list
-      // await fetchEstimations();
+      await fetchEstimations();
     } catch (err) {
       setCreateError(err.message || 'Unknown error');
     } finally {
@@ -53,22 +66,8 @@ export const EstimationsHistory = () => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    const fetchEstimations = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('/api/project-estimation/');
-        if (!res.ok) throw new Error('Failed to fetch estimations');
-        const data = await res.json();
-        setEstimations(data);
-      } catch (err) {
-        setError(err.message || 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchEstimations();
-  }, []);
+  }, [fetchEstimations]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -100,66 +99,73 @@ export const EstimationsHistory = () => {
   );
 
   return (
-    <div>
-      {/* Header with Search */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-0 m-0">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-3">
+          <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#AAB396] mr-3">
             <CheckCircle size={20} />
           </div>
-      <h2 className="text-xl font-semibold">Estimations History</h2>
+          <h2 className="text-xl font-semibold text-[#674636]">Estimations History</h2>
         </div>
         <div className="relative">
           <input
             type="text"
             placeholder="Search approved estimations..."
-            className="pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm text-[#674636] focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <Filter size={16} className="text-gray-400" />
+            <Filter size={16} className="text-[#AAB396]" />
           </button>
         </div>
       </div>
 
-
       {/* Table */}
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
+      <div className="bg-[#FFF8E8] shadow-sm rounded-md border border-[#AAB396] flex flex-col">
         {loading ? (
-          <div className="p-6 text-center text-gray-500">Loading...</div>
+          <div className="p-6 text-center text-[#674636]">Loading...</div>
         ) : error ? (
-          <div className="p-6 text-center text-red-500">{error}</div>
+          <div className="p-6 text-center text-red-600">{error}</div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto flex-grow">
+              <table className="min-w-full w-full divide-y divide-[#AAB396] border-collapse">
+                <thead className="bg-[#F7EED3]">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('projectId')}>Project ID <ArrowUpDown size={14} className="inline ml-1" /></th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('version')}>Version <ArrowUpDown size={14} className="inline ml-1" /></th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('total')}>Total <ArrowUpDown size={14} className="inline ml-1" /></th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('createdAt')}>Created Date <ArrowUpDown size={14} className="inline ml-1" /></th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    {['Project ID', 'Version', 'Total', 'Created Date'].map((col, idx) => (
+                      <th
+                        key={idx}
+                        className="px-4 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
+                      >
+                        <div className="flex items-center">
+                          {col} <ArrowUpDown size={14} className="ml-1" />
+                        </div>
+                      </th>
+                    ))}
+                    <th className="px-4 py-2 text-right text-xs font-medium text-[#674636] uppercase">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                   {paginatedEstimations.map((item) => (
-                    <tr key={item._id || item.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.projectId}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{item.version}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">${item.total?.toLocaleString()}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</td>
-                      <td className="px-6 py-4 text-right text-sm space-x-2">
+                    <tr key={item._id || item.id} className="hover:bg-[#F7EED3]">
+                      <td className="px-4 py-2 text-sm font-medium text-[#674636]">{item.projectId}</td>
+                      <td className="px-4 py-2 text-sm text-[#674636]">{item.version}</td>
+                      <td className="px-4 py-2 text-sm text-[#674636]">${item.total?.toLocaleString()}</td>
+                      <td className="px-4 py-2 text-sm text-[#674636]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</td>
+                      <td className="px-4 py-2 text-right text-sm space-x-2">
                         <button
                           onClick={() => { setSelectedEstimation(item); setShowDetailsModal(true); }}
-                          className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md"
+                          className="text-[#674636] hover:text-[#FFF8E8] bg-[#AAB396] hover:bg-[#674636] px-3 py-1 rounded-md"
                         >
                           View
                         </button>
                         <button
                           onClick={() => { setSelectedEstimation(item); setShowEstimateToEstimate(true); }}
-                          className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md"
+                          className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#AAB396] px-3 py-1 rounded-md"
                         >
                           Generate
                         </button>
@@ -168,7 +174,7 @@ export const EstimationsHistory = () => {
                   ))}
                   {paginatedEstimations.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                      <td colSpan={5} className="px-4 py-2 text-center text-[#674636]">
                         No estimations found
                       </td>
                     </tr>
@@ -176,10 +182,11 @@ export const EstimationsHistory = () => {
                 </tbody>
               </table>
             </div>
+
             {/* Pagination */}
             {filteredEstimations.length > 0 && (
-              <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-                <div className="text-sm text-gray-500">
+              <div className="px-4 py-2 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
+                <div className="text-sm text-[#674636]">
                   Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
                   {Math.min(currentPage * itemsPerPage, filteredEstimations.length)} of {filteredEstimations.length} entries
                 </div>
@@ -188,7 +195,7 @@ export const EstimationsHistory = () => {
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
                     className={`p-2 rounded-md ${
-                      currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                      currentPage === 1 ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'
                     }`}
                   >
                     <ChevronLeft size={16} />
@@ -198,7 +205,7 @@ export const EstimationsHistory = () => {
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`w-8 h-8 rounded-md ${
-                        currentPage === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                        currentPage === page ? 'bg-[#674636] text-[#FFF8E8]' : 'text-[#674636] hover:bg-[#FFF8E8]'
                       }`}
                     >
                       {page}
@@ -208,7 +215,7 @@ export const EstimationsHistory = () => {
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
                     className={`p-2 rounded-md ${
-                      currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                      currentPage === totalPages ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'
                     }`}
                   >
                     <ChevronRight size={16} />
@@ -220,21 +227,18 @@ export const EstimationsHistory = () => {
         )}
       </div>
 
-      {/* Estimation Details Modal */}
-      {showDetailsModal && selectedEstimation && (
-        <EstimationDetailsModal estimation={selectedEstimation} onClose={() => setShowDetailsModal(false)} />
-      )}
-      {/* Estimate To Estimate Modal */}
-      {showEstimateToEstimate && selectedEstimation && (
-        <EstimateToEstimateModal
-          estimation={selectedEstimation}
-          onClose={() => setShowEstimateToEstimate(false)}
-          onCreate={handleCreateEstimate}
-        />
-      )}
-      {createError && (
-        <div className="text-center text-red-500 mt-2">{createError}</div>
-      )}
+        {/* Modals */}
+        {showDetailsModal && selectedEstimation && (
+          <ViewInspectionEstimationModal estimation={selectedEstimation} onClose={() => setShowDetailsModal(false)} />
+        )}
+        {showEstimateToEstimate && selectedEstimation && (
+          <EstimateToEstimateModal
+            estimation={selectedEstimation}
+            onClose={() => setShowEstimateToEstimate(false)}
+            onCreate={handleCreateEstimate}
+          />
+        )}
+      {createError && <div className="text-center text-red-600 mt-2">{createError}</div>}
     </div>
   );
 };

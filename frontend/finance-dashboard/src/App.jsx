@@ -7,7 +7,7 @@ import { QuotationsSection } from './components/QuotationsSection/QuotationsSect
 import { PaymentsSection } from './components/PaymentsSection/PaymentsSection';
 import { PurchaseOrdersSection } from './components/PurchaseOrdersSection/PurchaseOrdersSection';
 import { ExpensesSection } from './components/ExpensesSection/ExpensesSection';
-// import { WarrantySection } from './components/WarrantySection/WarrantySection';
+import { WarrantySection } from './components/WarrantySection/WarrantySection';
 
 export function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
@@ -23,7 +23,7 @@ export function App() {
         {currentSection === 'payments' && <PaymentsSection />}
         {currentSection === 'purchaseOrders' && <PurchaseOrdersSection />}
         {currentSection === 'expenses' && <ExpensesSection />}
-        {/* {currentSection === 'warranty' && <WarrantySection />} */}
+        {currentSection === 'warranty' && <WarrantySection />}
       </main>
     </div>
   );

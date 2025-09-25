@@ -33,8 +33,8 @@ export async function getProcessedPayments(req, res) {
 export async function updatePaymentStatus(req, res) {
   try {
     const { paymentId } = req.params;
-    const { status } = req.body; // 'Approved' or 'Rejected'
-    const payment = await paymentService.updatePaymentStatus(paymentId, status);
+    const { status, comment } = req.body; // 'Approved' or 'Rejected', and comment
+    const payment = await paymentService.updatePaymentStatus(paymentId, status, comment);
     res.json(payment);
   } catch (err) {
     res.status(500).json({ error: err.message });

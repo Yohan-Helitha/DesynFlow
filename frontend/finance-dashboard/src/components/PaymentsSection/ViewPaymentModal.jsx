@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { X, Download, Check, AlertTriangle } from 'lucide-react'
 
 export const ViewPaymentModal = ({ payment, onClose }) => {
   const isVerified = payment.status === 'Verified'
+  const [comment, setComment] = useState("");
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -23,27 +24,16 @@ export const ViewPaymentModal = ({ payment, onClose }) => {
               <h4 className="text-sm font-medium text-gray-500 mb-2">Payment Information</h4>
               <div className="bg-gray-50 p-4 rounded-md space-y-2">
                 <p className="text-sm">
-                  <span className="font-medium">Payment ID:</span> {payment.id}
+                  <span className="font-medium">Payment ID:</span> {payment._id || payment.id}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Quotation ID:</span> {payment.quotationId}
+                  <span className="font-medium">Amount:</span> ${payment.amount?.toLocaleString()}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Amount Paid:</span> $
-                  {payment.amountPaid != null ? payment.amountPaid.toLocaleString() : '0.00'}
+                  <span className="font-medium">Method:</span> {payment.method}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Total Amount:</span> $
-                  {payment.totalAmount != null ? payment.totalAmount.toLocaleString() : '0.00'}
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Payment Type:</span> {payment.paymentType}
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Payment Method:</span> {payment.paymentMethod}
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Payment Date:</span> {payment.paymentDate}
+                  <span className="font-medium">Type:</span> {payment.type}
                 </p>
                 <p className="text-sm">
                   <span className="font-medium">Status:</span>{' '}
@@ -57,22 +47,10 @@ export const ViewPaymentModal = ({ payment, onClose }) => {
                     {payment.status}
                   </span>
                 </p>
-
-                {isVerified && (
-                  <>
-                    <p className="text-sm">
-                      <span className="font-medium">Verification Date:</span>{' '}
-                      {payment.verificationDate}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Verified By:</span>{' '}
-                      {payment.verifiedBy}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Receipt Number:</span>{' '}
-                      {payment.receiptNumber}
-                    </p>
-                  </>
+                {isVerified && payment.updatedAt && (
+                  <p className="text-sm">
+                    <span className="font-medium">Verified At:</span> {new Date(payment.updatedAt).toLocaleString()}
+                  </p>
                 )}
               </div>
             </div>
@@ -82,17 +60,23 @@ export const ViewPaymentModal = ({ payment, onClose }) => {
               <h4 className="text-sm font-medium text-gray-500 mb-2">Client Details</h4>
               <div className="bg-gray-50 p-4 rounded-md space-y-2">
                 <p className="text-sm">
-                  <span className="font-medium">Client Name:</span> {payment.clientName}
+                  <span className="font-medium">Client ID:</span> {payment.clientId}
                 </p>
-                <p className="text-sm">
-                  <span className="font-medium">Email:</span> {payment.clientEmail}
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Phone:</span> {payment.clientPhone}
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Project Type:</span> {payment.projectType}
-                </p>
+                {payment.clientName && (
+                  <p className="text-sm">
+                    <span className="font-medium">Client Name:</span> {payment.clientName}
+                  </p>
+                )}
+                {payment.clientEmail && (
+                  <p className="text-sm">
+                    <span className="font-medium">Email:</span> {payment.clientEmail}
+                  </p>
+                )}
+                {payment.clientPhone && (
+                  <p className="text-sm">
+                    <span className="font-medium">Phone:</span> {payment.clientPhone}
+                  </p>
+                )}
               </div>
 
               {payment.notes && (
@@ -106,17 +90,18 @@ export const ViewPaymentModal = ({ payment, onClose }) => {
             </div>
           </div>
 
-          {/* Warning for pending */}
+          {/* Comment Section */}
           {!isVerified && (
-            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md flex items-start">
-              <AlertTriangle size={20} className="text-yellow-500 mr-3 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-yellow-800">Payment Verification Required</p>
-                <p className="text-sm text-yellow-700 mt-1">
-                  This payment needs to be verified before it can be processed. Please check the
-                  payment details and confirm receipt.
-                </p>
-              </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Comment (optional)</label>
+              <textarea
+                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                rows={3}
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                maxLength={500}
+                placeholder="Add a comment for approval or rejection..."
+              />
             </div>
           )}
 
@@ -129,18 +114,44 @@ export const ViewPaymentModal = ({ payment, onClose }) => {
               Close
             </button>
 
-            {isVerified ? (
-              <button className="px-4 py-2 bg-purple-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-purple-700 flex items-center">
+            {payment.receiptUrl && (
+              <a
+                href={payment.receiptUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center mr-2"
+              >
                 <Download size={16} className="mr-2" />
-                Download Receipt
-              </button>
-            ) : (
+                View Receipt
+              </a>
+            )}
+            {!isVerified && (
               <>
-                <button className="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 flex items-center">
+                <button
+                  className="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 flex items-center"
+                  onClick={async () => {
+                    await fetch(`/api/payments/${payment._id || payment.id}/status`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ status: 'Approved', comment })
+                    });
+                    onClose();
+                  }}
+                >
                   <Check size={16} className="mr-2" />
                   Verify Payment
                 </button>
-                <button className="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700">
+                <button
+                  className="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700"
+                  onClick={async () => {
+                    await fetch(`/api/payments/${payment._id || payment.id}/status`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ status: 'Rejected', comment })
+                    });
+                    onClose();
+                  }}
+                >
                   Reject Payment
                 </button>
               </>

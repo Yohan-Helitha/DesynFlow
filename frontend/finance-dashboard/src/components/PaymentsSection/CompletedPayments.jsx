@@ -198,6 +198,9 @@ export const CompletedPayments = () => {
                 <div><span className="font-medium">Type:</span> {selectedPayment.type}</div>
                 <div><span className="font-medium">Verified Time:</span> {selectedPayment.verifiedTime}</div>
                 <div><span className="font-medium">Receipt:</span> {selectedPayment.receiptUrl ? (<a href={selectedPayment.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline">View Receipt</a>) : (<span className="text-gray-400">No Receipt</span>)}</div>
+                {selectedPayment.comment && (
+                  <div><span className="font-medium">Comment:</span> {selectedPayment.comment}</div>
+                )}
               </div>
             )}
             <button onClick={() => setShowViewModal(false)} className="mt-6 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Close</button>
