@@ -28,9 +28,21 @@ function Supplier_details() {
   // Re-fetch after a rating submission (navigated with state)
   useEffect(() => {
     if (location.state?.justRated) {
+      // Optimistically update while fetching fresh data
+      setSuppliers(prev => {
+        if (!location.state?.ratedSupplierId) return prev;
+        return prev.map(s => s._id === location.state.ratedSupplierId ? { ...s, rating: location.state.averageRating ?? location.state.weightedScore ?? s.rating } : s);
+      });
       loadSuppliers();
     }
   }, [location.state?.justRated]);
+
+  // After suppliers fetched, ensure latest rating from navigation state is applied if still present
+  useEffect(() => {
+    if (location.state?.justRated && location.state?.ratedSupplierId && (location.state?.averageRating || location.state?.weightedScore)) {
+      setSuppliers(prev => prev.map(s => s._id === location.state.ratedSupplierId ? { ...s, rating: location.state.averageRating ?? location.state.weightedScore } : s));
+    }
+  }, [suppliers, location.state]);
 
   // Search filter
   const filteredSuppliers = suppliers.filter((s) =>

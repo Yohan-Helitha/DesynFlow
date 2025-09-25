@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './Orders.css';
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const URL = "http//localhost:3000/Orders";
 
@@ -12,6 +12,7 @@ const fetchHandler = async () => {
 function Orders() {
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   // Fetch purchase orders from backend
   useEffect(() => {
@@ -50,6 +51,7 @@ function Orders() {
             <th>Price per Unit</th>
             <th>Total Price</th>
             <th>Status</th>
+            <th>Received</th>
           </tr>
         </thead>
         <tbody>
@@ -78,6 +80,27 @@ function Orders() {
                   ) : (
                     <span style={{ color: '#64748b', fontWeight: 'bold' }}>{order.status || "Sent"}</span>
                   )}
+                </td>
+                <td>
+                  <button
+                    disabled={order.status !== 'Approved'}
+                    style={{
+                      padding: '4px 8px',
+                      background: order.status === 'Approved' ? '#2563eb' : '#94a3b8',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: order.status === 'Approved' ? 'pointer' : 'not-allowed'
+                    }}
+                    onClick={() => {
+                      navigate('/Rate_supplier', {
+                        state: {
+                          supplierId: order.supplierId?._id || order.supplierId,
+                          orderId: order._id
+                        }
+                      });
+                    }}
+                  >Received</button>
                 </td>
               </tr>
             ))

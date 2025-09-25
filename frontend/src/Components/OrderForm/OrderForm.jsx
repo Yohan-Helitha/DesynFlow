@@ -103,8 +103,9 @@ function OrderForm({ onOrderCreated }) {
           supplierId: "",
           items: [{ materialId: "", quantity: "", pricePerUnit: 0, total: 0 }],
         });
-  if (onOrderCreated) onOrderCreated(newOrder); // notify parent to refresh
-  navigate("/Rate_supplier");
+        if (onOrderCreated) onOrderCreated(newOrder); // notify parent to refresh
+        // Navigate back to Orders list (rating now only via Received button there)
+        navigate("/Orders");
       } else {
         const error = await res.json();
         alert("Failed to create order: " + (error.error || "Unknown error"));

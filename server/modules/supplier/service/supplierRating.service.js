@@ -24,7 +24,7 @@ const addRating = async (data) => {
 
   await Supplier.findByIdAndUpdate(supplierId, { rating: avgScore });
 
-  return rating;
+  return { rating, averageRating: avgScore };
 };
 
 // Get top-rated suppliers

@@ -4,9 +4,9 @@ import SupplierRatingService from '../service/supplierRating.service.js';
 export const addRating = async (req, res) => {
   try {
     console.log("Incoming supplier rating payload:", req.body);
-    const rating = await SupplierRatingService.addRating(req.body);
-    console.log("Saved rating with weightedScore:", rating.weightedScore);
-    res.status(201).json(rating);
+  const result = await SupplierRatingService.addRating(req.body);
+  console.log("Saved rating with weightedScore:", result.rating.weightedScore, " New average:", result.averageRating);
+  res.status(201).json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

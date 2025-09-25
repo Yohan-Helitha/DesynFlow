@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function RateSupplier() {
   const [suppliers, setSuppliers] = useState([]);
@@ -8,6 +8,7 @@ function RateSupplier() {
     criteria: { timeliness: 0, quality: 0, communication: 0 }
   });
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Resolve API base (backend actually running on 3000 by default)
   const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:3000";
@@ -19,9 +20,15 @@ function RateSupplier() {
         if (!res.ok) throw new Error(`Supplier fetch failed ${res.status}`);
         return res.json();
       })
-      .then(data => setSuppliers(data))
+      .then(data => {
+        setSuppliers(data);
+        // If navigated from Orders with a specific supplier, preselect and restrict
+        if (location.state?.supplierId) {
+          setFormData(prev => ({ ...prev, supplierId: location.state.supplierId }));
+        }
+      })
       .catch(err => console.error("Failed to fetch suppliers", err));
-  }, [API_BASE]);
+  }, [API_BASE, location.state?.supplierId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,13 +60,15 @@ function RateSupplier() {
       }
       const data = await res.json();
       // Optional: show computed weighted score
-      alert(`Rating submitted. Weighted Score: ${data.weightedScore?.toFixed ? data.weightedScore.toFixed(2) : data.weightedScore}`);
+      const ws = data?.rating?.weightedScore?.toFixed ? Number(data.rating.weightedScore.toFixed(2)) : data?.rating?.weightedScore;
+      const avg = data?.averageRating?.toFixed ? Number(data.averageRating.toFixed(2)) : data?.averageRating;
+      alert(`Rating submitted. Weighted Score: ${ws} | New Average: ${avg}`);
       setFormData({
         supplierId: "",
         criteria: { timeliness: 0, quality: 0, communication: 0 }
       });
       // Pass state so Supplier_details can force re-fetch
-      navigate("/Supplier_details", { state: { justRated: true, ratedSupplierId: data.supplierId, ts: Date.now() } });
+      navigate("/Supplier_details", { state: { justRated: true, ratedSupplierId: data?.rating?.supplierId || data?.rating?.supplier || data?.supplierId, weightedScore: avg ?? ws, averageRating: avg, ts: Date.now() } });
     } catch (err) {
       console.error("Error submitting rating", err);
       alert("Failed to submit rating. Check console for details.");
@@ -77,14 +86,22 @@ function RateSupplier() {
             value={formData.supplierId}
             onChange={handleChange}
             required
+            disabled={!!location.state?.supplierId}
           >
-            <option value="">Select Supplier</option>
-            {suppliers.map((s) => (
-              <option key={s._id} value={s._id}>
-                {s.companyName}
-              </option>
-            ))}
+            {!location.state?.supplierId && <option value="">Select Supplier</option>}
+            {location.state?.supplierId
+              ? suppliers.filter(s => s._id === location.state.supplierId).map(s => (
+                  <option key={s._id} value={s._id}>{s.companyName}</option>
+                ))
+              : suppliers.map(s => (
+                  <option key={s._id} value={s._id}>{s.companyName}</option>
+                ))}
           </select>
+          {location.state?.orderId && (
+            <div style={{ fontSize: '12px', marginTop: '4px', color: '#555' }}>
+              Rating for Order: <strong>{location.state.orderId}</strong>
+            </div>
+          )}
         </label>
 
         <label>
