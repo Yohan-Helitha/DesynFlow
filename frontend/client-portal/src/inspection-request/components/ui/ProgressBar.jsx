@@ -1,26 +1,26 @@
-import React from 'react';
+// ProgressBar.jsx
+import React from "react";
 
-const ProgressBar = ({ currentStep, totalSteps, steps }) => {
+const ProgressBar = ({ status }) => {
+  // Map each status to a percentage and color
+  const statusMap = {
+    requested: { percent: "w-1/4", color: "bg-yellow-400" },
+    payment_verified: { percent: "w-2/4", color: "bg-blue-500" },
+    in_progress: { percent: "w-3/4", color: "bg-purple-500" },
+    done: { percent: "w-full", color: "bg-green-500" },
+  };
+
+  const current = statusMap[status] || { percent: "w-1/6", color: "bg-gray-400" };
+
   return (
-    <div className="my-5 px-5">
-      <div className="flex justify-between relative">
-        {steps.map((step, index) => (
-          <div key={index} className="text-center flex-1">
-            <div className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold transition-all duration-300 ${
-              index + 1 <= currentStep 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-600'
-            }`}>
-              {index + 1}
-            </div>
-            <div className={`text-sm font-medium ${
-              index + 1 <= currentStep ? 'text-blue-600' : 'text-gray-500'
-            }`}>
-              {step}
-            </div>
-          </div>
-        ))}
+    <div>
+      <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className={`${current.color} ${current.percent} h-2.5 rounded-full`}></div>
       </div>
+      <p className="mt-2 text-sm text-gray-700">
+        Current Status:{" "}
+        <span className="capitalize font-semibold">{status || "unknown"}</span>
+      </p>
     </div>
   );
 };

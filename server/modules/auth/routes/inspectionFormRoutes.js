@@ -1,56 +1,84 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import roleMiddleware from '../middleware/roleMiddleware.js';
-// import uploadMiddleware from '../middleware/uploadMiddleware.js'; // Uncomment if file uploads are needed
-
-// Placeholder controller functions (replace with real implementations)
-const createInspectionForm = (req, res) => res.status(501).json({ message: 'Not implemented' });
-const getInspectionForms = (req, res) => res.status(501).json({ message: 'Not implemented' });
-const getInspectionFormById = (req, res) => res.status(501).json({ message: 'Not implemented' });
-
-const updateInspectionForm = (req, res) => res.status(501).json({ message: 'Not implemented' });
-const deleteInspectionForm = (req, res) => res.status(501).json({ message: 'Not implemented' });
+import uploadMiddleware from '../middleware/uploadMiddleware.js'; // handles file uploads
+import {
+  createInspectorForm,
+  updateInspectorForm,
+  getInspectorFormsByRequest,
+  getInspectorFormById,
+  getInspectorForms,
+  deleteInspectorForm,
+  submitInspectorForm,
+  generateReportFromForm,
+  getMyInspectorForms
+} from '../controller/inspectorFormController.js';
 
 const router = express.Router();
 
-// Create a new inspection form (inspector)
+// Create a new inspection form (inspector) with optional photo uploads
 router.post(
-	'/',
-	authMiddleware,
-	roleMiddleware(['inspector']),
-	createInspectionForm
+  '/',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  uploadMiddleware.array('room_photo', 5), // accept up to 5 files
+  createInspectorForm
 );
 
-// Get all inspection forms (admin, csr, finance, inspector) read
+// Get all inspection forms (admin, csr, finance, inspector)
 router.get(
-	'/',
-	authMiddleware,
-	roleMiddleware(['admin', 'csr', 'finance', 'inspector']),
-	getInspectionForms
+  '/',
+  authMiddleware,
+  roleMiddleware(['admin', 'csr', 'finance', 'inspector']),
+  getInspectorForms
 );
 
-// Get a single inspection form by ID (all roles) read
+// Get a single inspection form by ID (all roles)
 router.get(
-	'/:formId',
-	authMiddleware,
-	getInspectionFormById
+  '/:formId',
+  authMiddleware,
+  getInspectorFormById
 );
 
 // Update an inspection form (inspector)
 router.patch(
-	'/:formId',
-	authMiddleware,
-	roleMiddleware(['inspector']),
-	updateInspectionForm
+  '/:formId',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  uploadMiddleware.array('room_photo', 5), // allow updating photos
+  updateInspectorForm
 );
 
-
-// Delete an inspection form (admin only)
+// Delete an inspection form (inspector only)
 router.delete(
-	'/:formId',
-	authMiddleware,
-	roleMiddleware(['inspector']),
-	deleteInspectionForm
+  '/:formId',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  deleteInspectorForm
+);
+
+// Submit an inspection form (mark as submitted)
+router.post(
+  '/submit/:formId',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  submitInspectorForm
+);
+
+// Generate report from an inspection form
+router.post(
+  '/generate-report/:formId',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  generateReportFromForm
+);
+
+// Get logged-in inspector's own forms
+router.get(
+  '/my',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  getMyInspectorForms
 );
 
 export default router;

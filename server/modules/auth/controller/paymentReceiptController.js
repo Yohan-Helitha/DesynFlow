@@ -167,3 +167,20 @@ export const getPaymentReceiptStatus = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+// Delete a payment receipt (Admin only)
+export const deletePaymentReceipt = async (req, res) => {
+  try {
+    const { receiptId } = req.params;
+
+    const receipt = await PaymentReceipt.findById(receiptId);
+    if (!receipt) {
+      return res.status(404).json({ message: "Receipt not found" });
+    }
+
+    await PaymentReceipt.findByIdAndDelete(receiptId);
+
+    res.status(200).json({ message: "Receipt deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

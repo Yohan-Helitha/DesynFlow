@@ -8,6 +8,9 @@ import {
   verifyPaymentReceipt,
   getPaymentReceiptStatus,
   generatePaymentLinkForClient
+  DeletePaymentReceipt,
+  getAllPaymentReceipts,
+  SendPaymentDetailsEmail,
 } from '../controller/paymentReceiptController.js';
 
 const router = Router();
@@ -59,8 +62,15 @@ router.patch(
 router.get(
   '/status/:receiptId',
   authMiddleware,
-  roleMiddleware(['csr', 'finance manager', 'admin', 'client']),
+  roleMiddleware(['csr', 'finance manager', 'manager', 'client']),
   getPaymentReceiptStatus
+);
+
+// Admin: delete a specific payment receipt
+router.delete('/:receiptId',
+  authMiddleware,
+  roleMiddleware(['csr']),
+  deletePaymentReceipt
 );
 
 export default router;

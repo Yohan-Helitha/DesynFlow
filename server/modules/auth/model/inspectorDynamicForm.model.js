@@ -31,15 +31,20 @@ const inspectorFormSchema = new mongoose.Schema({
   room_dimension: { type: String }, // Inspector measures this
   room_photo: [String], // Inspector takes photos
   
-  // Removed verification tokens as inspector forms don't need them
-  
   // Inspector notes
   inspector_notes: { type: String },
   completion_status: {
     type: String,
     enum: ['draft', 'submitted', 'approved'],
     default: 'draft'
+  },
+
+  // New flag to lock form after report generation
+  report_generated: {
+    type: Boolean,
+    default: false
   }
+
 }, { 
   timestamps: true 
 });
