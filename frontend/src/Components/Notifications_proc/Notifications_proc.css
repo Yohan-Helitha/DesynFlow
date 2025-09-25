@@ -1,60 +1,108 @@
+/* Notification panel */
 .notification-panel {
   position: fixed;
   top: 0;
-  right: -350px;
-  width: 320px;
+  right: 0;
+  width: 350px;
   height: 100%;
-  background: #fff5e1;
-  border-left: 2px solid #d4a373;
-  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-  transition: right 0.3s ease-in-out;
-  z-index: 1000;
+  background: #FFF8E8; /* lightest creamy color */
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 999;
   display: flex;
   flex-direction: column;
 }
 
 .notification-panel.active {
-  right: 0;
+  transform: translateX(0);
 }
 
+/* Header */
 .panel-header {
+  background: #F7EED3; /* slightly darker cream for contrast */
+  padding: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  background: #d4a373;
-  color: #fff;
+  color: #674636;
+  border-bottom: 1px solid #e5e5e5;
 }
 
+.panel-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* Close button */
 .close-btn {
-  background: none;
+  background: transparent;
   border: none;
-  font-size: 22px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #674636;     /* dark brown */
   cursor: pointer;
-  color: #fff;
+  transition: color 0.3s;
 }
 
+.close-btn:hover {
+  color: #50352b;     /* even darker brown on hover */
+}
+
+
+/* Body */
 .panel-body {
-  padding: 15px;
-  overflow-y: auto;
   flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  font-size: 14px;
 }
 
 .note {
-  background: #f7eed3;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
   padding: 10px;
   margin-bottom: 10px;
-  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: background 0.2s;
 }
 
-.note p {
-  margin: 0;
-  color: #2c2c2c;
+.note:hover {
+  background: #fdf6ec;
+}
+
+.note strong {
+  color: #674636;
 }
 
 .note small {
   display: block;
-  margin-top: 5px;
+  margin-top: 6px;
+  color: #777;
   font-size: 12px;
-  color: #555;
+}
+
+/* Footer */
+.panel-footer {
+  padding: 10px;
+  border-top: 1px solid #e5e5e5;
+  text-align: center;
+  background: #F7EED3; /* footer strip */
+}
+
+/* Clear button (small, cream theme) */
+.clear-btn {
+  background: transparent;  /* brownish */
+  color: #674636;       /* creamy text */
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;   /* smaller size FFF8E8*/
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.clear-btn:hover {
+  color: #50352b;  /* darker brown on hover */
 }

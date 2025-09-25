@@ -72,8 +72,8 @@ function Dashboard_proc() {
                 <span style={{ position: 'absolute', top: 0, right: 0, width: '10px', height: '10px', background: 'red', borderRadius: '50%', border: '1px solid #fff', display: 'inline-block' }}></span>
               )}
             </div>
-            <span>Admin</span>
-            <img src={process.env.PUBLIC_URL + "/avatar.png"} alt="user" />
+            <span>Procurement Officer</span>
+            
           </div>
         </div>
 
