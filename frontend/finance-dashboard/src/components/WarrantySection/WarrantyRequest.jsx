@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Eye, RefreshCw } from 'lucide-react';
-import { ViewWarrantyClaimModal } from './ViewWarrantyClaimModal';
+import WarrantyClaimActionModal from './WarrantyClaimActionModal';
 
 // Table displaying warranty claims (warrenty_claim model)
 export const WarrantyRequest = () => {
@@ -206,11 +206,15 @@ export const WarrantyRequest = () => {
 				)}
 			</div>
 
-			{/* View Warranty Claim Modal */}
+			{/* Warranty Claim Action Modal */}
 			{showViewModal && (
-				<ViewWarrantyClaimModal 
-					claim={selectedClaim} 
-					onClose={() => setShowViewModal(false)} 
+				<WarrantyClaimActionModal
+					claim={selectedClaim}
+					onClose={() => setShowViewModal(false)}
+					onAction={() => {
+						setShowViewModal(false);
+						setRefreshKey(k => k + 1);
+					}}
 				/>
 			)}
 		</div>
