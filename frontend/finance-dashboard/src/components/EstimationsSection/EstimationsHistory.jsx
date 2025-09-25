@@ -3,7 +3,10 @@ import { CheckCircle, Filter, ArrowUpDown, ChevronLeft, ChevronRight } from 'luc
 
 import { EstimationDetailsModal } from './EstimationDetailsModal';
 import { EstimateToEstimateModal } from './EstimateToEstimateModal';
-import { ViewInspectionEstimationModal } from './ViewInspectionEstimationModal';
+import { ViewInspectionEstimationModal } from '../InspectionSection/ViewInspectionEstimationModal';
+
+// Utility to format numbers as currency-ish
+const fmt = (n) => (typeof n === 'number' ? n.toLocaleString() : '0');
 
 export const EstimationsHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -134,47 +137,73 @@ export const EstimationsHistory = () => {
               <table className="min-w-full w-full divide-y divide-[#AAB396] border-collapse">
                 <thead className="bg-[#F7EED3]">
                   <tr>
-                    {['Project ID', 'Version', 'Total', 'Created Date'].map((col, idx) => (
+                    {/*
+                      Replace header columns
+                      - Expanded to include all key estimation fields
+                      - Sorting and formatting applied
+                    */}
+                    { [
+                      { label: 'Project ID', field: 'projectId' },
+                      { label: 'Version', field: 'version' },
+                      { label: 'Status', field: 'status' },
+                      { label: 'Labor', field: 'laborCost' },
+                      { label: 'Material', field: 'materialCost' },
+                      { label: 'Service', field: 'serviceCost' },
+                      { label: 'Contingency', field: 'contingencyCost' },
+                      { label: 'Total', field: 'total' },
+                      { label: 'Created', field: 'createdAt' },
+                      { label: 'Updated', field: 'updatedAt' }
+                    ].map(col => (
                       <th
-                        key={idx}
-                        className="px-4 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
+                        key={col.field}
+                        onClick={() => handleSort(col.field)}
+                        className="px-3 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer whitespace-nowrap"
                       >
                         <div className="flex items-center">
-                          {col} <ArrowUpDown size={14} className="ml-1" />
+                          {col.label}
+                          <ArrowUpDown size={12} className="ml-1" />
                         </div>
                       </th>
-                    ))}
-                    <th className="px-4 py-2 text-right text-xs font-medium text-[#674636] uppercase">
+                    )) }
+                    <th className="px-3 py-2 text-right text-xs font-medium text-[#674636] uppercase whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
-                  {paginatedEstimations.map((item) => (
+                  {paginatedEstimations.map(item => (
                     <tr key={item._id || item.id} className="hover:bg-[#F7EED3]">
-                      <td className="px-4 py-2 text-sm font-medium text-[#674636]">{item.projectId}</td>
-                      <td className="px-4 py-2 text-sm text-[#674636]">{item.version}</td>
-                      <td className="px-4 py-2 text-sm text-[#674636]">${item.total?.toLocaleString()}</td>
-                      <td className="px-4 py-2 text-sm text-[#674636]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</td>
-                      <td className="px-4 py-2 text-right text-sm space-x-2">
+                      <td className="px-3 py-2 text-xs font-mono text-[#674636]">{item.projectId}</td>
+                      <td className="px-3 py-2 text-xs text-[#674636]">v{item.version}</td>
+                      <td className="px-3 py-2 text-xs">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                          item.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                          item.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>{item.status}</span>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.laborCost)}</td>
+                      <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.materialCost)}</td>
+                      <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.serviceCost)}</td>
+                      <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.contingencyCost)}</td>
+                      <td className="px-3 py-2 text-xs font-semibold text-[#674636]">{fmt(item.total)}</td>
+                      <td className="px-3 py-2 text-xs text-[#674636]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</td>
+                      <td className="px-3 py-2 text-xs text-[#674636]">{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : ''}</td>
+                      <td className="px-3 py-2 text-right text-xs space-x-1">
                         <button
                           onClick={() => { setSelectedEstimation(item); setShowDetailsModal(true); }}
-                          className="text-[#674636] hover:text-[#FFF8E8] bg-[#AAB396] hover:bg-[#674636] px-3 py-1 rounded-md"
-                        >
-                          View
-                        </button>
+                          className="text-[#674636] hover:text-[#FFF8E8] bg-[#AAB396] hover:bg-[#674636] px-2 py-1 rounded-md"
+                        >View</button>
                         <button
                           onClick={() => { setSelectedEstimation(item); setShowEstimateToEstimate(true); }}
-                          className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#AAB396] px-3 py-1 rounded-md"
-                        >
-                          Generate
-                        </button>
+                          className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#AAB396] px-2 py-1 rounded-md"
+                        >Generate</button>
                       </td>
                     </tr>
                   ))}
                   {paginatedEstimations.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-4 py-2 text-center text-[#674636]">
+                      <td colSpan={12} className="px-4 py-2 text-center text-[#674636] text-sm">
                         No estimations found
                       </td>
                     </tr>

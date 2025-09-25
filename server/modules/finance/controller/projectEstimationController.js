@@ -1,6 +1,8 @@
 
 import * as projectEstimationService from '../service/projectEstimationService.js';
 import mongoose from 'mongoose';
+import { Project } from '../model/project.js';
+import InspectionRequest from '../model/inspection_request.js';
 
 
 async function getApprovedEstimates(req, res) {
@@ -73,11 +75,34 @@ async function getLatestEstimate(req, res) {
   }
 }
 
+async function getProjectsWithInspections(req, res) {
+  try {
+    // Get all projects with inspection data, focusing on projects without estimates created
+    const projects = await Project.find({ estimateCreated: false })
+      .populate({
+        path: 'inspectionId',
+        model: 'InspectionRequest',
+        select: 'clientName email phone siteLocation propertyType floors status assignedInspectorId createdAt'
+      })
+      .populate('projectManagerId', 'name email')
+      .populate('clientId', 'name email')
+      .sort({ createdAt: -1 });
+
+    // Filter out projects without valid inspection data
+    const validProjects = projects.filter(project => project.inspectionId);
+
+    res.json(validProjects);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 export {
   createOrUpdateEstimate,
   updateEstimateStatus,
   getEstimatesByProject,
   getAllEstimates,
   getLatestEstimate,
-  getApprovedEstimates
+  getApprovedEstimates,
+  getProjectsWithInspections
 };

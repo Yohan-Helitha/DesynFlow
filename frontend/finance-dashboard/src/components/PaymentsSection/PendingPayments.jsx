@@ -120,8 +120,8 @@ export const PendingPayments = () => {
       {/* Table */}
       <div className="bg-white shadow-sm rounded-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-[#AAB396]">
+            <thead className="bg-[#F7EED3]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client ID</th>
@@ -133,9 +133,9 @@ export const PendingPayments = () => {
               </tr>
             </thead>
 
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
-                <tr key={payment._id} className="hover:bg-gray-50">
+                <tr key={payment._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{payment.projectId}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{payment.clientId}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">${payment.amount?.toLocaleString()}</td>

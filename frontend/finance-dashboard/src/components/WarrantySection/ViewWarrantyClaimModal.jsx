@@ -6,23 +6,23 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'Submitted': return <FileText size={16} className="text-blue-600" />;
-      case 'UnderReview': return <Clock size={16} className="text-yellow-600" />;
-      case 'Approved': return <CheckCircle size={16} className="text-green-600" />;
-      case 'Rejected': return <XCircle size={16} className="text-red-600" />;
-      case 'Replaced': return <Package size={16} className="text-purple-600" />;
-      default: return <AlertCircle size={16} className="text-gray-600" />;
+      case 'Submitted': return <FileText size={16} className="text-[#674636]" />;
+      case 'UnderReview': return <Clock size={16} className="text-[#AAB396]" />;
+      case 'Approved': return <CheckCircle size={16} className="text-[#AAB396]" />;
+      case 'Rejected': return <XCircle size={16} className="text-[#674636]" />;
+      case 'Replaced': return <Package size={16} className="text-[#674636]" />;
+      default: return <AlertCircle size={16} className="text-[#AAB396]" />;
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Submitted': return 'bg-blue-100 text-blue-800';
-      case 'UnderReview': return 'bg-yellow-100 text-yellow-800';
-      case 'Approved': return 'bg-green-100 text-green-800';
-      case 'Rejected': return 'bg-red-100 text-red-800';
-      case 'Replaced': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Submitted': return 'bg-[#F7EED3] text-[#674636] border border-[#AAB396]';
+      case 'UnderReview': return 'bg-[#FFF8E8] text-[#AAB396] border border-[#AAB396]';
+      case 'Approved': return 'bg-[#AAB396] text-[#FFF8E8] border border-[#674636]';
+      case 'Rejected': return 'bg-[#674636] text-[#FFF8E8] border border-[#674636]';
+      case 'Replaced': return 'bg-[#F7EED3] text-[#AAB396] border border-[#674636]';
+      default: return 'bg-[#F7EED3] text-[#674636] border border-[#AAB396]';
     }
   };
 
@@ -224,9 +224,9 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
                   <span className="text-sm text-[#AAB396]">Replacement Shipped</span>
                   <p className="font-medium">
                     {claim.warehouseAction.shippedReplacement ? (
-                      <span className="text-green-600 font-semibold">Yes</span>
+                      <span className="text-[#AAB396] font-semibold">Yes</span>
                     ) : (
-                      <span className="text-red-600 font-semibold">No</span>
+                      <span className="text-[#674636] font-semibold">No</span>
                     )}
                   </p>
                 </div>

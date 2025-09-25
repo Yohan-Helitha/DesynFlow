@@ -158,10 +158,10 @@ export const ActiveWarranties = () => {
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         warranty.daysRemaining <= 30
-                          ? 'bg-red-200 text-red-900'
+                          ? 'bg-[#674636] text-[#FFF8E8] border border-[#674636]'
                           : warranty.daysRemaining <= 90
-                          ? 'bg-yellow-200 text-yellow-900'
-                          : 'bg-green-200 text-green-900'
+                          ? 'bg-[#F7EED3] text-[#AAB396] border border-[#AAB396]'
+                          : 'bg-[#AAB396] text-[#FFF8E8] border border-[#674636]'
                       }`}
                     >
                       {warranty.daysRemaining} days

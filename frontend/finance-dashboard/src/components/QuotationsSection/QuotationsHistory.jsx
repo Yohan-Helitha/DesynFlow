@@ -152,12 +152,12 @@ export const ApprovedQuotations = () => {
       </div>
 
       {/* Approved Quotations Table */}
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
+      <div className="bg-[#F7EED3] shadow-sm rounded-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-[#AAB396]">
+            <thead className="bg-[#FFF8E8]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
                   <div className="flex items-center">Quotation ID<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>Project Name<ArrowUpDown size={14} className="ml-1" /></th>
@@ -168,20 +168,20 @@ export const ApprovedQuotations = () => {
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-[#F7EED3] divide-y divide-[#AAB396]">
               {paginatedQuotations.map((quotation) => {
                 const projDisp = getProjectDisplay(quotation);
                 const userDisp = getUserDisplay(quotation.createdBy);
                 return (
-                  <tr key={quotation._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{quotation._id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{projDisp}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{userDisp || '—'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${quotation.grandTotal?.toLocaleString()}</td>
+                  <tr key={quotation._id} className="hover:bg-[#FFF8E8]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{quotation._id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{projDisp}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{userDisp || '—'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${quotation.grandTotal?.toLocaleString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{quotation.status}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{quotation.updatedAt ? new Date(quotation.updatedAt).toLocaleDateString() : ''}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{quotation.updatedAt ? new Date(quotation.updatedAt).toLocaleDateString() : ''}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleView(quotation)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md mr-2">
+                      <button onClick={() => handleView(quotation)} className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md mr-2">
                         <Eye size={16} className="inline mr-1" />View
                       </button>
                       <button onClick={() => handleDownload(quotation._id)} className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-md mr-2">

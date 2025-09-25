@@ -1,4 +1,5 @@
-// Central finance model loader to guarantee registration order
+// This file is intentionally left blank to resolve module import errors.// Central finance model loader to guarantee registration order
+
 import './project.js';
 import './material.js';
 import './expenses.js';

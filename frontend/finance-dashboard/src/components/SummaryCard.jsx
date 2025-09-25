@@ -11,7 +11,7 @@ export const SummaryCard = ({
 }) => {
   return (
     <div
-      className="bg-white rounded-md p-6 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+      className="bg-[#FFF8E8] rounded-md p-6 shadow-sm cursor-pointer hover:shadow-md transition-shadow border border-[#F7EED3]"
       onClick={onClick}
     >
       <div className="flex items-start mb-3">
@@ -19,7 +19,7 @@ export const SummaryCard = ({
         {change && (
           <span
             className={`text-xs font-medium ${
-              changeType === 'positive' ? 'text-green-500' : 'text-red-500'
+              changeType === 'positive' ? 'text-[#AAB396]' : 'text-[#674636]'
             }`}
           >
             {change}
@@ -27,11 +27,11 @@ export const SummaryCard = ({
         )}
       </div>
 
-      <div className="text-sm text-gray-500 mb-1">{title}</div>
+      <div className="text-sm text-[#AAB396] mb-1">{title}</div>
       {value ? (
-        <div className="text-2xl font-bold">${value}</div>
+        <div className="text-2xl font-bold text-[#674636]">${value}</div>
       ) : (
-        <div className="text-2xl font-bold">{count}</div>
+        <div className="text-2xl font-bold text-[#674636]">{count}</div>
       )}
     </div>
   );

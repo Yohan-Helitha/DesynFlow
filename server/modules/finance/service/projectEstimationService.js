@@ -1,24 +1,42 @@
+import ProjectEstimation from '../model/project_estimation.js';
+import { Project } from '../model/project.js';
+
 // Get only Approved estimations
 async function getApprovedEstimates() {
   return ProjectEstimation.find({ status: 'Approved' }).sort({ version: -1 });
 }
-import ProjectEstimation from '../model/project_estimation.js';
+
+async function resolveProject(projectId) {
+  // Try direct _id match first
+  let project = await Project.findById(projectId);
+  if (!project) {
+    // Fallback: maybe client passed custom projectId field value (stored in projectId field)
+    project = await Project.findOne({ projectId });
+  }
+  return project;
+}
 
 async function createOrUpdateEstimate({ projectId, laborCost, materialCost, serviceCost, contingencyCost, status }) {
-  // Find latest version
-  const latest = await ProjectEstimation.findOne({ projectId }).sort({ version: -1 });
+  const project = await resolveProject(projectId);
+  if (!project) {
+    throw new Error('Project not found for provided projectId');
+  }
+  const realProjectId = project._id;
+  const latest = await ProjectEstimation.findOne({ projectId: realProjectId }).sort({ version: -1 });
   const version = latest ? latest.version + 1 : 1;
   const estimate = new ProjectEstimation({
-    projectId,
+    projectId: realProjectId,
     laborCost,
     materialCost,
     serviceCost,
     contingencyCost,
     version,
-    status: status || 'Pending' // default status
-    // total will be auto-calculated by pre-save hook
+    status: status || 'Pending'
   });
   await estimate.save();
+  if (!project.estimateCreated) {
+    await Project.updateOne({ _id: realProjectId }, { estimateCreated: true });
+  }
   return estimate;
 }
 

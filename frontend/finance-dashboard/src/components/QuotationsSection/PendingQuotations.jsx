@@ -112,8 +112,8 @@ export const PendingQuotations = () => {
       {/* Pending Quotations Table */}
       <div className="bg-white shadow-sm rounded-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-[#AAB396]">
+            <thead className="bg-[#F7EED3]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
                   <div className="flex items-center">Estimation ID<ArrowUpDown size={14} className="ml-1" /></div>
@@ -144,9 +144,9 @@ export const PendingQuotations = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedQuotations.map((quotation) => (
-                <tr key={quotation._id} className="hover:bg-gray-50">
+                <tr key={quotation._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {quotation._id}
                   </td>

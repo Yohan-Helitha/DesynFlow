@@ -24,4 +24,7 @@ router.get('/all', controller.getAllEstimates);
 // Get latest estimate for a project
 router.get('/latest/:projectId', controller.getLatestEstimate);
 
+// Get projects with inspection data for pending estimations
+router.get('/projects-with-inspections', controller.getProjectsWithInspections);
+
 export default router;

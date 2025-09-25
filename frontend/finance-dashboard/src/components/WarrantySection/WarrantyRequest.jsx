@@ -81,21 +81,21 @@ export const WarrantyRequest = () => {
 
 	function statusBadge(status) {
 		const map = {
-			Submitted: 'bg-blue-100 text-blue-700',
-			UnderReview: 'bg-yellow-100 text-yellow-700',
-			Approved: 'bg-green-100 text-green-700',
-			Rejected: 'bg-red-100 text-red-700',
-			Replaced: 'bg-purple-100 text-purple-700'
+			Submitted: 'bg-[#F7EED3] text-[#674636] border border-[#AAB396]',
+			UnderReview: 'bg-[#FFF8E8] text-[#AAB396] border border-[#AAB396]',
+			Approved: 'bg-[#AAB396] text-[#FFF8E8] border border-[#674636]',
+			Rejected: 'bg-[#674636] text-[#FFF8E8] border border-[#674636]',
+			Replaced: 'bg-[#F7EED3] text-[#AAB396] border border-[#674636]'
 		};
-		const cls = map[status] || 'bg-gray-100 text-gray-600';
+		const cls = map[status] || 'bg-[#F7EED3] text-[#674636] border border-[#AAB396]';
 		return (
 			<span className={`px-2 py-0.5 inline-flex text-xs font-medium rounded-full ${cls}`}>{status}</span>
 		);
 	}
 
 	return (
-		<div className="bg-[#FFF8E8] p-6 rounded-md">
-			<div className="flex items-center justify-between mb-6">
+		<div className="bg-[#F7EED3] p-4 rounded-md shadow-sm">
+			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center">
 					<h2 className="text-xl font-semibold text-[#674636]">Warranty Requests</h2>
 				</div>
@@ -122,11 +122,11 @@ export const WarrantyRequest = () => {
 				</div>
 			</div>
 
-			<div className="bg-[#F7EED3] shadow-sm rounded-md overflow-hidden">
-				{error && <div className="p-4 text-sm text-red-700 bg-red-100">{error}</div>}
+			<div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
+				{error && <div className="p-4 text-sm text-[#674636] bg-[#F7EED3] border border-[#AAB396] rounded-md">{error}</div>}
 				<div className="overflow-x-auto">
 					<table className="min-w-full divide-y divide-[#AAB396]">
-						<thead className="bg-[#FFF8E8]">
+						<thead className="bg-[#F7EED3]">
 							<tr>
 								{columns.map(col => (
 									<th
@@ -143,7 +143,7 @@ export const WarrantyRequest = () => {
 								<th className="px-4 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Actions</th>
 							</tr>
 						</thead>
-						<tbody className="bg-[#F7EED3] divide-y divide-[#AAB396]">
+						<tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
 							{loading && (
 								<tr><td colSpan={columns.length + 1} className="p-6 text-center text-[#674636]">Loading pending claims...</td></tr>
 							)}
@@ -151,7 +151,7 @@ export const WarrantyRequest = () => {
 								<tr><td colSpan={columns.length + 1} className="p-6 text-center text-[#AAB396]">No pending claims found</td></tr>
 							)}
 							{!loading && pageSlice.map(row => (
-								<tr key={row._id} className="hover:bg-[#FFF8E8]">
+								<tr key={row._id} className="hover:bg-[#F7EED3]">
 									{columns.map(col => (
 										<td key={col.key} className="px-4 py-3 whitespace-nowrap text-sm text-[#674636]">
 											{col.render ? col.render(row) : (row[col.key] ?? '')}

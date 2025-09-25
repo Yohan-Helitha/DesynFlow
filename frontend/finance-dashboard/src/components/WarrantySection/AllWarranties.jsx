@@ -132,8 +132,8 @@ export const AllWarranties = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="bg-[#FFF8E8] p-6 rounded-md">
-        <div className="flex items-center justify-center h-64">
+      <div className="bg-[#F7EED3] p-4 rounded-md shadow-sm">
+        <div className="flex items-center justify-center py-12">
           <div className="flex items-center space-x-2 text-[#674636]">
             <Loader2 size={24} className="animate-spin" />
             <span>Loading warranties...</span>
@@ -146,10 +146,10 @@ export const AllWarranties = () => {
   // Error state
   if (error) {
     return (
-      <div className="bg-[#FFF8E8] p-6 rounded-md">
-        <div className="flex items-center justify-center h-64">
+      <div className="bg-[#F7EED3] p-4 rounded-md shadow-sm">
+        <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="text-red-600 mb-2">⚠️ Error</div>
+            <div className="text-[#674636] mb-2">⚠️ Error</div>
             <div className="text-[#674636] mb-4">{error}</div>
             <button
               onClick={fetchWarranties}
@@ -164,8 +164,8 @@ export const AllWarranties = () => {
   }
 
   return (
-    <div className="bg-[#FFF8E8] p-6 rounded-md">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-[#F7EED3] p-4 rounded-md shadow-sm">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
             <Shield size={20} />
@@ -224,18 +224,18 @@ export const AllWarranties = () => {
       </div>
 
       {/* Status indicator */}
-      <div className="mb-4">
-        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#F7EED3] text-[#674636]">
-          <span className={`w-2 h-2 rounded-full mr-2 ${showActiveOnly ? 'bg-green-500' : 'bg-red-500'}`}></span>
+      <div className="mb-3">
+        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#FFF8E8] text-[#674636] border border-[#AAB396]">
+          <span className={`w-2 h-2 rounded-full mr-2 ${showActiveOnly ? 'bg-[#AAB396]' : 'bg-[#674636]'}`}></span>
           Showing {showActiveOnly ? 'Active' : 'Expired'} Warranties ({filteredWarranties.length})
         </div>
       </div>
 
       {/* Warranties Table */}
-      <div className="bg-[#F7EED3] shadow-sm rounded-md overflow-hidden">
+      <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#AAB396]">
-            <thead className="bg-[#FFF8E8]">
+            <thead className="bg-[#F7EED3]">
               <tr>
                 {[
                   { key: '_id', label: 'Warranty ID' },
@@ -299,10 +299,10 @@ export const AllWarranties = () => {
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           warranty.daysRemaining <= 30
-                            ? 'bg-red-200 text-red-900'
+                            ? 'bg-[#674636] text-[#FFF8E8] border border-[#674636]'
                             : warranty.daysRemaining <= 90
-                            ? 'bg-yellow-200 text-yellow-900'
-                            : 'bg-green-200 text-green-900'
+                            ? 'bg-[#F7EED3] text-[#AAB396] border border-[#AAB396]'
+                            : 'bg-[#AAB396] text-[#FFF8E8] border border-[#674636]'
                         }`}
                       >
                         {warranty.daysRemaining || 0} days

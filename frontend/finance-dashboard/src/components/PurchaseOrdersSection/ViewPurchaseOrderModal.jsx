@@ -126,24 +126,24 @@ export const ViewPurchaseOrderModal = ({ purchaseOrder, onClose }) => {
           </h4>
           <div className="bg-gray-50 p-4 rounded-md mb-6">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
+              <table className="min-w-full divide-y divide-[#AAB396]">
+                <thead className="bg-[#F7EED3]">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">
                       Item
                     </th>
-                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">
                       Quantity
                     </th>
-                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">
                       Unit Price
                     </th>
-                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">
                       Total
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                   {purchaseOrder.items.map((item) => (
                     <tr key={item.id}>
                       <td className="px-4 py-2 text-sm text-gray-500">

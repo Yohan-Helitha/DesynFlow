@@ -3,22 +3,24 @@ import React, { useState } from 'react';
 export const PaymentActionModal = ({ payment, onClose }) => {
   const [enteredValue, setEnteredValue] = useState('');
   const estimatedCost = payment.estimation && payment.estimation.estimatedCost;
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleVerify = async (status) => {
+  const handleVerify = async (actionStatus) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/inspection-estimation/${payment.inspectionRequestId}/verify-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: enteredValue,
-          status, // 'Approved' or 'Rejected'
-        }),
-      });
+      const res = await fetch(
+        `/api/inspection-estimation/${payment.inspectionRequestId}/verify-payment`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentAmount: Number(enteredValue),
+            status: actionStatus,
+          }),
+        }
+      );
       if (!res.ok) throw new Error('Failed to update payment status');
       onClose(true);
     } catch (err) {
@@ -36,43 +38,51 @@ export const PaymentActionModal = ({ payment, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">Payment Action</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Do you want to approve or reject the payment for {payment.clientName}?
+      <div className="bg-[#FFF8E8] p-6 rounded-lg shadow-lg w-full max-w-md border border-[#AAB396]">
+        <h2 className="text-xl font-bold mb-4 text-[#674636]">Payment Action</h2>
+        <p className="text-sm text-[#674636] mb-4">
+          Do you want to approve or reject the payment for{' '}
+          <span className="font-semibold">{payment.clientName}</span>?
         </p>
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Enter Payment Amount</label>
+          <label className="block text-sm font-medium text-[#674636] mb-1">
+            Enter Payment Amount
+          </label>
           <input
             type="number"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-[#AAB396] rounded-md px-3 py-2 bg-[#F7EED3] focus:outline-none focus:ring-2 focus:ring-[#674636]"
             value={enteredValue}
-            onChange={e => setEnteredValue(e.target.value)}
+            onChange={(e) => setEnteredValue(e.target.value)}
             placeholder="Enter payment amount"
           />
         </div>
-        <div className="mb-4 text-sm text-gray-600">
-          Estimated Cost: <span className="font-semibold">{estimatedCost !== undefined ? estimatedCost : '-'}</span>
+        <div className="mb-4 text-sm text-[#674636]">
+          Estimated Cost:{' '}
+          <span className="font-semibold">
+            {estimatedCost !== undefined ? estimatedCost : '-'}
+          </span>
         </div>
-        {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+        {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
         <div className="flex justify-end space-x-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
+            className="px-4 py-2 bg-[#F7EED3] text-[#674636] border border-[#AAB396] rounded-md hover:bg-[#AAB396] hover:text-white"
             disabled={loading}
           >
             Cancel
           </button>
           <button
-            onClick={() => handleVerify('Rejected')}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            onClick={() => handleVerify('RejectedApproved')}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:ring-2 focus:ring-red-400"
             disabled={loading}
           >
             Reject
           </button>
           <button
-            onClick={() => handleVerify('Approved')}
-            className={`px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 ${!isApproveEnabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handleVerify('Rejected')}
+            className={`px-4 py-2 bg-[#674636] text-white rounded-md hover:bg-[#AAB396] focus:ring-2 focus:ring-[#674636] ${
+              !isApproveEnabled || loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             disabled={!isApproveEnabled || loading}
           >
             {loading ? 'Processing...' : 'Approve'}

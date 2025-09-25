@@ -57,7 +57,7 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
               <div className="flex items-center">
                 <span className="text-sm text-[#AAB396] mr-2">Status</span>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  isActive ? 'bg-[#AAB396] text-[#FFF8E8] border border-[#674636]' : 'bg-[#674636] text-[#FFF8E8] border border-[#674636]'
                 }`}>
                   {warranty.status || 'Unknown'}
                 </span>
@@ -154,11 +154,11 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                     isActive
                       ? (warranty.daysRemaining <= 30
-                          ? 'bg-red-100 text-red-800'
+                          ? 'bg-[#674636] text-[#FFF8E8] border border-[#674636]'
                           : warranty.daysRemaining <= 90
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800')
-                      : 'bg-red-100 text-red-800'
+                          ? 'bg-[#F7EED3] text-[#AAB396] border border-[#AAB396]'
+                          : 'bg-[#AAB396] text-[#FFF8E8] border border-[#674636]')
+                      : 'bg-[#674636] text-[#FFF8E8] border border-[#674636]'
                   }`}>
                     {isActive ? (warranty.daysRemaining || 0) : (warranty.daysExpired || 0)} days
                   </span>
@@ -231,14 +231,14 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
           </button>
 
           {isActive && warranty.daysRemaining <= 30 && (
-            <button className="px-4 py-2 bg-yellow-600 text-white rounded-md text-sm font-medium hover:bg-yellow-700 transition-colors flex items-center">
+            <button className="px-4 py-2 bg-[#F7EED3] text-[#674636] border border-[#AAB396] rounded-md text-sm font-medium hover:bg-[#AAB396] hover:text-[#FFF8E8] transition-colors flex items-center">
               <Bell size={16} className="mr-2" />
               Send Reminder
             </button>
           )}
 
           {!isActive && (
-            <button className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors flex items-center">
+            <button className="px-4 py-2 bg-[#AAB396] text-[#FFF8E8] border border-[#674636] rounded-md text-sm font-medium hover:bg-[#674636] transition-colors flex items-center">
               <RefreshCw size={16} className="mr-2" />
               Renew Warranty
             </button>

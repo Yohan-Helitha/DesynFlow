@@ -22,7 +22,6 @@ export const GenerateEstimateModal = ({ inspection, onClose, onDataChanged }) =>
   };
 
   const handleGenerate = async () => {
-    // Send POST to backend
     try {
       const res = await fetch(`/api/inspection-estimation/${inspection.inspectionRequestId}/estimate`, {
         method: 'POST',
@@ -30,7 +29,6 @@ export const GenerateEstimateModal = ({ inspection, onClose, onDataChanged }) =>
         body: JSON.stringify({ distance: parseFloat(distance), estimatedCost: parseFloat(estimatedCost) })
       });
       if (!res.ok) throw new Error('Failed to generate estimate');
-      // Refresh parent data
       if (onDataChanged) onDataChanged();
       onClose();
     } catch (err) {
@@ -40,38 +38,38 @@ export const GenerateEstimateModal = ({ inspection, onClose, onDataChanged }) =>
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">Generate Estimate</h2>
+      <div className="bg-[#FFF8E8] p-6 rounded-md shadow-md w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-4 text-[#674636]">Generate Estimate</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Distance (km)</label>
+            <label className="block text-sm font-medium text-[#674636]">Distance (km)</label>
             <input
               type="number"
               value={distance}
               onChange={handleDistanceChange}
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full mt-1 px-3 py-2 border border-[#AAB396] rounded-md bg-[#F7EED3] focus:outline-none focus:ring-2 focus:ring-[#674636]"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Estimated Cost ($)</label>
+            <label className="block text-sm font-medium text-[#674636]">Estimated Cost ($)</label>
             <input
               type="number"
               value={estimatedCost}
               readOnly
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+              className="w-full mt-1 px-3 py-2 border border-[#AAB396] rounded-md bg-[#F7EED3] text-[#AAB396] cursor-not-allowed"
             />
           </div>
         </div>
         <div className="flex justify-end mt-6 space-x-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200"
+            className="px-4 py-2 bg-[#F7EED3] text-[#674636] border border-[#AAB396] rounded-md hover:bg-[#AAB396] hover:text-white"
           >
             Cancel
           </button>
           <button
             onClick={handleGenerate}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            className="px-4 py-2 bg-[#674636] text-white rounded-md hover:bg-[#AAB396]"
           >
             Generate
           </button>

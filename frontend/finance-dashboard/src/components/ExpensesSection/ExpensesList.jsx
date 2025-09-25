@@ -94,7 +94,7 @@ export const ExpensesList = () => {
       {/* Header and Controls */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500 mr-3">
+          <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
             <DollarSign size={20} />
           </div>
           <h2 className="text-xl font-semibold">Expenses List</h2>
@@ -109,12 +109,12 @@ export const ExpensesList = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Filter size={16} className="text-gray-400" />
+              <Filter size={16} className="text-[#AAB396]" />
             </button>
           </div>
           <button
             onClick={handleAddExpense}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 flex items-center"
+            className="bg-[#674636] text-[#FFF8E8] px-4 py-2 rounded-md text-sm font-medium hover:bg-[#AAB396] flex items-center"
           >
             <Plus size={16} className="mr-2" /> Add Expense
           </button>
@@ -129,8 +129,8 @@ export const ExpensesList = () => {
           ) : error ? (
             <div className="p-6 text-center text-red-500">{error}</div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-[#AAB396]">
+              <thead className="bg-[#F7EED3]">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
@@ -141,9 +141,9 @@ export const ExpensesList = () => {
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                 {paginatedExpenses.map((expense) => (
-                  <tr key={expense._id || expense.id} className="hover:bg-gray-50">
+                  <tr key={expense._id || expense.id} className="hover:bg-[#F7EED3]">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expense.projectId}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expense.category}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expense.amount}</td>

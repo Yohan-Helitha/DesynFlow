@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 const PurchaseApprovalSchema = new Schema({
   purchaseOrderId: { type: Schema.Types.ObjectId, ref: 'PurchaseOrder', unique: true },
@@ -7,3 +8,5 @@ const PurchaseApprovalSchema = new Schema({
   note: { type: String },
   decidedAt: { type: Date }
 }, { timestamps: true });
+
+export default mongoose.models.PurchaseApproval || mongoose.model('PurchaseApproval', PurchaseApprovalSchema);

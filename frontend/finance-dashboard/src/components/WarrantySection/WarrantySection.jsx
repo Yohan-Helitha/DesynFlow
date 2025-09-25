@@ -48,7 +48,7 @@ export const WarrantySection = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="mt-4 bg-[#F7EED3] p-4 rounded-md shadow-sm">
+      <div>
         {activeTab === 'warranties' && <AllWarranties />}
         {activeTab === 'requests' && <WarrantyRequest />}
         {activeTab === 'history' && <WarrantyRequestHistory />}

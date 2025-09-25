@@ -49,8 +49,11 @@ const ProjectSchema = new Schema(
     // Final design upload (3D model link, pdf, etc.)
     finalDesign3DUrl: { type: String },
 
-    // Restrict who can view design
-    designAccessRestriction: { type: Boolean, default: false },
+  // Restrict who can view design
+  designAccessRestriction: { type: Boolean, default: false },
+
+  // Indicates if an estimate has been created for this project
+  estimateCreated: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

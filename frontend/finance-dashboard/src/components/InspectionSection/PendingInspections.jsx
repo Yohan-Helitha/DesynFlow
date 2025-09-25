@@ -108,7 +108,7 @@ export const PendingInspections = () => {
         <div className="text-center text-[#AAB396] py-8">Loading pending inspections...</div>
       )}
       {error && (
-        <div className="text-center text-red-500 py-8">{error}</div>
+        <div className="text-center text-[#674636] py-8 bg-[#F7EED3] border border-[#AAB396] rounded-md">{error}</div>
       )}
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
