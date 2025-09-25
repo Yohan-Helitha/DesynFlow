@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 function OrderForm({ onOrderCreated }) {
+  const navigate = useNavigate();
   const [suppliers, setSuppliers] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [formData, setFormData] = useState({
@@ -101,7 +103,8 @@ function OrderForm({ onOrderCreated }) {
           supplierId: "",
           items: [{ materialId: "", quantity: "", pricePerUnit: 0, total: 0 }],
         });
-        if (onOrderCreated) onOrderCreated(newOrder); // notify parent to refresh
+  if (onOrderCreated) onOrderCreated(newOrder); // notify parent to refresh
+  navigate("/Rate_supplier");
       } else {
         const error = await res.json();
         alert("Failed to create order: " + (error.error || "Unknown error"));
