@@ -10,6 +10,8 @@ const ProjectSchema = new Schema({
   assignedTeamId: { type: Schema.Types.ObjectId, ref: 'Team' },
   status: { type: String, enum: ['On Hold', 'Active', 'In Progress', 'Completed', 'Cancelled'], index: true, default: 'Active' },
   progress: { type: Number, default: 0 },
+  startDate: { type: Date },
+  dueDate: { type: Date },
   milestones: [{ type: Schema.Types.ObjectId, ref: 'Milestone' }],
   timeline: [{
     name: { type: String },
@@ -17,7 +19,12 @@ const ProjectSchema = new Schema({
     description: { type: String }
   }],
   archived: { type: Boolean, default: false },
-  attachments: [{ type: String }], // URLs or file paths to inspection report PDFs
+  attachments: [{ 
+    filename: { type: String }, // Server filename
+    originalName: { type: String }, // Original uploaded filename
+    path: { type: String }, // URL path to file
+    uploadDate: { type: Date, default: Date.now }
+  }], // Inspection report PDFs and other documents
   finalDesign3DUrl: { type: String },
   designAccessRestriction: { type: Boolean, default: false }
 }, { timestamps: true });

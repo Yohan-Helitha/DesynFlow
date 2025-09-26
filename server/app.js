@@ -25,6 +25,9 @@ import milestoneTimelineRoutes from './modules/project/routes/milestoneTimeline.
 import attendanceRoutes from './modules/project/routes/attendance.routes.js';
 import materialRequestRoutes from './modules/project/routes/materialRequest.routes.js';
 import reportRoutes from './modules/project/routes/report.routes.js';
+import fileRoutes from './modules/project/routes/file.routes.js';
+import fileServeRoutes from './routes/fileServe.js';
+import uploadRoutes from './routes/upload.routes.js';
 
 const app = express();
 
@@ -64,5 +67,8 @@ app.use('/api', milestoneTimelineRoutes);
 app.use('/api', attendanceRoutes);
 app.use('/api', materialRequestRoutes);
 app.use('/api', reportRoutes);
+app.use('/api', fileRoutes);
+app.use('/api', fileServeRoutes);
+app.use('/api', uploadRoutes);
 
 export { app };

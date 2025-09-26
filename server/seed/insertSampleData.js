@@ -97,6 +97,9 @@ async function seedDatabase() {
         timeline: [
           { name: 'Initial Consultation', date: new Date('2025-08-15'), description: 'Met with client to discuss vision and requirements' },
           { name: 'Space Measurement', date: new Date('2025-08-20'), description: 'Completed detailed measurements of living space' }
+        ],
+        attachments: [
+          '/api/uploads/Sample PDP.pdf'
         ]
       },
       {
@@ -109,6 +112,10 @@ async function seedDatabase() {
         timeline: [
           { name: 'Concept Development', date: new Date('2025-07-10'), description: 'Developed initial design concepts and mood boards' },
           { name: 'Material Selection', date: new Date('2025-07-25'), description: 'Selected furniture, fixtures, and finishes' }
+        ],
+        attachments: [
+          '/api/uploads/IT2100 Assignment - PDP (1).pdf',
+          '/api/uploads/Sample PDP.pdf'
         ]
       },
       {

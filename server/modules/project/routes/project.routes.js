@@ -9,7 +9,7 @@ import {
 
 const router = express.Router();
 
-// Create a new project
+// Create a new project (validation handles file upload requirement)
 router.post('/projects', createProject);
 
 // Get all projects

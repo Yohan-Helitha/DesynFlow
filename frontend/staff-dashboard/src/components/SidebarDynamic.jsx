@@ -14,7 +14,7 @@ const projectManagerNavItems = [
   { label: "Assign Teams", icon: "👥", id: "assign-teams" },
   { label: "Manage Team", icon: "📦", id: "manage-team" },
   { label: "Reports", icon: "📈", id: "reports" },
-  { label: "Reports & Analytics", icon: "📋", id: "reports" },
+  { label: "Reports & Analytics", icon: "📋", id: "reports-analytics" },
   { label: "Settings", icon: "⚙️", id: "settings" },
 ];
 

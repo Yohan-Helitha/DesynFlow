@@ -3,38 +3,63 @@ import Team from '../model/team.model.js';
 
 export const createProject = async (req, res) => {
     
-    //creating new project
+    // Enhanced project creation with validation
     try {
         console.log('Create project request body:', req.body);
 
-        const { projectName, clientId, inspectionId } = req.body;
+        // Simple project creation with inspection report
+        const { projectName, clientId, assignedTeamId, startDate, dueDate, inspectionReportPath } = req.body;
 
-        //find available team
-        const availableTeam = await Team.findOne({ active: true });
-        let status = "On Hold";
-        let assignedTeamId = null;
-
-        if(availableTeam) {
-            status = 'Active';
-            assignedTeamId = availableTeam._id;
+        // Basic validation
+        if (!projectName || !clientId || !assignedTeamId || !startDate || !dueDate) {
+            return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const newProject = new Project({
+        // Team assignment and status logic
+        let status = 'On Hold';
+        if (assignedTeamId) {
+            const team = await Team.findById(assignedTeamId);
+            if (!team || !team.active) {
+                return res.status(400).json({ error: 'Selected team is not available' });
+            }
+            status = 'Active'; // Set to Active only if team is assigned and available
+        }
 
+        // Create project data
+        const projectData = {
             projectName,
             clientId,
-            inspectionId,
             assignedTeamId,
-            status
+            status,
+            startDate: new Date(startDate),
+            dueDate: new Date(dueDate),
+            timeline: [
+                { name: 'Start', date: new Date(startDate), description: 'Project start date' },
+                { name: 'Due', date: new Date(dueDate), description: 'Project due date' }
+            ]
+        };
 
-        });
+
+        // Add inspection report if provided
+        if (req.body.inspectionReportPath && req.body.inspectionReportOriginalName) {
+            projectData.attachments = [{
+                filename: req.body.inspectionReportPath.split('/').pop(), // Extract filename from path
+                originalName: req.body.inspectionReportOriginalName,
+                path: req.body.inspectionReportPath,
+                uploadDate: new Date()
+            }];
+        } else if (inspectionReportPath) {
+            // Fallback for simple path storage
+            projectData.attachments = [inspectionReportPath];
+        }
+
+        const newProject = new Project(projectData);
 
         await newProject.save();
-        res.status(201).json(newProject); //201 is standard HTTP status code for "Created"; for adding new resource successfully.  
-
-    }catch(error){
+        res.status(201).json(newProject);
+    } catch (error) {
         console.error('Project creation error:', error);
-        res.status(500).json({ message: 'Error creating project', error: error.message }); //standard HTTP status code for Internal error
+        res.status(500).json({ message: 'Error creating project', error: error.message });
     }
 
 };
