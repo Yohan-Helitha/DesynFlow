@@ -162,50 +162,50 @@ export const QuotationFormModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-[#FFF8E8] rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-lg font-medium">Create Quotation</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
+        <div className="flex items-center justify-between p-6 border-b border-[#AAB396] bg-[#F7EED3]">
+          <h3 className="text-lg font-semibold text-[#674636]">Create Quotation</h3>
+          <button onClick={onClose} className="text-[#AAB396] hover:text-[#674636]">
             <X size={20} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
           {/* Basic Information (IDs now read-only) */}
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Basic Information</h4>
-            <div className="bg-gray-50 p-4 rounded-md grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Basic Information</h4>
+            <div className="bg-[#F7EED3] p-4 rounded-md grid grid-cols-1 md:grid-cols-3 gap-4 border border-[#AAB396]">
               <div>
-                <label className="block text-xs font-medium text-gray-600">Project ID</label>
+                <label className="block text-xs font-medium text-[#AAB396]">Project ID</label>
                 <input
                   type="text"
                   name="projectId"
                   value={formData.projectId}
                   onChange={handleChange}
                   readOnly
-                  className="mt-1 block w-full border border-gray-200 bg-gray-100 cursor-not-allowed rounded-md px-2 py-1 text-sm"
+                  className="mt-1 block w-full border border-[#AAB396] bg-[#F7EED3] cursor-not-allowed rounded-md px-2 py-1 text-sm text-[#674636]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600">Estimate Version</label>
+                <label className="block text-xs font-medium text-[#AAB396]">Estimate Version</label>
                 <input
                   type="number"
                   name="estimateVersion"
                   value={formData.estimateVersion}
                   onChange={handleChange}
                   readOnly
-                  className="mt-1 block w-full border border-gray-200 bg-gray-100 cursor-not-allowed rounded-md px-2 py-1 text-sm"
+                  className="mt-1 block w-full border border-[#AAB396] bg-[#F7EED3] cursor-not-allowed rounded-md px-2 py-1 text-sm text-[#674636]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600">Quotation Version</label>
+                <label className="block text-xs font-medium text-[#AAB396]">Quotation Version</label>
                 <input
                   type="number"
                   name="version"
                   value={formData.version}
                   onChange={handleChange}
                   readOnly
-                  className="mt-1 block w-full border border-gray-200 bg-gray-100 cursor-not-allowed rounded-md px-2 py-1 text-sm"
+                  className="mt-1 block w-full border border-[#AAB396] bg-[#F7EED3] cursor-not-allowed rounded-md px-2 py-1 text-sm text-[#674636]"
                 />
               </div>
             </div>
@@ -213,22 +213,22 @@ export const QuotationFormModal = ({
 
           {/* Remarks */}
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Remarks</h4>
-            <div className="bg-gray-50 p-4 rounded-md">
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Remarks</h4>
+            <div className="bg-[#F7EED3] p-4 rounded-md border border-[#AAB396]">
               <textarea
                 name="remarks"
                 value={formData.remarks}
                 onChange={handleChange}
                 rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="mt-1 block w-full border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8] focus:outline-none focus:ring-1 focus:ring-[#674636]"
               />
             </div>
           </div>
 
           {/* Labor Items */}
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Labor Items</h4>
-            <div className="bg-gray-50 p-4 rounded-md space-y-2">
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Labor Items</h4>
+            <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.laborItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
                   <input
@@ -240,7 +240,7 @@ export const QuotationFormModal = ({
                       copy[idx].task = e.target.value;
                       setFormData({ ...formData, laborItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm flex-1"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
                   />
                   <input
                     type="number"
@@ -253,7 +253,7 @@ export const QuotationFormModal = ({
                       copy[idx].total = copy[idx].hours * copy[idx].rate;
                       setFormData({ ...formData, laborItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm w-24"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
                   />
                   <input
                     type="number"
@@ -266,10 +266,10 @@ export const QuotationFormModal = ({
                       copy[idx].total = copy[idx].hours * copy[idx].rate;
                       setFormData({ ...formData, laborItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm w-24"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
                   />
-                  <span className="text-sm text-gray-600 px-2">{item.total || 0}</span>
-                  <button type="button" onClick={() => removeItem('laborItems', idx)} className="p-1 hover:bg-red-50 rounded">
+                  <span className="text-sm text-[#AAB396] px-2">{item.total || 0}</span>
+                  <button type="button" onClick={() => removeItem('laborItems', idx)} className="p-1 hover:bg-red-100 rounded">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -277,7 +277,7 @@ export const QuotationFormModal = ({
               <button
                 type="button"
                 onClick={() => addItem('laborItems', { task: '', hours: 0, rate: 0, total: 0 })}
-                className="flex items-center text-xs text-purple-600 hover:underline"
+                className="flex items-center text-xs text-[#674636] hover:underline"
               >
                 <Plus size={14} className="mr-1" /> Add Labor Item
               </button>
@@ -286,8 +286,8 @@ export const QuotationFormModal = ({
 
           {/* Material Items */}
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Material Items</h4>
-            <div className="bg-gray-50 p-4 rounded-md space-y-2">
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Material Items</h4>
+            <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.materialItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
                   <select
@@ -297,7 +297,7 @@ export const QuotationFormModal = ({
                       copy[idx].materialId = e.target.value;
                       setFormData({ ...formData, materialItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm w-40"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-40 text-[#674636] bg-[#FFF8E8]"
                   >
                     <option value="">Select Material</option>
                     {materials.map(m => (
@@ -313,7 +313,7 @@ export const QuotationFormModal = ({
                       copy[idx].description = e.target.value;
                       setFormData({ ...formData, materialItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm flex-1"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
                   />
                   <input
                     type="number"
@@ -326,7 +326,7 @@ export const QuotationFormModal = ({
                       copy[idx].total = copy[idx].quantity * copy[idx].unitPrice;
                       setFormData({ ...formData, materialItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-20 text-[#674636] bg-[#FFF8E8]"
                   />
                   <input
                     type="number"
@@ -339,10 +339,10 @@ export const QuotationFormModal = ({
                       copy[idx].total = copy[idx].quantity * copy[idx].unitPrice;
                       setFormData({ ...formData, materialItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm w-24"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
                   />
-                  <span className="text-sm text-gray-600 px-2">{item.total || 0}</span>
-                  <button type="button" onClick={() => removeItem('materialItems', idx)} className="p-1 hover:bg-red-50 rounded">
+                  <span className="text-sm text-[#AAB396] px-2">{item.total || 0}</span>
+                  <button type="button" onClick={() => removeItem('materialItems', idx)} className="p-1 hover:bg-red-100 rounded">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -350,7 +350,7 @@ export const QuotationFormModal = ({
               <button
                 type="button"
                 onClick={() => addItem('materialItems', { materialId: '', description: '', quantity: 0, unitPrice: 0, total: 0 })}
-                className="flex items-center text-xs text-purple-600 hover:underline"
+                className="flex items-center text-xs text-[#674636] hover:underline"
               >
                 <Plus size={14} className="mr-1" /> Add Material Item
               </button>
@@ -359,8 +359,8 @@ export const QuotationFormModal = ({
 
           {/* Service Items */}
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Service Items</h4>
-            <div className="bg-gray-50 p-4 rounded-md space-y-2">
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Service Items</h4>
+            <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.serviceItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
                   <input
@@ -372,7 +372,7 @@ export const QuotationFormModal = ({
                       copy[idx].service = e.target.value;
                       setFormData({ ...formData, serviceItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm flex-1"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
                   />
                   <input
                     type="number"
@@ -384,9 +384,9 @@ export const QuotationFormModal = ({
                       copy[idx].cost = val;
                       setFormData({ ...formData, serviceItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm w-24"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
                   />
-                  <button type="button" onClick={() => removeItem('serviceItems', idx)} className="p-1 hover:bg-red-50 rounded">
+                  <button type="button" onClick={() => removeItem('serviceItems', idx)} className="p-1 hover:bg-red-100 rounded">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -394,7 +394,7 @@ export const QuotationFormModal = ({
               <button
                 type="button"
                 onClick={() => addItem('serviceItems', { service: '', cost: 0 })}
-                className="flex items-center text-xs text-purple-600 hover:underline"
+                className="flex items-center text-xs text-[#674636] hover:underline"
               >
                 <Plus size={14} className="mr-1" /> Add Service Item
               </button>
@@ -403,8 +403,8 @@ export const QuotationFormModal = ({
 
           {/* Contingency Items */}
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Contingency Items</h4>
-            <div className="bg-gray-50 p-4 rounded-md space-y-2">
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Contingency Items</h4>
+            <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.contingencyItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
                   <input
@@ -416,7 +416,7 @@ export const QuotationFormModal = ({
                       copy[idx].description = e.target.value;
                       setFormData({ ...formData, contingencyItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm flex-1"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
                   />
                   <input
                     type="number"
@@ -428,9 +428,9 @@ export const QuotationFormModal = ({
                       copy[idx].amount = val;
                       setFormData({ ...formData, contingencyItems: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm w-24"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
                   />
-                  <button type="button" onClick={() => removeItem('contingencyItems', idx)} className="p-1 hover:bg-red-50 rounded">
+                  <button type="button" onClick={() => removeItem('contingencyItems', idx)} className="p-1 hover:bg-red-100 rounded">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -438,7 +438,7 @@ export const QuotationFormModal = ({
               <button
                 type="button"
                 onClick={() => addItem('contingencyItems', { description: '', amount: 0 })}
-                className="flex items-center text-xs text-purple-600 hover:underline"
+                className="flex items-center text-xs text-[#674636] hover:underline"
               >
                 <Plus size={14} className="mr-1" /> Add Contingency Item
               </button>
@@ -447,8 +447,8 @@ export const QuotationFormModal = ({
 
           {/* Taxes */}
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Taxes</h4>
-            <div className="bg-gray-50 p-4 rounded-md space-y-2">
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Taxes</h4>
+            <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.taxes.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
                   <input
@@ -460,7 +460,7 @@ export const QuotationFormModal = ({
                       copy[idx].description = e.target.value;
                       setFormData({ ...formData, taxes: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm flex-1"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
                   />
                   <input
                     type="number"
@@ -474,10 +474,10 @@ export const QuotationFormModal = ({
                       copy[idx].amount = (newSubtotal * val) / 100;
                       setFormData({ ...formData, taxes: copy });
                     }}
-                    className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-20 text-[#674636] bg-[#FFF8E8]"
                   />
-                  <span className="text-sm text-gray-600 px-2">{item.amount || 0}</span>
-                  <button type="button" onClick={() => removeItem('taxes', idx)} className="p-1 hover:bg-red-50 rounded">
+                  <span className="text-sm text-[#AAB396] px-2">{item.amount || 0}</span>
+                  <button type="button" onClick={() => removeItem('taxes', idx)} className="p-1 hover:bg-red-100 rounded">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -485,7 +485,7 @@ export const QuotationFormModal = ({
               <button
                 type="button"
                 onClick={() => addItem('taxes', { description: '', percentage: 0, amount: 0 })}
-                className="flex items-center text-xs text-purple-600 hover:underline"
+                className="flex items-center text-xs text-[#674636] hover:underline"
               >
                 <Plus size={14} className="mr-1" /> Add Tax
               </button>
@@ -494,13 +494,13 @@ export const QuotationFormModal = ({
 
           {/* Totals Summary */}
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Summary</h4>
-            <div className="bg-gray-50 p-4 rounded-md">
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Summary</h4>
+            <div className="bg-[#F7EED3] p-4 rounded-md border border-[#AAB396]">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div className="flex flex-col"><span className="text-gray-500">Subtotal</span><span className="font-semibold">${subtotal.toLocaleString()}</span></div>
-                <div className="flex flex-col"><span className="text-gray-500">Contingency</span><span className="font-semibold">${totalContingency.toLocaleString()}</span></div>
-                <div className="flex flex-col"><span className="text-gray-500">Tax</span><span className="font-semibold">${totalTax.toLocaleString()}</span></div>
-                <div className="flex flex-col"><span className="text-gray-500">Grand Total</span><span className="font-bold text-purple-600">${grandTotal.toLocaleString()}</span></div>
+                <div className="flex flex-col"><span className="text-[#AAB396]">Subtotal</span><span className="font-semibold text-[#674636]">${subtotal.toLocaleString()}</span></div>
+                <div className="flex flex-col"><span className="text-[#AAB396]">Contingency</span><span className="font-semibold text-[#674636]">${totalContingency.toLocaleString()}</span></div>
+                <div className="flex flex-col"><span className="text-[#AAB396]">Tax</span><span className="font-semibold text-[#674636]">${totalTax.toLocaleString()}</span></div>
+                <div className="flex flex-col"><span className="text-[#AAB396]">Grand Total</span><span className="font-bold text-[#674636]">${grandTotal.toLocaleString()}</span></div>
               </div>
             </div>
           </div>
@@ -516,14 +516,14 @@ export const QuotationFormModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+              className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#FFF8E8]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className={`px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white ${submitting ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'}`}
+              className={`px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white ${submitting ? 'bg-[#AAB396] cursor-not-allowed' : 'bg-[#674636] hover:bg-[#AAB396]'}`}
             >
               {submitting ? 'Saving...' : 'Save Quotation'}
             </button>

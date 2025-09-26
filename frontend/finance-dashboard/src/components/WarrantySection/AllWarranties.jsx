@@ -12,6 +12,7 @@ import {
   ToggleLeft,
   ToggleRight,
   Loader2,
+  RotateCcw,
 } from 'lucide-react';
 import { ViewWarrantyModal } from './ViewWarrantyModal';
 import { AddWarrantyModal } from './AddWarrantyModal';
@@ -28,6 +29,7 @@ export const AllWarranties = () => {
   const [allWarranties, setAllWarranties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch warranties from backend
   useEffect(() => {
@@ -36,21 +38,21 @@ export const AllWarranties = () => {
 
   const fetchWarranties = async () => {
     try {
-      setLoading(true);
+      if (!refreshing) setLoading(true);
       setError(null);
-      
+      setRefreshing(true);
       const response = await fetch('/api/warranties/all');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
       const data = await response.json();
-      setAllWarranties(data);
+      setAllWarranties(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching warranties:', err);
       setError('Failed to load warranties. Please try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -85,32 +87,57 @@ export const AllWarranties = () => {
   // Filter by status and search term, then sort
   const filteredWarranties = allWarranties
     .filter((warranty) => {
-      // Filter by active/expired status
-      const statusMatch = showActiveOnly 
-        ? warranty.status === 'Active' 
-        : warranty.status === 'Expired';
-      
+      // Derive normalized status with date fallback
+      const rawStatus = (warranty.status || '').toString().toLowerCase().trim();
+      let derivedStatus = rawStatus;
+      // Use dates if status missing or not one of expected
+      const validStatuses = ['active', 'expired', 'claimed', 'replaced'];
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      if (!validStatuses.includes(derivedStatus)) {
+        if (warranty.endDate) {
+          const end = new Date(warranty.endDate);
+          derivedStatus = end < todayMidnight ? 'expired' : 'active';
+        }
+      } else if (derivedStatus === 'active' || derivedStatus === 'expired') {
+        // Re-confirm using end date if provided to prevent stale status
+        if (warranty.endDate) {
+          const end = new Date(warranty.endDate);
+            if (end < todayMidnight) derivedStatus = 'expired';
+        }
+      }
+
+      const statusMatch = showActiveOnly ? derivedStatus === 'active' : derivedStatus === 'expired';
+
       // Filter by search term
       const searchLower = searchTerm.toLowerCase();
-      const searchMatch = warranty._id?.toLowerCase().includes(searchLower) ||
-        warranty.projectName?.toLowerCase().includes(searchLower) ||
-        warranty.clientName?.toLowerCase().includes(searchLower) ||
-        warranty.clientId?.toLowerCase().includes(searchLower) ||
-        warranty.itemId?.toLowerCase().includes(searchLower) ||
-        warranty.materialName?.toLowerCase().includes(searchLower);
-
+      if (!searchLower) return statusMatch;
+      const searchable = [
+        warranty._id,
+        warranty.projectName,
+        warranty.clientName,
+        warranty.clientId,
+        warranty.itemId,
+        warranty.materialName,
+      ]
+        .filter(Boolean)
+        .map((v) => v.toString().toLowerCase());
+      const searchMatch = searchable.some((field) => field.includes(searchLower));
       return statusMatch && searchMatch;
     })
     .sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
-      
+
       // Handle special sorting for dates
       if (sortField === 'startDate' || sortField === 'endDate') {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
       }
-      
+      // Handle undefined numeric fields (daysRemaining/daysExpired)
+      if (aValue === undefined || aValue === null) aValue = -Infinity;
+      if (bValue === undefined || bValue === null) bValue = -Infinity;
+
       if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
       return 0;
@@ -209,6 +236,17 @@ export const AllWarranties = () => {
               <Filter size={16} className="text-[#AAB396]" />
             </button>
           </div>
+
+          {/* Refresh */}
+          <button
+            onClick={fetchWarranties}
+            disabled={refreshing}
+            className={`px-3 py-2 rounded-md text-sm font-medium flex items-center border border-[#AAB396] ${refreshing ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#F7EED3]'}`}
+            title="Refresh warranties"
+          >
+            <RotateCcw size={16} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing' : 'Refresh'}
+          </button>
 
           {/* Add Warranty Button - only show for active warranties */}
           {showActiveOnly && (

@@ -96,8 +96,8 @@ export const WarrantyRequestHistory = () => {
 		);
 	}
 
-	return (
-		<div className="bg-[#F7EED3] p-4 rounded-md shadow-sm">
+		return (
+		<div>
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center">
 					<div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">

@@ -93,8 +93,8 @@ export const WarrantyRequest = () => {
 		);
 	}
 
-	return (
-		<div className="bg-[#F7EED3] p-4 rounded-md shadow-sm">
+		return (
+		<div>
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center">
 					<h2 className="text-xl font-semibold text-[#674636]">Warranty Requests</h2>

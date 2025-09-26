@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, FileText, User, Calendar, AlertCircle, CheckCircle, XCircle, Clock, Package, Truck } from 'lucide-react';
 
 
@@ -27,10 +27,87 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
     }
   };
 
-  // Extract warranty and client info from claim
+  // Extract warranty and client info from claim (may be populated or just IDs)
   const warranty = typeof claim.warrantyId === 'object' ? claim.warrantyId : null;
   const client = typeof claim.clientId === 'object' ? claim.clientId : null;
   const reviewer = typeof claim.financeReviewerId === 'object' ? claim.financeReviewerId : null;
+
+  // Local state to fetch authoritative warranty status & period
+  const [warrantyLoading, setWarrantyLoading] = useState(false);
+  const [warrantyError, setWarrantyError] = useState(null);
+  const [warrantyDetails, setWarrantyDetails] = useState(null); // raw doc
+  const [warrantyComputed, setWarrantyComputed] = useState(null); // derived fields
+
+  useEffect(() => {
+    const id = warranty?._id || (typeof claim.warrantyId === 'string' ? claim.warrantyId : null);
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setWarrantyLoading(true);
+        setWarrantyError(null);
+        // Fetch raw document & dynamic status in parallel
+        const [docRes, statusRes] = await Promise.all([
+          fetch(`/api/warranties/${id}`),
+          fetch(`/api/warranties/${id}/status`)
+        ]);
+        if (!docRes.ok) throw new Error(`Warranty fetch failed (${docRes.status})`);
+        if (!statusRes.ok) throw new Error(`Warranty status fetch failed (${statusRes.status})`);
+        const doc = await docRes.json();
+        const statusPayload = await statusRes.json();
+        if (cancelled) return;
+        setWarrantyDetails(doc);
+        // Determine dates (backend doc uses warrantyStart / warrantyEnd)
+        const startRaw = doc.warrantyStart || doc.startDate;
+        const endRaw = doc.warrantyEnd || doc.endDate;
+        const startDate = startRaw ? new Date(startRaw) : null;
+        const endDate = endRaw ? new Date(endRaw) : null;
+        const now = new Date();
+        // Compute in-period boolean using dates (authoritative irrespective of stored status)
+        let inPeriod = false;
+        if (startDate && endDate) {
+          inPeriod = startDate <= now && endDate >= now;
+        }
+        // Compute days remaining / expired
+        let daysRemaining = null;
+        let daysExpired = null;
+        if (endDate) {
+          const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0) daysRemaining = diffDays; else daysExpired = Math.abs(diffDays);
+        }
+        const dynamicStatus = statusPayload.status || doc.status || (inPeriod ? 'Active' : 'Expired');
+        setWarrantyComputed({
+          startDate: startDate ? startDate.toISOString().split('T')[0] : 'N/A',
+            endDate: endDate ? endDate.toISOString().split('T')[0] : 'N/A',
+          inPeriod,
+          status: dynamicStatus,
+          daysRemaining,
+          daysExpired,
+        });
+      } catch (e) {
+        if (!cancelled) setWarrantyError(e.message);
+      } finally {
+        if (!cancelled) setWarrantyLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [claim.warrantyId]);
+
+  const renderWarrantyPeriodBadge = () => {
+    if (warrantyLoading) {
+      return <span className="px-2 py-1 text-xs rounded-full bg-[#F7EED3] text-[#674636] border border-[#AAB396] animate-pulse">Checking...</span>;
+    }
+    if (warrantyError) {
+      return <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700 border border-red-400">Error</span>;
+    }
+    if (!warrantyComputed) {
+      return <span className="px-2 py-1 text-xs rounded-full bg-[#F7EED3] text-[#AAB396] border border-[#AAB396]">Unknown</span>;
+    }
+    if (warrantyComputed.inPeriod) {
+      return <span className="px-2 py-1 text-xs rounded-full bg-green-600 text-white border border-green-700">In Warranty</span>;
+    }
+    return <span className="px-2 py-1 text-xs rounded-full bg-[#674636] text-[#FFF8E8] border border-[#674636]">Expired</span>;
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -125,32 +202,60 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
             </p>
           </div>
 
-          {/* Warranty Information */}
-          {warranty && (
+          {/* Warranty Information with period verification */}
+          {(warranty || warrantyComputed || warrantyLoading) && (
             <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
-              <h4 className="font-semibold text-[#674636] mb-3">Related Warranty Information</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-[#674636]">Related Warranty Information</h4>
+                {renderWarrantyPeriodBadge()}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <div>
+                    <span className="text-sm text-[#AAB396]">Warranty ID</span>
+                    <p className="font-medium font-mono text-xs">{warranty?._id || (typeof claim.warrantyId === 'string' ? claim.warrantyId : 'N/A')}</p>
+                  </div>
+                  <div>
                     <span className="text-sm text-[#AAB396]">Project Name</span>
-                    <p className="font-medium">{warranty.projectName || 'N/A'}</p>
+                    <p className="font-medium">{warranty?.projectName || 'N/A'}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Material Type</span>
-                    <p className="font-medium">{warranty.materialType || warranty.type || 'N/A'}</p>
+                    <p className="font-medium">{warranty?.materialType || warranty?.type || 'N/A'}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Warranty Start</span>
-                    <p className="font-medium">{warranty.startDate || 'N/A'}</p>
+                    <p className="font-medium">{warrantyComputed?.startDate || warranty?.startDate || (warrantyDetails?.warrantyStart ? new Date(warrantyDetails.warrantyStart).toISOString().split('T')[0] : 'N/A')}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Warranty End</span>
-                    <p className="font-medium">{warranty.endDate || 'N/A'}</p>
+                    <p className="font-medium">{warrantyComputed?.endDate || warranty?.endDate || (warrantyDetails?.warrantyEnd ? new Date(warrantyDetails.warrantyEnd).toISOString().split('T')[0] : 'N/A')}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-[#AAB396]">Dynamic Status</span>
+                    <p className="font-medium">{warrantyComputed?.status || warranty?.status || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-sm text-[#AAB396]">Days Remaining</span>
+                    <p className="font-medium">{warrantyComputed?.daysRemaining ?? (warrantyComputed?.inPeriod ? '0' : '—')}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-[#AAB396]">Days Expired</span>
+                    <p className="font-medium">{warrantyComputed?.daysExpired ?? (!warrantyComputed?.inPeriod && warrantyComputed ? '0' : '—')}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-[#AAB396]">Period Status</span>
+                    <p className="font-medium">{warrantyComputed ? (warrantyComputed.inPeriod ? 'Within Warranty Period' : 'Outside Warranty Period') : 'Checking...'}</p>
                   </div>
                 </div>
               </div>
+              {warrantyError && (
+                <div className="mt-3 text-xs text-red-600">{warrantyError}</div>
+              )}
             </div>
           )}
 

@@ -13,7 +13,7 @@ export function App() {
   const [currentSection, setCurrentSection] = useState('dashboard');
 
   return (
-    <div className="flex h-screen w-full bg-gray-50">
+  <div className="flex h-screen w-full bg-[#FFF8E8]">
       <Sidebar onNavigate={setCurrentSection} currentSection={currentSection} />
       <main className="flex-1 overflow-auto">
         {currentSection === 'dashboard' && <Dashboard />}

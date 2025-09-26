@@ -8,7 +8,7 @@ export const WarrantySection = () => {
   const [activeTab, setActiveTab] = useState('warranties');
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-[#FFF8E8]">
+    <div className="p-6 max-w-7xl mx-auto">
       <Header title="Warranty Management" />
 
       {/* Tab Navigation */}
