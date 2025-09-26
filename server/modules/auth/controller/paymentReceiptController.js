@@ -167,7 +167,8 @@ export const getPaymentReceiptStatus = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-// Delete a payment receipt (Admin only)
+
+// Delete a payment receipt (CSR only)
 export const deletePaymentReceipt = async (req, res) => {
   try {
     const { receiptId } = req.params;
@@ -182,5 +183,50 @@ export const deletePaymentReceipt = async (req, res) => {
     res.status(200).json({ message: "Receipt deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// ===== NEW: CSR sends payment details email to client =====
+export const SendPaymentDetailsEmail = async (req, res) => {
+  try {
+    const { clientEmail, uploadUrl, calculatedAmount, dueDate } = req.body;
+
+    if (!clientEmail || !uploadUrl) {
+      return res.status(400).json({ message: "Client email and payment link are required" });
+    }
+
+    const emailHtml = `
+      <h2>Payment Request</h2>
+      <p>Dear client,</p>
+      <p>Please complete your payment of <b>$${calculatedAmount}</b> before <b>${dueDate || 'the due date'}</b>.</p>
+      <p>Click here to upload your payment receipt: 
+         <a href="${uploadUrl}">${uploadUrl}</a>
+      </p>
+    `;
+
+    await sendEmail({
+      to: clientEmail,
+      subject: "Payment Details - Upload Your Receipt",
+      html: emailHtml
+    });
+
+    res.json({ message: "Payment details email sent successfully" });
+  } catch (err) {
+    console.error("Email sending failed:", err);
+    res.status(500).json({ message: "Failed to send email" });
+  }
+};
+
+// ===== Get all payment receipts =====
+export const getAllPaymentReceipts = async (req, res) => {
+  try {
+    const receipts = await PaymentReceipt.find()
+      .populate('clientId', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json(receipts);
+  } catch (err) {
+    console.error("Error fetching payment receipts:", err);
+    res.status(500).json({ message: "Failed to fetch payment receipts" });
   }
 };
