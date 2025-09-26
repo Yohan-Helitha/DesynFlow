@@ -3,15 +3,19 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 350px;
+  width: 400px;
   height: 100%;
-  background: #FFF8E8; /* lightest creamy color */
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(180deg, #FFF8E8 0%, rgba(247, 238, 211, 0.95) 100%);
+  box-shadow: -6px 0 25px rgba(103, 70, 54, 0.15);
   transform: translateX(100%);
-  transition: transform 0.3s ease-in-out;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 999;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(15px);
+  border-left: 3px solid rgba(103, 70, 54, 0.1);
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
 }
 
 .notification-panel.active {
@@ -20,18 +24,30 @@
 
 /* Header */
 .panel-header {
-  background: #F7EED3; /* slightly darker cream for contrast */
-  padding: 14px;
+  background: none;
+  padding: 24px 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: #674636;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: none;
+  backdrop-filter: none;
+  position: relative;
 }
 
 .panel-header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-header h2::before {
+  content: "🔔";
+  font-size: 20px;
 }
 
 /* Close button */
@@ -39,70 +55,116 @@
   background: transparent;
   border: none;
   font-size: 18px;
-  font-weight: bold;
-  color: #674636;     /* dark brown */
+  font-weight: normal;
+  color: rgba(103, 70, 54, 0.7);
   cursor: pointer;
-  transition: color 0.3s;
+  transition: all 0.2s ease;
+  border-radius: 3px;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-btn:hover {
-  color: #50352b;     /* even darker brown on hover */
+  background: rgba(103, 70, 54, 0.1);
+  color: #674636;
+  transform: none;
 }
 
 
 /* Body */
 .panel-body {
   flex: 1;
-  padding: 12px;
+  padding: 24px;
   overflow-y: auto;
-  font-size: 14px;
+  font-size: 15px;
+  background: rgba(255, 248, 232, 0.3);
 }
 
 .note {
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
+  background: linear-gradient(135deg, #FFF8E8 0%, rgba(247, 238, 211, 0.8) 100%);
+  border: 2px solid rgba(103, 70, 54, 0.15);
   border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: background 0.2s;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 20px rgba(103, 70, 54, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #674636;
+  position: relative;
+  overflow: hidden;
+}
+
+.note::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, #674636, rgba(103, 70, 54, 0.6));
 }
 
 .note:hover {
-  background: #fdf6ec;
+  background: linear-gradient(135deg, #FFF8E8 0%, #F7EED3 100%);
+  border-color: rgba(103, 70, 54, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(103, 70, 54, 0.15);
 }
 
 .note strong {
   color: #674636;
+  font-weight: 700;
+  font-size: 16px;
+  display: block;
+  margin-bottom: 8px;
 }
 
 .note small {
-  display: block;
-  margin-top: 6px;
-  color: #777;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: rgba(103, 70, 54, 0.7);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.note small::before {
+  content: "🕒";
   font-size: 12px;
 }
 
 /* Footer */
 .panel-footer {
-  padding: 10px;
-  border-top: 1px solid #e5e5e5;
+  padding: 16px 24px;
+  border-top: none;
   text-align: center;
-  background: #F7EED3; /* footer strip */
+  background: none;
+  backdrop-filter: none;
 }
 
-/* Clear button (small, cream theme) */
+/* Clear button */
 .clear-btn {
-  background: transparent;  /* brownish */
-  color: #674636;       /* creamy text */
-  border: none;
-  border-radius: 6px;
-  padding: 5px 10px;   /* smaller size FFF8E8*/
-  font-size: 20px;
+  background: rgba(103, 70, 54, 0.1);
+  color: rgba(103, 70, 54, 0.8);
+  border: 1px solid rgba(103, 70, 54, 0.2);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: 0.2px;
 }
 
 .clear-btn:hover {
-  color: #50352b;  /* darker brown on hover */
+  background: rgba(103, 70, 54, 0.15);
+  color: #674636;
+  border-color: rgba(103, 70, 54, 0.3);
+  transform: none;
+  box-shadow: none;
 }
