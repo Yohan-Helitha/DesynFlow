@@ -1,16 +1,15 @@
-
+// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import './loginPage.css';
-import greenLivingroom from './green-livingroom.jpg';
-
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [resetMsg, setResetMsg] = useState("");
   const navigate = useNavigate();
 
+  // Validation function
   const validate = () => {
     if (!email) {
       setError("Email is required");
@@ -28,25 +27,25 @@ const LoginPage = () => {
     return true;
   };
 
+  // Login handler
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+
     try {
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
+
       if (response.ok) {
-        // If backend requires 2FA, redirect to OTP page
         if (data.require2FA) {
           navigate(`/verify-otp?email=${email}`);
         } else {
-          // Store token/session if provided
-          if (data.token) localStorage.setItem('token', data.token);
-          // Redirect to dashboard or home
-          navigate('/dashboard');
+          if (data.token) localStorage.setItem("authToken", data.token);
+          navigate("/dashboard");
         }
       } else {
         setError(data.message || "Login failed");
@@ -56,50 +55,97 @@ const LoginPage = () => {
     }
   };
 
+  // Password reset request
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError("Please enter your email for password reset");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/auth/request-password-reset",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setResetMsg(data.message || "Reset link sent to your email.");
+      } else {
+        setError(data.message || "Failed to send reset link.");
+      }
+    } catch (err) {
+      setError("Server error, please try again.");
+    }
+  };
+
   return (
-    <div className="login-container">
-      <div className="login-left" style={{ backgroundImage: `url(https://in.pinterest.com/pin/13581236383486555/)` }}>
-        <div className="login-overlay">
-          <h1>Transform spaces with your vision</h1>
-          <p>Manage your interior design projects with ease and elegance.</p>
+    <div className="flex min-h-screen">
+      {/* Left side (image + overlay) */}
+      <div className="w-1/2 bg-cover bg-center relative" style={{ backgroundImage: `url(https://i.pinimg.com/originals/0b/5c/ff/0b5cffd6a0a14f52f4b9de9f85cf1333.jpg)` }}>
+        <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-start p-12 text-white">
+          <h1 className="text-4xl font-bold mb-4">Transform spaces with your vision</h1>
+          <p className="text-lg">Manage your interior design projects with ease and elegance.</p>
         </div>
       </div>
-      <div className="login-right">
-        <div className="login-box">
-          <div className="login-logo">
-            <span role="img" aria-label="logo" className="logo-icon">🏠</span>
-            <span className="logo-text">InteriDesign</span>
+
+      {/* Right side (form) */}
+      <div className="w-1/2 flex items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md p-10 bg-white shadow-lg rounded-lg">
+          <div className="text-center mb-6">
+            <span className="text-4xl">🏠</span>
+            <h2 className="text-2xl font-bold mt-2">InteriDesign</h2>
+            <p className="text-gray-500 mt-1">Login to your account</p>
           </div>
-          <h2>Welcome back</h2>
-          <p className="login-subtitle">Login in to your account to continue</p>
-          <form onSubmit={handleLogin}>
-            {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
-            <label htmlFor="email">Email address</label>
-            <input
-              type="email"
-              id="email"
-              placeholder="name@company.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
-            <label htmlFor="password">Password</label>
-            <div className="password-row">
+
+          {error && <div className="text-red-600 mb-4">{error}</div>}
+          {resetMsg && <div className="text-green-600 mb-4">{resetMsg}</div>}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@company.com"
+                className="w-full mt-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
               <input
                 type="password"
-                id="password"
-                placeholder="••••••••"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full mt-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <a href="#" className="forgot-link">Forgot password?</a>
             </div>
-            <button type="submit" className="login-btn">Sign in</button>
+
+            <div className="flex justify-between items-center text-sm text-blue-600">
+              <button
+                type="button"
+                onClick={handleResetPassword}
+                className="hover:underline"
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            >
+              Sign in
+            </button>
           </form>
-          <div className="login-footer">
-            <span>Don't have an account?</span>
-            <a href="#" className="admin-link">Contact admin</a>
+
+          <div className="text-center mt-6 text-gray-500 text-sm">
+            Don't have an account? <span className="text-blue-600">Contact admin</span>
           </div>
         </div>
       </div>

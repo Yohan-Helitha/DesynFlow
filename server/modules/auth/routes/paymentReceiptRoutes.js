@@ -7,8 +7,8 @@ import {
   uploadReceipt,
   verifyPaymentReceipt,
   getPaymentReceiptStatus,
-  generatePaymentLinkForClient
-  DeletePaymentReceipt,
+  generatePaymentLinkForClient,
+  deletePaymentReceipt,
   getAllPaymentReceipts,
   SendPaymentDetailsEmail,
 } from '../controller/paymentReceiptController.js';

@@ -1,6 +1,7 @@
 import Report from '../model/report.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
 import User from '../model/user.model.js';
+import ProjectManagerNotificationService from '../../../services/projectManagerNotificationService.js';
 
 // Create a new inspection report (draft)
 export const createReport = async (req, res) => {
@@ -85,6 +86,18 @@ export const reviewReport = async (req, res) => {
     }
     if (remarks) report.remarks = remarks;
     await report.save();
+
+    // 🔥 NEW: Notify project managers about status change
+    try {
+      await ProjectManagerNotificationService.notifyReportStatusChanged(
+        report._id, 
+        report.status, 
+        remarks || ''
+      );
+    } catch (notificationError) {
+      console.error('Failed to notify project managers about status change:', notificationError);
+    }
+
     res.status(200).json({ message: `Report ${action}d.`, report });
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -1,95 +1,119 @@
+// src/pages/SignUpPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
-export default function Register() {
+const SignUpPage = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  // Register user function: sends data to backend and returns OTP
-  const registerUser = async (username, email, password, phone) => {
-    try {
-      const response = await fetch("http://localhost:4000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password, phone })
-      });
-      const data = await response.json();
-      if (response.ok) {
-        // Backend should send OTP in response or via email
-        return data.otp || "";
-      } else {
-        setErrors({ form: data.message || "Registration failed" });
-        return "";
-      }
-    } catch (err) {
-      setErrors({ form: "Server error, please try again." });
-      return "";
-    }
-  };
-
- 
-  const checkPassword = (pass) => {
-    return {
-      hasMinLength: pass.length >= 8,
-      hasNumber: /\d/.test(pass),
-      hasUppercase: /[A-Z]/.test(pass),
-    };
-  };
-
-  
+  // Simple frontend validation
   const validate = () => {
     const newErrors = {};
     if (!username) newErrors.username = "Username is required";
-    if (!email.includes("@")) newErrors.email = "Valid email is required";
-    if (!/^\d{10}$/.test(phone)) newErrors.phone = "Phone must be 10 digits";
-    const pwdCheck = checkPassword(password);
-    if (!pwdCheck.hasMinLength || !pwdCheck.hasNumber || !pwdCheck.hasUppercase) {
-      newErrors.password = "Password must be 8+ chars, 1 number, 1 uppercase";
-    }
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+      newErrors.email = "Valid email is required";
+    if (!phone || !/^\d{10}$/.test(phone))
+      newErrors.phone = "Phone must be 10 digits";
+    if (!password || password.length < 8)
+      newErrors.password = "Password must be at least 8 characters";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      const otp = await registerUser(username, email, password, phone);
-      navigate(`/verify-otp?email=${email}&otp=${otp}`);
+    if (!validate()) return;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, phone, password }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage(data.message || "Registration successful! Check your email.");
+        setTimeout(() => navigate(`/verify-otp?email=${email}`), 1500);
+      } else {
+        setErrors({ form: data.message || "Registration failed" });
+      }
+    } catch {
+      setErrors({ form: "Server error, please try again." });
     }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto", padding: "20px" }}>
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Username</label>
-        <input value={username} onChange={(e) => setUsername(e.target.value)} />
-        {errors.username && <p style={{ color: "red" }}>{errors.username}</p>}
-
-        <label>Email</label>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} />
-        {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
-
-        <label>Phone</label>
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} />
-        {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
-
-        <label>Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
-
-        <button type="submit">Sign Up</button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+        {message && <p className="text-green-600 mb-4">{message}</p>}
+        {errors.form && <p className="text-red-500 mb-4">{errors.form}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Phone</label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          >
+            Sign Up
+          </button>
+        </form>
+        <p className="text-sm mt-4 text-center">
+          Already have an account?{" "}
+          <span
+            className="text-blue-600 cursor-pointer"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </span>
+        </p>
+      </div>
     </div>
   );
-}
+};
+
+export default SignUpPage;

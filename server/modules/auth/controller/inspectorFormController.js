@@ -1,6 +1,7 @@
 import InspectorForm from '../model/inspectorDynamicForm.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
 import Report from '../model/report.model.js';
+import ProjectManagerNotificationService from '../../../services/projectManagerNotificationService.js';
 
 // Create new inspector form entry
 export const createInspectorForm = async (req, res) => {
@@ -115,6 +116,15 @@ export const generateReportFromForm = async (req, res) => {
 
     form.report_generated = true;
     await form.save();
+
+    // 🔥 NEW: Notify project managers about the generated report
+    try {
+      const notification = await ProjectManagerNotificationService.notifyReportGenerated(report._id);
+      console.log('Project Manager notification result:', notification);
+    } catch (notificationError) {
+      console.error('Failed to notify project managers:', notificationError);
+      // Don't fail the entire operation if notification fails
+    }
 
     res.status(200).json({ message: 'Report generated successfully', report, form });
   } catch (error) {
