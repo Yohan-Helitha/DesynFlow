@@ -8,7 +8,7 @@ import DocumentList from "../components/DocumentList";
 
 export default function LeaderDashboard() {
   // Use real leaderId from database (Interior Design Team)
-  const leaderId = "68cffc1dbede29e639b6c757";
+  const leaderId = "68d638d66e8afdd7536b87f8";
   const [team, setTeam] = useState(null);
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -37,8 +37,10 @@ export default function LeaderDashboard() {
         const teamData = await teamRes.json();
         console.log('Team data received:', teamData);
         
-        // For now, use the first team (replace with proper leader filtering later)
-        const teamObj = Array.isArray(teamData) ? teamData[0] : teamData;
+        // Find team where the leader matches
+        const teamObj = Array.isArray(teamData) 
+          ? teamData.find(t => t.leaderId === leaderId || t.leaderId._id === leaderId)
+          : (teamData.leaderId === leaderId || teamData.leaderId._id === leaderId) ? teamData : null;
         setTeam(teamObj);
         if (!teamObj || !teamObj._id) throw new Error("Team not found for leader");
 
