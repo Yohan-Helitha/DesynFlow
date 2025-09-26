@@ -3,12 +3,6 @@ import './Orders.css';
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
-const URL = "http//localhost:3000/Orders";
-
-const fetchHandler = async () => {
-  return await axios.get(URL).then((res) => res.data);
-}
-
 function Orders() {
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,80 +34,121 @@ function Orders() {
 
   return (
     <div className="orders-container">
-      <h2>Orders</h2>
-      <table className="orders-table" id="ordersTable">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Supplier</th>
-            <th>Ordered Materials</th>
-            <th>Quantity</th>
-            <th>Price per Unit</th>
-            <th>Total Price</th>
-            <th>Status</th>
-            <th>Received</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.length > 0 ? (
-            orders.map((order, idx) => (
-              <tr key={order._id || idx}>
-                <td>{order._id || idx + 1}</td>
-                <td>{order.supplierId?.companyName || order.supplierId || "Unknown"}</td>
-                <td>{order.items?.map((item, i) => (
-                  <div key={i}>{item.materialId?.materialName || item.materialName || item.materialId || "Unknown"}</div>
-                ))}</td>
-                <td>{order.items?.map((item, i) => (
-                  <div key={i}>{item.qty || item.quantity}</div>
-                ))}</td>
-                <td>{order.items?.map((item, i) => (
-                  <div key={i}>{item.unitPrice || item.pricePerUnit}</div>
-                ))}</td>
-                <td>{order.items?.map((item, i) => (
-                  <div key={i}>{((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity)) || 0}</div>
-                ))}</td>
-                <td>
-                  {order.status === "Approved" ? (
-                    <span style={{ color: '#22c55e', fontWeight: 'bold' }}>Approved</span>
-                  ) : order.status === "Rejected" ? (
-                    <span style={{ color: '#ef4444', fontWeight: 'bold' }}>Rejected</span>
-                  ) : (
-                    <span style={{ color: '#64748b', fontWeight: 'bold' }}>{order.status || "Sent"}</span>
-                  )}
-                </td>
-                <td>
-                  <button
-                    disabled={order.status !== 'Approved'}
-                    style={{
-                      padding: '4px 8px',
-                      background: order.status === 'Approved' ? '#2563eb' : '#94a3b8',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: order.status === 'Approved' ? 'pointer' : 'not-allowed'
-                    }}
-                    onClick={() => {
-                      navigate('/Rate_supplier', {
-                        state: {
-                          supplierId: order.supplierId?._id || order.supplierId,
-                          orderId: order._id
-                        }
-                      });
-                    }}
-                  >Received</button>
+      <h2>📋 Purchase Orders Management</h2>
+      
+      <div className="top-controls">
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="🔍 Search by supplier or material..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <button className="place-order-btn">
+          <Link to="/OrderForm">
+            <span>➕</span>
+            Place New Order
+          </Link>
+        </button>
+      </div>
+
+      <div className="table-container">
+        <table className="orders-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Supplier</th>
+              <th>Materials</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredOrders.length > 0 ? (
+              filteredOrders.map((order, idx) => (
+                <tr key={order._id || idx}>
+                  <td>
+                    <span className="order-id">#{order._id?.slice(-8) || `ORD${idx + 1000}`}</span>
+                  </td>
+                  <td>
+                    <div className="supplier-info">
+                      <span className="company-name">{order.supplierId?.companyName || order.supplierId || "Unknown Supplier"}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="materials-list">
+                      {order.items?.map((item, i) => (
+                        <span key={i} className="material-item">
+                          {item.materialId?.materialName || item.materialName || item.materialId || "Unknown"}
+                          {i < order.items.length - 1 && ", "}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="quantity-list">
+                      {order.items?.map((item, i) => (
+                        <div key={i} className="qty-item">{item.qty || item.quantity}</div>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="price-list">
+                      {order.items?.map((item, i) => (
+                        <div key={i} className="price-item">${item.unitPrice || item.pricePerUnit}</div>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <span className="total-amount">
+                      ${order.items?.reduce((total, item) => 
+                        total + ((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity) || 0), 0
+                      )?.toFixed(2) || '0.00'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`status-badge ${order.status?.toLowerCase() || 'pending'}`}>
+                      {order.status === "Approved" ? "✅ Approved" :
+                       order.status === "Rejected" ? "❌ Rejected" :
+                       order.status || "📤 Sent"}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className={`action-btn ${order.status !== 'Approved' ? 'disabled' : 'received'}`}
+                      disabled={order.status !== 'Approved'}
+                      onClick={() => {
+                        navigate('/Rate_supplier', {
+                          state: {
+                            supplierId: order.supplierId?._id || order.supplierId,
+                            orderId: order._id
+                          }
+                        });
+                      }}
+                    >
+                      {order.status === 'Approved' ? '📦 Mark Received' : '⏳ Pending'}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="no-data">
+                  <div className="empty-state">
+                    <span className="empty-icon">📋</span>
+                    <p>No orders found</p>
+                    <small>Try adjusting your search criteria</small>
+                  </div>
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" style={{ textAlign: "center" }}>
-                No orders found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-      <button><Link to="/OrderForm">Place an Order</Link></button>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

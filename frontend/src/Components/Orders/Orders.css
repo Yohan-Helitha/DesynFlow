@@ -1,83 +1,379 @@
+/* ===== Base Styling ===== */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: "Segoe UI", Tahoma, sans-serif;
-  background: #F7EED3;
   margin: 0;
-  padding: 40px;
-  color: #2c2c2c;
+  padding: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  color: #333333;
+  line-height: 1.5;
+  min-height: 100vh;
 }
 
+/* ===== Main Container ===== */
 .orders-container {
-  max-width: 1100px;
-  margin: auto;
-  background: #FFF8E8;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  padding: 2rem;
+  margin: 0 auto;
+  max-width: 1400px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
 }
 
+/* ===== Header ===== */
 .orders-container h2 {
-  text-align: center;
-  font-size: 26px;
-  color: #674636;
-  margin-bottom: 20px;
+  margin: 0 0 2rem 0;
+  color: #2c3e50;
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: left;
+  letter-spacing: 0;
 }
 
-/* Search bar */
+/* ===== Top Controls ===== */
+.top-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
 .search-bar {
-  text-align: right;
-  margin-bottom: 15px;
+  display: flex;
+  flex: 1;
 }
 
 .search-bar input {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: #ffffff;
+  color: #333333;
+  outline: none;
+  transition: border-color 0.2s ease;
 }
 
-/* Orders Table */
+.search-bar input:focus {
+  border-color: #495057;
+  box-shadow: 0 0 0 2px rgba(73, 80, 87, 0.1);
+}
+
+.search-bar input::placeholder {
+  color: #6c757d;
+}
+
+/* ===== Table Container ===== */
+.table-container {
+  background: #ffffff;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+/* ===== Table ===== */
 .orders-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 15px;
-}
-
-.orders-table th, .orders-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
+  font-size: 0.9rem;
+  background: #ffffff;
 }
 
 .orders-table th {
-  background: #F7EED3;
-  color: #674636;
-  font-weight: 600;
+  background-color: #495057;
+  color: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #343a40;
+}
+
+.orders-table tbody tr {
+  transition: background-color 0.15s ease;
 }
 
 .orders-table tbody tr:hover {
-  background: rgba(247, 238, 211, 0.5);
+  background-color: #f8f9fa;
 }
 
-/* Status badges */
-.status {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: bold;
+.orders-table td {
+  padding: 0.5rem 0.75rem;
+  color: #333333;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: top;
+}
+
+.orders-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== Table Content Styling ===== */
+.order-id {
+  font-weight: 600;
+  color: #674636;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+}
+
+.supplier-info .company-name {
+  font-weight: 600;
+  color: #674636;
+}
+
+.materials-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.material-item {
+  font-size: 12px;
+  color: #674636;
+}
+
+.quantity-list, .price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qty-item, .price-item {
+  font-size: 12px;
+  color: #674636;
+}
+
+.total-amount {
+  font-weight: 700;
+  color: #674636;
+  font-size: 14px;
+}
+
+/* ===== Status Badges ===== */
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.status.completed {
-  background: #d1f7d1;
-  color: #267326;
+.status-badge.approved {
+  background-color: #28a745;
+  color: #ffffff;
 }
 
-.status.pending {
-  background: #fff1c7;
-  color: #8a6d1f;
+.status-badge.rejected {
+  background-color: #dc3545;
+  color: #ffffff;
 }
 
-.status.inprogress {
-  background: #cfe2ff;
-  color: #1f3f8a;
+.status-badge.pending, .status-badge.sent {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+/* ===== Action Buttons ===== */
+.action-btn {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.action-btn.received {
+  background-color: #007bff;
+  color: #ffffff;
+  border-color: #007bff;
+}
+
+.action-btn.received:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.action-btn.disabled {
+  background-color: #6c757d;
+  color: #ffffff;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* ===== Empty State ===== */
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.empty-state small {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+/* ===== Place Order Button ===== */
+.place-order-btn {
+  background-color: #007bff;
+  color: #ffffff;
+  border: 1px solid #007bff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.place-order-btn a {
+  color: #ffffff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.place-order-btn:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* ===== Cell Styling Improvements ===== */
+.order-id {
+  font-weight: 600;
+  color: #495057;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.75rem;
+}
+
+.supplier-info .company-name {
+  font-weight: 500;
+  color: #333333;
+}
+
+.materials-list {
+  max-width: 200px;
+}
+
+.material-item {
+  font-size: 0.75rem;
+  color: #495057;
+  font-weight: 400;
+}
+
+.quantity-list, .price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.qty-item, .price-item {
+  font-size: 0.75rem;
+  color: #495057;
+  padding: 0.1rem 0;
+}
+
+.total-amount {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.8rem;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 1200px) {
+  .orders-container {
+    margin: 0 1rem;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .orders-table {
+    min-width: 1000px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  .orders-container {
+    padding: 1rem;
+    margin: 0;
+  }
+  
+  .orders-container h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .top-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .search-bar input {
+    max-width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .orders-table th, .orders-table td {
+    padding: 0.4rem 0.4rem;
+    font-size: 0.7rem;
+  }
+  
+  .action-btn {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.4rem;
+  }
+  
+  .place-order-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
 }

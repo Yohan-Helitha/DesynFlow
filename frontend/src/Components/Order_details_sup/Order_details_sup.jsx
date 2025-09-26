@@ -9,6 +9,8 @@ function OrderDetailsSup() {
   const [loading, setLoading] = useState(true);
   const [notifOpen, setNotifOpen] = useState(false);
   const [processingId, setProcessingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
   const fetchOrders = async () => {
     try {
@@ -29,6 +31,18 @@ function OrderDetailsSup() {
 
   const notifications = orders.filter((o) => o.status === "Draft");
   const approvedOrders = orders.filter((o) => o.status === "Approved");
+
+  // Filter orders by search term and status
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = (order.supplierId?.companyName || order.supplierId || "").toString().toLowerCase()
+      .includes((searchTerm || "").toLowerCase()) ||
+      (order.items || []).some(item => 
+        (item.materialId?.materialName || item.materialName || "").toString().toLowerCase()
+          .includes((searchTerm || "").toLowerCase())
+      );
+    const matchesStatus = selectedStatus === "all" || order.status?.toLowerCase() === selectedStatus;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleApprove = async (id) => {
     try {
@@ -75,119 +89,223 @@ function OrderDetailsSup() {
   };
 
   return (
-    <div className="ods-container">
-      {/* Topbar */}
-      <header className="ods-topbar">
-        <h1>Supplier Dashboard</h1>
-        <button
-          className="notif-btn"
-          onClick={() => setNotifOpen((prev) => !prev)}
-        >
-          🔔
+    <div className="order-details-container">
+      {/* Header Section */}
+      <div className="header-section">
+        <h1>Supplier Order Management</h1>
+        <button className="notif-btn" onClick={() => setNotifOpen(!notifOpen)}>
+          <span className="bell-icon">🔔</span>
           {notifications.length > 0 && (
             <span className="notif-count">{notifications.length}</span>
           )}
+          <span className="notif-text">Notifications</span>
         </button>
-      </header>
-      {/* Notifications drawer */}
-      <div className={`notif-drawer ${notifOpen ? "open" : ""}`}>
-        <div className="notif-header">
-          <h3>New Order Requests</h3>
+      </div>
+
+      {/* Filters Section */}
+      <div className="filters-section">
+        <div className="search-filter">
+          <input
+            type="text"
+            placeholder="🔍 Search orders by supplier or material..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="status-filter">
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Notifications Panel */}
+      <div className={`notif-panel ${notifOpen ? "open" : ""}`}>
+        <div className="panel-header">
+          <h3>📋 Pending Approval Requests</h3>
           <button className="close-btn" onClick={() => setNotifOpen(false)}>
-            ×
+            ✕
           </button>
         </div>
-        {notifications.length === 0 ? (
-          <p className="muted">No new requests</p>
+        <div className="panel-content">
+          {notifications.length === 0 ? (
+            <div className="empty-notifications">
+              <span className="empty-icon">✅</span>
+              <p>All caught up!</p>
+              <small>No new requests require your attention</small>
+            </div>
+          ) : (
+            <div className="notifications-list">
+              {notifications.map((o) => (
+                <div className="notification-card" key={o._id}>
+                  <div className="card-header">
+                    <span className="order-badge">#{o._id?.slice(-8) || 'NEW'}</span>
+                    <small className="timestamp">{new Date(o.createdAt).toLocaleDateString()}</small>
+                  </div>
+                  <div className="card-content">
+                    <div className="info-row">
+                      <span className="label">Supplier:</span>
+                      <span className="value">{o.supplierId?.companyName || o.supplierId || "Unknown"}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Materials:</span>
+                      <span className="value">
+                        {(o.items || []).map((it, i) => (
+                          <span key={i}>
+                            {it.materialId?.materialName || it.materialId}
+                            {i < o.items.length - 1 ? ", " : ""}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Total Value:</span>
+                      <span className="value total">
+                        ${(o.items || []).reduce((sum, item) => 
+                          sum + ((item.unitPrice || 0) * (item.qty || 0)), 0
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="card-actions">
+                    <button
+                      className="approve-btn"
+                      disabled={processingId === o._id}
+                      onClick={() => handleApprove(o._id)}
+                    >
+                      {processingId === o._id ? "⏳ Processing..." : "✅ Approve"}
+                    </button>
+                    <button
+                      className="reject-btn"
+                      disabled={processingId === o._id}
+                      onClick={() => handleReject(o._id)}
+                    >
+                      {processingId === o._id ? "⏳ Processing..." : "❌ Reject"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Orders Table */}
+      <div className="orders-section">
+        <div className="section-header">
+          <h2>📊 Order Management Dashboard</h2>
+          <div className="stats-summary">
+            <span className="stat">Total: {filteredOrders.length}</span>
+            <span className="stat pending">Pending: {filteredOrders.filter(o => o.status === 'draft').length}</span>
+            <span className="stat approved">Approved: {filteredOrders.filter(o => o.status === 'approved').length}</span>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading orders...</p>
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="empty-state">
+            <span className="empty-icon">📦</span>
+            <h3>No Orders Found</h3>
+            <p>There are no orders matching your current filters.</p>
+          </div>
         ) : (
-          <>
-            {notifications.map((o) => (
-              <div className="notif-card" key={o._id}>
-                <div>
-                  <p><b>Order ID:</b> {o._id}</p>
-                  <p><b>Supplier:</b> {o.supplierId?.companyName || o.supplierId || "Unknown"}</p>
-                  <p><b>Materials:</b> {(o.items || []).map((it, i) => (
-                    <span key={i}>{it.materialId}{i < o.items.length - 1 ? ", " : ""}</span>
-                  ))}</p>
-                  <p><b>Quantities:</b> {(o.items || []).map((it, i) => (
-                    <span key={i}>{it.qty}{i < o.items.length - 1 ? ", " : ""}</span>
-                  ))}</p>
-                  <p><b>Status:</b> {o.status}</p>
-                  <small>{new Date(o.createdAt).toLocaleString()}</small>
-                </div>
-                <div className="notif-actions">
-                  <button
-                    className="btn-approve"
-                    disabled={processingId === o._id}
-                    onClick={() => handleApprove(o._id)}
-                  >
-                    {processingId === o._id ? "..." : "Approve"}
-                  </button>
-                  <button
-                    className="btn-reject"
-                    disabled={processingId === o._id}
-                    onClick={() => handleReject(o._id)}
-                  >
-                    {processingId === o._id ? "..." : "Reject"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </>
+          <div className="table-container">
+            <table className="orders-table">
+              <thead>
+                <tr>
+                  <th>Order Details</th>
+                  <th>Supplier</th>
+                  <th>Items & Quantities</th>
+                  <th>Total Value</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => (
+                  <tr key={order._id}>
+                    <td>
+                      <div className="order-id-cell">
+                        <strong>#{order._id?.slice(-8) || 'NEW'}</strong>
+                        <small>Order ID</small>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="supplier-cell">
+                        <strong>{order.supplierId?.companyName || order.supplierId || "Unknown"}</strong>
+                        {order.supplierId?.email && <small>{order.supplierId.email}</small>}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="items-cell">
+                        {(order.items || []).map((item, idx) => (
+                          <div key={idx} className="item-row">
+                            <span className="material">{item.materialId?.materialName || item.materialId}</span>
+                            <span className="quantity">Qty: {item.qty}</span>
+                            {item.unitPrice && <span className="price">${item.unitPrice}/unit</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="total-cell">
+                        <strong>
+                          ${(order.items || []).reduce((sum, item) => 
+                            sum + ((item.unitPrice || 0) * (item.qty || 0)), 0
+                          ).toFixed(2)}
+                        </strong>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`status-badge status-${order.status}`}>
+                        {order.status === 'draft' && '📝 Draft'}
+                        {order.status === 'approved' && '✅ Approved'}
+                        {order.status === 'rejected' && '❌ Rejected'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="date-cell">
+                        <strong>{new Date(order.createdAt).toLocaleDateString()}</strong>
+                        <small>{new Date(order.createdAt).toLocaleTimeString()}</small>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="actions-cell">
+                        <button
+                          className="action-btn approve-btn"
+                          disabled={order.status === "approved" || processingId === order._id}
+                          onClick={() => handleApprove(order._id)}
+                        >
+                          {processingId === order._id ? "⏳" : "✅"}
+                          {processingId === order._id ? "Processing" : "Approve"}
+                        </button>
+                        <button
+                          className="action-btn reject-btn"
+                          disabled={order.status === "rejected" || processingId === order._id}
+                          onClick={() => handleReject(order._id)}
+                        >
+                          {processingId === order._id ? "⏳" : "❌"}
+                          {processingId === order._id ? "Processing" : "Reject"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
-      {/* Orders Section */}
-      <main className="ods-main">
-        <h2>All Orders</h2>
-        {loading ? (
-          <p>Loading…</p>
-        ) : orders.length === 0 ? (
-          <p className="muted">No orders yet</p>
-        ) : (
-          <table className="orders-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Supplier</th>
-                <th>Ordered Materials</th>
-                <th>Quantity</th>
-                <th>Price per Unit</th>
-                <th>Total Price</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order, idx) => (
-                <tr key={order._id || idx}>
-                  <td>{order._id}</td>
-                  <td>{order.supplierId?.companyName || order.supplierId || "Unknown"}</td>
-                  <td>{(order.items || []).map((item, i) => (
-                    <div key={i}>{item.materialId?.materialName || item.materialName || item.materialId || "Unknown"}</div>
-                  ))}</td>
-                  <td>{(order.items || []).map((item, i) => (
-                    <div key={i}>{item.qty || item.quantity}</div>
-                  ))}</td>
-                  <td>{(order.items || []).map((item, i) => (
-                    <div key={i}>{item.unitPrice || item.pricePerUnit}</div>
-                  ))}</td>
-                  <td>{(order.items || []).map((item, i) => (
-                    <div key={i}>{((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity)) || 0}</div>
-                  ))}</td>
-                  <td>
-                    {order.status === "Approved" ? (
-                      <span style={{ color: '#22c55e', fontWeight: 'bold' }}>Approved</span>
-                    ) : order.status === "Rejected" ? (
-                      <span style={{ color: '#ef4444', fontWeight: 'bold' }}>Rejected</span>
-                    ) : (
-                      <span style={{ color: '#64748b', fontWeight: 'bold' }}>{order.status || "Received"}</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </main>
     </div>
   );
 }
