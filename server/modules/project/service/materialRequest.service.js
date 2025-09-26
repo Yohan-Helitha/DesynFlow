@@ -14,12 +14,17 @@ export const deleteMaterialRequest = async (id) => {
 };
 
 export const getMaterialRequestsByProject = async (projectId) => {
-  return MaterialRequest.find({ projectId });
+  return MaterialRequest.find({ projectId }).sort({ createdAt: -1 });
+};
+
+export const getMaterialRequestById = async (id) => {
+  return MaterialRequest.findById(id);
 };
 
 export default {
   createMaterialRequest,
   updateMaterialRequest,
   deleteMaterialRequest,
-  getMaterialRequestsByProject
+  getMaterialRequestsByProject,
+  getMaterialRequestById
 };
