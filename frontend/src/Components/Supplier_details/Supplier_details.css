@@ -223,23 +223,25 @@ tbody tr:last-child td:last-child {
 
 /* ===== Action Buttons ===== */
 .info-btn {
-  background: #674636;
-  color: #FFF8E8;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  background: #FFF8E8;
+  color: #1B1A55;
+  border: 1px solid #535C91;
+  padding: 4px 8px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 500;
   transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.2px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .info-btn:hover {
-  background: #5a3d2e;
+  background: #F7EED3;
+  color: #070F2B;
+  border-color: #1B1A55;
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(103, 70, 54, 0.2);
+  box-shadow: 0 2px 4px rgba(27, 26, 85, 0.15);
 }
 
 /* ===== Bottom Action Buttons ===== */
@@ -293,87 +295,90 @@ tbody tr:last-child td:last-child {
 
 /* ===== Modal Popup ===== */
 .modal {
-  display: flex;
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 9999;
 }
 
 .modal-content {
-  position: relative;
   background: #FFF8E8;
-  padding: 20px;
   border-radius: 12px;
-  max-width: 500px;
+  max-width: 480px;
   width: 90%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(103, 70, 54, 0.2);
+  box-shadow: 0 8px 24px rgba(103, 70, 54, 0.2);
+  position: relative;
+  margin: 0;
+  max-height: calc(100vh - 80px);
+  overflow: auto;
+  box-sizing: border-box;
 }
 
 .modal-content h3 {
-  color: #674636;
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0 0 16px 0;
+  background: #674636;
+  color: #FFF8E8;
+  margin: 0;
+  padding: 20px;
+  border-radius: 12px 12px 0 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-content .info-grid {
+  padding: 20px;
 }
 
 .modal-content p {
-  color: #674636;
+  margin: 10px 0;
+  padding: 8px 12px;
+  background: #F7EED3;
+  border-radius: 6px;
   font-size: 14px;
-  line-height: 1.5;
-  margin: 8px 0;
+  color: #674636;
+}
+
+.modal-content p:nth-child(even) {
+  background: rgba(170, 179, 150, 0.1);
 }
 
 .modal-content b {
-  color: #674636;
   font-weight: 600;
+  margin-right: 8px;
 }
 
-/* ===== Modal Close Button ===== */
 .close-btn {
   position: absolute;
   top: 12px;
-  right: 12px;
-  background: transparent;
+  right: 15px;
+  background: none;
   border: none;
+  color: #FFF8E8;
+  font-size: 24px;
   cursor: pointer;
-  font-size: 18px;
-  color: #674636;
-  font-weight: bold;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease;
+  z-index: 10;
 }
 
-.close-btn:hover {
-  color: #5a3d2e;
-}
-
-/* ===== Modal Action Button ===== */
 .place-order-btn {
-  background: #674636;
+  background: #AAB396;
   color: #FFF8E8;
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
+  margin: 0 20px 20px;
+  width: calc(100% - 40px);
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  margin-top: 16px;
-  transition: background-color 0.2s ease;
-}
-
-.place-order-btn:hover {
-  background: #5a3d2e;
+  cursor: pointer;
+  text-transform: uppercase;
 }
 
 /* ===== Responsive Design ===== */
@@ -420,7 +425,6 @@ tbody tr:last-child td:last-child {
   }
   
   .modal-content {
-    padding: 16px;
     margin: 20px;
   }
 }

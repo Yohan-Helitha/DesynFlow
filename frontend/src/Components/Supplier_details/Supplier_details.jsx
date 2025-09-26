@@ -95,7 +95,7 @@ function Supplier_details() {
                   className="info-btn"
                   onClick={() => setSelectedSupplier(s)}
                 >
-                  More Info
+                  👁 View
                 </button>
               </td>
             </tr>
@@ -126,24 +126,26 @@ function Supplier_details() {
               ×
             </button>
             <h3>{selectedSupplier.companyName}</h3>
-            <p>
-              <b>Contact:</b> {selectedSupplier.contactName}
-            </p>
-            <p>
-              <b>Email:</b> {selectedSupplier.email}
-            </p>
-            <p>
-              <b>Phone:</b> {selectedSupplier.phone}
-            </p>
-            <p>
-              <b>Materials:</b> {selectedSupplier.materialTypes?.join(", ")}
-            </p>
-            <p>
-              <b>Regions:</b> {selectedSupplier.deliveryRegions?.join(", ")}
-            </p>
-            <p>
-              <b>Rating:</b> {selectedSupplier.rating}
-            </p>
+            <div className="info-grid">
+              <p>
+                <b>Contact:</b> {selectedSupplier.contactName}
+              </p>
+              <p>
+                <b>Email:</b> {selectedSupplier.email}
+              </p>
+              <p>
+                <b>Phone:</b> {selectedSupplier.phone}
+              </p>
+              <p>
+                <b>Materials:</b> {selectedSupplier.materialTypes?.join(", ")}
+              </p>
+              <p>
+                <b>Regions:</b> {selectedSupplier.deliveryRegions?.join(", ")}
+              </p>
+              <p>
+                <b>Rating:</b> {selectedSupplier.rating}
+              </p>
+            </div>
             <button className="place-order-btn">Place Order</button>
           </div>
         </div>
