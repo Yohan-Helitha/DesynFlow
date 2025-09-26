@@ -194,10 +194,27 @@ export const EstimationsHistory = () => {
                           onClick={() => { setSelectedEstimation(item); setShowDetailsModal(true); }}
                           className="text-[#674636] hover:text-[#FFF8E8] bg-[#AAB396] hover:bg-[#674636] px-2 py-1 rounded-md"
                         >View</button>
-                        <button
-                          onClick={() => { setSelectedEstimation(item); setShowEstimateToEstimate(true); }}
-                          className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#AAB396] px-2 py-1 rounded-md"
-                        >Generate</button>
+                        {(() => {
+                          const isGenerateDisabled = item.status === 'Approved';
+                          return (
+                            <button
+                              disabled={isGenerateDisabled}
+                              title={isGenerateDisabled ? 'Already approved' : 'Generate from this estimate'}
+                              onClick={() => {
+                                if (isGenerateDisabled) return;
+                                setSelectedEstimation(item);
+                                setShowEstimateToEstimate(true);
+                              }}
+                              className={`px-2 py-1 rounded-md text-[#674636] bg-[#F7EED3] ${
+                                isGenerateDisabled
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : 'hover:text-[#FFF8E8] hover:bg-[#AAB396]'
+                              }`}
+                            >
+                              Generate
+                            </button>
+                          );
+                        })()}
                       </td>
                     </tr>
                   ))}

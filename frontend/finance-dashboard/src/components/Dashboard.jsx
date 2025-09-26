@@ -16,8 +16,10 @@ import { useEffect, useState } from 'react';
 
 export const Dashboard = () => {
   const [pendingCount, setPendingCount] = useState(null);
+  const [pendingPaymentApprovals, setPendingPaymentApprovals] = useState(null);
 
   useEffect(() => {
+    // Fetch pending inspection estimates count
     fetch('/api/inspection-estimation/pending')
       .then((res) => res.json())
       .then((data) => {
@@ -28,6 +30,18 @@ export const Dashboard = () => {
         }
       })
       .catch(() => setPendingCount(0));
+
+    // Fetch counts for pending payment approvals from two sources and sum them
+    Promise.all([
+      fetch('/api/payments/pending').then((r) => r.ok ? r.json() : []),
+      fetch('/api/inspection-estimation/payment-pending').then((r) => r.ok ? r.json() : []),
+    ])
+      .then(([payments, inspectionPayments]) => {
+        const paymentsCount = Array.isArray(payments) ? payments.length : 0;
+        const inspectionCount = Array.isArray(inspectionPayments) ? inspectionPayments.length : 0;
+        setPendingPaymentApprovals(paymentsCount + inspectionCount);
+      })
+      .catch(() => setPendingPaymentApprovals(0));
   }, []);
 
   const handleCardClick = (destination) => {
@@ -79,7 +93,7 @@ export const Dashboard = () => {
 
         <SummaryCard
           title="Pending Payment Approvals"
-          count={5}
+          count={pendingPaymentApprovals === null ? '...' : pendingPaymentApprovals}
           icon={
             <div className="w-10 h-10 rounded-full bg-[#AAB396] flex items-center justify-center text-white">
               <CreditCard size={20} />

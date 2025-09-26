@@ -79,7 +79,7 @@ export const CompletedPayments = () => {
   );
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading reviewed payments...</div>;
+    return <div className="p-8 text-center text-[#AAB396]">Loading reviewed payments...</div>;
   }
   if (error) {
     return <div className="p-8 text-center text-red-500">{error}</div>;
@@ -89,61 +89,61 @@ export const CompletedPayments = () => {
       {/* Header and Controls */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500 mr-3">
+          <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
             <DollarSign size={20} />
           </div>
-          <h2 className="text-xl font-semibold">Reviewed Payments</h2>
+          <h2 className="text-xl font-semibold text-[#674636]">Reviewed Payments</h2>
         </div>
         <div className="flex space-x-2">
           <div className="relative">
             <input
               type="text"
               placeholder="Search by Project or Client ID..."
-              className="pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396] text-[#674636]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Filter size={16} className="text-gray-400" />
+              <Filter size={16} className="text-[#AAB396]" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Payments Table */}
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
+      <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('projectId')}>Project ID <ArrowUpDown size={14} className="inline ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('clientId')}>Client ID <ArrowUpDown size={14} className="inline ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('amount')}>Amount <ArrowUpDown size={14} className="inline ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('method')}>Method <ArrowUpDown size={14} className="inline ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('type')}>Type <ArrowUpDown size={14} className="inline ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receipt</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('verifiedTime')}>Verified Time <ArrowUpDown size={14} className="inline ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer" onClick={() => handleSort('status')}>Status <ArrowUpDown size={14} className="inline ml-1" /></th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('projectId')}>Project ID <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('clientId')}>Client ID <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('amount')}>Amount <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('method')}>Method <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('type')}>Type <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Receipt</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('verifiedTime')}>Verified Time <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('status')}>Status <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
                 <tr key={payment.id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{payment.projectId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.clientId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.amount.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.method}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 underline cursor-pointer">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{payment.projectId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.clientId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${payment.amount.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.method}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.type}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] underline cursor-pointer">
                     {payment.receiptUrl ? (
                       <a href={payment.receiptUrl} target="_blank" rel="noopener noreferrer">View Receipt</a>
                     ) : (
-                      <span className="text-gray-400">No Receipt</span>
+                      <span className="text-[#AAB396]">No Receipt</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.status || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.status || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleView(payment)}
@@ -156,7 +156,7 @@ export const CompletedPayments = () => {
               ))}
               {paginatedPayments.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-4 text-center text-[#AAB396]">
                     No reviewed payments found
                   </td>
                 </tr>
@@ -167,20 +167,20 @@ export const CompletedPayments = () => {
 
         {/* Pagination */}
         {filteredPayments.length > 0 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
+            <div className="text-sm text-[#674636]">
               Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredPayments.length)} of {filteredPayments.length} entries
             </div>
             <div className="flex space-x-2">
-              <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}> 
+              <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded-md ${currentPage === 1 ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}> 
                 <ChevronLeft size={16} />
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 rounded-md ${currentPage === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 rounded-md ${currentPage === page ? 'bg-[#674636] text-[#FFF8E8]' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}>
                   {page}
                 </button>
               ))}
-              <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+              <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded-md ${currentPage === totalPages ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}>
                 <ChevronRight size={16} />
               </button>
             </div>

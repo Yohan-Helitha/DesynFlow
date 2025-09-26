@@ -42,7 +42,7 @@ export const PendingPurchaseOrders = () => {
   }, []);
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading pending purchase orders...</div>;
+    return <div className="p-8 text-center text-[#AAB396]">Loading pending purchase orders...</div>;
   }
   if (error) {
     return <div className="p-8 text-center text-red-500">{error}</div>;
@@ -91,67 +91,66 @@ export const PendingPurchaseOrders = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 mr-3">
+          <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
             <ShoppingCart size={20} />
           </div>
-          <h2 className="text-xl font-semibold">Pending Purchase Orders</h2>
+          <h2 className="text-xl font-semibold text-[#674636]">Pending Purchase Orders</h2>
         </div>
         <div className="flex space-x-2">
           <div className="relative">
             <input
               type="text"
               placeholder="Search purchase orders..."
-              className="pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396] text-[#674636]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Filter size={16} className="text-gray-400" />
+              <Filter size={16} className="text-[#AAB396]" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Pending Purchase Orders Table */}
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
+      <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Origin</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Finance Approval Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">View</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">PO ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Project ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Supplier ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Request Origin</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Total Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Finance Approval Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Created At</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">View</th>
               </tr>
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPOs.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{po._id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.projectId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.supplierId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.requestOrigin}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${po.totalAmount?.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.financeApproval?.status || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{po.createdAt ? `${new Date(po.createdAt).toLocaleDateString()} ${new Date(po.createdAt).toLocaleTimeString()}` : '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{po._id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.projectId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.supplierId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.requestOrigin}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${po.totalAmount?.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.financeApproval?.status || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.createdAt ? `${new Date(po.createdAt).toLocaleDateString()} ${new Date(po.createdAt).toLocaleTimeString()}` : '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleView(po)}
-                      className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md"
+                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white"
                     >
-                      <Eye size={16} className="inline mr-1" />
-                      View
+                      <Eye size={16} className="inline mr-1" /> View
                     </button>
                   </td>
                 </tr>
               ))}
               {paginatedPOs.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-4 text-center text-[#AAB396]">
                     No purchase orders found
                   </td>
                 </tr>
@@ -162,8 +161,8 @@ export const PendingPurchaseOrders = () => {
 
         {/* Pagination */}
         {filteredPOs.length > 0 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
+            <div className="text-sm text-[#674636]">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
               {Math.min(currentPage * itemsPerPage, filteredPOs.length)} of{' '}
               {filteredPOs.length} entries
@@ -174,8 +173,8 @@ export const PendingPurchaseOrders = () => {
                 disabled={currentPage === 1}
                 className={`p-2 rounded-md ${
                   currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'text-[#AAB396] cursor-not-allowed'
+                    : 'text-[#674636] hover:bg-[#FFF8E8]'
                 }`}
               >
                 <ChevronLeft size={16} />
@@ -186,8 +185,8 @@ export const PendingPurchaseOrders = () => {
                   onClick={() => setCurrentPage(page)}
                   className={`w-8 h-8 rounded-md ${
                     currentPage === page
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-[#674636] text-[#FFF8E8]'
+                      : 'text-[#674636] hover:bg-[#FFF8E8]'
                   }`}
                 >
                   {page}
@@ -198,8 +197,8 @@ export const PendingPurchaseOrders = () => {
                 disabled={currentPage === totalPages}
                 className={`p-2 rounded-md ${
                   currentPage === totalPages
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'text-[#AAB396] cursor-not-allowed'
+                    : 'text-[#674636] hover:bg-[#FFF8E8]'
                 }`}
               >
                 <ChevronRight size={16} />

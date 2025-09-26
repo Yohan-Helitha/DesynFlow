@@ -97,14 +97,14 @@ export const ExpensesList = () => {
           <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
             <DollarSign size={20} />
           </div>
-          <h2 className="text-xl font-semibold">Expenses List</h2>
+          <h2 className="text-xl font-semibold text-[#674636]">Expenses List</h2>
         </div>
         <div className="flex space-x-2">
           <div className="relative">
             <input
               type="text"
               placeholder="Search expenses..."
-              className="pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396] text-[#674636]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -122,47 +122,47 @@ export const ExpensesList = () => {
       </div>
 
       {/* Expenses Table */}
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
+      <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="p-6 text-center text-gray-500">Loading...</div>
+            <div className="p-6 text-center text-[#AAB396]">Loading...</div>
           ) : error ? (
             <div className="p-6 text-center text-red-500">{error}</div>
           ) : (
             <table className="min-w-full divide-y divide-[#AAB396]">
               <thead className="bg-[#F7EED3]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount ($)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Proof</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Project ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Amount ($)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Description</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Proof</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Date</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                 {paginatedExpenses.map((expense) => (
                   <tr key={expense._id || expense.id} className="hover:bg-[#F7EED3]">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expense.projectId}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expense.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expense.amount}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expense.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.projectId}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.amount}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.description}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {expense.proof ? (
                         <a
                           href={expense.proof}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md flex items-center justify-center"
+                          className="px-3 py-1 rounded-md flex items-center justify-center bg-[#F7EED3] border border-[#AAB396] text-[#674636] hover:bg-[#AAB396] hover:text-white"
                         >
                           <Eye size={16} className="inline mr-1" /> View
                         </a>
                       ) : (
-                        <span className="text-gray-400">No Proof</span>
+                        <span className="text-[#AAB396]">No Proof</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
                       {expense.date
                         ? new Date(expense.date).toLocaleString()
                         : expense.createdAt
@@ -170,7 +170,7 @@ export const ExpensesList = () => {
                         : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleView(expense)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md mr-2">
+                      <button onClick={() => handleView(expense)} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white mr-2">
                         <Eye size={16} className="inline mr-1" /> View
                       </button>
                     </td>
@@ -178,7 +178,7 @@ export const ExpensesList = () => {
                 ))}
                 {paginatedExpenses.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-4 text-center text-[#AAB396]">
                       No expenses found
                     </td>
                   </tr>
@@ -190,20 +190,20 @@ export const ExpensesList = () => {
 
         {/* Pagination */}
         {filteredExpenses.length > 0 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
+            <div className="text-sm text-[#674636]">
               Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredExpenses.length)} of {filteredExpenses.length} entries
             </div>
             <div className="flex space-x-2">
-              <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded-md ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+              <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded-md ${currentPage === 1 ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}>
                 <ChevronLeft size={16} />
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 rounded-md ${currentPage === page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 rounded-md ${currentPage === page ? 'bg-[#674636] text-[#FFF8E8]' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}>
                   {page}
                 </button>
               ))}
-              <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded-md ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+              <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded-md ${currentPage === totalPages ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}>
                 <ChevronRight size={16} />
               </button>
             </div>
