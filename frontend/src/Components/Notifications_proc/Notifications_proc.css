@@ -54,9 +54,9 @@
 .close-btn {
   background: transparent;
   border: none;
-  font-size: 18px;
-  font-weight: normal;
-  color: rgba(103, 70, 54, 0.7);
+  font-size: 20px;
+  font-weight: bold;
+  color: #674636 !important;
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 3px;
@@ -66,6 +66,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 1 !important;
 }
 
 .close-btn:hover {

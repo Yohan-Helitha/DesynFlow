@@ -64,17 +64,38 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 24px 20px;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   border-bottom: 2px solid rgba(255, 248, 232, 0.15);
   color: #FFF8E8;
-  background: rgba(255, 248, 232, 0.05);
+  background: rgba(255, 248, 232, 0.1);
   backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.sidebar-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 248, 232, 0.15), rgba(255, 248, 232, 0.05));
+  z-index: -1;
 }
 
 .sidebar-header h2 {
   margin: 0;
-  letter-spacing: 0.5px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #FFF8E8;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(255, 248, 232, 0.4);
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
 }
 
 .sidebar-header .close-btn {

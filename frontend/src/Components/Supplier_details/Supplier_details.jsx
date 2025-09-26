@@ -64,7 +64,8 @@ function Supplier_details() {
       </div>
 
       {/* Table */}
-      <table id="supplierTable">
+      <div className="table-container">
+        <table id="supplierTable">
         <thead>
           <tr>
             <th>ID</th>
@@ -101,14 +102,17 @@ function Supplier_details() {
           ))}
         </tbody>
       </table>
+      </div>
 
-      <button className="add-supplier-btn">
-        <Link to="/Add_suppliers">Add New Supplier</Link>
-      </button>
+      <div className="action-buttons">
+        <button className="add-supplier-btn">
+          <Link to="/Add_suppliers">Add New Supplier</Link>
+        </button>
 
-      <button className="update-delete-supplier-btn">
-        <Link to="/Update_delete_suppliers">Manage Suppliers</Link>
-      </button>
+        <button className="update-delete-supplier-btn">
+          <Link to="/Update_delete_suppliers">Manage Suppliers</Link>
+        </button>
+      </div>
 
       {/* Modal */}
       {selectedSupplier && (
