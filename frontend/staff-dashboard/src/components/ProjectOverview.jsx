@@ -145,12 +145,13 @@ export default function ProjectOverview({ projectId, onBack }) {
           </h3>
           <ul className="space-y-2">
             {project.attachments?.length > 0 ? (
-              project.attachments.map((docPath, i) => {
-                // Extract filename from path
-                const filename = docPath.split('/').pop() || 'Document';
-                const displayName = filename.replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
-                const fileExtension = filename.split('.').pop()?.toUpperCase();
-                const downloadUrl = `http://localhost:4000${docPath}`;
+              project.attachments.map((attachment, i) => {
+                // Handle both object and string attachment formats
+                const isObject = typeof attachment === 'object';
+                const filename = isObject ? attachment.filename || attachment.originalName : attachment.split('/').pop();
+                const displayName = isObject ? attachment.originalName || filename : filename?.replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
+                const fileExtension = filename?.split('.').pop()?.toUpperCase();
+                const downloadUrl = `http://localhost:4000${isObject ? attachment.path : attachment}`;
                 
                 return (
                   <li

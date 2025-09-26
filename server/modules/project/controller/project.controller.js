@@ -112,6 +112,25 @@ export const updateProject = async (req, res) => {
             updateData.status = 'On Hold'; //if no team assigned, set status to On Hold
         }
 
+        // Handle attachment updates if provided
+        if (req.body.inspectionReportPath && req.body.inspectionReportOriginalName) {
+            const newAttachment = {
+                filename: req.body.inspectionReportPath.split('/').pop(),
+                originalName: req.body.inspectionReportOriginalName,
+                path: req.body.inspectionReportPath,
+                uploadDate: new Date()
+            };
+            
+            // Get existing project to preserve existing attachments
+            const existingProject = await Project.findById(id);
+            if (existingProject) {
+                updateData.attachments = existingProject.attachments || [];
+                updateData.attachments.push(newAttachment);
+            } else {
+                updateData.attachments = [newAttachment];
+            }
+        }
+
         const updatedProject = await Project.findByIdAndUpdate(id, updateData, { new: true });
         if( !updatedProject ){
             return res.status(404).json({ message: 'Project not found' });

@@ -21,8 +21,6 @@ export default function TeamLeaderMainDashboard() {
         return <ResourceRequests />;
       case 4:
         return <ProgressReports />;
-      case 5:
-        return <div className="text-brown-primary">Team Settings - Coming Soon</div>;
       default:
         return <LeaderDashboard />;
     }
