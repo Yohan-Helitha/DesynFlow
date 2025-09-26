@@ -1,4 +1,3 @@
-
 // Example: Validate required fields in a form object
 export function validateRequiredFields(formData, requiredFields) {
 	for (const field of requiredFields) {

@@ -1,4 +1,3 @@
-// src/pages/Profile.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Sidebar from "./SideBar";
