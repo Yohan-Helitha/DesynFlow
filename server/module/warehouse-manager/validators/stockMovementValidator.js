@@ -109,7 +109,7 @@ export const validateStockMovementUpdate = (data) => {
   }
 
   // Dispatched Date validation: only today or last 3 days allowed
-  if (data.dispatchedDate) {
+  if (data.dispatchedDate && data.isDispatchedDateChanged) {
     const selectedDate = new Date(data.dispatchedDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
