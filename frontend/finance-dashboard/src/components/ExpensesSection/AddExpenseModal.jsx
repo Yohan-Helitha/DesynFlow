@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 
 export const AddExpenseModal = ({ onClose }) => {
@@ -36,11 +36,18 @@ export const AddExpenseModal = ({ onClose }) => {
 
   const categories = ['Labor', 'Procurement', 'Transport', 'Misc']
 
-  const projects = [
-    { id: '1', name: 'Project Alpha' },
-    { id: '2', name: 'Project Beta' },
-    { id: '3', name: 'Project Gamma' },
-  ]
+  const [projects, setProjects] = useState([])
+
+  useEffect(() => {
+    // Fetch projects from backend
+    fetch('/api/projects')
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => {
+        if (Array.isArray(data)) setProjects(data)
+        else setProjects([])
+      })
+      .catch(() => setProjects([]))
+  }, [])
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -64,19 +71,25 @@ export const AddExpenseModal = ({ onClose }) => {
               <div>
                 <div className="mb-4">
                   <label htmlFor="projectId" className="block text-sm font-medium text-[#674636] mb-1">Project *</label>
-                  <select
+                  <input
+                    type="text"
                     id="projectId"
                     name="projectId"
+                    list="projectId-options"
                     value={formData.projectId}
                     onChange={handleChange}
+                    placeholder="Type or select a project ID"
                     className="w-full border border-[#AAB396] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#AAB396] focus:border-transparent bg-white"
                     required
-                  >
-                    <option value="">Select a project</option>
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>{project.name}</option>
-                    ))}
-                  </select>
+                  />
+                  <datalist id="projectId-options">
+                    {projects.map((project) => {
+                      const id = project.projectId || project._id;
+                      return (
+                        <option key={id} value={id} />
+                      );
+                    })}
+                  </datalist>
                 </div>
                 <div className="mb-4">
                   <label htmlFor="description" className="block text-sm font-medium text-[#674636] mb-1">Description *</label>

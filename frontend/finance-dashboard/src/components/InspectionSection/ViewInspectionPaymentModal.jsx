@@ -1,8 +1,39 @@
 import React from 'react';
+import { buildUploadsUrl } from '../../utils/fileUrls';
 import { X, CreditCard, User, Calendar, DollarSign, MapPin, Building, Phone, Mail, FileText, ExternalLink } from 'lucide-react';
 
 export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
   if (!payment) return null;
+
+  const buildReceiptUrl = (payment) => {
+    const raw = payment?.paymentReceiptUrl || payment?.receiptUrl;
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    let normalized = String(raw).replace(/\\/g, '/');
+    const lower = normalized.toLowerCase();
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+
+    let idx = lower.indexOf('/uploads/');
+    if (idx !== -1) {
+      let path = normalized.slice(idx);
+      if (!path.startsWith('/')) path = `/${path}`;
+      return `${base}${path}`;
+    }
+    idx = lower.indexOf('uploads/');
+    if (idx !== -1) {
+      let path = normalized.slice(idx);
+      if (!path.startsWith('/')) path = `/${path}`;
+      return `${base}${path}`;
+    }
+    idx = lower.indexOf('server/uploads/');
+    if (idx !== -1) {
+      let path = normalized.slice(idx + 'server'.length);
+      if (!path.startsWith('/')) path = `/${path}`;
+      return `${base}${path}`;
+    }
+    const fileName = normalized.split('/').filter(Boolean).pop();
+    return `${base}/uploads/inspection_payments/${fileName}`;
+  };
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -153,7 +184,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
           </div>
 
           {/* Payment Receipt */}
-          {payment.paymentReceiptUrl && (
+          {(payment.paymentReceiptUrl || payment.receiptUrl) && (
             <div className="bg-[#F7EED3] p-4 rounded-lg">
               <h4 className="font-semibold text-[#674636] mb-3 flex items-center">
                 <FileText size={18} className="mr-2" />
@@ -162,7 +193,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
               <div className="flex items-center justify-between">
                 <span className="text-[#674636]">Receipt available for download</span>
                 <a
-                  href={payment.paymentReceiptUrl}
+                  href={buildReceiptUrl(payment)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center px-4 py-2 bg-[#674636] text-[#FFF8E8] rounded-md hover:bg-[#AAB396] transition-colors"
@@ -170,6 +201,31 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                   <ExternalLink size={16} className="mr-2" />
                   View Receipt
                 </a>
+              </div>
+
+              {/* Inline preview */}
+              <div className="mt-4">
+                {(() => {
+                  const raw = payment.paymentReceiptUrl || payment.receiptUrl;
+                  const url = buildUploadsUrl(raw, 'inspection_payments');
+                  const isPdf = /\.pdf($|\?)/i.test(url);
+                  if (isPdf) {
+                    return (
+                      <iframe
+                        src={url}
+                        title="Receipt Preview"
+                        className="w-full h-64 border border-[#AAB396] rounded bg-white"
+                      />
+                    );
+                  }
+                  return (
+                    <img
+                      src={url}
+                      alt="Receipt Preview"
+                      className="w-full h-64 object-contain border border-[#AAB396] rounded bg-white"
+                    />
+                  );
+                })()}
               </div>
             </div>
           )}

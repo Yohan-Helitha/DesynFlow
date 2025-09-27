@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react'
 import { ViewPaymentModal } from './ViewPaymentModal'
+import { buildUploadsUrl } from '../../utils/fileUrls'
 
 import { useEffect } from 'react';
 
@@ -143,7 +144,7 @@ export const PendingPayments = () => {
                   <td className="px-6 py-4 text-sm text-[#674636]">{payment.type}</td>
                   <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer">
                     {payment.receiptUrl ? (
-                      <a href={payment.receiptUrl} target="_blank" rel="noopener noreferrer">View Receipt</a>
+                      <a href={buildUploadsUrl(payment.receiptUrl, 'payments')} target="_blank" rel="noopener noreferrer">View Receipt</a>
                     ) : (
                       <span className="text-[#AAB396]">No Receipt</span>
                     )}

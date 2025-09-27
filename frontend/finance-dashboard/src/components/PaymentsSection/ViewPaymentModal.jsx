@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { X, Download, Check } from 'lucide-react'
+import { buildUploadsUrl } from '../../utils/fileUrls'
 
 export const ViewPaymentModal = ({ payment, onClose }) => {
   const isVerified = payment.status === 'Verified'
@@ -108,58 +109,85 @@ export const ViewPaymentModal = ({ payment, onClose }) => {
             </div>
           )}
 
-          {/* Footer buttons */}
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white"
-            >
-              Close
-            </button>
+           {/* Receipt Preview */}
+           {payment.receiptUrl && (
+             <div className="mt-4">
+               <div className="text-sm font-medium text-[#674636] mb-2">Receipt Preview</div>
+               {(() => {
+                 const url = buildUploadsUrl(payment.receiptUrl, 'payments');
+                 const isPdf = /\.pdf($|\?)/i.test(url);
+                 if (isPdf) {
+                   return (
+                     <iframe
+                       src={url}
+                       title="Receipt Preview"
+                       className="w-full h-64 border border-[#AAB396] rounded bg-white"
+                     />
+                   );
+                 }
+                 return (
+                   <img
+                     src={url}
+                     alt="Receipt Preview"
+                     className="w-full h-64 object-contain border border-[#AAB396] rounded bg-white"
+                   />
+                 );
+               })()}
+             </div>
+           )}
 
-            {payment.receiptUrl && (
-              <a
-                href={payment.receiptUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-white hover:bg-[#AAB396] flex items-center mr-2"
-              >
-                <Download size={16} className="mr-2" />
-                View Receipt
-              </a>
-            )}
-            {!isVerified && (
-              <>
-                <button
-                  className="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 flex items-center"
-                  onClick={async () => {
-                    await fetch(`/api/payments/${payment._id || payment.id}/status`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ status: 'Approved', comment }),
-                    })
-                    onClose()
-                  }}
-                >
-                  <Check size={16} className="mr-2" />
-                  Verify Payment
-                </button>
-                <button
-                  className="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700"
-                  onClick={async () => {
-                    await fetch(`/api/payments/${payment._id || payment.id}/status`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ status: 'Rejected', comment }),
-                    })
-                    onClose()
-                  }}
-                >
-                  Reject Payment
-                </button>
-              </>
-            )}
-          </div>
+           {/* Footer buttons */}
+           <div className="flex flex-wrap justify-end space-x-3 mt-6">
+             <button
+               onClick={onClose}
+               className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white"
+             >
+               Close
+             </button>
+
+             {payment.receiptUrl && (
+               <a
+                 href={buildUploadsUrl(payment.receiptUrl, 'payments')}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-white hover:bg-[#AAB396] flex items-center mr-2"
+               >
+                 <Download size={16} className="mr-2" />
+                 View Receipt
+               </a>
+             )}
+             {!isVerified && (
+               <>
+                 <button
+                   className="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 flex items-center"
+                   onClick={async () => {
+                     await fetch(`/api/payments/${payment._id || payment.id}/status`, {
+                       method: 'PATCH',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({ status: 'Approved', comment }),
+                     })
+                     onClose()
+                   }}
+                 >
+                   <Check size={16} className="mr-2" />
+                   Verify Payment
+                 </button>
+                 <button
+                   className="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700"
+                   onClick={async () => {
+                     await fetch(`/api/payments/${payment._id || payment.id}/status`, {
+                       method: 'PATCH',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({ status: 'Rejected', comment }),
+                     })
+                     onClose()
+                   }}
+                 >
+                   Reject Payment
+                 </button>
+               </>
+             )}
+           </div>
         </div>
       </div>
     </div>

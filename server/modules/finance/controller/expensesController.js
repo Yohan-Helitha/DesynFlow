@@ -45,7 +45,8 @@ const updateMiscExpense = async (req, res, next) => {
 
     // If file is uploaded
     if (req.file) {
-        proof = req.file.path;
+        // normalize Windows backslashes to forward slashes for URL usage
+        proof = req.file.path.replace(/\\/g, '/');
     }
 
     const { id } = req.params;
@@ -81,8 +82,9 @@ export {
 // Create expense (POST /api/expenses)
 export const createExpense = async (req, res) => {
     try {
-        const { projectId, description, category, amount } = req.body;
-        const proof = req.file ? req.file.path : undefined;
+    const { projectId, description, category, amount } = req.body;
+    // normalize Windows backslashes to forward slashes for URL usage
+    const proof = req.file ? req.file.path.replace(/\\/g, '/') : undefined;
         const created = await expenseService.createExpense({ projectId, description, category, amount, proof });
         // Decrease totalBalance by expense amount
         const amtNum = Number(amount) || 0;

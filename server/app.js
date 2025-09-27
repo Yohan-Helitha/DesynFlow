@@ -11,7 +11,7 @@ import { env } from './config/env.js';
 
 // Ensure finance models are registered before using routes
 import './modules/finance/model/index.js';
-
+import projectRoute from './modules/finance/routes/projectRoutes.js';
 import expensesRoute from './modules/finance/routes/expensesRoutes.js';
 import inspectionEstimationRoute from './modules/finance/routes/inspectionEstimationRoutes.js';
 import projectEstimationRoute from './modules/finance/routes/projectEstimationRoutes.js';
@@ -66,5 +66,6 @@ app.use('/api/claims', claimRoute);
 app.use('/api/notifications', notificationRoute);
 app.use('/api/materials', materialRoute);
 app.use('/api/finance-summary', financeSummaryRoute);
+app.use('/api/projects', projectRoute);
 
 export { app };

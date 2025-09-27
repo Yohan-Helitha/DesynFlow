@@ -7,7 +7,7 @@ const ProjectSchema = new Schema(
 
     projectName: { type: String, required: true },
 
-    // 🔗 Link to inspection (every project comes from one inspection request)
+    // Link to inspection (every project comes from one inspection request)
     inspectionId: {
       type: Schema.Types.ObjectId,
       ref: "InspectionRequest",
@@ -15,27 +15,27 @@ const ProjectSchema = new Schema(
       sparse: true,
     },
 
-    // 🔗 Project manager
+    //Project manager
     projectManagerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       index: true,
     },
 
-    // 🔗 Client who owns this project
+    //Client who owns this project
     clientId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       index: true,
     },
 
-    // 🔗 Assigned Team
+    //Assigned Team
     assignedTeamId: {
       type: Schema.Types.ObjectId,
       ref: "Team",
     },
 
-    // Status tracking
+    //Status tracking
     status: {
       type: String,
       enum: ["On Hold", "Active", "In Progress", "Completed", "Cancelled"],
@@ -43,16 +43,16 @@ const ProjectSchema = new Schema(
       default: "Active",
     },
 
-    // Progress tracking (%)
+    //Progress tracking (%)
     progress: { type: Number, default: 0 },
 
     // Final design upload (3D model link, pdf, etc.)
     finalDesign3DUrl: { type: String },
 
-  // Restrict who can view design
+  //Restrict who can view design
   designAccessRestriction: { type: Boolean, default: false },
 
-  // Indicates if an estimate has been created for this project
+  //Indicates if an estimate has been created for this project
   estimateCreated: { type: Boolean, default: false },
   },
   { timestamps: true }

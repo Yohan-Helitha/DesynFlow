@@ -136,7 +136,7 @@ export const ExpensesList = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Category</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Amount ($)</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Description</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Proof</th>
+                  
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Date</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
                 </tr>
@@ -148,20 +148,7 @@ export const ExpensesList = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.category}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.amount}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {expense.proof ? (
-                        <a
-                          href={expense.proof}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1 rounded-md flex items-center justify-center bg-[#F7EED3] border border-[#AAB396] text-[#674636] hover:bg-[#AAB396] hover:text-white"
-                        >
-                          <Eye size={16} className="inline mr-1" /> View
-                        </a>
-                      ) : (
-                        <span className="text-[#AAB396]">No Proof</span>
-                      )}
-                    </td>
+                    
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
                       {expense.date
                         ? new Date(expense.date).toLocaleString()
@@ -178,7 +165,7 @@ export const ExpensesList = () => {
                 ))}
                 {paginatedExpenses.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-center text-[#AAB396]">
+                    <td colSpan={6} className="px-6 py-4 text-center text-[#AAB396]">
                       No expenses found
                     </td>
                   </tr>

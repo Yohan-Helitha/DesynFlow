@@ -19,8 +19,14 @@ export const Dashboard = () => {
   const [pendingPaymentApprovals, setPendingPaymentApprovals] = useState(null);
   const [financeSummary, setFinanceSummary] = useState(null);
   const [approvedEstimationsCount, setApprovedEstimationsCount] = useState(null);
+  const [pendingPurchaseRequests, setPendingPurchaseRequests] = useState(null);
 
   useEffect(() => {
+    // Fetch pending purchase requests (POs with status 'PendingFinanceApproval')
+    fetch('/api/purchase-orders?status=PendingFinanceApproval')
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => setPendingPurchaseRequests(Array.isArray(data) ? data.length : 0))
+      .catch(() => setPendingPurchaseRequests(0));
     // Fetch pending inspection estimates count
     fetch('/api/inspection-estimation/pending')
       .then((res) => res.json())
@@ -118,7 +124,7 @@ export const Dashboard = () => {
 
         <SummaryCard
           title="Pending Purchase Requests"
-          count={2}
+          count={pendingPurchaseRequests === null ? '...' : pendingPurchaseRequests}
           icon={
             <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636]">
               <ShoppingCart size={20} />

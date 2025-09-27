@@ -11,4 +11,13 @@ module.exports = function(app) {
       logLevel: 'debug'
     })
   );
+  // Proxy uploaded static files to backend in dev
+  app.use(
+    '/uploads',
+    createProxyMiddleware({
+      target: 'http://localhost:4000',
+      changeOrigin: true,
+      logLevel: 'debug'
+    })
+  );
 };

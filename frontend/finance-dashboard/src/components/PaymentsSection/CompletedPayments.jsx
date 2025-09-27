@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import PaymentDetailsModal from './PaymentDetailsModal';
+import { buildUploadsUrl } from '../../utils/fileUrls';
 import {
   DollarSign,
   Filter,
@@ -137,7 +138,7 @@ export const CompletedPayments = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.type}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] underline cursor-pointer">
                     {payment.receiptUrl ? (
-                      <a href={payment.receiptUrl} target="_blank" rel="noopener noreferrer">View Receipt</a>
+                      <a href={buildUploadsUrl(payment.receiptUrl, 'payments')} target="_blank" rel="noopener noreferrer">View Receipt</a>
                     ) : (
                       <span className="text-[#AAB396]">No Receipt</span>
                     )}

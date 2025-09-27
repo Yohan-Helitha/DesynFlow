@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { buildUploadsUrl } from '../../utils/fileUrls';
 
 export const PaymentActionModal = ({ payment, onClose }) => {
   const [enteredValue, setEnteredValue] = useState('');
@@ -44,6 +45,31 @@ export const PaymentActionModal = ({ payment, onClose }) => {
           Do you want to approve or reject the payment for{' '}
           <span className="font-semibold">{payment.clientName}</span>?
         </p>
+        {payment?.paymentReceiptUrl && (
+          <div className="mb-4">
+            <div className="text-sm text-[#674636] mb-2">Receipt Preview</div>
+            {(() => {
+              const url = buildUploadsUrl(payment.paymentReceiptUrl, 'inspection_payments');
+              const isPdf = /\.pdf($|\?)/i.test(url);
+              if (isPdf) {
+                return (
+                  <iframe
+                    src={url}
+                    title="Receipt Preview"
+                    className="w-full h-48 border border-[#AAB396] rounded"
+                  />
+                );
+              }
+              return (
+                <img
+                  src={url}
+                  alt="Receipt Preview"
+                  className="w-full h-48 object-contain border border-[#AAB396] rounded bg-white"
+                />
+              );
+            })()}
+          </div>
+        )}
         <div className="mb-4">
           <label className="block text-sm font-medium text-[#674636] mb-1">
             Enter Payment Amount

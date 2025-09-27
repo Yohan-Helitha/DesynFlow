@@ -14,6 +14,41 @@ export const InspectionPayments = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
+  // Build a full URL to the uploaded receipt that works in dev and prod and normalizes slashes
+  const buildReceiptUrl = (payment) => {
+    const raw = payment?.paymentReceiptUrl || payment?.receiptUrl;
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    let normalized = String(raw).replace(/\\/g, '/');
+    const lower = normalized.toLowerCase();
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+
+    // If path already includes uploads, slice from there to preserve folder casing
+    let idx = lower.indexOf('/uploads/');
+    if (idx !== -1) {
+      let path = normalized.slice(idx);
+      if (!path.startsWith('/')) path = `/${path}`;
+      return `${base}${path}`;
+    }
+    // Handle variants without leading slash
+    idx = lower.indexOf('uploads/');
+    if (idx !== -1) {
+      let path = normalized.slice(idx);
+      if (!path.startsWith('/')) path = `/${path}`;
+      return `${base}${path}`;
+    }
+    // Handle when full local path includes server/uploads
+    idx = lower.indexOf('server/uploads/');
+    if (idx !== -1) {
+      let path = normalized.slice(idx + 'server'.length);
+      if (!path.startsWith('/')) path = `/${path}`;
+      return `${base}${path}`;
+    }
+    // Fallback: assume inspection_payments subfolder
+    const fileName = normalized.split('/').filter(Boolean).pop();
+    return `${base}/uploads/inspection_payments/${fileName}`;
+  };
+
   const fetchPendingPayments = async () => {
     setLoading(true);
     setError(null);
@@ -105,8 +140,8 @@ export const InspectionPayments = () => {
                   <td className="px-6 py-4 text-sm text-[#674636]">{payment.propertyType}</td>
                   <td className="px-6 py-4 text-sm text-[#674636] font-semibold">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `$${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
                   <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer">
-                    {payment.paymentReceiptUrl ? (
-                      <a href={payment.paymentReceiptUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#AAB396]">
+                    {payment.paymentReceiptUrl || payment.receiptUrl ? (
+                      <a href={buildReceiptUrl(payment)} target="_blank" rel="noopener noreferrer" className="hover:text-[#AAB396]">
                         View Receipt
                       </a>
                     ) : (
