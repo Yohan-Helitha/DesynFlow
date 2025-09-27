@@ -24,6 +24,7 @@ const UpdateStockMovementForm = ({ loggedInUserId }) => {
     employeeId: "",
     vehicleInfo: "",
     dispatchedDate: "",
+    isDispatchedDateChanged: false,
   });
 
   const [fromLocations, setFromLocations] = useState([]);
@@ -37,6 +38,13 @@ const UpdateStockMovementForm = ({ loggedInUserId }) => {
     const getStockMovement = async () => {
       try {
         const data = await fetchStockMovementById(id);
+
+        if (data.dispatchedDate) {
+          data.dispatchedDate = new Date(data.dispatchedDate)
+            .toISOString()
+            .split("T")[0]; // YYYY-MM-DD format
+        }
+        
         setFormData(data);
       } catch (err) {
         console.error("Failed to fetch stock movement:", err);
