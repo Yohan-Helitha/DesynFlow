@@ -54,17 +54,29 @@ function Supplier_details() {
     <div className="page-with-sidebar">
       <Sidebar />
       <div className="suppliers-container">
-        <h2>Interior Design Suppliers</h2>
+        <div className="page-header">
+          <div className="header-content">
+            <h2>Interior Design Suppliers</h2>
+            <p className="header-subtitle">Manage your supplier network and partnerships</p>
+          </div>
+        </div>
 
-      {/* Search */}
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder=" Search suppliers..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+        <div className="top-controls">
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Search suppliers..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <button className="btn-primary">
+            <Link to="/Add_suppliers">
+              <span className="icon">➕</span>
+              Add Supplier
+            </Link>
+          </button>
+        </div>
 
       {/* Table */}
       <div className="table-container">
@@ -131,10 +143,6 @@ function Supplier_details() {
       </div>
 
       <div className="action-buttons">
-        <button className="add-supplier-btn">
-          <Link to="/Add_suppliers">Add New Supplier</Link>
-        </button>
-
         <button className="update-delete-supplier-btn">
           <Link to="/Update_delete_suppliers">Manage Suppliers</Link>
         </button>

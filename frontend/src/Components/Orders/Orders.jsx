@@ -37,24 +37,29 @@ function Orders() {
     <div className="page-with-sidebar">
       <Sidebar />
       <div className="orders-container">
-        <h2>📋 Purchase Orders Management</h2>
-      
-      <div className="top-controls">
+        <div className="page-header">
+          <div className="header-content">
+            <h2>📋 Purchase Orders Management</h2>
+            <p className="header-subtitle">Manage and track all your purchase orders</p>
+          </div>
+          <div className="header-actions">
+            <button className="btn-primary">
+              <Link to="/OrderForm">
+                <span className="icon">➕</span>
+                New Order
+              </Link>
+            </button>
+          </div>
+        </div>
+
         <div className="search-bar">
           <input
             type="text"
-            placeholder="🔍 Search by supplier or material..."
+            placeholder="Search by supplier, material, or order ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <button className="place-order-btn">
-          <Link to="/OrderForm">
-            <span>➕</span>
-            Place New Order
-          </Link>
-        </button>
-      </div>
 
       <div className="table-container">
         <table className="orders-table" id="ordersTable">
