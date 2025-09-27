@@ -187,7 +187,7 @@ function Add_suppliers() {
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ fontSize: "14px", marginBottom: "5px", display: "block" }}>Price per Unit ($)</label>
+                <label style={{ fontSize: "14px", marginBottom: "5px", display: "block" }}>Price per Unit (LKR)</label>
                 <input
                   type="number"
                   name="pricePerUnit"
@@ -245,7 +245,7 @@ function Add_suppliers() {
                     }}
                   >
                     <span style={{ fontWeight: "500" }}>{material.name}</span>
-                    <span style={{ color: "#674636" }}>${material.pricePerUnit.toFixed(2)}/unit</span>
+                    <span style={{ color: "#674636" }}>LKR {material.pricePerUnit.toFixed(2)}/unit</span>
                     <button 
                       type="button" 
                       onClick={() => removeMaterial(index)}
