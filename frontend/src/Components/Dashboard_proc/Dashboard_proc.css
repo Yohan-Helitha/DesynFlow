@@ -492,3 +492,324 @@ body {
   0% { left: -100%; }
   100% { left: 100%; }
 }
+
+/* ===== Dashboard Stats ===== */
+.dashboard-stats {
+  margin-bottom: 32px;
+  animation: slideInUp 0.6s ease-out 0.4s both;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 
+    0 4px 20px rgba(103, 70, 54, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(170, 179, 150, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.stat-card.suppliers::before {
+  background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+}
+
+.stat-card.orders::before {
+  background: linear-gradient(90deg, #2196F3 0%, #1976D2 100%);
+}
+
+.stat-card.budget::before {
+  background: linear-gradient(90deg, #FF9800 0%, #F57C00 100%);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 8px 32px rgba(103, 70, 54, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.stat-header h3 {
+  color: #674636;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+.stat-content {
+  margin-bottom: 20px;
+}
+
+.stat-main {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #674636;
+  margin-bottom: 8px;
+}
+
+.stat-details {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+}
+
+.stat-details .active {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.stat-details .pending {
+  color: #FF9800;
+  font-weight: 600;
+}
+
+.stat-details .completed {
+  color: #2196F3;
+  font-weight: 600;
+}
+
+.stat-details .approved {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.stat-details .total {
+  color: #8B7355;
+  font-weight: 500;
+}
+
+.stat-action {
+  display: inline-block;
+  background: linear-gradient(135deg, #AAB396 0%, #9CAA89 100%);
+  color: #FFFFFF;
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(170, 179, 150, 0.3);
+}
+
+.stat-action:hover {
+  background: linear-gradient(135deg, #9CAA89 0%, #8B9A78 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(170, 179, 150, 0.4);
+}
+
+/* ===== System Metrics ===== */
+.system-metrics {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(103, 70, 54, 0.08);
+  border: 1px solid rgba(170, 179, 150, 0.15);
+}
+
+.system-metrics h2 {
+  color: #674636;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 24px;
+}
+
+.metric-item {
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FFF8E8 0%, #F7EED3 100%);
+  border: 1px solid rgba(170, 179, 150, 0.2);
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #674636;
+  margin-bottom: 8px;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: #8B7355;
+  font-weight: 500;
+}
+
+/* ===== Dashboard Content Grid ===== */
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.activity-feed, .top-suppliers {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(103, 70, 54, 0.08);
+  border: 1px solid rgba(170, 179, 150, 0.15);
+}
+
+.activity-feed h3, .top-suppliers h3 {
+  color: #674636;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  border-bottom: 2px solid #F7EED3;
+  padding-bottom: 12px;
+}
+
+/* Activity Feed */
+.activities {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #F7EED3;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  font-size: 1.2rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F7EED3;
+  flex-shrink: 0;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-message {
+  font-size: 0.9rem;
+  color: #674636;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.activity-time {
+  font-size: 0.8rem;
+  color: #8B7355;
+}
+
+.loading, .no-activities, .no-suppliers {
+  text-align: center;
+  color: #8B7355;
+  font-style: italic;
+  padding: 20px;
+}
+
+/* Top Suppliers */
+.suppliers-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.supplier-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #F7EED3;
+}
+
+.supplier-item:last-child {
+  border-bottom: none;
+}
+
+.supplier-rank {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #AAB396;
+  width: 32px;
+  text-align: center;
+}
+
+.supplier-info {
+  flex: 1;
+}
+
+.supplier-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #674636;
+  margin-bottom: 4px;
+}
+
+.supplier-rating {
+  font-size: 0.85rem;
+  color: #FF9800;
+}
+
+.supplier-orders {
+  font-size: 0.85rem;
+  color: #8B7355;
+  text-align: right;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}

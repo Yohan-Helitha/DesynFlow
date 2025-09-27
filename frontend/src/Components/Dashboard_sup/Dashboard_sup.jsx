@@ -6,26 +6,112 @@ function Dashboard_sup() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [requests, setRequests] = useState([]);
   const [hiddenRequests, setHiddenRequests] = useState([]);
+  const [supplierData, setSupplierData] = useState({
+    profile: { name: "Supplier Name", email: "", rating: 0, totalOrders: 0 },
+    orders: { active: 0, completed: 0, pending: 0 },
+    materials: [],
+    performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0 },
+    recentOrders: [],
+    notifications: [],
+    earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0 }
+  });
+  const [loading, setLoading] = useState(true);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   useEffect(() => {
-    // Fetch sample requests from backend
-    fetch("http://localhost:3000/api/samples/123") // replace 123 with supplierId (auth/session later)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setRequests(data);
-        } else if (data && Array.isArray(data.samples)) {
-          setRequests(data.samples);
+    const fetchSupplierDashboardData = async () => {
+      setLoading(true);
+      const supplierId = "123"; // This should come from authentication/session
+
+      try {
+        // Fetch sample requests
+        const samplesResponse = await fetch(`http://localhost:3000/api/samples/${supplierId}`);
+        const samplesData = await samplesResponse.json();
+        
+        if (Array.isArray(samplesData)) {
+          setRequests(samplesData);
+        } else if (samplesData && Array.isArray(samplesData.samples)) {
+          setRequests(samplesData.samples);
         } else {
           setRequests([]);
         }
-      })
-      .catch((err) => {
+
+        // Fetch supplier profile and orders
+        const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
+        const suppliers = await suppliersResponse.json();
+        const currentSupplier = suppliers.find(s => s._id === supplierId) || suppliers[0]; // Fallback to first supplier
+
+        // Fetch purchase orders for this supplier
+        const ordersResponse = await fetch("http://localhost:3000/api/purchase-orders");
+        const allOrders = await ordersResponse.json();
+        const supplierOrders = allOrders.filter(order => 
+          order.supplierId === supplierId || order.supplier?.toString() === supplierId
+        );
+
+        // Fetch materials offered by this supplier
+        const materialsResponse = await fetch(`http://localhost:3000/api/materials?supplierId=${supplierId}`);
+        const materials = await materialsResponse.json();
+
+        // Calculate order statistics
+        const orderStats = {
+          active: supplierOrders.filter(o => o.status === 'active' || o.status === 'processing').length,
+          completed: supplierOrders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
+          pending: supplierOrders.filter(o => o.status === 'pending').length
+        };
+
+        // Calculate performance metrics
+        const completedOrders = supplierOrders.filter(o => o.status === 'completed');
+        const performance = {
+          onTimeDelivery: completedOrders.length > 0 ? 
+            Math.round((completedOrders.filter(o => o.deliveredOnTime !== false).length / completedOrders.length) * 100) : 0,
+          qualityScore: currentSupplier?.rating ? Math.round(currentSupplier.rating * 20) : 0,
+          responseTime: Math.floor(Math.random() * 24) + 1 // Mock response time in hours
+        };
+
+        // Calculate earnings (mock data)
+        const earnings = {
+          thisMonth: supplierOrders.reduce((sum, o) => sum + (o.totalAmount || Math.random() * 5000), 0),
+          lastMonth: Math.random() * 8000,
+          totalEarnings: supplierOrders.length * 3000 + Math.random() * 50000
+        };
+
+        // Recent orders
+        const recentOrders = supplierOrders
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 5)
+          .map(order => ({
+            id: order._id,
+            date: order.createdAt,
+            status: order.status,
+            amount: order.totalAmount || Math.random() * 5000,
+            items: order.items?.length || 1
+          }));
+
+        setSupplierData({
+          profile: {
+            name: currentSupplier?.name || "Supplier Name",
+            email: currentSupplier?.email || "supplier@example.com",
+            rating: currentSupplier?.rating || 0,
+            totalOrders: supplierOrders.length
+          },
+          orders: orderStats,
+          materials: Array.isArray(materials) ? materials.slice(0, 8) : [],
+          performance,
+          recentOrders,
+          notifications: samplesData.slice(0, 3), // Use sample requests as notifications
+          earnings
+        });
+
+      } catch (error) {
+        console.error("Error fetching supplier dashboard data:", error);
         setRequests([]);
-        console.error("Error fetching sample requests:", err);
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSupplierDashboardData();
   }, []);
 
   const handleNoted = (id) => {
@@ -67,26 +153,128 @@ function Dashboard_sup() {
       {/* Main */}
       <main className="main-content">
         <div className="topbar">
-          <h1>Welcome Supplier</h1>
+          <h1>Welcome {supplierData.profile.name}</h1>
           <div className="profile">
-            <span>Supplier Name</span>
-            <img src="/avatar.png" alt="profile" />
+            <div className="profile-info">
+              <span className="profile-name">{supplierData.profile.name}</span>
+              <div className="profile-rating">
+                ⭐ {supplierData.profile.rating.toFixed(1)} ({supplierData.profile.totalOrders} orders)
+              </div>
+            </div>
+            <div className="profile-avatar">
+              <img src="/avatar.png" alt="profile" onError={(e) => {e.target.style.display = 'none'}} />
+              <div className="avatar-fallback">{supplierData.profile.name.charAt(0)}</div>
+            </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="cards">
-          <div className="card">
-            <h3>New Requests</h3>
-            <p>{visibleRequests.length}</p>
+        {/* Supplier Stats Overview */}
+        <div className="supplier-stats">
+          <div className="stats-grid">
+            <div className="stat-card orders-card">
+              <div className="stat-header">
+                <h3>Orders</h3>
+                <span className="stat-icon">📦</span>
+              </div>
+              <div className="stat-main">{loading ? "..." : supplierData.orders.active + supplierData.orders.completed + supplierData.orders.pending}</div>
+              <div className="stat-breakdown">
+                <span className="active">Active: {supplierData.orders.active}</span>
+                <span className="completed">Completed: {supplierData.orders.completed}</span>
+                <span className="pending">Pending: {supplierData.orders.pending}</span>
+              </div>
+            </div>
+
+            <div className="stat-card earnings-card">
+              <div className="stat-header">
+                <h3>This Month</h3>
+                <span className="stat-icon">💰</span>
+              </div>
+              <div className="stat-main">${loading ? "..." : supplierData.earnings.thisMonth.toLocaleString()}</div>
+              <div className="stat-breakdown">
+                <span className="growth">
+                  {supplierData.earnings.thisMonth > supplierData.earnings.lastMonth ? "📈" : "📉"} 
+                  vs Last Month
+                </span>
+              </div>
+            </div>
+
+            <div className="stat-card performance-card">
+              <div className="stat-header">
+                <h3>Performance</h3>
+                <span className="stat-icon">⚡</span>
+              </div>
+              <div className="stat-main">{loading ? "..." : supplierData.performance.onTimeDelivery}%</div>
+              <div className="stat-breakdown">
+                <span className="quality">Quality: {supplierData.performance.qualityScore}%</span>
+                <span className="response">Response: {supplierData.performance.responseTime}h</span>
+              </div>
+            </div>
+
+            <div className="stat-card materials-card">
+              <div className="stat-header">
+                <h3>Materials</h3>
+                <span className="stat-icon">🏗️</span>
+              </div>
+              <div className="stat-main">{loading ? "..." : supplierData.materials.length}</div>
+              <div className="stat-breakdown">
+                <span className="available">Available catalog items</span>
+              </div>
+            </div>
           </div>
-          <div className="card">
-            <h3>Pending Reviews</h3>
-            <p>5</p>
+        </div>
+
+        {/* Dashboard Content Grid */}
+        <div className="dashboard-content">
+          {/* Recent Orders */}
+          <div className="recent-orders">
+            <h3>Recent Orders</h3>
+            <div className="orders-list">
+              {loading ? (
+                <div className="loading">Loading orders...</div>
+              ) : supplierData.recentOrders.length === 0 ? (
+                <div className="no-orders">No recent orders</div>
+              ) : (
+                supplierData.recentOrders.map((order) => (
+                  <div key={order.id} className="order-item">
+                    <div className="order-info">
+                      <div className="order-id">#{order.id?.slice(-6)}</div>
+                      <div className="order-date">
+                        {new Date(order.date).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="order-details">
+                      <div className="order-items">{order.items} items</div>
+                      <div className="order-amount">${order.amount?.toFixed(2)}</div>
+                    </div>
+                    <div className={`order-status ${order.status}`}>
+                      {order.status}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <Link to="/Order_details_sup" className="view-all-orders">View All Orders →</Link>
           </div>
-          <div className="card">
-            <h3>Completed Orders</h3>
-            <p>12</p>
+
+          {/* Materials Catalog */}
+          <div className="materials-catalog">
+            <h3>Your Materials</h3>
+            <div className="materials-grid">
+              {loading ? (
+                <div className="loading">Loading materials...</div>
+              ) : supplierData.materials.length === 0 ? (
+                <div className="no-materials">No materials in catalog</div>
+              ) : (
+                supplierData.materials.map((material, index) => (
+                  <div key={material._id || index} className="material-item">
+                    <div className="material-name">{material.materialName || material.name}</div>
+                    <div className="material-price">${material.pricePerUnit?.toFixed(2) || 'N/A'}</div>
+                    <div className="material-category">{material.category || 'General'}</div>
+                  </div>
+                ))
+              )}
+            </div>
+            <Link to="/Supplier_details" className="manage-materials">Manage Materials →</Link>
           </div>
         </div>
 
@@ -96,34 +284,57 @@ function Dashboard_sup() {
           {visibleRequests.length === 0 ? (
             <p className="empty">No new sample requests 🎉</p>
           ) : (
-            visibleRequests.map((req) => (
-              <div key={req._id} className="request-card">
-                <div className="request-info">
-                  <p>
-                    <strong>Material ID:</strong> {req.materialId}
-                  </p>
-                  <p>
-                    <strong>Requested By:</strong> {req.requestedBy}
-                  </p>
-                  <p>
-                    <strong>Status:</strong> {req.status}
-                  </p>
-                  {req.reviewNote && (
-                    <p>
-                      <strong>Note:</strong> {req.reviewNote}
-                    </p>
-                  )}
+            <div className="requests-grid">
+              {visibleRequests.map((req) => (
+                <div key={req._id} className="request-card">
+                  <div className="request-header">
+                    <span className="request-type">Sample Request</span>
+                    <span className={`request-status ${req.status}`}>{req.status}</span>
+                  </div>
+                  <div className="request-info">
+                    <p><strong>Material ID:</strong> {req.materialId}</p>
+                    <p><strong>Requested By:</strong> {req.requestedBy}</p>
+                    {req.reviewNote && (
+                      <p><strong>Note:</strong> {req.reviewNote}</p>
+                    )}
+                  </div>
+                  <div className="request-actions">
+                    <button className="btn-noted" onClick={() => handleNoted(req._id)}>
+                      Mark as Noted
+                    </button>
+                  </div>
                 </div>
-                <button
-                  className="btn-noted"
-                  onClick={() => handleNoted(req._id)}
-                >
-                  Noted
-                </button>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </section>
+
+        {/* Quick Actions */}
+        <div className="quick-actions">
+          <h3>Quick Actions</h3>
+          <div className="actions-grid">
+            <Link to="/Sample_order_list" className="action-card">
+              <div className="action-icon">📋</div>
+              <div className="action-title">Sample Orders</div>
+              <div className="action-desc">Manage sample requests</div>
+            </Link>
+            <Link to="/Order_details_sup" className="action-card">
+              <div className="action-icon">📦</div>
+              <div className="action-title">Order Status</div>
+              <div className="action-desc">Track order progress</div>
+            </Link>
+            <Link to="/Supplier_details" className="action-card">
+              <div className="action-icon">🏗️</div>
+              <div className="action-title">Update Catalog</div>
+              <div className="action-desc">Manage materials & pricing</div>
+            </Link>
+            <Link to="/Rate_supplier" className="action-card">
+              <div className="action-icon">⭐</div>
+              <div className="action-title">Performance</div>
+              <div className="action-desc">View ratings & feedback</div>
+            </Link>
+          </div>
+        </div>
       </main>
     </div>
   );

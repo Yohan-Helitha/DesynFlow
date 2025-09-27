@@ -11,6 +11,7 @@ import supplierRouter from "./modules/supplier/routes/supplier.routes.js";
 import supplierRatingRouter from "./modules/supplier/routes/supplierRating.routes.js";
 import materialRouter from "./modules/supplier/routes/material.routes.js";
 import sampleRouter from "./modules/supplier/routes/sample.routes.js";
+import dashboardRouter from "./modules/supplier/routes/dashboard.routes.js";
 dotenv.config();
 
 const app = express();
@@ -23,14 +24,17 @@ app.use(express.json());
 app.use("/api/suppliers", supplierRouter);
 // Mount supplier rating router (primary + legacy path for compatibility)
 app.use("/api/supplierRating", supplierRatingRouter);
+app.use("/api/supplier-ratings", supplierRatingRouter); // Alternative naming for frontend
 app.use("/supplierRating", supplierRatingRouter); // legacy/non-versioned path
-console.log("Mounted supplierRating routes at /api/supplierRating and /supplierRating");
+console.log("Mounted supplierRating routes at /api/supplierRating, /api/supplier-ratings and /supplierRating");
 // Mount purchase order router
 app.use("/api/purchase-orders", purchaseOrderRouter);
 // Mount material router
 app.use("/api/materials", materialRouter);
 // Mount sample router
 app.use("/api/samples", sampleRouter);
+// Mount dashboard router
+app.use("/api/dashboard", dashboardRouter);
 
 const mongoUri = process.env.MONGO_URI;
 const port = process.env.PORT || 3000;
