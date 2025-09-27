@@ -16,11 +16,45 @@ function OrderForm({ onOrderCreated }) {
       .catch(() => setSuppliers([]));
   }, []);
 
-  // Use selected supplier's materialTypes for dropdown
+  // Fetch materials from MaterialCatalog for selected supplier
   useEffect(() => {
     if (formData.supplierId) {
-      const supplier = suppliers.find(s => s._id === formData.supplierId);
-      setMaterials(supplier?.materialTypes || []);
+      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
+        .then(res => res.json())
+        .then(data => {
+          // Transform data to include material info with pricing
+          const materialsWithPricing = data.map(item => ({
+            _id: item.materialId?._id || item.materialId,
+            name: item.materialId?.materialName || `Material-${item._id}`,
+            pricePerUnit: item.pricePerUnit || 0,
+            leadTimeDays: item.leadTimeDays || 7
+          }));
+          setMaterials(materialsWithPricing);
+        })
+        .catch(err => {
+          console.error("Error fetching materials:", err);
+          // Fallback to supplier's materialTypes if MaterialCatalog fetch fails
+          const supplier = suppliers.find(s => s._id === formData.supplierId);
+          if (supplier?.materials && supplier.materials.length > 0) {
+            // Use supplier's materials if available
+            const supplierMaterials = supplier.materials.map((mat, idx) => ({
+              _id: `temp-${idx}`,
+              name: mat.name,
+              pricePerUnit: mat.pricePerUnit || 0
+            }));
+            setMaterials(supplierMaterials);
+          } else if (supplier?.materialTypes) {
+            // Legacy fallback - convert materialTypes to material objects
+            const legacyMaterials = supplier.materialTypes.map((type, idx) => ({
+              _id: `legacy-${idx}`,
+              name: type,
+              pricePerUnit: 0
+            }));
+            setMaterials(legacyMaterials);
+          } else {
+            setMaterials([]);
+          }
+        });
     } else {
       setMaterials([]);
     }
@@ -38,7 +72,7 @@ function OrderForm({ onOrderCreated }) {
     if (name === "materialId") {
       newItems[index].materialId = value;
       // Set pricePerUnit from materials list
-      const mat = materials.find(m => m._id === value);
+      const mat = materials.find(m => (m._id === value) || (m.name === value));
       newItems[index].pricePerUnit = mat && mat.pricePerUnit ? mat.pricePerUnit : 0;
       // recalculate total if quantity exists
       const qty = Number(newItems[index].quantity) || 0;
@@ -46,7 +80,7 @@ function OrderForm({ onOrderCreated }) {
     } else if (name === "quantity") {
       newItems[index].quantity = value;
       // recalculate total using pricePerUnit from material
-      const mat = materials.find(m => m._id === newItems[index].materialId);
+      const mat = materials.find(m => (m._id === newItems[index].materialId) || (m.name === newItems[index].materialId));
       const price = mat && mat.pricePerUnit ? mat.pricePerUnit : Number(newItems[index].pricePerUnit) || 0;
       newItems[index].pricePerUnit = price;
       newItems[index].total = price * Number(value);
@@ -152,13 +186,15 @@ function OrderForm({ onOrderCreated }) {
               >
                 <option value="">Select Material</option>
                 {materials.map((mat, idx) => (
-                  <option key={idx} value={mat}>{mat}</option>
+                  <option key={idx} value={mat._id || mat.name}>
+                    {mat.name} - ${(mat.pricePerUnit || 0).toFixed(2)}/unit
+                  </option>
                 ))}
               </select>
               {/* Show selected material name below dropdown for clarity */}
               {item.materialId && (
                 <div style={{ fontSize: '13px', color: '#674636', marginBottom: '4px' }}>
-                  Selected: {item.materialId}
+                  Selected: {materials.find(m => m._id === item.materialId || m.name === item.materialId)?.name || item.materialId}
                 </div>
               )}
               <input

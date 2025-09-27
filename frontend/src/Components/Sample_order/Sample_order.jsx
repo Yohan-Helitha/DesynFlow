@@ -20,11 +20,59 @@ function Sample_order() {
       .catch((err) => console.error("Error fetching suppliers:", err));
   }, []);
 
-  // Update materials from selected supplier's materialTypes
+  // Fetch materials from MaterialCatalog or use supplier's materials
   useEffect(() => {
     if (formData.supplierId) {
-      const supplier = suppliers.find(s => s._id === formData.supplierId);
-      setMaterials(supplier?.materialTypes || []);
+      // First try to fetch from MaterialCatalog
+      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            // Transform MaterialCatalog data
+            const materialsWithPricing = data.map(item => ({
+              _id: item.materialId?._id || item.materialId,
+              name: item.materialId?.materialName || `Material-${item._id}`,
+              pricePerUnit: item.pricePerUnit || 0
+            }));
+            setMaterials(materialsWithPricing);
+          } else {
+            // Fallback to supplier's materials or materialTypes
+            const supplier = suppliers.find(s => s._id === formData.supplierId);
+            if (supplier?.materials && supplier.materials.length > 0) {
+              const supplierMaterials = supplier.materials.map((mat, idx) => ({
+                _id: `temp-${idx}`,
+                name: mat.name,
+                pricePerUnit: mat.pricePerUnit || 0
+              }));
+              setMaterials(supplierMaterials);
+            } else {
+              setMaterials(supplier?.materialTypes?.map((type, idx) => ({
+                _id: `legacy-${idx}`, 
+                name: type, 
+                pricePerUnit: 0
+              })) || []);
+            }
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching materials:", err);
+          // Fallback to supplier data
+          const supplier = suppliers.find(s => s._id === formData.supplierId);
+          if (supplier?.materials && supplier.materials.length > 0) {
+            const supplierMaterials = supplier.materials.map((mat, idx) => ({
+              _id: `temp-${idx}`,
+              name: mat.name,
+              pricePerUnit: mat.pricePerUnit || 0
+            }));
+            setMaterials(supplierMaterials);
+          } else {
+            setMaterials(supplier?.materialTypes?.map((type, idx) => ({
+              _id: `legacy-${idx}`, 
+              name: type, 
+              pricePerUnit: 0
+            })) || []);
+          }
+        });
     } else {
       setMaterials([]);
     }
@@ -109,7 +157,9 @@ function Sample_order() {
           >
             <option value="">-- Select Material --</option>
             {materials.map((mat, idx) => (
-              <option key={idx} value={mat}>{mat}</option>
+              <option key={idx} value={mat._id || mat.name}>
+                {mat.name} {mat.pricePerUnit > 0 ? `- $${mat.pricePerUnit.toFixed(2)}/unit` : ''}
+              </option>
             ))}
           </select>
         </div>

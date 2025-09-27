@@ -73,7 +73,7 @@ function Supplier_details() {
             <th>Contact</th>
             <th>Email</th>
             <th>Phone</th>
-            <th>Materials</th>
+            <th>Materials & Pricing</th>
             <th>Regions</th>
             <th>Rating</th>
             <th></th>
@@ -87,7 +87,30 @@ function Supplier_details() {
               <td>{s.contactName}</td>
               <td>{s.email}</td>
               <td>{s.phone}</td>
-              <td>{s.materialTypes?.join(", ")}</td>
+              <td>
+                <div className="materials-cell">
+                  {s.materials && s.materials.length > 0 ? (
+                    s.materials.map((material, idx) => (
+                      <div key={idx} className="material-item" style={{ 
+                        fontSize: "12px", 
+                        marginBottom: "2px",
+                        padding: "2px 6px",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "3px",
+                        display: "inline-block",
+                        marginRight: "4px",
+                        marginBottom: "4px"
+                      }}>
+                        <strong>{material.name}</strong>: ${material.pricePerUnit}/unit
+                      </div>
+                    ))
+                  ) : (
+                    <span style={{ color: "#999" }}>
+                      {s.materialTypes?.join(", ") || "No materials"}
+                    </span>
+                  )}
+                </div>
+              </td>
               <td>{s.deliveryRegions?.join(", ")}</td>
               <td>{typeof s.rating === "number" ? s.rating.toFixed(2) : s.rating}</td>
               <td>
@@ -136,9 +159,31 @@ function Supplier_details() {
               <p>
                 <b>Phone:</b> {selectedSupplier.phone}
               </p>
-              <p>
-                <b>Materials:</b> {selectedSupplier.materialTypes?.join(", ")}
-              </p>
+              <div>
+                <b>Materials & Pricing:</b>
+                <div style={{ marginTop: "8px" }}>
+                  {selectedSupplier.materials && selectedSupplier.materials.length > 0 ? (
+                    selectedSupplier.materials.map((material, idx) => (
+                      <div key={idx} style={{ 
+                        padding: "8px 12px", 
+                        margin: "4px 0", 
+                        backgroundColor: "#f8f9fa", 
+                        borderLeft: "4px solid #674636",
+                        borderRadius: "4px"
+                      }}>
+                        <strong style={{ color: "#674636" }}>{material.name}</strong>
+                        <span style={{ float: "right", color: "#28a745", fontWeight: "bold" }}>
+                          ${material.pricePerUnit}/unit
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ color: "#666", fontStyle: "italic" }}>
+                      {selectedSupplier.materialTypes?.join(", ") || "No materials listed"}
+                    </div>
+                  )}
+                </div>
+              </div>
               <p>
                 <b>Regions:</b> {selectedSupplier.deliveryRegions?.join(", ")}
               </p>

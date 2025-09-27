@@ -14,7 +14,12 @@ function Update_delete_suppliers() {
     email: "",
     phone: "",
     materialTypes: "",
-    deliveryRegions: ""
+    deliveryRegions: "",
+    materials: []
+  });
+  const [currentMaterial, setCurrentMaterial] = useState({
+    name: "",
+    pricePerUnit: ""
   });
 
   // fetch suppliers on load
@@ -40,7 +45,8 @@ function Update_delete_suppliers() {
       email: supplier.email,
       phone: supplier.phone,
       materialTypes: supplier.materialTypes?.join(", ") || "",
-      deliveryRegions: supplier.deliveryRegions?.join(", ") || ""
+      deliveryRegions: supplier.deliveryRegions?.join(", ") || "",
+      materials: supplier.materials || []
     });
   };
 
@@ -53,8 +59,46 @@ function Update_delete_suppliers() {
       email: "",
       phone: "",
       materialTypes: "",
-      deliveryRegions: ""
+      deliveryRegions: "",
+      materials: []
     });
+    setCurrentMaterial({ name: "", pricePerUnit: "" });
+  };
+
+  const handleMaterialChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentMaterial({ ...currentMaterial, [name]: value });
+  };
+
+  const addMaterial = () => {
+    if (currentMaterial.name && currentMaterial.pricePerUnit) {
+      const newMaterial = {
+        name: currentMaterial.name.trim(),
+        pricePerUnit: parseFloat(currentMaterial.pricePerUnit)
+      };
+      
+      // Check if material already exists
+      const existingIndex = formData.materials.findIndex(m => m.name.toLowerCase() === newMaterial.name.toLowerCase());
+      if (existingIndex >= 0) {
+        // Update existing material
+        const updatedMaterials = [...formData.materials];
+        updatedMaterials[existingIndex] = newMaterial;
+        setFormData({ ...formData, materials: updatedMaterials });
+      } else {
+        // Add new material
+        setFormData({ 
+          ...formData, 
+          materials: [...formData.materials, newMaterial]
+        });
+      }
+      
+      setCurrentMaterial({ name: "", pricePerUnit: "" });
+    }
+  };
+
+  const removeMaterial = (index) => {
+    const updatedMaterials = formData.materials.filter((_, i) => i !== index);
+    setFormData({ ...formData, materials: updatedMaterials });
   };
 
   // update supplier
@@ -63,7 +107,9 @@ function Update_delete_suppliers() {
 
     const updated = {
       ...formData,
-      materialTypes: formData.materialTypes.split(",").map((m) => m.trim()),
+      materialTypes: formData.materials.length > 0 ? 
+        formData.materials.map(m => m.name) : 
+        formData.materialTypes.split(",").map((m) => m.trim()),
       deliveryRegions: formData.deliveryRegions.split(",").map((r) => r.trim())
     };
 
@@ -159,9 +205,127 @@ function Update_delete_suppliers() {
                 Phone
                 <input name="phone" value={formData.phone} onChange={handleChange} required />
               </label>
+              <label style={{ marginBottom: "15px", display: "block" }}>
+                Materials & Pricing
+              </label>
+              
+              {/* Add Material Section */}
+              <div style={{ 
+                border: "1px solid #ddd", 
+                padding: "15px", 
+                borderRadius: "5px", 
+                marginBottom: "15px",
+                backgroundColor: "#f9f9f9"
+              }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "end" }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: "12px", marginBottom: "5px", display: "block" }}>Material Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={currentMaterial.name}
+                      onChange={handleMaterialChange}
+                      placeholder="e.g. Wood, Glass, Metal"
+                      style={{ 
+                        width: "100%", 
+                        padding: "6px", 
+                        border: "1px solid #ccc", 
+                        borderRadius: "4px",
+                        fontSize: "12px"
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: "12px", marginBottom: "5px", display: "block" }}>Price per Unit ($)</label>
+                    <input
+                      type="number"
+                      name="pricePerUnit"
+                      value={currentMaterial.pricePerUnit}
+                      onChange={handleMaterialChange}
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0"
+                      style={{ 
+                        width: "100%", 
+                        padding: "6px", 
+                        border: "1px solid #ccc", 
+                        borderRadius: "4px",
+                        fontSize: "12px"
+                      }}
+                    />
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={addMaterial}
+                    style={{ 
+                      padding: "6px 12px", 
+                      backgroundColor: "#674636", 
+                      color: "white", 
+                      border: "none", 
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      height: "30px"
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Materials List */}
+              {formData.materials.length > 0 && (
+                <div style={{ 
+                  maxHeight: "150px", 
+                  overflowY: "auto", 
+                  border: "1px solid #ddd", 
+                  borderRadius: "5px",
+                  marginBottom: "15px"
+                }}>
+                  {formData.materials.map((material, index) => (
+                    <div 
+                      key={index} 
+                      style={{ 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        alignItems: "center",
+                        padding: "8px 12px", 
+                        borderBottom: "1px solid #eee",
+                        backgroundColor: index % 2 === 0 ? "#f8f8f8" : "white",
+                        fontSize: "12px"
+                      }}
+                    >
+                      <span style={{ fontWeight: "500" }}>{material.name}</span>
+                      <span style={{ color: "#674636" }}>${material.pricePerUnit.toFixed(2)}/unit</span>
+                      <button 
+                        type="button" 
+                        onClick={() => removeMaterial(index)}
+                        style={{ 
+                          padding: "3px 6px", 
+                          backgroundColor: "#dc3545", 
+                          color: "white", 
+                          border: "none", 
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "10px"
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <label>
-                Materials (comma separated)
-                <input name="materialTypes" value={formData.materialTypes} onChange={handleChange} />
+                Legacy Material Types (comma separated)
+                <input 
+                  name="materialTypes" 
+                  value={formData.materialTypes} 
+                  onChange={handleChange}
+                  placeholder="For backward compatibility only" 
+                  style={{ fontSize: "12px", color: "#666" }}
+                />
               </label>
               <label>
                 Regions (comma separated)
