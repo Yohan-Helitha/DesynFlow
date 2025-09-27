@@ -208,16 +208,16 @@ export default function DashboardOverview() {
             {recentProjects.map((project) => (
               <li
                 key={project._id}
-                className="flex items-center gap-3 p-3 rounded-lg transition-colors duration-200 cursor-pointer hover:bg-cream-primary group"
+                className="flex items-center gap-3 p-3 rounded-lg transition-cursor-pointer"
                 tabIndex={0}
                 title={project.name}
               >
                 <span className={`w-3 h-3 rounded-full border border-brown-primary flex-shrink-0 ${
                   project.status === 'Pending' ? 'bg-yellow-400' : project.status === 'Completed' ? 'bg-green-primary' : 'bg-brown-primary'
                 } group-hover:scale-110 transition-transform`}></span>
-                <span className="flex-1 text-base font-semibold text-brown-primary group-hover:underline group-hover:text-green-primary">{project.projectName}</span>
+                <span className="flex-1 text-base font-semibold text-brown-primary transition-cursor-pointer">{project.projectName}</span>
                 <span className="text-xs text-green-primary font-bold">{project.status}</span>
-                <span className="text-xs text-brown-primary">{new Date(project.createdAt).toLocaleDateString()}</span>
+                <span className="text-xs text-brown-primary">{new Date(project.startDate).toLocaleDateString()}</span>
               </li>
             ))}
           </ul>
