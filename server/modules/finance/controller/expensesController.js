@@ -1,4 +1,5 @@
 import * as expenseService from '../service/expensesService.js';
+import { adjustBalance } from '../service/financeSummaryService.js';
 
 // Get all expenses
 const getAllExpenses = async (req, res, next) => {
@@ -75,4 +76,22 @@ export {
     getAllExpenses,
     updateMiscExpense,
     getExpensesByProjectAndCategory
+};
+
+// Create expense (POST /api/expenses)
+export const createExpense = async (req, res) => {
+    try {
+        const { projectId, description, category, amount } = req.body;
+        const proof = req.file ? req.file.path : undefined;
+        const created = await expenseService.createExpense({ projectId, description, category, amount, proof });
+        // Decrease totalBalance by expense amount
+        const amtNum = Number(amount) || 0;
+        if (amtNum > 0) {
+            await adjustBalance(-amtNum);
+        }
+        return res.status(201).json({ expense: created });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Server Error' });
+    }
 };

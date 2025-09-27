@@ -5,11 +5,10 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Check,
   X,
 } from 'lucide-react'
-import { ViewPurchaseOrderModal } from './ViewPurchaseOrderModal'
+import PurchaseOrderDetailsModal from './PurchaseOrderDetailsModal'
 
 import { useEffect } from 'react';
 
@@ -17,28 +16,33 @@ export const PendingPurchaseOrders = () => {
   const [pendingPurchaseOrders, setPendingPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedPO, setSelectedPO] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('createdAt');
   const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
+  const fetchApprovals = () => {
     setLoading(true);
+    // Fetch purchase orders directly by status or finance approval status
     fetch('/api/purchase-orders?status=PendingFinanceApproval')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch pending purchase orders');
         return res.json();
       })
-      .then((data) => {
-        setPendingPurchaseOrders(data);
+      .then((pos) => {
+        const list = Array.isArray(pos) ? pos : [];
+        setPendingPurchaseOrders(list);
         setLoading(false);
       })
       .catch((err) => {
         setError(err.message);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchApprovals();
   }, []);
 
   if (loading) {
@@ -49,8 +53,7 @@ export const PendingPurchaseOrders = () => {
   }
 
   const handleView = (po) => {
-    setSelectedPO(po)
-    setShowViewModal(true)
+    setSelectedId(po._id)
   }
 
   const handleSort = (field) => {
@@ -119,38 +122,28 @@ export const PendingPurchaseOrders = () => {
             <thead className="bg-[#F7EED3]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">PO ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Project ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Supplier ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Request Origin</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Total Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Finance Approval Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Created At</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">View</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPOs.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{po._id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.projectId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.supplierId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.requestOrigin}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${po.totalAmount?.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.financeApproval?.status || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.createdAt ? `${new Date(po.createdAt).toLocaleDateString()} ${new Date(po.createdAt).toLocaleTimeString()}` : '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-[#674636]">${(Number(po.totalAmount)||0).toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleView(po)}
                       className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white"
                     >
-                      <Eye size={16} className="inline mr-1" /> View
+                      Open
                     </button>
                   </td>
                 </tr>
               ))}
               {paginatedPOs.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-[#AAB396]">
+                  <td colSpan={3} className="px-6 py-4 text-center text-[#AAB396]">
                     No purchase orders found
                   </td>
                 </tr>
@@ -209,10 +202,11 @@ export const PendingPurchaseOrders = () => {
       </div>
 
       {/* View Purchase Order Modal */}
-      {showViewModal && (
-        <ViewPurchaseOrderModal
-          purchaseOrder={selectedPO}
-          onClose={() => setShowViewModal(false)}
+      {selectedId && (
+        <PurchaseOrderDetailsModal
+          purchaseOrderId={selectedId}
+          onClose={() => setSelectedId(null)}
+          onAction={() => { setSelectedId(null); fetchApprovals(); }}
         />
       )}
     </div>

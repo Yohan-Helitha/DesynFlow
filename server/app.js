@@ -22,6 +22,8 @@ import purchaseOrderRoute from './modules/finance/routes/purchaseOrderRoutes.js'
 import warrantyRoute from './modules/finance/routes/warrantyRoutes.js';
 import claimRoute from './modules/finance/routes/claimRoutes.js';
 import notificationRoute from './modules/finance/routes/notificationRoutes.js';
+import materialRoute from './modules/finance/routes/materialRoutes.js';
+import financeSummaryRoute from './modules/finance/routes/financeSummaryRoutes.js';
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.use(
 app.use(cors()); // from allowing cors API can request different origins(not restrcit to one port)
 app.use(express.json({limit: '2mb'})); // parse json body
 app.use(express.urlencoded({ extended: true })); // parse urlencoded body
+// Serve uploaded files (e.g., generated PDFs)
+app.use('/uploads', express.static('uploads'));
 
 app.get("/health", (req, res) => {
   res.json({
@@ -60,5 +64,7 @@ app.use('/api/purchase-orders', purchaseOrderRoute);
 app.use('/api/warranties', warrantyRoute);
 app.use('/api/claims', claimRoute);
 app.use('/api/notifications', notificationRoute);
+app.use('/api/materials', materialRoute);
+app.use('/api/finance-summary', financeSummaryRoute);
 
 export { app };

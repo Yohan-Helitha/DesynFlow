@@ -1,6 +1,7 @@
 
 import InspectionEstimation from '../model/inspection_estimation.js';
 import InspectionRequest from '../model/inspection_request.js';
+import { adjustBalance, incrementIncome, decrementIncome } from './financeSummaryService.js';
 
 
 // Get requests with status 'PaymentPending' and join estimation data
@@ -102,13 +103,25 @@ export async function verifyPaymentAndUpdateStatus(inspectionRequestId, paymentA
     status = 'PaymentRejected';
   }
   // Update status in both tables
-  await InspectionRequest.findOneAndUpdate(
+  const prevRequest = await InspectionRequest.findOneAndUpdate(
     { inspectionRequestId },
     { status }
   );
-  await InspectionEstimation.findOneAndUpdate(
+  const prevEstimation = await InspectionEstimation.findOneAndUpdate(
     { inspectionRequestId },
     { paymentAmount, status }
   );
+  // If verified, add to finance summary balance
+  if (typeof paymentAmount === 'number') {
+    const prevStatus = prevEstimation?.status;
+    if (prevStatus !== 'PaymentVerified' && status === 'PaymentVerified') {
+      await incrementIncome(paymentAmount);
+      await adjustBalance(paymentAmount);
+    }
+    if (prevStatus === 'PaymentVerified' && status !== 'PaymentVerified') {
+      await decrementIncome(paymentAmount);
+      await adjustBalance(-paymentAmount);
+    }
+  }
   return { status };
 }

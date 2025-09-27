@@ -17,6 +17,8 @@ import { useEffect, useState } from 'react';
 export const Dashboard = () => {
   const [pendingCount, setPendingCount] = useState(null);
   const [pendingPaymentApprovals, setPendingPaymentApprovals] = useState(null);
+  const [financeSummary, setFinanceSummary] = useState(null);
+  const [approvedEstimationsCount, setApprovedEstimationsCount] = useState(null);
 
   useEffect(() => {
     // Fetch pending inspection estimates count
@@ -42,6 +44,18 @@ export const Dashboard = () => {
         setPendingPaymentApprovals(paymentsCount + inspectionCount);
       })
       .catch(() => setPendingPaymentApprovals(0));
+
+    // Fetch finance summary
+    fetch('/api/finance-summary')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => setFinanceSummary(data))
+      .catch(() => setFinanceSummary(null));
+
+    // Fetch approved project estimations count for Pending Quotations Generations card
+    fetch('/api/project-estimation/approved')
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => setApprovedEstimationsCount(Array.isArray(data) ? data.length : 0))
+      .catch(() => setApprovedEstimationsCount(0));
   }, []);
 
   const handleCardClick = (destination) => {
@@ -56,7 +70,7 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mt-6">
         <SummaryCard
           title="Total Income"
-          value="632,000"
+          value={financeSummary ? financeSummary.totalIncome?.toLocaleString() : '...'}
           icon={
             <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636]">
               <DollarSign size={20} />
@@ -69,7 +83,7 @@ export const Dashboard = () => {
 
         <SummaryCard
           title="Total Balance"
-          value="845,000"
+          value={financeSummary ? financeSummary.totalBalance?.toLocaleString() : '...'}
           icon={
             <div className="w-10 h-10 rounded-full bg-[#AAB396] flex items-center justify-center text-white">
               <Wallet size={20} />
@@ -114,8 +128,8 @@ export const Dashboard = () => {
         />
 
         <SummaryCard
-          title="Pending Quotations"
-          count={4}
+          title="Pending Quotations Generations"
+          count={approvedEstimationsCount === null ? '...' : approvedEstimationsCount}
           icon={
             <div className="w-10 h-10 rounded-full bg-[#674636] flex items-center justify-center text-white">
               <FileText size={20} />

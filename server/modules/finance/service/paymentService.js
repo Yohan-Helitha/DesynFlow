@@ -3,6 +3,7 @@ export async function getAllPayments() {
   return Payment.find();
 }
 import Payment from '../model/payment.js';
+import { adjustBalance, incrementIncome, decrementIncome } from './financeSummaryService.js';
 import QuotationEstimation from '../model/quotation_estimation.js';
 import mongoose from 'mongoose';
 
@@ -18,9 +19,22 @@ export async function getPaymentsByStatuses(statuses) {
 
 // Approve or reject a payment
 export async function updatePaymentStatus(paymentId, status, comment) {
+  const prev = await Payment.findById(paymentId);
+  if (!prev) throw new Error('Payment not found');
   const update = { status };
   if (typeof comment !== 'undefined') update.comment = comment;
-  return Payment.findByIdAndUpdate(paymentId, update, { new: true });
+  const updated = await Payment.findByIdAndUpdate(paymentId, update, { new: true });
+  // If transitioning to Approved (and wasn't already), add amount to totalIncome and totalBalance
+  if (prev.status !== 'Approved' && updated.status === 'Approved') {
+    await incrementIncome(updated.amount);
+    await adjustBalance(updated.amount);
+  }
+  // If transitioning away from Approved, reverse from totalIncome and totalBalance
+  if (prev.status === 'Approved' && updated.status !== 'Approved') {
+    await decrementIncome(updated.amount);
+    await adjustBalance(-updated.amount);
+  }
+  return updated;
 }
 
 // Filter payments by project, client, date

@@ -1,21 +1,13 @@
-import mongoose from 'mongoose';
-
+import mongoose from "mongoose";
 const { Schema } = mongoose;
-
-const PurchaseOrderItemSchema = new Schema({
-  materialId: { type: Schema.Types.ObjectId, ref: 'Material', required: true },
-  description: { type: String },
-  quantity: { type: Number, required: true },
-  unitPrice: { type: Number, required: true },
-  total: { type: Number, required: true }
-}, { _id: false });
+import PurchaseOrderItemSchema from "./purchase_order_item.js";
 
 const PurchaseOrderSchema = new Schema({
   requestOrigin: { type: String, enum: ['ReorderAlert', 'Manual', 'ProjectMR'] },
-  projectId: { type: Schema.Types.ObjectId, ref: 'Project', index: true },
-  supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier', index: true },
-  requestedBy: { type: Schema.Types.ObjectId, ref: 'User', index: true },
-  status: { type: String, enum: ['Draft', 'PendingFinanceApproval', 'Approved', 'Rejected', 'SentToSupplier', 'InProgress', 'Delivered', 'Closed'], index: true, default: 'Draft' },
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
+  supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier' },
+  requestedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  status: { type: String, enum: ['Draft', 'PendingFinanceApproval', 'Approved', 'Rejected', 'SentToSupplier', 'InProgress', 'Delivered', 'Closed'], default: 'Draft' },
   items: [PurchaseOrderItemSchema],
   totalAmount: { type: Number },
   financeApproval: {
@@ -26,4 +18,5 @@ const PurchaseOrderSchema = new Schema({
   }
 }, { timestamps: true });
 
-export default mongoose.model('PurchaseOrder', PurchaseOrderSchema);
+const PurchaseOrder = mongoose.model('PurchaseOrder', PurchaseOrderSchema);
+export default PurchaseOrder;

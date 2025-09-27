@@ -19,5 +19,17 @@ const updateExpenseById = async (id, updateData) => {
 export {
     getAllExpenses,
     getExpensesByProjectAndCategory,
-    updateExpenseById
+        updateExpenseById
+};
+
+// Create a new expense
+export const createExpense = async ({ projectId, description, category, amount, proof }) => {
+    const data = {
+        projectId: projectId ? new mongoose.Types.ObjectId(projectId) : undefined,
+        description,
+        category,
+        amount: Number(amount),
+        proof: proof || null
+    };
+    return await Expense.create(data);
 };

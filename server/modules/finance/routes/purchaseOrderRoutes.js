@@ -6,6 +6,9 @@ const router = express.Router();
 // View requests by status
 router.get('/', controller.getRequestsByStatus);
 
+// Get single purchase order details
+router.get('/:id', controller.getPurchaseOrderDetails);
+
 // Approve request
 router.patch('/:requestId/approve', controller.approveRequest);
 

@@ -1,128 +1,103 @@
-import React, { useState } from 'react'
-import {
-  ShoppingCart,
-  Filter,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Download,
-  Truck,
-} from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { ShoppingCart, Filter, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ViewPurchaseOrderModal } from './ViewPurchaseOrderModal'
 
-// Mock data for approved purchase orders
-const approvedPurchaseOrders = [
-  {
-    id: 'PO-004',
-    projectId: 'PRJ-004',
-    projectName: 'Retail Store Renovation',
-    requestedBy: 'Emily Davis',
-    requestedDate: '2023-06-10',
-    approvedBy: 'Ali Raza',
-    approvedDate: '2023-06-11',
-    vendor: 'Retail Supplies Inc.',
-    totalAmount: 4800,
-    deliveryDate: '2023-06-20',
-    deliveryStatus: 'Delivered',
-    status: 'Approved',
-    priority: 'High',
-    items: [
-      { id: 1, name: 'Display Shelves', quantity: 12, unitPrice: 200, total: 2400 },
-      { id: 2, name: 'Lighting System', quantity: 1, unitPrice: 1500, total: 1500 },
-      { id: 3, name: 'Signage', quantity: 3, unitPrice: 300, total: 900 },
-    ],
-  },
-  {
-    id: 'PO-005',
-    projectId: 'PRJ-005',
-    projectName: 'Hospital Wing Addition',
-    requestedBy: 'David Wilson',
-    requestedDate: '2023-06-12',
-    approvedBy: 'Ali Raza',
-    approvedDate: '2023-06-13',
-    vendor: 'Medical Construction Supplies',
-    totalAmount: 12500,
-    deliveryDate: '2023-06-25',
-    deliveryStatus: 'In Transit',
-    status: 'Approved',
-    priority: 'High',
-    items: [
-      { id: 1, name: 'Medical Grade Flooring', quantity: 500, unitPrice: 15, total: 7500 },
-      { id: 2, name: 'Specialized Wall Materials', quantity: 200, unitPrice: 20, total: 4000 },
-      { id: 3, name: 'Door Systems', quantity: 5, unitPrice: 200, total: 1000 },
-    ],
-  },
-  {
-    id: 'PO-006',
-    projectId: 'PRJ-006',
-    projectName: 'School Renovation',
-    requestedBy: 'Jessica Taylor',
-    requestedDate: '2023-06-14',
-    approvedBy: 'Ali Raza',
-    approvedDate: '2023-06-15',
-    vendor: 'Educational Supplies Co.',
-    totalAmount: 8200,
-    deliveryDate: '2023-06-28',
-    deliveryStatus: 'Pending',
-    status: 'Approved',
-    priority: 'Medium',
-    items: [
-      { id: 1, name: 'Classroom Furniture', quantity: 30, unitPrice: 150, total: 4500 },
-      { id: 2, name: 'Whiteboard Systems', quantity: 10, unitPrice: 200, total: 2000 },
-      { id: 3, name: 'Flooring Materials', quantity: 1, unitPrice: 1700, total: 1700 },
-    ],
-  },
-]
-
 export const ApprovedPurchaseOrders = () => {
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedPO, setSelectedPO] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortField, setSortField] = useState('approvedDate')
+  const [sortField, setSortField] = useState('updatedAt')
   const [sortDirection, setSortDirection] = useState('desc')
   const [currentPage, setCurrentPage] = useState(1)
 
-  const handleView = (po) => {
-    setSelectedPO(po)
-    setShowViewModal(true)
-  }
-
-  const handleDownloadPO = (poId) => {
-    console.log(`Downloading purchase order ${poId}`)
-    // In a real app, you would generate and download a PDF
-  }
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('asc')
+  const fetchOrders = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/purchase-orders')
+      if (!res.ok) throw new Error('Failed to fetch purchase orders')
+      const data = await res.json()
+      const filtered = (Array.isArray(data) ? data : []).filter(
+        (po) => po.status !== 'Draft' && po.status !== 'PendingFinanceApproval'
+      )
+      setOrders(filtered)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
     }
   }
 
-  // Filter and sort purchase orders
-  const filteredPOs = approvedPurchaseOrders
-    .filter(
-      (po) =>
-        po.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        po.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        po.vendor.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
+  useEffect(() => { fetchOrders() }, [])
+
+  const mapToViewModel = (po) => {
+    return {
+      id: po._id,
+      projectId: po.projectId?._id || po.projectId || '-',
+      projectName: po.projectId?.projectName || '-',
+      requestedBy: po.requestedBy?.name || po.requestedBy?.email || '-',
+      requestedDate: po.createdAt ? new Date(po.createdAt).toLocaleDateString() : '-',
+      approvedBy: '-', // approver not populated; available via financeApproval.approverId if populated
+      approvedDate: po.financeApproval?.approvedAt ? new Date(po.financeApproval.approvedAt).toLocaleDateString() : '-',
+      vendor: po.supplierId?.name || '-',
+      totalAmount: Number(po.totalAmount) || 0,
+      deliveryDate: '-', // not tracked in schema
+      deliveryStatus: '-', // not tracked in schema
+      status: po.status,
+      priority: '-', // not tracked in schema
+      items: (po.items || []).map((it, idx) => ({
+        id: it._id || idx + 1,
+        name: (it.materialId && typeof it.materialId === 'object' ? it.materialId.materialName : (it.materialName || String(it.materialId || ''))) || '-',
+        quantity: it.qty,
+        unitPrice: Number(it.unitPrice) || 0,
+        total: (Number(it.qty) || 0) * (Number(it.unitPrice) || 0),
+      })),
+    }
+  }
+
+  const openView = async (id) => {
+    try {
+      const res = await fetch(`/api/purchase-orders/${id}`)
+      if (!res.ok) throw new Error('Failed to fetch purchase order details')
+      const data = await res.json()
+      setSelectedPO(mapToViewModel(data))
+      setShowViewModal(true)
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+
+  const handleSort = (field) => {
+    if (sortField === field) setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    else { setSortField(field); setSortDirection('asc') }
+  }
+
+  const filtered = orders
+    .filter((po) => {
+      const q = searchTerm.toLowerCase()
+      return (
+        (po._id && String(po._id).toLowerCase().includes(q)) ||
+        (po.status && String(po.status).toLowerCase().includes(q))
+      )
+    })
     .sort((a, b) => {
-      if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1
-      if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1
-      return 0
+      const av = a[sortField]
+      const bv = b[sortField]
+      if (av === bv) return 0
+      if (av == null) return 1
+      if (bv == null) return -1
+      return av < bv ? (sortDirection === 'asc' ? -1 : 1) : (sortDirection === 'asc' ? 1 : -1)
     })
 
-  // Pagination
-  const itemsPerPage = 3
-  const totalPages = Math.ceil(filteredPOs.length / itemsPerPage)
-  const paginatedPOs = filteredPOs.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  )
+  const itemsPerPage = 10
+  const totalPages = Math.ceil(filtered.length / itemsPerPage)
+  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  if (loading) return <div className="p-8 text-center text-[#AAB396]">Loading approved purchase orders…</div>
+  if (error) return <div className="p-8 text-center text-red-600">{error}</div>
 
   return (
     <div>
@@ -149,19 +124,12 @@ export const ApprovedPurchaseOrders = () => {
         </div>
       </div>
 
-      {/* Approved Purchase Orders Table */}
       <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                {[
-                  { key: 'id', label: 'PO Number' },
-                  { key: 'projectName', label: 'Project' },
-                  { key: 'vendor', label: 'Vendor' },
-                  { key: 'totalAmount', label: 'Total Amount' },
-                  { key: 'approvedDate', label: 'Approved Date' },
-                ].map(({ key, label }) => (
+                {[{ key: '_id', label: 'PO ID' }, { key: 'status', label: 'Status' }, { key: 'totalAmount', label: 'Total Amount' }, { key: 'updatedAt', label: 'Updated At' }].map(({ key, label }) => (
                   <th
                     key={key}
                     className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
@@ -173,111 +141,45 @@ export const ApprovedPurchaseOrders = () => {
                     </div>
                   </th>
                 ))}
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">
-                  Delivery Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
-              {paginatedPOs.map((po) => (
-                <tr key={po.id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">
-                    {po.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    {po.projectName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    {po.vendor}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    ${po.totalAmount.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    {po.approvedDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#F7EED3] text-[#674636] border border-[#AAB396]">
-                      {po.deliveryStatus}
-                    </span>
-                  </td>
+              {paginated.map((po) => (
+                <tr key={po._id} className="hover:bg-[#F7EED3]">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{po._id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.status}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${(Number(po.totalAmount)||0).toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.updatedAt ? new Date(po.updatedAt).toLocaleString() : '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleView(po)}
-                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white mr-2"
-                    >
-                      <Eye size={16} className="inline mr-1" /> View
-                    </button>
-                    <button
-                      onClick={() => handleDownloadPO(po.id)}
-                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white mr-2"
-                    >
-                      <Download size={16} className="inline mr-1" /> Download
-                    </button>
-                    {po.deliveryStatus === 'Pending' && (
-                      <button className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white">
-                        <Truck size={16} className="inline mr-1" /> Track
-                      </button>
-                    )}
+                    <button onClick={() => openView(po._id)} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white">Open</button>
                   </td>
                 </tr>
               ))}
-              {paginatedPOs.length === 0 && (
+              {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-[#AAB396]">
-                    No approved purchase orders found
-                  </td>
+                  <td colSpan={5} className="px-6 py-4 text-center text-[#AAB396]">No purchase orders found</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
-        {filteredPOs.length > 0 && (
+        {filtered.length > 0 && (
           <div className="px-6 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
             <div className="text-sm text-[#674636]">
-              Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-              {Math.min(currentPage * itemsPerPage, filteredPOs.length)} of{' '}
-              {filteredPOs.length} entries
+              Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} entries
             </div>
             <div className="flex space-x-2">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className={`p-2 rounded-md ${
-                  currentPage === 1
-                    ? 'text-[#AAB396] cursor-not-allowed'
-                    : 'text-[#674636] hover:bg-[#FFF8E8]'
-                }`}
-              >
+              <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded-md ${currentPage === 1 ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}>
                 <ChevronLeft size={16} />
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 rounded-md ${
-                    currentPage === page
-                      ? 'bg-[#674636] text-[#FFF8E8]'
-                      : 'text-[#674636] hover:bg-[#FFF8E8]'
-                  }`}
-                >
+                <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 rounded-md ${currentPage === page ? 'bg-[#674636] text-[#FFF8E8]' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}>
                   {page}
                 </button>
               ))}
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className={`p-2 rounded-md ${
-                  currentPage === totalPages
-                    ? 'text-[#AAB396] cursor-not-allowed'
-                    : 'text-[#674636] hover:bg-[#FFF8E8]'
-                }`}
-              >
+              <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded-md ${currentPage === totalPages ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}>
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -285,8 +187,7 @@ export const ApprovedPurchaseOrders = () => {
         )}
       </div>
 
-      {/* View Purchase Order Modal */}
-      {showViewModal && (
+      {showViewModal && selectedPO && (
         <ViewPurchaseOrderModal
           purchaseOrder={selectedPO}
           onClose={() => setShowViewModal(false)}

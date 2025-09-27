@@ -12,6 +12,7 @@ import './inspection_estimation.js';
 import './warrenty.js';
 import './warrenty_claim.js';
 import './purchase_order.js';
+import './supplier.js';
 import './supplier_material_catalog.js';
 import './user.js';
 

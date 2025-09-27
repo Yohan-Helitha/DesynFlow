@@ -1,4 +1,5 @@
 import Quotation from '../model/quotation_estimation.js';
+import { generateQuotationPdf } from '../service/quotationPdfService.js';
 import Material from '../model/material.js';
 import SupplierMaterialCatalog from '../model/supplier_material_catalog.js';
 import { Project } from '../model/project.js'; // Ensure Project model is registered
@@ -28,7 +29,8 @@ export const createQuotation = async (req, res) => {
     const totalContingency = calcContingency(contingencyItems);
     const totalTax = calcTax(taxes);
     const grandTotal = subtotal + totalContingency + totalTax;
-    const quotation = await Quotation.create({
+    // Persist initial quotation (fileUrl computed after PDF generation)
+    let quotation = await Quotation.create({
       projectId,
       estimateVersion,
       version,
@@ -45,9 +47,31 @@ export const createQuotation = async (req, res) => {
       subtotal,
       totalContingency,
       totalTax,
-      grandTotal,
-      fileUrl
+      grandTotal
     });
+    // Generate PDF and update fileUrl
+    try {
+      const { url } = await generateQuotationPdf({
+        projectId,
+        estimateVersion,
+        version,
+        remarks,
+        laborItems,
+        materialItems,
+        serviceItems,
+        contingencyItems,
+        taxes,
+        subtotal,
+        totalContingency,
+        totalTax,
+        grandTotal,
+      });
+      quotation.fileUrl = url;
+      await quotation.save();
+    } catch (pdfErr) {
+      // Log and continue without blocking creation
+      console.warn('[quotation] PDF generation failed:', pdfErr?.message || pdfErr);
+    }
     res.status(201).json(quotation);
   } catch (err) {
     res.status(500).json({ error: err.message });
