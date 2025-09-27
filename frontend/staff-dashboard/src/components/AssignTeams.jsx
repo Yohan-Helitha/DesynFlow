@@ -304,41 +304,11 @@ export default function AssignTeams() {
                       {project.status || "Unknown"}
                     </span>
                   </div>
-                  <div className="mb-2 text-sm text-gray-700">
+                  <div className="mb-2 text-sm text-gray-700 leading-[1.8]">
                     <div><span className="font-semibold">Client:</span> {typeof project.clientId === 'string' ? project.clientId : (project.clientId || "N/A")}</div>
                     <div><span className="font-semibold">Start Date:</span> {project.startDate ? new Date(project.startDate).toLocaleDateString() : "N/A"}</div>
                     <div><span className="font-semibold">Due Date:</span> {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : "N/A"}</div>
                     <div><span className="font-semibold">Assigned Team:</span> {project.assignedTeamId?.teamName || "No Team Assigned"}</div>
-                    {project.attachments && Array.isArray(project.attachments) && project.attachments.length > 0 && (
-                      <div>
-                        <span className="font-semibold">Documents:</span>
-                        <ul className="ml-4 mt-1">
-                          {project.attachments.map((attachment, index) => {
-                            // Handle both object and string attachment formats
-                            const displayName = typeof attachment === 'object' 
-                              ? (attachment.originalName || attachment.filename || 'Document')
-                              : attachment.split('/').pop() || 'Document';
-                            
-                            const filePath = typeof attachment === 'object'
-                              ? attachment.path
-                              : attachment;
-                            
-                            return (
-                              <li key={index} className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm">
-                                <a 
-                                  href={`http://localhost:4000${filePath}`} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  download={displayName}
-                                >
-                                  📄 {displayName}
-                                </a>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    )}
                   </div>
                   {project.status === "In Progress" && (
                     <div className="mb-2">
@@ -356,23 +326,25 @@ export default function AssignTeams() {
                   )}
                   <div className="flex gap-2 mt-4">
                     <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-semibold"
+                      className="bg-green-primary hover:bg-green-primary-300 text-white px-3 py-1 rounded text-xs font-semibold"
                       onClick={() => handleViewProgress(project)}
                     >
                       View Progress
                     </button>
-                    <button
-                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-semibold"
-                      onClick={() => handleEdit(project)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold"
-                      onClick={() => handleDelete(project._id)}
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-2 ml-auto">
+                      <button
+                        className="bg-brown-primary-300 hover:bg-brown-primary-200 text-white px-3 py-1 rounded text-xs font-semibold"
+                        onClick={() => handleEdit(project)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="bg-brown-primary hover:bg-brown-primary-300 text-white px-3 py-1 rounded text-xs font-semibold"
+                        onClick={() => handleDelete(project._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))

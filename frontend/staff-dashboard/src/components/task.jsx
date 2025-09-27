@@ -350,19 +350,19 @@ const TaskBoard = () => {
         {status === STATUS.PENDING && (
           <>
             <button 
-              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
+              className="bg-bg-yellow-100 text-yellow-800 px-3 py-1 rounded text-xs transition-colors"
               onClick={() => handleStatusChange(task, STATUS.IN_PROGRESS)}
             >
               Start
             </button>
             <button 
-              className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors"
+              className="bg-brown-primary hover:bg-brown-secondary text-white px-3 py-1 rounded text-xs transition-colors"
               onClick={() => handleEditTask(task)}
             >
               Edit
             </button>
             <button 
-              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
+              className="bg-red-brown hover:bg-red-brown-600 text-white px-3 py-1 rounded text-xs transition-colors"
               onClick={() => handleDeleteTask(task)}
             >
               Delete
@@ -372,13 +372,13 @@ const TaskBoard = () => {
         {status === STATUS.IN_PROGRESS && (
           <>
             <button 
-              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
+              className="bg-soft-green hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
               onClick={() => handleStatusChange(task, STATUS.COMPLETED)}
             >
               Complete
             </button>
             <button 
-              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
+              className="bg-warm-brown hover:bg-warm-brown-600 text-white px-3 py-1 rounded text-xs transition-colors"
               onClick={() => handleStatusChange(task, STATUS.BLOCKED)}
             >
               Block
@@ -387,7 +387,7 @@ const TaskBoard = () => {
         )}
         {status === STATUS.COMPLETED && (
           <button 
-            className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs transition-colors"
+            className="bg-warm-brown hover:bg-warm-brown-600 text-white px-3 py-1 rounded text-xs transition-colors"
             onClick={() => handleStatusChange(task, STATUS.PENDING)}
           >
             Reopen
@@ -395,7 +395,7 @@ const TaskBoard = () => {
         )}
         {status === STATUS.BLOCKED && (
           <button 
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
+            className="bg-warm-brown hover:bg-warm-brown-600 text-white px-3 py-1 rounded text-xs transition-colors"
             onClick={() => handleStatusChange(task, STATUS.IN_PROGRESS)}
           >
             Unblock

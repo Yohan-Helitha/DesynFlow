@@ -241,11 +241,11 @@ export default function DashboardOverview() {
                   tabIndex={0}
                   title={task.title || task.name}
                 >
-                  <span className={`w-3 h-3 rounded-full border border-brown-primary flex-shrink-0 ${
-                    task.status === 'Pending' ? 'bg-yellow-400' : task.status === 'Completed' ? 'bg-green-primary' : 'bg-brown-primary'
+                  <span className={`w-3 h-3 rounded-full border border-cream-light flex-shrink-0 ${
+                    task.status === 'Pending' ? 'bg-brown-primary' : task.status === 'Completed' ? 'bg-green-primary' : 'bg-brown-primary'
                   } group-hover:scale-110 transition-transform`}></span>
-                  <span className="flex-1 text-base font-semibold text-green-primary group-hover:underline group-hover:text-brown-primary">{task.title || task.name}</span>
-                  <span className="text-xs text-green-primary font-bold">{task.projectName}</span>
+                  <span className="flex-1 text-base font-semibold text-brown-primary group-hover:text-brown-primary-300">{task.title || task.name}</span>
+                  <span className="text-xs text-brown-primary font-bold">{task.projectName}</span>
                   <span className="text-xs text-brown-primary">{new Date(task.updatedAt).toLocaleDateString()}</span>
                 </li>
               ))
