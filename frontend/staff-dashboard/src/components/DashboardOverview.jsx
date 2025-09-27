@@ -215,7 +215,7 @@ export default function DashboardOverview() {
                 <span className={`w-3 h-3 rounded-full border border-brown-primary flex-shrink-0 ${
                   project.status === 'Pending' ? 'bg-yellow-400' : project.status === 'Completed' ? 'bg-green-primary' : 'bg-brown-primary'
                 } group-hover:scale-110 transition-transform`}></span>
-                <span className="flex-1 text-base font-semibold text-brown-primary transition-cursor-pointer">{project.projectName}</span>
+                <span className="flex-1 text-base font-semibold text-brown-primary cursor-pointer transition-cursor-pointer">{project.projectName}</span>
                 <span className="text-xs text-green-primary font-bold">{project.status}</span>
                 <span className="text-xs text-brown-primary">{new Date(project.startDate).toLocaleDateString()}</span>
               </li>
