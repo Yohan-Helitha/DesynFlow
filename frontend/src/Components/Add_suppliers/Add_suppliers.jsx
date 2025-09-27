@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./Add_suppliers.css";
 import { Link } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
 
 function Add_suppliers() {
   const [formData, setFormData] = useState({
@@ -97,8 +98,10 @@ function Add_suppliers() {
   };
 
   return (
-    <div className="add-supplier-container">
-      <h2>Add New Supplier</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="add-supplier-container">
+        <h2>Add New Supplier</h2>
 
       <form className="add-supplier-form" onSubmit={handleSubmit}>
         {/* Company Name */}
@@ -285,6 +288,7 @@ function Add_suppliers() {
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

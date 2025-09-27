@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
+
 function OrderForm({ onOrderCreated }) {
   const navigate = useNavigate();
   const [suppliers, setSuppliers] = useState([]);
@@ -150,8 +152,10 @@ function OrderForm({ onOrderCreated }) {
   };
 
   return (
-    <div className="order-form-container">
-      <h2>Create New Order</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="order-form-container">
+        <h2>Create New Order</h2>
       <form onSubmit={handleSubmit} className="order-form">
         <label>
           Supplier:
@@ -230,6 +234,7 @@ function OrderForm({ onOrderCreated }) {
 
         <button type="submit" className="btn-submit">Create Order</button>
       </form>
+      </div>
     </div>
   );
 }

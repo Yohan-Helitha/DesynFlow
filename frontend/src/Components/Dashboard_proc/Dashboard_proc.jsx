@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import "./Dashboard_proc.css";
 import { Link } from "react-router-dom";
 import Notifications_proc from "../Notifications_proc/Notifications_proc";
+import Sidebar from "../Sidebar/Sidebar";
 
 function Dashboard_proc() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const toggleNotifications = () => setPanelOpen(!panelOpen);
 
   // Check notification count from localStorage
@@ -24,42 +23,7 @@ function Dashboard_proc() {
 
   return (
     <div className="dashboard-page">
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
-        <div className="sidebar-header">
-          <h2>Dashboard</h2>
-          <button className="close-btn" onClick={toggleSidebar}>
-            ×
-          </button>
-        </div>
-        <ul className="nav">
-          <li>Overview</li>
-          <li>
-            <Link to="/Supplier_details">Suppliers</Link>
-          </li>
-          <li>
-            <Link to="/Orders">Orders</Link>
-          </li>
-          <li>
-            <Link to="/Budget_approval">Budget Approval</Link>
-          </li>
-          <li>
-            <Link to="/Sample_order">Samples</Link>
-          </li>
-          <li>
-            <Link to="/Dashboard_sup">Supplier Dashboard</Link>
-          </li>
-        </ul>
-      </aside>
-
-      {/* Hamburger */}
-      {!sidebarOpen && (
-        <button className="hamburger" onClick={toggleSidebar}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      )}
+      <Sidebar />
 
       {/* Main content */}
       <main className="main">

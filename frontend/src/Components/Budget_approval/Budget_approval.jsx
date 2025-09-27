@@ -1,13 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./Budget_approval.css";
+import Sidebar from "../Sidebar/Sidebar";
 
 function Budget_approval() {
   return (
-    <div className="budget-container">
-      {/* Header */}
-      <div className="budget-header">
-        <h2>Budget Approvals</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="budget-container">
+        {/* Header */}
+        <div className="budget-header">
+          <h2>Budget Approvals</h2>
         <Link to = "/Budget_approval_form">
           <button className="new-request-btn">+ New Budget Request</button>
         </Link>
@@ -54,6 +57,7 @@ function Budget_approval() {
             <span className="status processing">Processing</span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

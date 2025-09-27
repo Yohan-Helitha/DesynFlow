@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Sample_order.css";
 import { Link } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
 
 function Sample_order() {
   const [suppliers, setSuppliers] = useState([]);
@@ -117,8 +118,10 @@ function Sample_order() {
   };
 
   return (
-    <div className="sample-order-page">
-      <h2>📨 Request Material Sample</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="sample-order-page">
+        <h2>📨 Request Material Sample</h2>
 
       <form className="sample-order-form" onSubmit={handleSubmit}>
         {/* Supplier Selection */}
@@ -182,6 +185,7 @@ function Sample_order() {
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Sample_order_list.css";
+import Sidebar from "../Sidebar/Sidebar";
 
 function Sample_order_list() {
   const [samples, setSamples] = useState([]);
@@ -20,8 +21,10 @@ function Sample_order_list() {
   }, []);
 
   return (
-    <div className="sample-order-list-page">
-      <h2>📦 Sample Order Requests</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="sample-order-list-page">
+        <h2>📦 Sample Order Requests</h2>
       {loading ? (
         <p>Loading...</p>
       ) : samples.length === 0 ? (
@@ -55,6 +58,7 @@ function Sample_order_list() {
           </tbody>
         </table>
       )}
+      </div>
     </div>
   );
 }

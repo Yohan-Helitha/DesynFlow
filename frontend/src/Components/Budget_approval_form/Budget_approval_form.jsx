@@ -1,5 +1,6 @@
 import React from 'react';
 import './Budget_approval_form.css';
+import Sidebar from "../Sidebar/Sidebar";
 
 function Budget_approval_form() {
   // handle form submit
@@ -34,9 +35,11 @@ function Budget_approval_form() {
   }
 
   return (
-    <div className="form-wrapper">
-      <form className="budget-form" onSubmit={handleSubmit}>
-        <h2>Budget Approval Request</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="form-wrapper">
+        <form className="budget-form" onSubmit={handleSubmit}>
+          <h2>Budget Approval Request</h2>
 
         <div className="form-group">
           <label htmlFor="materialId">Material ID</label>
@@ -73,6 +76,7 @@ function Budget_approval_form() {
           <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

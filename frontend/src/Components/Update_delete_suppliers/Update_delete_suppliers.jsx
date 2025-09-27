@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Update_delete_suppliers.css";
 import { Link } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
 
 const API_BASE = "http://localhost:3000/api/suppliers"; // your backend
 
@@ -144,8 +145,10 @@ function Update_delete_suppliers() {
   };
 
   return (
-    <div className="uds-page">
-      <h2>Suppliers</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="uds-page">
+        <h2>Suppliers</h2>
 
       <table className="uds-table">
         <thead>
@@ -340,6 +343,7 @@ function Update_delete_suppliers() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

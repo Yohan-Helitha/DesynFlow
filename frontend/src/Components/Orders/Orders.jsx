@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Orders.css';
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
 
 function Orders() {
   const [orders, setOrders] = useState([]);
@@ -33,8 +34,10 @@ function Orders() {
   });
 
   return (
-    <div className="orders-container">
-      <h2>📋 Purchase Orders Management</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="orders-container">
+        <h2>📋 Purchase Orders Management</h2>
       
       <div className="top-controls">
         <div className="search-bar">
@@ -148,6 +151,7 @@ function Orders() {
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

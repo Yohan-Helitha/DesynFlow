@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "./Supplier_details.css";
 import { Link } from "react-router-dom";
+import Sidebar from "../Sidebar/Sidebar";
 
 // Removed unused legacy URL & fetchHandler
 
@@ -50,8 +51,10 @@ function Supplier_details() {
   );
 
   return (
-    <div className="suppliers-container">
-      <h2>Interior Design Suppliers</h2>
+    <div className="page-with-sidebar">
+      <Sidebar />
+      <div className="suppliers-container">
+        <h2>Interior Design Suppliers</h2>
 
       {/* Search */}
       <div className="search-bar">
@@ -195,6 +198,7 @@ function Supplier_details() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
