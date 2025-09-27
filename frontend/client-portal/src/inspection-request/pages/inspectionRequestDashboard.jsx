@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ProgressBar from "./ProgressBar"; // Import the reusable component
+import ProgressBar from "../components/ui/ProgressBar"; // Import the reusable component
 
 const InspectionRequestDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -12,7 +12,7 @@ const InspectionRequestDashboard = () => {
       setError("");
       try {
         const token = localStorage.getItem("authToken");
-        const res = await fetch("http://localhost:5000/api/inspection-request/client", {
+        const res = await fetch("http://localhost:4000/api/inspection-request/client", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

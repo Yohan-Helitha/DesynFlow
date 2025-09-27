@@ -5,7 +5,6 @@ import uploadMiddleware from '../middleware/uploadMiddleware.js'; // handles fil
 import {
   createInspectorForm,
   updateInspectorForm,
-  getInspectorFormsByRequest,
   getInspectorFormById,
   getInspectorForms,
   deleteInspectorForm,

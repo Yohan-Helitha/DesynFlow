@@ -8,13 +8,12 @@ import {
 import {
   createInspectorForm,
   updateInspectorForm,
-  getInspectorFormsByRequest,
   submitInspectorForm,
   getMyInspectorForms
 } from '../controller/inspectorFormController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import roleMiddleware from '../middleware/roleMiddleware.js';
-// import uploadMiddleware from '../middleware/uploadMiddleware.js'; // Uncomment and implement for file uploads
+import uploadMiddleware from '../middleware/uploadMiddleware.js'; // Uncomment and implement for file uploads
 
 const router = express.Router();
 
@@ -67,14 +66,6 @@ router.patch(
   authMiddleware,
   roleMiddleware(['inspector']),
   submitInspectorForm
-);
-
-// Get inspector forms by inspection request (for admins/CSR)
-router.get(
-  '/:requestId/inspector-forms',
-  authMiddleware,
-  roleMiddleware(['admin', 'csr', 'inspector']),
-  getInspectorFormsByRequest
 );
 
 // Get inspector's own forms

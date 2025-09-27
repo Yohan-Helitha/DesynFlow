@@ -103,3 +103,81 @@ export const reviewReport = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ===== NEW FUNCTIONS FOR INSPECTOR DASHBOARD =====
+
+// Generate a report from inspection data
+export const generateReport = async (req, res) => {
+  try {
+    const { inspectionId, inspectorId, title, reportData } = req.body;
+
+    // Create report record
+    const report = new Report({
+      inspectionId,
+      inspectorId: inspectorId || req.user._id,
+      generatedBy: req.user._id,
+      title,
+      reportData,
+      status: 'completed'
+    });
+
+    await report.save();
+
+    // Send notification to project manager
+    try {
+      await ProjectManagerNotificationService.notifyReportGenerated(report);
+    } catch (notificationError) {
+      console.error('Failed to notify project managers:', notificationError);
+    }
+
+    res.status(201).json({
+      message: 'Report generated successfully',
+      report
+    });
+  } catch (error) {
+    console.error('Error generating report:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get reports by inspector
+export const getReportsByInspector = async (req, res) => {
+  try {
+    const { inspectorId } = req.params;
+    const reports = await Report.find({ inspectorId })
+      .sort({ createdAt: -1 })
+      .populate('generatedBy', 'name email');
+
+    res.status(200).json(reports);
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get report PDF (simplified version)
+export const getReportPDF = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const report = await Report.findById(reportId)
+      .populate('generatedBy', 'name email');
+
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    // Generate a simple PDF response
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="report-${reportId}.pdf"`);
+    
+    // For now, return report data as JSON (you can implement actual PDF generation later)
+    res.status(200).json({
+      message: 'PDF generation would be implemented here',
+      report,
+      note: 'This would serve a PDF file in production'
+    });
+  } catch (error) {
+    console.error('Error serving PDF:', error);
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -189,24 +189,25 @@ export const deletePaymentReceipt = async (req, res) => {
 // ===== NEW: CSR sends payment details email to client =====
 export const SendPaymentDetailsEmail = async (req, res) => {
   try {
-    const { clientEmail, uploadUrl, calculatedAmount, dueDate } = req.body;
+    const { clientEmail, clientName, inspectionCost, propertyAddress } = req.body;
 
-    if (!clientEmail || !uploadUrl) {
-      return res.status(400).json({ message: "Client email and payment link are required" });
+    if (!clientEmail) {
+      return res.status(400).json({ message: "Client email is required" });
     }
 
     const emailHtml = `
-      <h2>Payment Request</h2>
-      <p>Dear client,</p>
-      <p>Please complete your payment of <b>$${calculatedAmount}</b> before <b>${dueDate || 'the due date'}</b>.</p>
-      <p>Click here to upload your payment receipt: 
-         <a href="${uploadUrl}">${uploadUrl}</a>
-      </p>
+      <h2>Payment Request for Inspection</h2>
+      <p>Dear ${clientName || 'Client'},</p>
+      <p>Please complete your payment of <b>$${inspectionCost}</b> for the inspection of your property at <b>${propertyAddress}</b>.</p>
+      <p>Please make the payment and submit your receipt through our client portal.</p>
+      <p>Thank you for choosing our services.</p>
+      <br>
+      <p>Best regards,<br>DesynFlow Inspection Services</p>
     `;
 
     await sendEmail({
       to: clientEmail,
-      subject: "Payment Details - Upload Your Receipt",
+      subject: "Payment Details - Property Inspection",
       html: emailHtml
     });
 

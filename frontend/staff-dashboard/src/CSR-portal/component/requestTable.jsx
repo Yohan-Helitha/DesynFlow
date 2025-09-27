@@ -11,7 +11,7 @@ const RequestTable = () => {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const res = await axios.get("http://localhost:5000/api/inspection-request/client", {
+      const res = await axios.get("http://localhost:4000/api/inspection-request/client", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRequests(res.data.requests || []);
@@ -24,7 +24,7 @@ const RequestTable = () => {
   const fetchInspectors = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const res = await axios.get("http://localhost:5000/api/user/inspectors", {
+      const res = await axios.get("http://localhost:4000/api/user/inspectors", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setInspectors(res.data.users || []);
@@ -43,7 +43,7 @@ const RequestTable = () => {
     try {
       const token = localStorage.getItem("authToken");
       await axios.post(
-        "http://localhost:5000/api/payment-receipt/generate-payment-link",
+        "http://localhost:4000/api/payment-receipt/generate-payment-link",
         {
           inspectionRequestId: req._id,
           clientId: req.client_ID,
@@ -64,7 +64,7 @@ const RequestTable = () => {
     try {
       const token = localStorage.getItem("authToken");
       await axios.post(
-        "http://localhost:5000/api/assignment/assign",
+        "http://localhost:4000/api/assignment/assign",
         { inspectionRequestId: reqId, inspectorId },
         { headers: { Authorization: `Bearer ${token}` } }
       );

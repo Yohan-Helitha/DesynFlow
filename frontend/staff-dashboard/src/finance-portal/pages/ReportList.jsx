@@ -5,7 +5,7 @@ const ReportList = ({ managerId }) => {
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/reports/manager/${managerId}`)
+    fetch(`http://localhost:4000/api/reports/manager/${managerId}`)
       .then(res => res.json())
       .then(data => setReports(data))
       .catch(err => console.error(err));

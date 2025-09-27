@@ -2,7 +2,8 @@ import { Router } from 'express';
 import {
   assignInspector,
   listAssignments,
-  updateAssignmentStatus
+  updateAssignmentStatus,
+  deleteAssignment
 } from '../controller/assignmentController.js';
 
 const router = Router();
@@ -15,5 +16,8 @@ router.get('/list', listAssignments);
 
 // Route: Update assignment status (completed, canceled, etc.)
 router.patch('/status/:assignmentId', updateAssignmentStatus);
+
+// Route: Delete assignment
+router.delete('/:assignmentId', deleteAssignment);
 
 export default router;

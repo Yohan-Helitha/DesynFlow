@@ -18,7 +18,7 @@ const PaymentStatusUpdater = ({ receiptId, authToken, onStatusUpdated }) => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/payment-receipt/verify/${receiptId}`,
+        `http://localhost:4000/api/payment-receipt/verify/${receiptId}`,
         {
           method: "PATCH",
           headers: {

@@ -14,6 +14,7 @@ import roleMiddleware from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
+router.get("/me", authMiddleware, getUserProfile); // Add /me endpoint for Profile component
 router.get("/profile", authMiddleware, getUserProfile);
 
 router.put("/profile", authMiddleware, updateUserProfile);

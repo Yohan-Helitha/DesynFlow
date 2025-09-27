@@ -74,3 +74,24 @@ export const updateAssignmentStatus = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Delete assignment
+export const deleteAssignment = async (req, res) => {
+  try {
+    const { assignmentId } = req.params;
+    const assignment = await Assignment.findById(assignmentId);
+    if (!assignment) return res.status(404).json({ message: 'Assignment not found.' });
+    
+    // Set inspector status back to available
+    const location = await InspectorLocation.findOne({ inspector: assignment.inspector });
+    if (location) {
+      location.status = 'available';
+      await location.save();
+    }
+    
+    await Assignment.findByIdAndDelete(assignmentId);
+    res.status(200).json({ message: 'Assignment deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

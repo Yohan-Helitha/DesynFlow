@@ -32,7 +32,7 @@ const LoginPage = () => {
     if (!validate()) return;
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch("http://localhost:4000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -44,7 +44,7 @@ const LoginPage = () => {
           navigate(`/verify-otp?email=${email}`);
         } else {
           if (data.token) localStorage.setItem("authToken", data.token);
-          navigate("/dashboard");
+          navigate("/profile"); // ✅ Navigate to profile page after successful login
         }
       } else {
         setError(data.message || "Login failed");
@@ -54,36 +54,24 @@ const LoginPage = () => {
     }
   };
 
-  // Password reset request
-  const handleResetPassword = async () => {
-    if (!email) {
-      setError("Please enter your email for password reset");
-      return;
-    }
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/request-password-reset",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setResetMsg(data.message || "Reset link sent to your email.");
-      } else {
-        setError(data.message || "Failed to send reset link.");
-      }
-    } catch (err) {
-      setError("Server error, please try again.");
-    }
+  // Navigation handlers
+  const handleForgotPassword = () => {
+    navigate("/forgot-password");
+  };
+
+  const handleSignUp = () => {
+    navigate("/signup");
   };
 
   return (
     <div className="flex min-h-screen">
       {/* Left side (image + overlay) */}
-      <div className="w-1/2 bg-cover bg-center relative" style={{ backgroundImage: `url(https://i.pinimg.com/originals/0b/5c/ff/0b5cffd6a0a14f52f4b9de9f85cf1333.jpg)` }}>
+      <div 
+        className="w-1/2 bg-cover bg-center relative"
+        style={{ 
+          backgroundImage: `url(https://i.pinimg.com/736x/f1/66/57/f166573bf0ff954b62f5d168ec71dcf0.jpg)`
+        }}
+      >
         <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-start p-12 text-white">
           <h1 className="text-4xl font-bold mb-4">Transform spaces with your vision</h1>
           <p className="text-lg">Manage your interior design projects with ease and elegance.</p>
@@ -128,7 +116,7 @@ const LoginPage = () => {
             <div className="flex justify-between items-center text-sm text-blue-600">
               <button
                 type="button"
-                onClick={handleResetPassword}
+                onClick={handleForgotPassword}
                 className="hover:underline"
               >
                 Forgot password?
@@ -139,12 +127,19 @@ const LoginPage = () => {
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
             >
-              Sign in
+              Login 
             </button>
           </form>
 
           <div className="text-center mt-6 text-gray-500 text-sm">
-            Don't have an account? <span className="text-blue-600">Contact admin</span>
+            Don't have an account?{" "}
+            <button 
+              type="button"
+              onClick={handleSignUp}
+              className="text-blue-600 hover:underline"
+            >
+              Create an account
+            </button>
           </div>
         </div>
       </div>

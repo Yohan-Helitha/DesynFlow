@@ -11,7 +11,7 @@ const PaymentReceiptViewer = () => {
     setMessage("");
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch("http://localhost:5000/api/payment-receipt/all", {
+      const res = await fetch("http://localhost:4000/api/payment-receipt/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -34,7 +34,7 @@ const PaymentReceiptViewer = () => {
     try {
       const token = localStorage.getItem("authToken");
       const res = await fetch(
-        `http://localhost:5000/api/payment-receipt/${receiptId}`,
+        `http://localhost:4000/api/payment-receipt/${receiptId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

@@ -1,46 +1,67 @@
 ﻿import mongoose from 'mongoose';
 
-// Report table (matches diagram: report_table)
+// Enhanced Report model for inspector dashboard
 const reportSchema = new mongoose.Schema({
-  InspectionRequest_ID: {
+  // Reference to inspection (if generated from inspection)
+  inspectionId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'InspectionRequest',
-    required: true
+    ref: 'Inspection'
   },
   
-  inspector_ID: {
+  // Inspector who generated the report
+  inspectorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
   
-  propertyType: { type: String, required: true },
-  propertyLocation: { type: String, required: true },
-  inspection_Date: { type: Date, required: true },
-  inspection_Date: { type: Date, required: true }, // Completion date
-  rooms: { type: Number, required: true },
+  // Report metadata
+  title: {
+    type: String,
+    required: true
+  },
+  
+  // Report data/content
+  reportData: {
+    clientName: String,
+    propertyAddress: String,
+    propertyType: String,
+    inspectionDate: Date,
+    findings: String,
+    recommendations: String,
+    inspectorNotes: String,
+    inspectorName: String
+  },
   
   // Status tracking
-  submittedAt: { type: Date, default: Date.now },
-  rejectedAt: { type: Date },
-  approvedAt: { type: Date },
-  
-  // Report content
-  report_content: { type: String },
-  
-  // Verification (keep as requested)
-  verifiedToken: { type: String },
-  validation_status: {
+  status: {
     type: String,
-    enum: ['pending', 'validated', 'rejected'],
-    default: 'pending'
+    enum: ['pending', 'completed', 'submitted'],
+    default: 'completed'
+  },
+  
+  generatedAt: {
+    type: Date,
+    default: Date.now
+  },
+  
+  generatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  
+  // PDF file path (if stored locally)
+  pdfPath: String,
+  
+  // Notification status
+  notificationSent: {
+    type: Boolean,
+    default: false
   }
-}, { 
-  timestamps: true 
+}, {
+  timestamps: true
 });
 
-// Indexes
-reportSchema.index({ InspectionRequest_ID: 1 });
-reportSchema.index({ inspector_ID: 1, createdAt: -1 });
-
-export default mongoose.model('Report', reportSchema);
+const Report = mongoose.model('Report', reportSchema);
+export default Report;

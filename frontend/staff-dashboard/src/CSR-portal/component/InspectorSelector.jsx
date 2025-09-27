@@ -24,7 +24,7 @@ const InspectorSelector = ({ onSelect }) => {
     try {
       const token = localStorage.getItem("authToken");
       const res = await axios.get(
-        "http://localhost:5000/api/inspector-location/all",
+        "http://localhost:4000/api/inspector-location/all",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

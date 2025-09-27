@@ -50,6 +50,22 @@ router.post(
   generatePaymentLinkForClient
 );
 
+// ===== CSR: Send payment details email =====
+router.post(
+  '/send-email/:receiptId',
+  authMiddleware,
+  roleMiddleware(['csr']),
+  SendPaymentDetailsEmail
+);
+
+// ===== Get all payment receipts =====
+router.get(
+  '/all',
+  authMiddleware,
+  roleMiddleware(['csr', 'finance manager']),
+  getAllPaymentReceipts
+);
+
 // ===== Finance =====
 router.patch(
   '/verify/:receiptId',
