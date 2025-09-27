@@ -176,7 +176,7 @@ export const PendingQuotations = () => {
                       onClick={() => handleView(quotation)}
                       className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white"
                     >
-                      <Eye size={16} className="inline mr-1" /> Generate
+                      Generate
                     </button>
                   </td>
                 </tr>
