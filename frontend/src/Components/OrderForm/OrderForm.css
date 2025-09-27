@@ -148,6 +148,39 @@
   100% { background-position: 0% 50%; }
 }
 
+/* ===== Locked Supplier Styles ===== */
+.locked-supplier {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.locked-input {
+  padding: 1rem;
+  border: 2px solid #8B4513;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #8B4513;
+  text-align: center;
+  cursor: not-allowed;
+}
+
+.locked-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #D2691E 0%, #CD853F 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+}
+
 @media (max-width: 768px) {
   .order-form-container {
     margin: 1rem;

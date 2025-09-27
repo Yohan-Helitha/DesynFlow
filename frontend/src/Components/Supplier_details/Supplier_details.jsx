@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Supplier_details.css";
 import { Link } from "react-router-dom";
@@ -12,6 +12,7 @@ function Supplier_details() {
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [search, setSearch] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
 
   const loadSuppliers = () => {
     axios
@@ -202,7 +203,19 @@ function Supplier_details() {
                 <b>Rating:</b> {selectedSupplier.rating}
               </p>
             </div>
-            <button className="place-order-btn">Place Order</button>
+            <button 
+              className="place-order-btn"
+              onClick={() => {
+                navigate('/OrderForm', {
+                  state: {
+                    preselectedSupplier: selectedSupplier,
+                    supplierLocked: true
+                  }
+                });
+              }}
+            >
+              Place Order
+            </button>
           </div>
         </div>
       )}

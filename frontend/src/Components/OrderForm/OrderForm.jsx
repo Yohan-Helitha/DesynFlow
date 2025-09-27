@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 
 function OrderForm({ onOrderCreated }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [suppliers, setSuppliers] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const [supplierLocked, setSupplierLocked] = useState(false);
   const [formData, setFormData] = useState({
     supplierId: "",
     items: [{ materialId: "", materialName: "", quantity: "", pricePerUnit: 0, total: 0 }],
@@ -17,6 +19,18 @@ function OrderForm({ onOrderCreated }) {
       .then(data => setSuppliers(data))
       .catch(() => setSuppliers([]));
   }, []);
+
+  // Handle preselected supplier from navigation state
+  useEffect(() => {
+    if (location.state?.preselectedSupplier) {
+      const preselectedSupplier = location.state.preselectedSupplier;
+      setFormData(prev => ({
+        ...prev,
+        supplierId: preselectedSupplier._id
+      }));
+      setSupplierLocked(location.state.supplierLocked || false);
+    }
+  }, [location.state]);
 
   // Fetch materials from MaterialCatalog for selected supplier
   useEffect(() => {
@@ -162,17 +176,29 @@ function OrderForm({ onOrderCreated }) {
       <form onSubmit={handleSubmit} className="order-form">
         <label>
           Supplier:
-          <select
-            name="supplierId"
-            value={formData.supplierId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Supplier</option>
-            {suppliers.map(sup => (
-              <option key={sup._id} value={sup._id}>{sup.companyName}</option>
-            ))}
-          </select>
+          {supplierLocked ? (
+            <div className="locked-supplier">
+              <input
+                type="text"
+                value={suppliers.find(s => s._id === formData.supplierId)?.companyName || "Loading..."}
+                disabled
+                className="locked-input"
+              />
+              <span className="locked-indicator">🔒 Pre-selected from supplier details</span>
+            </div>
+          ) : (
+            <select
+              name="supplierId"
+              value={formData.supplierId}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select Supplier</option>
+              {suppliers.map(sup => (
+                <option key={sup._id} value={sup._id}>{sup.companyName}</option>
+              ))}
+            </select>
+          )}
         </label>
         {/* Intentionally not showing raw IDs in the UI */}
 
