@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import "./Dashboard_sup.css";
 import { Link } from "react-router-dom";
 
@@ -6,6 +7,9 @@ function Dashboard_sup() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [requests, setRequests] = useState([]);
   const [hiddenRequests, setHiddenRequests] = useState([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [pendingOrders, setPendingOrders] = useState([]);
+  const [processingId, setProcessingId] = useState(null);
   const [supplierData, setSupplierData] = useState({
     profile: { name: "Supplier Name", email: "", rating: 0, totalOrders: 0 },
     orders: { active: 0, completed: 0, pending: 0 },
@@ -18,6 +22,81 @@ function Dashboard_sup() {
   const [loading, setLoading] = useState(true);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  // Fetch pending approval orders
+  const fetchPendingOrders = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/purchase-orders");
+      const allOrders = response.data;
+      const pending = allOrders.filter(order => order.status === "Draft");
+      setPendingOrders(pending);
+    } catch (error) {
+      console.error("Error fetching pending orders:", error);
+      setPendingOrders([]);
+    }
+  };
+
+  // Handle order approval
+  const handleApprove = async (id) => {
+    try {
+      setProcessingId(id);
+      await axios.put(`http://localhost:3000/api/purchase-orders/${id}`, { status: "Approved" });
+      
+      // Add notification to localStorage
+      const orderToApprove = pendingOrders.find(o => o._id === id);
+      if (orderToApprove) {
+        const notification = {
+          id: Date.now(),
+          type: "success",
+          message: `Order #${orderToApprove._id?.slice(-8)} has been approved successfully!`
+        };
+        const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+        notifs.push(notification);
+        localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
+      }
+      
+      // Refresh pending orders
+      fetchPendingOrders();
+    } catch (error) {
+      console.error("Error approving order:", error);
+      alert("Failed to approve order. Please try again.");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Handle order rejection
+  const handleReject = async (id) => {
+    try {
+      setProcessingId(id);
+      await axios.put(`http://localhost:3000/api/purchase-orders/${id}`, { status: "Rejected" });
+      
+      // Add notification to localStorage
+      const orderToReject = pendingOrders.find(o => o._id === id);
+      if (orderToReject) {
+        const notification = {
+          id: Date.now(),
+          type: "info",
+          message: `Order #${orderToReject._id?.slice(-8)} has been rejected.`
+        };
+        const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+        notifs.push(notification);
+        localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
+      }
+      
+      // Refresh pending orders
+      fetchPendingOrders();
+    } catch (error) {
+      console.error("Error rejecting order:", error);
+      alert("Failed to reject order. Please try again.");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingOrders();
+  }, []);
 
   useEffect(() => {
     const fetchSupplierDashboardData = async () => {
@@ -153,18 +232,29 @@ function Dashboard_sup() {
       {/* Main */}
       <main className="main-content">
         <div className="topbar">
-          <h1>Welcome {supplierData.profile.name}</h1>
-          <div className="profile">
-            <div className="profile-info">
-              <span className="profile-name">{supplierData.profile.name}</span>
-              <div className="profile-rating">
-                ⭐ {supplierData.profile.rating.toFixed(1)} ({supplierData.profile.totalOrders} orders)
+          <div className="topbar-left">
+            <h1>Welcome {supplierData.profile.name}</h1>
+            <div className="profile">
+              <div className="profile-info">
+                <span className="profile-name">{supplierData.profile.name}</span>
+                <div className="profile-rating">
+                  ⭐ {supplierData.profile.rating.toFixed(1)} ({supplierData.profile.totalOrders} orders)
+                </div>
+              </div>
+              <div className="profile-avatar">
+                <img src="/avatar.png" alt="profile" onError={(e) => {e.target.style.display = 'none'}} />
+                <div className="avatar-fallback">{supplierData.profile.name.charAt(0)}</div>
               </div>
             </div>
-            <div className="profile-avatar">
-              <img src="/avatar.png" alt="profile" onError={(e) => {e.target.style.display = 'none'}} />
-              <div className="avatar-fallback">{supplierData.profile.name.charAt(0)}</div>
-            </div>
+          </div>
+          <div className="topbar-right">
+            <button className="notif-btn" onClick={() => setNotifOpen(!notifOpen)}>
+              <span className="bell-icon">🔔</span>
+              {pendingOrders.length > 0 && (
+                <span className="notif-count">{pendingOrders.length}</span>
+              )}
+              <span className="notif-text">Pending Approvals</span>
+            </button>
           </div>
         </div>
 
@@ -336,6 +426,77 @@ function Dashboard_sup() {
           </div>
         </div>
       </main>
+
+      {/* Pending Approval Results Panel */}
+      <div className={`notif-panel ${notifOpen ? "open" : ""}`}>
+        <div className="panel-header">
+          <h3>📋 Pending Approval Results</h3>
+          <button className="close-btn" onClick={() => setNotifOpen(false)}>
+            ✕
+          </button>
+        </div>
+        <div className="panel-content">
+          {pendingOrders.length === 0 ? (
+            <div className="empty-notifications">
+              <span className="empty-icon">✅</span>
+              <p>All caught up!</p>
+              <small>No new requests require your attention</small>
+            </div>
+          ) : (
+            <div className="notifications-list">
+              {pendingOrders.map((order) => (
+                <div className="notification-card" key={order._id}>
+                  <div className="card-header">
+                    <span className="order-badge">#{order._id?.slice(-8) || 'NEW'}</span>
+                    <small className="timestamp">{new Date(order.createdAt).toLocaleDateString()}</small>
+                  </div>
+                  <div className="card-content">
+                    <div className="info-row">
+                      <span className="label">Supplier:</span>
+                      <span className="value">{order.supplierId?.companyName || order.supplierId || "Unknown"}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Materials:</span>
+                      <span className="value">
+                        {(order.items || []).map((item, i) => (
+                          <span key={i}>
+                            {item.materialId?.materialName || item.materialId}
+                            {i < order.items.length - 1 ? ", " : ""}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Total Value:</span>
+                      <span className="value total">
+                        LKR {(order.items || []).reduce((sum, item) => 
+                          sum + ((item.unitPrice || item.pricePerUnit || 0) * (item.qty || item.quantity || 0)), 0
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="card-actions">
+                    <button
+                      className="approve-btn"
+                      onClick={() => handleApprove(order._id)}
+                      disabled={processingId === order._id}
+                    >
+                      {processingId === order._id ? "⏳ Processing..." : "✅ Approve"}
+                    </button>
+                    <button
+                      className="reject-btn"
+                      onClick={() => handleReject(order._id)}
+                      disabled={processingId === order._id}
+                    >
+                      {processingId === order._id ? "⏳ Processing..." : "❌ Reject"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

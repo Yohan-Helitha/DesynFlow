@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./Add_suppliers.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 
 function Add_suppliers() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: "",
     contactName: "",
@@ -81,6 +82,8 @@ function Add_suppliers() {
     try {
       await axios.post("http://localhost:3000/api/suppliers", formattedData);
       alert(`Supplier "${formData.companyName}" has been added successfully!`);
+      
+      // Reset form for potential new entries
       setFormData({
         companyName: "",
         contactName: "",
@@ -101,7 +104,16 @@ function Add_suppliers() {
     <div className="page-with-sidebar">
       <Sidebar />
       <div className="add-supplier-container">
-        <h2>Add New Supplier</h2>
+        <div className="header-with-back">
+          <button 
+            type="button"
+            className="back-to-suppliers-btn"
+            onClick={() => navigate('/Supplier_details')}
+          >
+            ← Back to Suppliers
+          </button>
+          <h2>Add New Supplier</h2>
+        </div>
 
       <form className="add-supplier-form" onSubmit={handleSubmit}>
         {/* Company Name */}

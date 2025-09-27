@@ -16,9 +16,49 @@ body {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
+/* Header with Back Button */
+.header-with-back {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.back-to-suppliers-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #8B4513;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.back-to-suppliers-btn:hover {
+  color: #654321;
+  background: rgba(139, 69, 19, 0.1);
+  transform: translateY(-50%) translateX(-2px);
+  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.2);
+}
+
+.back-to-suppliers-btn:active {
+  transform: translateY(-50%) translateX(0px) scale(0.98);
+}
+
 .add-supplier-container h2 {
   text-align: center;
-  margin-bottom: 24px;
+  margin: 0;
   font-size: 26px;
   color: #674636;
 }
@@ -85,4 +125,32 @@ body {
 .submit-btn:hover {
   background: #50352b;
   transform: translateY(-2px);
+}
+
+/* Responsive Design for Back Button */
+@media (max-width: 768px) {
+  .header-with-back {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .back-to-suppliers-btn {
+    position: static;
+    transform: none;
+    align-self: flex-start;
+  }
+  
+  .back-to-suppliers-btn:hover {
+    transform: translateX(-2px);
+  }
+  
+  .back-to-suppliers-btn:active {
+    transform: translateX(0px) scale(0.98);
+  }
+  
+  .add-supplier-container h2 {
+    align-self: center;
+    margin-top: 8px;
+  }
 }
