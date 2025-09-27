@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  generatePDFReport,
   upsertReport,
   getReportsByProject,
   deleteReport
@@ -7,11 +8,14 @@ import {
 
 const router = express.Router();
 
+// Generate PDF report
+router.post('/generate', generatePDFReport);
+
 // Create or update a report
 router.post('/', upsertReport);
 
 // Get all reports for a project
-router.get('/reports/project/:projectId', getReportsByProject);
+router.get('/project/:projectId', getReportsByProject);
 
 // Delete a report
 router.delete('/:id', deleteReport);

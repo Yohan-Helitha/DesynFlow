@@ -18,10 +18,6 @@ export default function ProjectManagerDashboard() {
         return <TeamManagement />;
       case 3:
         return <ReportsManagement />;
-      case 4:
-        return <div className="text-brown-primary">Reports & Analytics - Coming Soon</div>;
-      case 5:
-        return <div className="text-brown-primary">Settings - Coming Soon</div>;
       default:
         return <DashboardOverview />;
     }

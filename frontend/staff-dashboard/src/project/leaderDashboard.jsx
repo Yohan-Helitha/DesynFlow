@@ -156,18 +156,42 @@ export default function LeaderDashboard() {
 
       {/* 🔹 Reports */}
       <div>
-        <h3 className="text-lg font-semibold text-brown-primary mb-2">Reports</h3>
+        <h3 className="text-lg font-semibold text-brown-primary mb-2">Generated Reports</h3>
         <ul className="space-y-2">
           {reports.map((rep, idx) => (
             <li key={rep._id || idx} className="bg-white rounded shadow px-4 py-2 flex items-center justify-between">
               <div>
-                <p className="font-semibold text-brown-primary">{rep.title || `Report ${idx + 1}`}</p>
-                <p className="text-xs text-gray-500">{new Date(rep.createdAt).toLocaleDateString()}</p>
+                <p className="font-semibold text-brown-primary">{rep.reportType || `Report ${idx + 1}`}</p>
+                <p className="text-xs text-gray-500">Created: {new Date(rep.createdAt).toLocaleDateString()}</p>
+                {rep.dateStart && rep.dateEnd && (
+                  <p className="text-xs text-gray-500">Period: {rep.dateStart} to {rep.dateEnd}</p>
+                )}
+                {rep.summary && (
+                  <p className="text-xs text-gray-600 mt-1">{rep.summary}</p>
+                )}
               </div>
-              <a href={rep.pdfUrl} download className="text-blue-600 hover:underline">Download</a>
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-1 text-xs rounded ${
+                  rep.status === 'completed' 
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {rep.status}
+                </span>
+                {rep.filePath && rep.status === 'completed' && (
+                  <a 
+                    href={`http://localhost:4000${rep.filePath}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline flex items-center gap-1"
+                  >
+                    📄 Download
+                  </a>
+                )}
+              </div>
             </li>
           ))}
-          {reports.length === 0 && <li className="text-gray-500">No reports found.</li>}
+          {reports.length === 0 && <li className="text-gray-500">No reports generated yet.</li>}
         </ul>
       </div>
 

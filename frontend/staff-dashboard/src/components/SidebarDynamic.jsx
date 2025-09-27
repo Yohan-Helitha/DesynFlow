@@ -1,21 +1,20 @@
 import React from 'react';
+import { FaHome, FaTasks, FaCalendarAlt, FaBoxOpen, FaCog, FaChartBar, FaUsers, FaClipboardList, FaFileAlt } from 'react-icons/fa';
 
 const teamLeaderNavItems = [
-  { label: "Team Overview", icon: "🏠", id: "overview" },
-  { label: "Tasks", icon: "✅", id: "tasks" },
-  { label: "Attendance Management", icon: "📅", id: "attendance" },
-  { label: "Resource Requests", icon: "📦", id: "resources" },
-  { label: "Progress Reports", icon: "📊", id: "reports" },
-  { label: "Team Settings", icon: "⚙️", id: "settings" },
+  { label: "Team Overview", icon: <FaHome />, id: "overview" },
+  { label: "Tasks", icon: <FaTasks />, id: "tasks" },
+  { label: "Attendance Management", icon: <FaCalendarAlt />, id: "attendance" },
+  { label: "Resource Requests", icon: <FaBoxOpen />, id: "resources" },
+  { label: "Progress Report", icon: <FaFileAlt />, id: "progress" },
 ];
 
 const projectManagerNavItems = [
-  { label: "Dashboard Overview", icon: "📊", id: "overview" },
-  { label: "Assign Teams", icon: "👥", id: "assign-teams" },
-  { label: "Manage Team", icon: "📦", id: "manage-team" },
-  { label: "Reports", icon: "📈", id: "reports" },
-  { label: "Reports & Analytics", icon: "📋", id: "reports-analytics" },
-  { label: "Settings", icon: "⚙️", id: "settings" },
+  { label: "Dashboard Overview", icon: <FaChartBar />, id: "overview" },
+  { label: "Assign Teams", icon: <FaUsers />, id: "assign-teams" },
+  { label: "Manage Team", icon: <FaClipboardList />, id: "manage-team" },
+  { label: "Reports", icon: <FaFileAlt />, id: "reports" },
+  { label: "Settings", icon: <FaCog />, id: "settings" },
 ];
 
 export default function Sidebar({ activeIndex, setActiveIndex, userRole = "project-manager" }) {

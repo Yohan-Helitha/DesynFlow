@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FaUser, FaCalendarAlt, FaClipboardList, FaBolt, FaCheckCircle, FaBan, FaFilter, FaPlus, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
 const STATUS = {
   PENDING: 'Pending',
@@ -25,6 +26,8 @@ const TaskBoard = () => {
     weight: 0,
     status: 'Pending'
   });
+  
+  const [formErrors, setFormErrors] = useState({});
 
   // Fetch tasks, team members, and project data
   const fetchTasks = async () => {
@@ -93,6 +96,81 @@ const TaskBoard = () => {
     }
   }, [project]);
 
+  // Frontend validation functions
+  const validateForm = () => {
+    const errors = {};
+    const today = new Date().toISOString().split('T')[0];
+
+    // Required field validations
+    if (!newTask.name.trim()) {
+      errors.name = 'Task name is required';
+    }
+
+    if (!newTask.assignedTo) {
+      errors.assignedTo = 'Please select a team member';
+    }
+
+    // Weight validations
+    if (newTask.weight < 0) {
+      errors.weight = 'Weight cannot be negative';
+    }
+
+    if (newTask.weight > 100) {
+      errors.weight = 'Weight cannot exceed 100';
+    }
+
+    // Due date validations
+    if (newTask.dueDate) {
+      if (newTask.dueDate < today) {
+        errors.dueDate = 'Due date cannot be in the past';
+      }
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Real-time validation on field change
+  const handleFieldChange = (field, value) => {
+    setNewTask({ ...newTask, [field]: value });
+    
+    // Clear specific field error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors({ ...formErrors, [field]: '' });
+    }
+
+    // Real-time weight validation
+    if (field === 'weight') {
+      const numValue = parseInt(value) || 0;
+      if (numValue < 0 || numValue > 100) {
+        setFormErrors({ 
+          ...formErrors, 
+          weight: numValue < 0 ? 'Weight cannot be negative' : 'Weight cannot exceed 100' 
+        });
+      }
+    }
+
+    // Real-time due date validation
+    if (field === 'dueDate' && value) {
+      const today = new Date().toISOString().split('T')[0];
+      if (value < today) {
+        setFormErrors({ 
+          ...formErrors, 
+          dueDate: 'Due date cannot be in the past' 
+        });
+      }
+    }
+  };
+
+  // Check if form is valid for submission
+  const isFormValid = () => {
+    return newTask.name.trim() && 
+           newTask.assignedTo && 
+           newTask.weight >= 0 && 
+           newTask.weight <= 100 &&
+           Object.keys(formErrors).length === 0;
+  };
+
   const handleStatusChange = async (task, newStatus) => {
     try {
       const response = await fetch(`http://localhost:4000/api/tasks/${task._id}/status`, {
@@ -153,6 +231,11 @@ const TaskBoard = () => {
       return;
     }
 
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       const taskData = {
         ...newTask,
@@ -202,6 +285,7 @@ const TaskBoard = () => {
       // Reset form
       setShowAddModal(false);
       setEditingTask(null);
+      setFormErrors({});
       setNewTask({
         name: '',
         description: '',
@@ -231,12 +315,12 @@ const TaskBoard = () => {
       <div className="text-amber-600 text-sm mb-3">{project?.projectName}</div>
       <div className="flex justify-between items-center text-xs text-gray-600 mb-3">
         <span className="flex items-center">
-          <span className="mr-1">👤</span>
+          <FaUser className="mr-1" />
           {getMemberName(task.assignedTo)}
         </span>
         {task.dueDate && (
           <span className="flex items-center">
-            <span className="mr-1">📅</span>
+            <FaCalendarAlt className="mr-1" />
             Due {new Date(task.dueDate).toLocaleDateString()}
           </span>
         )}
@@ -335,13 +419,13 @@ const TaskBoard = () => {
         <h2 className="text-2xl font-bold text-brown-primary">Task Management</h2>
         <div className="flex gap-3">
           <button className="bg-white hover:bg-gray-50 text-brown-primary px-4 py-2 rounded-lg border border-brown-light transition-colors flex items-center gap-2">
-            🔍 Filter
+            <FaFilter /> Filter
           </button>
           <button 
             className="bg-brown-primary hover:bg-brown-secondary text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             onClick={() => setShowAddModal(true)}
           >
-            ➕ Add Task
+            <FaPlus /> Add Task
           </button>
         </div>
       </div>
@@ -350,7 +434,7 @@ const TaskBoard = () => {
         <div className="bg-amber-50 rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
-              📋 Pending
+              <FaClipboardList /> Pending
             </span>
             <span className="bg-amber-200 text-amber-800 px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.PENDING).length}
@@ -364,7 +448,7 @@ const TaskBoard = () => {
         <div className="bg-blue-50 rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
-              ⚡ In Progress
+              <FaBolt /> In Progress
             </span>
             <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.IN_PROGRESS).length}
@@ -378,7 +462,7 @@ const TaskBoard = () => {
         <div className="bg-green-50 rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
-              ✅ Completed
+              <FaCheckCircle /> Completed
             </span>
             <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.COMPLETED).length}
@@ -392,7 +476,7 @@ const TaskBoard = () => {
         <div className="bg-red-50 rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
-              🚫 Blocked
+              <FaBan /> Blocked
             </span>
             <span className="bg-red-200 text-red-800 px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.BLOCKED).length}
@@ -428,7 +512,7 @@ const TaskBoard = () => {
                   });
                 }}
               >
-                ✕
+                <FaTimes />
               </button>
             </div>
             <div className="p-4 space-y-4">
@@ -437,17 +521,22 @@ const TaskBoard = () => {
                 <input
                   type="text"
                   value={newTask.name}
-                  onChange={(e) => setNewTask({...newTask, name: e.target.value})}
+                  onChange={(e) => handleFieldChange('name', e.target.value)}
                   placeholder="Enter task name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary ${
+                    formErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                   required
                 />
+                {formErrors.name && (
+                  <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={newTask.description}
-                  onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                  onChange={(e) => handleFieldChange('description', e.target.value)}
                   placeholder="Enter task description"
                   rows="3"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary"
@@ -466,48 +555,76 @@ const TaskBoard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Assign To Team Member *</label>
                 <select
                   value={newTask.assignedTo}
-                  onChange={(e) => setNewTask({...newTask, assignedTo: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                  onChange={(e) => handleFieldChange('assignedTo', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary ${
+                    formErrors.assignedTo ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                   required
                 >
                   <option value="">Select team member</option>
                   {teamMembers.map((member) => (
-                    <option key={member.userId} value={member.userId}>
+                    <option 
+                      key={member.userId} 
+                      value={member.userId}
+                      disabled={member.availability === 'On Leave'}
+                      className={member.availability === 'On Leave' ? 'text-gray-400' : ''}
+                    >
                       {member.userId} ({member.role || 'Member'}) - {member.availability}
+                      {member.availability === 'On Leave' && ' (Unavailable)'}
                     </option>
                   ))}
                 </select>
+                {formErrors.assignedTo && (
+                  <p className="text-red-500 text-xs mt-1">{formErrors.assignedTo}</p>
+                )}
+                {newTask.assignedTo && teamMembers.find(m => m.userId === newTask.assignedTo)?.availability === 'Busy' && (
+                  <p className="text-amber-600 text-xs mt-1"><FaExclamationTriangle className="inline mr-1" /> This team member is currently busy</p>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Weight/Points</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Weight/Points (0-100)</label>
                 <input
                   type="number"
                   min="0"
+                  max="100"
                   value={newTask.weight}
-                  onChange={(e) => setNewTask({...newTask, weight: parseInt(e.target.value) || 0})}
-                  placeholder="Task weight (story points)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                  onChange={(e) => handleFieldChange('weight', e.target.value)}
+                  placeholder="Task weight (0-100)"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary ${
+                    formErrors.weight ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                 />
+                {formErrors.weight && (
+                  <p className="text-red-500 text-xs mt-1">{formErrors.weight}</p>
+                )}
+                <p className="text-gray-500 text-xs mt-1">Enter a value between 0 and 100</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                 <input
                   type="date"
                   value={newTask.dueDate}
-                  onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                  onChange={(e) => handleFieldChange('dueDate', e.target.value)}
+                  min={new Date().toISOString().split('T')[0]} // Disable past dates
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary ${
+                    formErrors.dueDate ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                 />
+                {formErrors.dueDate && (
+                  <p className="text-red-500 text-xs mt-1">{formErrors.dueDate}</p>
+                )}
+                <p className="text-gray-500 text-xs mt-1">Due date cannot be in the past</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                 <select
                   value={newTask.priority}
-                  onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
+                  onChange={(e) => handleFieldChange('priority', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary"
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
+                  <option value="low">Low Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="high">High Priority</option>
                 </select>
               </div>
             </div>
@@ -515,6 +632,16 @@ const TaskBoard = () => {
               <button 
                 className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 onClick={() => {
+                  setNewTask({
+                    name: '',
+                    description: '',
+                    assignedTo: '',
+                    dueDate: '',
+                    priority: 'medium',
+                    weight: 0,
+                    status: 'Pending'
+                  });
+                  setFormErrors({});
                   setShowAddModal(false);
                   setEditingTask(null);
                 }}
@@ -524,7 +651,8 @@ const TaskBoard = () => {
               <button 
                 className="px-4 py-2 bg-brown-primary hover:bg-brown-secondary text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleAddTask}
-                disabled={!newTask.name.trim() || !newTask.assignedTo}
+                disabled={!isFormValid()}
+                title={!isFormValid() ? 'Please fix validation errors before submitting' : ''}
               >
                 {editingTask ? 'Update Task' : 'Add Task'}
               </button>

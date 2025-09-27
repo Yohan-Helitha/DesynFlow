@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaDownload } from "react-icons/fa";
 
 export default function ReportsManagement() {
   const [activeTab, setActiveTab] = useState("inspection");
+  const [teamLeaderReports, setTeamLeaderReports] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const inspectionReports = [
     {
@@ -21,22 +23,48 @@ export default function ReportsManagement() {
     },
   ];
 
-  const teamLeaderReports = [
-    {
-      title: "Phase 1 Completion",
-      project: "Luxury Apartment Interior",
-      leader: "Alice Johnson",
-      date: "2025-09-05",
-      fileUrl: "/reports/teamleader1.pdf",
-    },
-    {
-      title: "Material Procurement Status",
-      project: "Office Renovation",
-      leader: "David Brown",
-      date: "2025-09-12",
-      fileUrl: "/reports/teamleader2.pdf",
-    },
-  ];
+  // Fetch team leader reports from API
+  useEffect(() => {
+    const fetchTeamLeaderReports = async () => {
+      if (activeTab !== "teamLeader") return;
+      
+      setLoading(true);
+      try {
+        // Get all projects first
+        const projectsRes = await fetch('http://localhost:4000/api/projects');
+        const projects = await projectsRes.json();
+        
+        // Get reports for all projects
+        const allReports = [];
+        for (const project of projects) {
+          try {
+            const reportsRes = await fetch(`http://localhost:4000/api/reports/project/${project._id}`);
+            if (reportsRes.ok) {
+              const reports = await reportsRes.json();
+              const reportsWithProject = reports.map(report => ({
+                ...report,
+                projectName: project.projectName || project.name
+              }));
+              allReports.push(...reportsWithProject);
+            }
+          } catch (error) {
+            console.warn(`Failed to fetch reports for project ${project._id}:`, error);
+          }
+        }
+        
+        // Sort by creation date (newest first)
+        allReports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setTeamLeaderReports(allReports);
+      } catch (error) {
+        console.error('Error fetching team leader reports:', error);
+        setTeamLeaderReports([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeamLeaderReports();
+  }, [activeTab]);
 
   return (
     <div className="bg-cream-primary min-h-screen p-8">
@@ -113,36 +141,68 @@ export default function ReportsManagement() {
             <h3 className="text-lg font-semibold text-brown-primary mb-4">
               Team Leader Reports
             </h3>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-cream-light text-brown-primary">
-                  <th className="p-3">Title</th>
-                  <th className="p-3">Project</th>
-                  <th className="p-3">Team Leader</th>
-                  <th className="p-3">Date</th>
-                  <th className="p-3">Download</th>
-                </tr>
-              </thead>
-              <tbody>
-                {teamLeaderReports.map((report, i) => (
-                  <tr key={i} className="border-b">
-                    <td className="p-3">{report.title}</td>
-                    <td className="p-3">{report.project}</td>
-                    <td className="p-3">{report.leader}</td>
-                    <td className="p-3">{report.date}</td>
-                    <td className="p-3">
-                      <a
-                        href={report.fileUrl}
-                        download
-                        className="flex items-center space-x-1 text-green-primary hover:underline"
-                      >
-                        <FaDownload size={18} /> <span>Download</span>
-                      </a>
-                    </td>
+            {loading ? (
+              <div className="text-brown-primary p-4">Loading reports...</div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-cream-light text-brown-primary">
+                    <th className="p-3">Report Type</th>
+                    <th className="p-3">Project</th>
+                    <th className="p-3">Period</th>
+                    <th className="p-3">Created Date</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3">Download</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {teamLeaderReports.length > 0 ? (
+                    teamLeaderReports.map((report, i) => (
+                      <tr key={report._id || i} className="border-b">
+                        <td className="p-3">{report.reportType}</td>
+                        <td className="p-3">{report.projectName}</td>
+                        <td className="p-3">
+                          {report.dateStart && report.dateEnd 
+                            ? `${report.dateStart} to ${report.dateEnd}` 
+                            : 'N/A'
+                          }
+                        </td>
+                        <td className="p-3">{new Date(report.createdAt).toLocaleDateString()}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-1 text-xs rounded ${
+                            report.status === 'completed' 
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {report.status}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          {report.filePath && report.status === 'completed' ? (
+                            <a
+                              href={`http://localhost:4000${report.filePath}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-1 text-green-primary hover:underline"
+                            >
+                              <FaDownload size={18} /> <span>Download</span>
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">Not available</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="p-4 text-center text-gray-500">
+                        No team leader reports found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
       </div>

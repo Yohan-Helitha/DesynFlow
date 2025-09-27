@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { FaClock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 
 export default function DashboardOverview() {
   // Project stats
   const [stats, setStats] = useState([]);
   const [recentProjects, setRecentProjects] = useState([]);
   const [recentTasks, setRecentTasks] = useState([]);
+  const [recentReports, setRecentReports] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export default function DashboardOverview() {
           {
             title: "Active Projects",
             value: active,
-            icon: "🕐",
+            icon: <FaClock className="text-brown-primary" />,
             color: "bg-cream-light",
             trend: "+2 from last month",
             trendColor: "text-green-600"
@@ -28,7 +30,7 @@ export default function DashboardOverview() {
           {
             title: "Completed Projects", 
             value: completed,
-            icon: "✅",
+            icon: <FaCheckCircle className="text-green-primary" />,
             color: "bg-cream-light",
             trend: "+5 from last month",
             trendColor: "text-green-600"
@@ -36,7 +38,7 @@ export default function DashboardOverview() {
           {
             title: "Pending Approval",
             value: pending,
-            icon: "⚠️",
+            icon: <FaExclamationTriangle className="text-yellow-500" />,
             color: "bg-cream-light",
             trend: "-1 from last month",
             trendColor: "text-red-500"
@@ -61,6 +63,21 @@ export default function DashboardOverview() {
           const allTasks = results.flatMap(r => r.tasks.map(t => ({ ...t, projectName: r.project.name })));
           const sortedTasks = allTasks.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 5);
           setRecentTasks(sortedTasks);
+        });
+
+        // Fetch recent reports for these projects
+        Promise.all(
+          sorted.slice(0, 3).map(project =>
+            fetch(`http://localhost:4000/api/reports/project/${project._id}`)
+              .then(res => res.json())
+              .then(reports => reports.map(r => ({ ...r, projectName: project.projectName })))
+              .catch(() => [])
+          )
+        ).then(results => {
+          // Flatten and sort reports by createdAt desc, take top 3
+          const allReports = results.flat();
+          const sortedReports = allReports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
+          setRecentReports(sortedReports);
         });
       })
       .catch(err => {

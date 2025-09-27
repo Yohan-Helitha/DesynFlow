@@ -1,5 +1,15 @@
 import ReportService from '../service/report.service.js';
 
+// Generate PDF report
+export const generatePDFReport = async (req, res) => {
+  try {
+    const result = await ReportService.generatePDFReport(req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 // Create or update a report
 export const upsertReport = async (req, res) => {
   try {

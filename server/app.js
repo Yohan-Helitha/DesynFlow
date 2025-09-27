@@ -47,6 +47,9 @@ app.use(cors()); // from allowing cors API can request different origins(not res
 app.use(express.json({limit: '2mb'})); // parse json body
 app.use(express.urlencoded({ extended: true })); // parse urlencoded body
 
+// Serve static files (generated reports)
+app.use('/reports', express.static('public/reports'));
+
 app.get("/health", (req, res) => {
   res.json({
     name: env.APP_NAME,
@@ -67,7 +70,7 @@ app.use('/api', completeArchiveRoutes);
 app.use('/api', milestoneTimelineRoutes);
 app.use('/api', attendanceRoutes);
 app.use('/api', materialRequestRoutes);
-app.use('/api', reportRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);
