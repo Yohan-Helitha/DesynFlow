@@ -8,7 +8,7 @@ function OrderForm({ onOrderCreated }) {
   const [materials, setMaterials] = useState([]);
   const [formData, setFormData] = useState({
     supplierId: "",
-    items: [{ materialId: "", quantity: "", pricePerUnit: 0, total: 0 }],
+    items: [{ materialId: "", materialName: "", quantity: "", pricePerUnit: 0, total: 0 }],
   });
 
   useEffect(() => {
@@ -75,6 +75,8 @@ function OrderForm({ onOrderCreated }) {
       newItems[index].materialId = value;
       // Set pricePerUnit from materials list
       const mat = materials.find(m => (m._id === value) || (m.name === value));
+      // Track materialName explicitly to avoid showing/storing IDs in UI
+      newItems[index].materialName = mat ? mat.name : "";
       newItems[index].pricePerUnit = mat && mat.pricePerUnit ? mat.pricePerUnit : 0;
       // recalculate total if quantity exists
       const qty = Number(newItems[index].quantity) || 0;
@@ -106,6 +108,7 @@ function OrderForm({ onOrderCreated }) {
       .filter(item => item.materialId)
       .map(item => ({
         materialId: item.materialId,
+        materialName: item.materialName || undefined,
         qty: Number(item.quantity),
         unitPrice: Number(item.pricePerUnit)
       }));
@@ -137,7 +140,7 @@ function OrderForm({ onOrderCreated }) {
         alert("Order created successfully!");
         setFormData({
           supplierId: "",
-          items: [{ materialId: "", quantity: "", pricePerUnit: 0, total: 0 }],
+          items: [{ materialId: "", materialName: "", quantity: "", pricePerUnit: 0, total: 0 }],
         });
         if (onOrderCreated) onOrderCreated(newOrder); // notify parent to refresh
         // Navigate back to Orders list (rating now only via Received button there)
@@ -171,12 +174,7 @@ function OrderForm({ onOrderCreated }) {
             ))}
           </select>
         </label>
-        {/* Show Supplier ID (not editable) */}
-        {formData.supplierId && (
-          <div style={{ fontSize: '13px', color: '#674636', marginBottom: '8px' }}>
-            Supplier ID: <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>{formData.supplierId}</span>
-          </div>
-        )}
+        {/* Intentionally not showing raw IDs in the UI */}
 
         <h3>Order Items</h3>
         {formData.items.map((item, index) => {
@@ -195,12 +193,7 @@ function OrderForm({ onOrderCreated }) {
                   </option>
                 ))}
               </select>
-              {/* Show selected material name below dropdown for clarity */}
-              {item.materialId && (
-                <div style={{ fontSize: '13px', color: '#674636', marginBottom: '4px' }}>
-                  Selected: {materials.find(m => m._id === item.materialId || m.name === item.materialId)?.name || item.materialId}
-                </div>
-              )}
+              {/* Selected material name and price are already visible in the dropdown label. */}
               <input
                 type="number"
                 name="quantity"
