@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../component/navbar.jsx";
 import { fetchSReorderRequests, deleteSReorderRequest } from "../services/FsReorderRequestService.js";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2,Filter, Search,Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { generatePDF } from "../utils/pdfGenerator.js";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+
 
 const SReorderRequest = () => {
   const [requests, setRequests] = useState([]);
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterBy, setFilterBy] = useState("all");
+  const [showFilter, setShowFilter] = useState(false);
 
   // Fetch stock reorder requests
   const getRequests = async () => {
@@ -37,6 +43,116 @@ const SReorderRequest = () => {
     }
   };
 
+  // Filtering logic
+    const filteredRequests = requests.filter((request) => {
+    const query = searchQuery.toLowerCase();
+
+    if (filterBy === "id") {
+      return request.stockReorderRequestId?.toLowerCase().includes(query);
+    }
+    if (filterBy === "inventoryId") {
+      return request.inventoryId?.toLowerCase().includes(query);
+    }
+    if(filterBy === "inventoryName") {
+      return request.inventoryName?.toLowerCase().includes(query);
+    }
+    if (filterBy === "inventoryAddress") {
+      return request.inventoryAddress?.toLowerCase().includes(query);
+    }
+    if (filterBy === "materialId") {
+      return request.materialId?.toLowerCase().includes(query);
+    }
+    if(filterBy === "materialName") {
+      return request.materialName?.toLowerCase().includes(query);
+    }
+    if (filterBy === "type") {
+      return request.type?.toLowerCase().includes(query);
+    }
+    if (filterBy === "expectedDate") {
+      return request.expectedDate?.toLowerCase().includes(query);
+    }
+    if(filterBy === "status") {
+      return request.status?.toLowerCase().includes(query);
+    }
+    
+
+    // Default: search all
+    if (filterBy === "all") {
+    return (
+      request.stockReorderRequestId?.toLowerCase().includes(query) ||
+      request.inventoryId?.toLowerCase().includes(query) ||
+      request.inventoryAddress?.toLowerCase().includes(query) ||
+      request.materialId?.toLowerCase().includes(query) ||
+      request.materialName?.toLowerCase().includes(query) ||
+      request.type?.toLowerCase().includes(query) ||
+      request.expectedDate?.toLowerCase().includes(query) ||
+      request.status?.toLowerCase().includes(query)
+    );
+  }
+  });
+
+  //pdf function
+    const handleDownloadPDF = () => {
+      console.log("Downloading PDF...");
+  
+      const columns = [
+      "ID", "Inventory ID", "Inventory Name", "Inventory Address", "Inventory Contact", "Material ID", 
+      "Material Name", "Quantity", "Type", 
+      "Unit", "Expected By", "Warehouse Manager Name", "Created At", "Status"
+      ];
+  
+      const rows = filteredRequests.map(request => [
+        request.stockReorderRequestId,
+        request.inventoryId,
+        request.inventoryName,
+        request.inventoryAddress,
+        request.inventoryContact,
+        request.materialId,
+        request.materialName,
+        request.quantity,
+        request.type,
+        request.unit,
+        request.expectedDate,
+        request.warehouseManagerName,
+        new Date(request.createdAt).toLocaleString(),
+        request.status
+      ]);
+  
+      generatePDF(columns, rows, "Stock Reorder Request Report");
+  
+    };
+
+    const requestsPerMonth = filteredRequests.reduce((acc, request) => {
+      const date = request.createdAt ? new Date(request.createdAt) : null;
+      if (!date) return acc;
+
+      const monthYear = date.toLocaleString("default", { month: "short", year: "numeric" }); // e.g., "Sep 2025"
+
+      if (!acc[monthYear]) {
+        acc[monthYear] = { total: 0, pending: 0, checked: 0 };
+      }
+
+      acc[monthYear].total += 1;
+
+      if (request.status?.toLowerCase() === "pending") {
+        acc[monthYear].pending += 1;
+      } else if (request.status?.toLowerCase() === "checked") {
+        acc[monthYear].checked += 1;
+      }
+
+      return acc;
+    }, {});
+
+  const chartData = Object.keys(requestsPerMonth)
+    .sort((a, b) => new Date(a) - new Date(b))
+    .map(month => ({
+      month,
+      total: requestsPerMonth[month].total,
+      pending: requestsPerMonth[month].pending,
+      checked: requestsPerMonth[month].checked
+  }));
+
+
   return (
     <div>
       <Navbar />
@@ -49,6 +165,118 @@ const SReorderRequest = () => {
           >
             + Add Reorder Request
           </button>
+        </div>
+
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="total" name="Total Requests" stroke="#4CAF50" strokeWidth={2} />
+            <Line type="monotone" dataKey="pending" name="Pending Requests" stroke="#FFA500" strokeWidth={2} />
+            <Line type="monotone" dataKey="checked" name="Checked Requests" stroke="#2196F3" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+
+        {/* 🔎 Search + Filter */}
+        <div className="mb-6 flex justify-end items-center gap-2">
+            <Search className="w-5 h-5 text-gray-700" />
+            <input
+            type="text"
+            placeholder="Search..."
+            className="border border-gray-400 px-4 py-2 rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            />
+
+            {/* Filter Icon + Dropdown Wrapper */}
+            <div className="relative">
+            <button
+                onClick={() => setShowFilter(!showFilter)}
+                className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
+            >
+                <Filter className="w-5 h-5 text-gray-700" />
+            </button>
+
+            {/* Dropdown */}
+            {showFilter && (
+                <div className="absolute right-0 top-full mt-2 bg-white border border-gray-300 rounded shadow-md w-40 z-50">
+                <ul className="text-sm">
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "all" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("all"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    All
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "id" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("id"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    Request ID
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "inventoryId" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("inventoryId"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    Inventory ID
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "inventoryName" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("inventoryName"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    Inventory Name
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "inventoryAddress" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("inventoryAddress"); setSearchQuery(""); setShowFilter(false); }} 
+                    >
+                    Inventory Address
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "materialId" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("materialId"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    Material ID
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "materialName" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("materialName"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    Material Name
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "type" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("type"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    Type
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "expectedDate" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("expectedDate"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    Expected Date
+                    </li>
+                    <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "status" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("status"); setSearchQuery(""); setShowFilter(false); }}
+                    >
+                    Status 
+                    </li>
+                </ul>
+                </div>
+                )}
+              </div>  
+
+            <button
+              onClick={handleDownloadPDF}
+              className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
+              title="Download PDF"
+            >
+              <Download className="w-5 h-5 text-gray-700" />
+            </button>
+
         </div>
 
         <div className="overflow-x-auto text-xs">
@@ -72,8 +300,8 @@ const SReorderRequest = () => {
               </tr>
             </thead>
             <tbody className="align-middle text-center text-xs bg-white">
-              {requests.length > 0 ? (
-                requests.map((request) => (
+              {filteredRequests.length > 0 ? (
+                filteredRequests.map((request) => (
                   <tr key={request._id}>
                     {/* Actions */}
                     <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-white z-40 relative">
@@ -126,6 +354,6 @@ const SReorderRequest = () => {
       </div>
     </div>
   );
-};
+}
 
 export default SReorderRequest;

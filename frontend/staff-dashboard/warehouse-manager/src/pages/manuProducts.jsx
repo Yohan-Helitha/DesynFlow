@@ -2,17 +2,25 @@ import Navbar from "../component/navbar";
 import React from 'react'
 import { fetchManuProducts, deleteManuProduct } from "../services/FmanuProductsService.js";
 import { useState, useEffect } from "react";
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2,Filter,Search,Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { generatePDF } from "../utils/pdfGenerator.js";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+
 
 const ManuProducts = () => {
     const [products, setProducts] = useState([]);
     const navigate = useNavigate();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filterBy, setFilterBy] = useState("all");
+    const [showFilter, setShowFilter] = useState(false);
+
 
     // Function to fetch products from backend
     const getProducts = async () => {
         try {
         const data = await fetchManuProducts();
+        console.log("Fetched products:", data);
         setProducts(data);
         } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -38,6 +46,88 @@ const ManuProducts = () => {
         alert("Failed to delete product.");
         }
     };
+
+    // Filtering logic
+    const filteredProducts = products.filter((product) => {
+      const query = searchQuery.toLowerCase();
+
+      if (filterBy === "id") {
+        return product.materialId?.toLowerCase().includes(query);
+      }
+      if (filterBy === "name") {
+        return product.materialName?.toLowerCase().includes(query);
+      }
+      if (filterBy === "category") {
+        return product.category?.toLowerCase().includes(query);
+      }
+      if (filterBy === "type") {
+        return product.type?.toLowerCase().includes(query);
+      }
+      if(filterBy === "inventoryName") {
+        return product.inventoryName?.toLowerCase().includes(query);
+      }
+      if(filterBy === "warrantyPeriod") {
+        return product.warrantyPeriod?.toLowerCase().includes(query);
+      }
+      if (filterBy === "critical") {
+      return product.currentLevel < product.reorderLevel;
+      }
+
+      // Default: search all
+      if (filterBy === "all") {
+      return (
+        product.materialId?.toLowerCase().includes(query) ||
+        product.materialName?.toLowerCase().includes(query) ||
+        product.category?.toLowerCase().includes(query) ||
+        product.type?.toLowerCase().includes(query) ||
+        product.inventoryName?.toLowerCase().includes(query) ||
+        product.warrantyPeriod?.toLowerCase().includes(query)
+        );
+      }
+      return false;
+    });
+    
+    //pdf function
+  const handleDownloadPDF = () => {
+    console.log("Downloading PDF...");
+
+    const columns = [
+    "ID", "Name", "Category", "Type", "Unit", "Restock Level", 
+    "Reorder Level", "Current Level", "Warranty Period", 
+    "Inventory Name", "Created By", "Month", "Year", "Created At"
+    ];
+
+    const rows = filteredProducts.map(product => [
+      product.materialId,
+      product.materialName,
+      product.category,
+      product.type,
+      product.unit,
+      product.restockLevel,
+      product.reorderLevel,
+      product.currentLevel,
+      product.warrantyPeriod,
+      product.inventoryName,
+      product.createdBy,
+      product.month,
+      product.year,
+      new Date(product.createdAt).toLocaleString()
+    ]);
+
+    generatePDF(columns, rows, "Manufactured Products Report");
+
+  };
+
+  const chartData = products.reduce((acc, product) => {
+    const key = `${product.month}-${product.year}`;
+    if (!acc[key]) {
+      acc[key] = { monthYear: `${product.month}/${product.year}`, count: 0 };
+    }
+    acc[key].count += 1;
+    return acc;
+  }, {});
+
+  const chartArray = Object.values(chartData);
     
   return (
     <div>
@@ -49,7 +139,110 @@ const ManuProducts = () => {
             + Add New Product
             </button>
         </div>
+
+        {/* 📊 Bar Chart Section */}
+        <div className="w-full h-80 mb-10">
+          <ResponsiveContainer>
+            <BarChart data={chartArray}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="monthYear" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="count" fill="#191970" barSize={20} /> 
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 🔎 Search + Filter */}
+        <div className="mb-10 flex justify-end items-center gap-2">
+          <Search className="w-5 h-5 text-gray-700" />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="border border-gray-400 px-4 py-2 rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+
+          {/* Filter Icon + Dropdown Wrapper */}
+          <div className="relative">
+            <button
+              onClick={() => setShowFilter(!showFilter)}
+              className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
+              title="Filter By"
+            >
+              <Filter className="w-5 h-5 text-gray-700" />
+            </button>
+
+            {/* Dropdown */}
+            {showFilter && (
+              <div className="absolute right-0 top-full mt-2 bg-white border border-gray-300 rounded shadow-md w-40 z-50">
+                <ul className="text-sm">
+                  <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "all" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("all"); setSearchQuery(""); setShowFilter(false); }}
+                  >
+                    All
+                  </li>
+                  <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "materialId" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("materialId"); setSearchQuery(""); setShowFilter(false); }}
+                  >
+                    Material ID
+                  </li>
+                  <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "name" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("name"); setSearchQuery(""); setShowFilter(false); }}
+                  >
+                    Material Name
+                  </li>
+                  <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "category" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("category"); setSearchQuery(""); setShowFilter(false); }}
+                  >
+                    Category
+                  </li>
+                  <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "type" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("type"); setSearchQuery(""); setShowFilter(false); }}
+                  >
+                    Type
+                  </li>
+                  <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "warrantyPeriod" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("warrantyPeriod"); setSearchQuery(""); setShowFilter(false); }}
+                  >
+                    Warranty Period
+                  </li>
+                  <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "inventoryName" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("inventoryName"); setSearchQuery(""); setShowFilter(false); }}
+                  >
+                    Inventory Name
+                  </li>
+                  <li
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "critical" ? "bg-gray-200" : ""}`}
+                    onClick={() => { setFilterBy("critical"); setSearchQuery(""); setShowFilter(false); }}
+                  >
+                    Below Reorder Level
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleDownloadPDF}
+            className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
+            title="Download PDF"
+          >
+            <Download className="w-5 h-5 text-gray-700" />
+          </button>
         
+
+        </div>
+
 
         <div className="overflow-x-auto text-xs">
             <table className="min-w-max border-collapse border border-gray-300">
@@ -74,8 +267,8 @@ const ManuProducts = () => {
             </thead>
 
             <tbody className="align-middle text-center text-xs bg-white">
-                {products.length > 0 ? (
-                products.map((product) => (
+                {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
                     <tr 
                     key={product._id}
                     className={product.currentLevel < product.reorderLevel ? "bg-red-100" : "bg-white"}
