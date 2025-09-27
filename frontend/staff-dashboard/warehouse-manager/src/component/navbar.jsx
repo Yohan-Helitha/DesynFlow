@@ -14,7 +14,8 @@ import {
   Building2,
   User,
 } from "lucide-react";
-import { useNotifications } from "../context/notificationContext.jsx"; // import context
+import { useNotifications } from "../context/notificationContext.jsx";
+import logo from "./desynflow_logo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -35,20 +36,25 @@ const Navbar = () => {
   ];
 
   return (
-    <div className="shadow-sm border-b border-gray-700" style={{ backgroundColor: "#2B1B0E" }}>
+    <div className="shadow-sm border-b border-gray-700" style={{ backgroundColor: "#2B1B0E"}}>
       {/* Top Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg" style={{ backgroundColor: "#FFF8E8" }}>
-            <Building2 className="w-6 h-6" style={{ color: "#2B1B0E" }} />
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/home")}>
+          {/* <div className="p-2 rounded-lg" style={{ backgroundColor: "#FFFFFF" }}>
+            <Building2 className="w-6 h-6" style={{ color: "#000000" }} />
           </div>
           <h1 className="text-xl font-semibold" style={{ color: "#FFFFFF" }}>
             Warehouse Management
-          </h1>
+          </h1> */}
+          <img
+            src={logo}
+            alt="Logo"
+            className="w-30 h-30 object-contain"
+          />
         </div>
 
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-full" style={{ backgroundColor: "#FFF8E8" }}>
+        <div className="flex items-center space-x-3 cursor-pointer">
+          <div className="p-2 rounded-full" style={{ backgroundColor: "#FFFFFF" }}>
             <User className="w-5 h-5" style={{ color: "#2B1B0E" }} />
           </div>
           <span className="font-medium" style={{ color: "#FFFFFF" }}>
@@ -69,7 +75,7 @@ const Navbar = () => {
                 key={index}
                 onClick={() => navigate(item.path)}
                 className={`
-                  relative group flex items-center px-3 py-2 rounded-lg transition-all duration-200
+                  cursor-pointer relative group flex items-center px-3 py-2 rounded-lg transition-all duration-200
                   ${isActive ? "bg-[#D3DAD9] text-[#37353E]" : "text-white hover:bg-[#3D2914]"}
                 `}
               >
