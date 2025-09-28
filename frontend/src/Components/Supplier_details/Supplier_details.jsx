@@ -5,6 +5,7 @@ import axios from "axios";
 import "./Supplier_details.css";
 import { Link } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
+import { generateSupplierProfilePDF } from "../../utils/pdfGenerator";
 
 // Removed unused legacy URL & fetchHandler
 
@@ -244,19 +245,28 @@ function Supplier_details() {
               <b>Rating:</b> {selectedSupplier.rating}
             </p>
           </div>
-          <button 
-            className="place-order-btn"
-            onClick={() => {
-              navigate('/OrderForm', {
-                state: {
-                  preselectedSupplier: selectedSupplier,
-                  supplierLocked: true
-                }
-              });
-            }}
-          >
-            Place Order
-          </button>
+          <div className="modal-actions">
+            <button 
+              className="export-pdf-btn"
+              onClick={() => generateSupplierProfilePDF(selectedSupplier)}
+              title="Export supplier profile as PDF"
+            >
+              📄 Export PDF
+            </button>
+            <button 
+              className="place-order-btn"
+              onClick={() => {
+                navigate('/OrderForm', {
+                  state: {
+                    preselectedSupplier: selectedSupplier,
+                    supplierLocked: true
+                  }
+                });
+              }}
+            >
+              Place Order
+            </button>
+          </div>
         </div>
       </div>,
       document.body

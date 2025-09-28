@@ -442,18 +442,52 @@ tbody tr:last-child td:last-child {
   z-index: 10;
 }
 
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 0 20px 20px;
+}
+
+.export-pdf-btn {
+  background: #dc3545;
+  color: #FFF8E8;
+  border: none;
+  padding: 12px 20px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-pdf-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
 .place-order-btn {
   background: #AAB396;
   color: #FFF8E8;
   border: none;
   padding: 12px 24px;
-  margin: 0 20px 20px;
-  width: calc(100% - 40px);
+  flex: 1;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.place-order-btn:hover {
+  background: #9ba085;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(170, 179, 150, 0.3);
 }
 
 /* ===== Responsive Design ===== */
@@ -523,5 +557,16 @@ tbody tr:last-child td:last-child {
     margin: 20px auto;
     width: calc(100% - 40px);
     max-width: 400px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .export-pdf-btn,
+  .place-order-btn {
+    flex: 1;
+    justify-content: center;
   }
 }

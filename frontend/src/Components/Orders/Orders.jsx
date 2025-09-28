@@ -3,11 +3,35 @@ import './Orders.css';
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
+import { generateOrderReceiptPDF } from '../../utils/pdfGenerator';
 
 function Orders() {
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+
+
+
+  // Function to mark order as received
+  const markAsReceived = async (orderId) => {
+    try {
+      await axios.put(`http://localhost:3000/api/purchase-orders/${orderId}/status`, {
+        status: 'Received'
+      });
+      
+      // Update local state
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order._id === orderId 
+            ? { ...order, status: 'Received' }
+            : order
+        )
+      );
+    } catch (error) {
+      console.error('Error marking order as received:', error);
+      alert('Failed to mark order as received. Please try again.');
+    }
+  };
 
   // Fetch purchase orders from backend
   useEffect(() => {
@@ -133,29 +157,50 @@ function Orders() {
                     </span>
                   </td>
                   <td>
-                    <button
-                      className={`action-btn ${order.status === 'Dispatched' ? 'received' : order.status === 'Received' ? 'completed' : 'disabled'}`}
-                      disabled={order.status !== 'Dispatched' && order.status !== 'Received'}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        
-                        const navigationState = {
-                          supplierId: order.supplierId?._id || order.supplierId,
-                          orderId: order._id,
-                          ...(order.status === 'Received' && { viewOnly: true })
-                        };
-                        
-                        // Force navigation using URL parameters
-                        const url = `/Rate_supplier?supplierId=${navigationState.supplierId}&orderId=${navigationState.orderId}${navigationState.viewOnly ? '&viewOnly=true' : ''}`;
-                        window.location.href = url;
-                      }}
-                    >
-                      {order.status === 'Dispatched' ? '📦 Mark Received' :
-                       order.status === 'Received' ? '⭐ View Rating' :
-                       order.status === 'Preparing' ? '🔄 Being Prepared' :
-                       order.status === 'Approved' ? '⏳ Waiting Supplier' : 
-                       '⏳ Pending'}
-                    </button>
+                    <div className="action-buttons">
+                      {order.status === 'Dispatched' && (
+                        <button
+                          className="action-btn received"
+                          onClick={() => markAsReceived(order._id)}
+                        >
+                          📦 Mark Received
+                        </button>
+                      )}
+                      
+                      {order.status === 'Received' && (
+                        <>
+                          <button
+                            className="action-btn pdf-btn"
+                            onClick={() => generateOrderReceiptPDF(order)}
+                            title="Generate PDF Receipt"
+                          >
+                            📄 Generate PDF
+                          </button>
+                          <button
+                            className="action-btn rate-btn"
+                            onClick={() => {
+                              const url = `/Rate_supplier?supplierId=${order.supplierId?._id || order.supplierId}&orderId=${order._id}&viewOnly=false`;
+                              window.location.href = url;
+                            }}
+                            title="Rate this supplier"
+                          >
+                            ⭐ Rate Supplier
+                          </button>
+                        </>
+                      )}
+                      
+                      {(order.status === 'Preparing' || order.status === 'Approved') && (
+                        <button className="action-btn disabled" disabled>
+                          {order.status === 'Preparing' ? '🔄 Being Prepared' : '⏳ Waiting Supplier'}
+                        </button>
+                      )}
+                      
+                      {(!order.status || order.status === 'Pending') && (
+                        <button className="action-btn disabled" disabled>
+                          ⏳ Pending
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))

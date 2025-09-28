@@ -283,6 +283,13 @@ body {
 }
 
 /* ===== Action Buttons ===== */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 120px;
+}
+
 .action-btn {
   padding: 0.3rem 0.6rem;
   border: 1px solid transparent;
@@ -293,7 +300,10 @@ body {
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25rem;
+  width: 100%;
+  text-align: center;
 }
 
 .action-btn.received {
@@ -305,6 +315,30 @@ body {
 .action-btn.received:hover {
   background-color: #0056b3;
   border-color: #0056b3;
+}
+
+.action-btn.pdf-btn {
+  background-color: #dc3545;
+  color: #ffffff;
+  border-color: #dc3545;
+}
+
+.action-btn.pdf-btn:hover {
+  background-color: #c82333;
+  border-color: #c82333;
+  transform: translateY(-1px);
+}
+
+.action-btn.rate-btn {
+  background-color: #ffc107;
+  color: #212529;
+  border-color: #ffc107;
+}
+
+.action-btn.rate-btn:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+  transform: translateY(-1px);
 }
 
 .action-btn.completed {
@@ -488,6 +522,11 @@ body {
   .orders-table th, .orders-table td {
     padding: 0.4rem 0.4rem;
     font-size: 0.7rem;
+  }
+  
+  .action-buttons {
+    min-width: 100px;
+    gap: 0.2rem;
   }
   
   .action-btn {
