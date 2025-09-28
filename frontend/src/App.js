@@ -19,6 +19,7 @@ import OrderDetailsSup from "./Components/Order_details_sup/Order_details_sup";
 import SampleOrderList from "./Components/Sample_order_list/Sample_order_list";
 import SampleOrderDetails from "./Components/Sample_order_details/Sample_order_details";
 import RateSupplier from "./Components/Rate_supplier/Rate_supplier";
+import LoginSup from "./Components/Login_sup/Login_sup";
 
 
 
@@ -41,6 +42,7 @@ function App() {
   <Route path="/Sample_order_list" element={<SampleOrderList />} />
   <Route path="/Sample_order_details/:id" element={<SampleOrderDetails />} />
   <Route path="/Rate_supplier" element={<RateSupplier />} />
+  <Route path="/SupplierLogin" element={<LoginSup />} />
     </Routes>
   );
 }

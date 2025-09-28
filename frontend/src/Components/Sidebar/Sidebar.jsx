@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./Sidebar.css";
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaSignInAlt } from 'react-icons/fa';
 
 function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,6 +48,9 @@ function Sidebar() {
           </li>
           <li>
             <Link to="/Dashboard_sup">Supplier Dashboard</Link>
+          </li>
+          <li>
+            <Link to="/SupplierLogin"><FaSignInAlt style={{marginRight:8}}/>Login Supplier</Link>
           </li>
         </ul>
       </aside>
