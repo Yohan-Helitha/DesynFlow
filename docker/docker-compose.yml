@@ -1,4 +1,3 @@
-version: "3.8"
 
 services:
   mongo:
@@ -24,6 +23,39 @@ services:
       - mongo
     command: npm start
     restart: unless-stopped
+
+  client-portal:
+    build: ../frontend/client-portal
+    container_name: desynflow-client-portal
+    ports:
+      - "5174:5174"
+    volumes:
+      - ../frontend/client-portal:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_URL=http://localhost:4000
+      - PORT=5174
+    command: npm start
+    restart: unless-stopped
+
+  staff-dashboard:
+    build: ../frontend/staff-dashboard
+    container_name: desynflow-staff-dashboard
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend/staff-dashboard:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_API_URL=http://localhost:4000
+    restart: unless-stopped
+
 
 volumes:
   mongo-data:
