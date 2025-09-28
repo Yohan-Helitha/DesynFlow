@@ -3,6 +3,7 @@ import './Orders.css';
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
+import { FaClipboardList, FaPlus, FaBox, FaCheckCircle, FaTimesCircle, FaFileAlt, FaStar, FaHourglassHalf, FaRegClock } from 'react-icons/fa';
 import { generateOrderReceiptPDF } from '../../utils/pdfGenerator';
 
 function Orders() {
@@ -73,13 +74,13 @@ function Orders() {
       <div className="orders-container">
         <div className="page-header">
           <div className="header-content">
-            <h2>📋 Purchase Orders Management</h2>
+            <h2><FaClipboardList className="header-icon" /> Purchase Orders Management</h2>
             <p className="header-subtitle">Manage and track all your purchase orders</p>
           </div>
           <div className="header-actions">
             <button className="btn-primary">
               <Link to="/OrderForm">
-                <span className="icon">➕</span>
+                <FaPlus className="icon" />
                 New Order
               </Link>
             </button>
@@ -153,14 +154,14 @@ function Orders() {
                     </span>
                   </td>
                   <td>
-                    <span className={`status-badge ${order.status?.toLowerCase() || 'pending'}`}>
-                      {order.status === "Approved" ? "✅ Approved" :
-                       order.status === "Preparing" ? "🔄 Preparing" :
-                       order.status === "Dispatched" ? "📦 Dispatched" :
-                       order.status === "Received" ? "✅ Received" :
-                       order.status === "Rejected" ? "❌ Rejected" :
-                       order.status || "📤 Sent"}
-                    </span>
+               <span className={`status-badge ${order.status?.toLowerCase() || 'pending'}`}>
+               {order.status === "Approved" ? <><FaCheckCircle /> Approved</> :
+                order.status === "Preparing" ? <><FaHourglassHalf /> Preparing</> :
+                order.status === "Dispatched" ? <><FaBox /> Dispatched</> :
+                order.status === "Received" ? <><FaCheckCircle /> Received</> :
+                order.status === "Rejected" ? <><FaTimesCircle /> Rejected</> :
+                order.status || <><FaRegClock /> Sent</>}
+              </span>
                   </td>
                   <td>
                     <div className="action-buttons">
@@ -169,7 +170,7 @@ function Orders() {
                           className="action-btn received"
                           onClick={() => markAsReceived(order._id)}
                         >
-                          📦 Mark Received
+                          <FaBox /> Mark Received
                         </button>
                       )}
                       
@@ -180,7 +181,7 @@ function Orders() {
                             onClick={() => generateOrderReceiptPDF(order)}
                             title="Generate PDF Receipt"
                           >
-                            📄 Generate PDF
+                            <FaFileAlt /> Generate PDF
                           </button>
                           <button
                             className="action-btn rate-btn"
@@ -190,20 +191,20 @@ function Orders() {
                             }}
                             title="Rate this supplier"
                           >
-                            ⭐ Rate Supplier
+                            <FaStar /> Rate Supplier
                           </button>
                         </>
                       )}
                       
                       {(order.status === 'Preparing' || order.status === 'Approved') && (
                         <button className="action-btn disabled" disabled>
-                          {order.status === 'Preparing' ? '🔄 Being Prepared' : '⏳ Waiting Supplier'}
+                          {order.status === 'Preparing' ? <><FaHourglassHalf /> Being Prepared</> : <><FaRegClock /> Waiting Supplier</>}
                         </button>
                       )}
                       
                       {(!order.status || order.status === 'Pending') && (
                         <button className="action-btn disabled" disabled>
-                          ⏳ Pending
+                          <FaRegClock /> Pending
                         </button>
                       )}
                     </div>
@@ -213,8 +214,8 @@ function Orders() {
             ) : (
               <tr>
                 <td colSpan="8" className="no-data">
-                  <div className="empty-state">
-                    <span className="empty-icon">📋</span>
+                    <div className="empty-state">
+                    <FaClipboardList className="empty-icon" />
                     <p>No orders found</p>
                     <small>Try adjusting your search criteria</small>
                   </div>

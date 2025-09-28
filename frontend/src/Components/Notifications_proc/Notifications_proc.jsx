@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Notifications_proc.css";
 import { Link } from "react-router-dom";
+import { FaBell, FaCheckCircle, FaTimesCircle, FaInfoCircle, FaTrash, FaTimes } from 'react-icons/fa';
 
 function Notifications_proc({ panelOpen, togglePanel }) {
   const [notifications, setNotifications] = useState([]);
@@ -40,7 +41,7 @@ function Notifications_proc({ panelOpen, togglePanel }) {
       <div className="panel-header">
         <h2>Notifications</h2>
         <button className="close-btn" onClick={togglePanel}>
-          ×
+          <FaTimes />
         </button>
       </div>
 
@@ -91,10 +92,10 @@ function Notifications_proc({ panelOpen, togglePanel }) {
               <div key={n._id || n.orderId || n.id || idx} className={`note ${statusClass}`}>
                 <div className="notification-content">
                   <div className="notification-icon">
-                    {statusClass === "approved" && "✅"}
-                    {statusClass === "rejected" && "❌"}
-                    {statusClass === "info" && "ℹ️"}
-                    {!statusClass && "🔔"}
+                    {statusClass === "approved" && <FaCheckCircle className="icon-approved" />}
+                    {statusClass === "rejected" && <FaTimesCircle className="icon-rejected" />}
+                    {statusClass === "info" && <FaInfoCircle className="icon-info" />}
+                    {!statusClass && <FaBell className="icon-default" />}
                   </div>
                   <div className="notification-text">
                     {notificationContent}
@@ -112,7 +113,7 @@ function Notifications_proc({ panelOpen, togglePanel }) {
       {/* Footer with Clear button */}
       <div className="panel-footer">
         <button className="clear-btn" onClick={handleClear}>
-          🗑
+          <FaTrash />
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Sidebar.css";
+import { FaTimes } from 'react-icons/fa';
 
 function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,7 +15,7 @@ function Sidebar() {
         <div className="sidebar-header">
           <h2>Dashboard</h2>
           <button className="close-btn" onClick={toggleSidebar}>
-            ×
+            <FaTimes />
           </button>
         </div>
         <ul className="nav">

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./Dashboard_proc.css";
 import { Link } from "react-router-dom";
-import Notifications_proc from "../Notifications_proc/Notifications_proc";
+import NotificationsProc from "../Notifications_proc/Notifications_proc";
 import Sidebar from "../Sidebar/Sidebar";
+import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser } from 'react-icons/fa';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +16,7 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -228,13 +229,13 @@ function Dashboard_proc() {
                 type: 'supplier',
                 message: `New supplier "${s.name}" registered`,
                 timestamp: s.createdAt || new Date(),
-                icon: '👤'
+                icon: 'supplier'
               })),
               ...orders.slice(-3).map(o => ({
                 type: 'order',
                 message: `Order #${o._id?.slice(-6)} ${o.status}`,
                 timestamp: o.updatedAt || new Date(),
-                icon: '📦'
+                icon: 'order'
               }))
             ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
           }
@@ -246,13 +247,13 @@ function Dashboard_proc() {
               type: 'supplier',
               message: `New supplier "${s.name}" registered`,
               timestamp: s.createdAt || new Date(),
-              icon: '👤'
+              icon: 'supplier'
             })),
             ...orders.slice(-3).map(o => ({
               type: 'order',
               message: `Order #${o._id?.slice(-6)} ${o.status}`,
               timestamp: o.updatedAt || new Date(),
-              icon: '📦'
+              icon: 'order'
             }))
           ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
         }
@@ -324,7 +325,7 @@ function Dashboard_proc() {
           <h1>Welcome Back</h1>
           <div className="user">
             <div className="notification-button" onClick={toggleNotifications}>
-              🔔
+              <FaBell className="header-icon" />
               {notifCount > 0 && (
                 <span className="notification-badge"></span>
               )}
@@ -340,7 +341,7 @@ function Dashboard_proc() {
             <div className="stat-card suppliers">
               <div className="stat-header">
                 <h3>Suppliers</h3>
-                <span className="stat-icon">👥</span>
+                <span className="stat-icon"><FaUserFriends /></span>
               </div>
               <div className="stat-content">
                 <div className="stat-main">{loading ? "..." : dashboardData.suppliers.total}</div>
@@ -355,7 +356,7 @@ function Dashboard_proc() {
             <div className="stat-card orders">
               <div className="stat-header">
                 <h3>Orders</h3>
-                <span className="stat-icon">📦</span>
+                <span className="stat-icon"><FaBox /></span>
               </div>
               <div className="stat-content">
                 <div className="stat-main">{loading ? "..." : dashboardData.orders.total}</div>
@@ -370,7 +371,7 @@ function Dashboard_proc() {
             <div className="stat-card budget">
               <div className="stat-header">
                 <h3>Budget Overview</h3>
-                <span className="stat-icon">💰</span>
+                <span className="stat-icon"><FaMoneyBillWave /></span>
               </div>
               <div className="stat-content">
                 <div className="stat-main">LKR {loading ? "..." : (dashboardData.budget.totalValue / 1000).toFixed(0)}K</div>
@@ -398,7 +399,7 @@ function Dashboard_proc() {
                 dashboardData.recentActivities.map((activity, index) => (
                   <div key={index} className={`activity-item ${activity.type}`}>
                     <div className="activity-icon">
-                      {activity.icon || (activity.type === 'supplier' ? '👤' : '📦')}
+                      {activity.icon === 'supplier' || activity.type === 'supplier' ? <FaUser /> : <FaBox />}
                     </div>
                     <div className="activity-content">
                       <div className="activity-message">{activity.message}</div>
@@ -430,10 +431,10 @@ function Dashboard_proc() {
                     <div className="supplier-info">
                       <div className="supplier-name">
                         {supplier.name || supplier.companyName || 'Unknown Supplier'}
-                        {supplier.greenFlag && <span className="green-flag">🏆</span>}
+                        {supplier.greenFlag && <span className="green-flag"><FaTrophy /></span>}
                       </div>
                       <div className="supplier-rating">
-                        ⭐ {supplier.averageRating?.toFixed(1) || supplier.rating?.toFixed(1) || 'N/A'}
+                        <FaStar className="inline-star" /> {supplier.averageRating?.toFixed(1) || supplier.rating?.toFixed(1) || 'N/A'}
                         {supplier.successRate !== undefined && (
                           <span className="success-rate"> • {supplier.successRate}% success</span>
                         )}
@@ -530,7 +531,7 @@ function Dashboard_proc() {
       </main>
 
       {/* Notifications Panel (dynamic) */}
-      <Notifications_proc
+      <NotificationsProc
         panelOpen={panelOpen}
         togglePanel={toggleNotifications}
       />

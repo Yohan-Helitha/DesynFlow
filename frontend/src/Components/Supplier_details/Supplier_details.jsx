@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Supplier_details.css";
+import { FaPlus, FaEye, FaFileAlt, FaTimes, FaBox } from 'react-icons/fa';
 import { Link } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 import { generateSupplierProfilePDF } from "../../utils/pdfGenerator";
@@ -118,7 +119,7 @@ function Supplier_details() {
             </div>
             <button className="btn-primary">
               <Link to="/Add_suppliers">
-                <span className="icon">➕</span>
+                <FaPlus className="icon" />
                 Add Supplier
               </Link>
             </button>
@@ -180,7 +181,7 @@ function Supplier_details() {
                   className="info-btn"
                   onClick={() => setSelectedSupplier(s)}
                 >
-                  👁 View
+                  <FaEye /> View
                 </button>
               </td>
             </tr>
@@ -206,7 +207,7 @@ function Supplier_details() {
             onClick={() => setSelectedSupplier(null)}
             aria-label="Close"
           >
-            ×
+            <FaTimes />
           </button>
           <h3>{selectedSupplier.companyName}</h3>
           <div className="info-grid">
@@ -257,7 +258,7 @@ function Supplier_details() {
               onClick={() => generateSupplierProfilePDF(selectedSupplier)}
               title="Export supplier profile as PDF"
             >
-              📄 Export PDF
+              <FaFileAlt /> Export PDF
             </button>
             <button 
               className="place-order-btn"

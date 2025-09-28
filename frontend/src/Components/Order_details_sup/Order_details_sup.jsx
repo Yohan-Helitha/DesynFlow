@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Order_details_sup.css";
+import { FaBell, FaSearch, FaClipboardList, FaCheckCircle, FaTimesCircle, FaBox, FaSyncAlt, FaHourglassHalf, FaFileAlt } from 'react-icons/fa';
 
 const API_BASE = "http://localhost:3000/api/purchase-orders"; // correct backend port
 
@@ -145,10 +146,10 @@ function OrderDetailsSup() {
   return (
     <div className="order-details-container">
       {/* Header Section */}
-      <div className="header-section">
+        <div className="header-section">
         <h1>Supplier Order Management</h1>
         <button className="notif-btn" onClick={() => setNotifOpen(!notifOpen)}>
-          <span className="bell-icon">🔔</span>
+          <FaBell className="bell-icon" />
           {notifications.length > 0 && (
             <span className="notif-count">{notifications.length}</span>
           )}
@@ -161,10 +162,11 @@ function OrderDetailsSup() {
         <div className="search-filter">
           <input
             type="text"
-            placeholder="🔍 Search orders by supplier or material..."
+            placeholder="Search orders by supplier or material..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          <FaSearch className="search-icon" />
         </div>
         <div className="status-filter">
           <select
@@ -184,18 +186,18 @@ function OrderDetailsSup() {
       {/* Notifications Panel */}
       <div className={`notif-panel ${notifOpen ? "open" : ""}`}>
         <div className="panel-header">
-          <h3>📋 Pending Approval Requests</h3>
+          <h3><FaClipboardList /> Pending Approval Requests</h3>
           <button className="close-btn" onClick={() => setNotifOpen(false)}>
-            ✕
+            <FaTimesCircle />
           </button>
         </div>
         <div className="panel-content">
           {notifications.length === 0 ? (
-            <div className="empty-notifications">
-              <span className="empty-icon">✅</span>
-              <p>All caught up!</p>
-              <small>No new requests require your attention</small>
-            </div>
+              <div className="empty-notifications">
+                <FaCheckCircle className="empty-icon" />
+                <p>All caught up!</p>
+                <small>No new requests require your attention</small>
+              </div>
           ) : (
             <div className="notifications-list">
               {notifications.map((o) => (
@@ -229,22 +231,30 @@ function OrderDetailsSup() {
                       </span>
                     </div>
                   </div>
-                  <div className="card-actions">
-                    <button
-                      className="approve-btn"
-                      disabled={processingId === o._id}
-                      onClick={() => handleApprove(o._id)}
-                    >
-                      {processingId === o._id ? "⏳ Processing..." : "✅ Approve"}
-                    </button>
-                    <button
-                      className="reject-btn"
-                      disabled={processingId === o._id}
-                      onClick={() => handleReject(o._id)}
-                    >
-                      {processingId === o._id ? "⏳ Processing..." : "❌ Reject"}
-                    </button>
-                  </div>
+                    <div className="card-actions">
+                      <button
+                        className="approve-btn"
+                        disabled={processingId === o._id}
+                        onClick={() => handleApprove(o._id)}
+                      >
+                        {processingId === o._id ? (
+                          <><FaHourglassHalf /> Processing...</>
+                        ) : (
+                          <><FaCheckCircle /> Approve</>
+                        )}
+                      </button>
+                      <button
+                        className="reject-btn"
+                        disabled={processingId === o._id}
+                        onClick={() => handleReject(o._id)}
+                      >
+                        {processingId === o._id ? (
+                          <><FaHourglassHalf /> Processing...</>
+                        ) : (
+                          <><FaTimesCircle /> Reject</>
+                        )}
+                      </button>
+                    </div>
                 </div>
               ))}
             </div>
@@ -253,8 +263,8 @@ function OrderDetailsSup() {
       </div>
       {/* Orders Table */}
       <div className="orders-section">
-        <div className="section-header">
-          <h2>📊 Order Management Dashboard</h2>
+          <div className="section-header">
+          <h2><FaClipboardList /> Order Management Dashboard</h2>
           <div className="stats-summary">
             <span className="stat">Total: {filteredOrders.length}</span>
             <span className="stat pending">Pending: {filteredOrders.filter(o => o.status?.toLowerCase() === 'draft').length}</span>
@@ -271,7 +281,7 @@ function OrderDetailsSup() {
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-icon">📦</span>
+            <FaBox className="empty-icon" />
             <h3>No Orders Found</h3>
             <p>There are no orders matching your current filters.</p>
           </div>
@@ -326,11 +336,11 @@ function OrderDetailsSup() {
                     </td>
                     <td>
                       <span className={`status-badge status-${order.status?.toLowerCase()}`}>
-                        {order.status?.toLowerCase() === 'draft' && '📝 Draft'}
-                        {order.status?.toLowerCase() === 'approved' && '✅ Approved'}
-                        {order.status?.toLowerCase() === 'preparing' && '🔄 Preparing'}
-                        {order.status?.toLowerCase() === 'dispatched' && '📦 Dispatched'}
-                        {order.status?.toLowerCase() === 'rejected' && '❌ Rejected'}
+                        {order.status?.toLowerCase() === 'draft' && <><FaFileAlt /> Draft</>}
+                        {order.status?.toLowerCase() === 'approved' && <><FaCheckCircle /> Approved</>}
+                        {order.status?.toLowerCase() === 'preparing' && <><FaSyncAlt /> Preparing</>}
+                        {order.status?.toLowerCase() === 'dispatched' && <><FaBox /> Dispatched</>}
+                        {order.status?.toLowerCase() === 'rejected' && <><FaTimesCircle /> Rejected</>}
                       </span>
                     </td>
                     <td>
@@ -343,24 +353,24 @@ function OrderDetailsSup() {
                       <div className="actions-cell">
                         {/* Approval/Rejection for Draft orders */}
                         {order.status?.toLowerCase() === 'draft' && (
-                          <>
-                            <button
-                              className="action-btn approve-btn"
-                              disabled={processingId === order._id}
-                              onClick={() => handleApprove(order._id)}
-                            >
-                              {processingId === order._id ? "⏳" : "✅"}
-                              {processingId === order._id ? "Processing" : "Approve"}
-                            </button>
-                            <button
-                              className="action-btn reject-btn"
-                              disabled={processingId === order._id}
-                              onClick={() => handleReject(order._id)}
-                            >
-                              {processingId === order._id ? "⏳" : "❌"}
-                              {processingId === order._id ? "Processing" : "Reject"}
-                            </button>
-                          </>
+                            <>
+                              <button
+                                className="action-btn approve-btn"
+                                disabled={processingId === order._id}
+                                onClick={() => handleApprove(order._id)}
+                              >
+                                {processingId === order._id ? <FaHourglassHalf /> : <FaCheckCircle />}
+                                {processingId === order._id ? " Processing" : " Approve"}
+                              </button>
+                              <button
+                                className="action-btn reject-btn"
+                                disabled={processingId === order._id}
+                                onClick={() => handleReject(order._id)}
+                              >
+                                {processingId === order._id ? <FaHourglassHalf /> : <FaTimesCircle />}
+                                {processingId === order._id ? " Processing" : " Reject"}
+                              </button>
+                            </>
                         )}
                         
                         {/* Supplier workflow buttons for Approved orders */}
@@ -370,8 +380,8 @@ function OrderDetailsSup() {
                             disabled={processingId === order._id}
                             onClick={() => handlePreparing(order._id)}
                           >
-                            {processingId === order._id ? "⏳" : "🔄"}
-                            {processingId === order._id ? "Processing" : "Start Preparing"}
+                            {processingId === order._id ? <FaHourglassHalf /> : <FaSyncAlt />}
+                            {processingId === order._id ? " Processing" : " Start Preparing"}
                           </button>
                         )}
                         
@@ -381,8 +391,8 @@ function OrderDetailsSup() {
                             disabled={processingId === order._id}
                             onClick={() => handleDispatched(order._id)}
                           >
-                            {processingId === order._id ? "⏳" : "📦"}
-                            {processingId === order._id ? "Processing" : "Mark Dispatched"}
+                            {processingId === order._id ? <FaHourglassHalf /> : <FaBox />}
+                            {processingId === order._id ? " Processing" : " Mark Dispatched"}
                           </button>
                         )}
                         

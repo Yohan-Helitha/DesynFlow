@@ -15,6 +15,7 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar } from 'react-icons/fa';
 
 ChartJS.register(
   CategoryScale,
@@ -40,17 +41,17 @@ const generateSupplierChartData = (orders, materials, earnings) => {
   for (let i = 5; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(date.toLocaleDateString('en', { month: 'short' }));
-    
+
     const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
     const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    
+
     // Calculate real monthly earnings from completed orders
     const monthOrders = orders.filter(order => {
       const orderDate = new Date(order.createdAt || order.orderDate || now);
       return orderDate >= monthStart && orderDate <= monthEnd && 
              (order.status === 'completed' || order.status === 'Completed');
     });
-    
+
     const monthEarnings = monthOrders.reduce((sum, order) => {
       return sum + (parseFloat(order.totalAmount) || parseFloat(order.amount) || 0);
     }, 0);
@@ -58,11 +59,11 @@ const generateSupplierChartData = (orders, materials, earnings) => {
 
     // Calculate real delivery performance
     const completedOnTime = monthOrders.filter(order => {
-      const deliveryDate = new Date(order.deliveryDate || order.completedDate || order.updatedAt);
+      const deliveryDate = new Date(order.deliveryDate || order.completedDate || order.updatedAt || now);
       const expectedDate = new Date(order.expectedDelivery || order.dueDate || deliveryDate);
       return deliveryDate <= expectedDate;
     }).length;
-    
+
     const deliveryPercentage = monthOrders.length > 0 ? (completedOnTime / monthOrders.length) * 100 : 0;
     monthlyDeliveryPercentage.push(Math.round(deliveryPercentage));
 
@@ -270,20 +271,16 @@ function Dashboard_sup() {
       let supplierId = localStorage.getItem('currentSupplierId') || 
                       sessionStorage.getItem('supplierId') || 
                       new URLSearchParams(window.location.search).get('supplierId');
-      
+
       // If no supplier ID is found, try to get the first available supplier for demo purposes
       if (!supplierId) {
-        console.log('No supplier ID found - attempting to fetch first available supplier');
         try {
           const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
           const suppliers = await suppliersResponse.json();
           if (suppliers && suppliers.length > 0) {
             supplierId = suppliers[0]._id;
-            console.log('Using first available supplier:', supplierId);
-            // Store it for next time
             localStorage.setItem('currentSupplierId', supplierId);
           } else {
-            console.error('No suppliers found in database');
             setLoading(false);
             return;
           }
@@ -295,86 +292,58 @@ function Dashboard_sup() {
       }
 
       try {
-        // Fetch sample requests
         const samplesResponse = await fetch(`http://localhost:3000/api/samples/${supplierId}`);
         const samplesData = await samplesResponse.json();
-        
-        if (Array.isArray(samplesData)) {
-          setRequests(samplesData);
-        } else if (samplesData && Array.isArray(samplesData.samples)) {
-          setRequests(samplesData.samples);
-        } else {
-          setRequests([]);
-        }
 
-        // Fetch supplier profile and orders
+        if (Array.isArray(samplesData)) setRequests(samplesData);
+        else if (samplesData && Array.isArray(samplesData.samples)) setRequests(samplesData.samples);
+        else setRequests([]);
+
         const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
         const suppliers = await suppliersResponse.json();
         const currentSupplier = suppliers.find(s => s._id === supplierId);
-        
-        if (!currentSupplier) {
-          console.error(`Supplier with ID ${supplierId} not found`);
-          setLoading(false);
-          return;
-        }
+        if (!currentSupplier) { setLoading(false); return; }
 
-        // Fetch purchase orders for this supplier
         const ordersResponse = await fetch("http://localhost:3000/api/purchase-orders");
         const allOrders = await ordersResponse.json();
         const supplierOrders = allOrders.filter(order => 
           order.supplierId === supplierId || order.supplier?.toString() === supplierId
         );
 
-        // Fetch materials offered by this supplier
         const materialsResponse = await fetch(`http://localhost:3000/api/materials?supplierId=${supplierId}`);
         const materials = await materialsResponse.json();
 
-        // Fetch supplier ratings to get most up-to-date rating
         let supplierRatings = [];
         try {
           const ratingsResponse = await fetch(`http://localhost:3000/api/supplier-ratings/${supplierId}`);
-          if (ratingsResponse.ok) {
-            supplierRatings = await ratingsResponse.json();
-          }
-        } catch (err) {
-          console.log('Ratings not available:', err);
-        }
+          if (ratingsResponse.ok) supplierRatings = await ratingsResponse.json();
+        } catch (err) { console.log('Ratings not available:', err); }
 
-        // Calculate order statistics
         const orderStats = {
           active: supplierOrders.filter(o => o.status === 'active' || o.status === 'processing').length,
           completed: supplierOrders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
           pending: supplierOrders.filter(o => o.status === 'pending').length
         };
 
-        // Calculate performance metrics
         const completedOrders = supplierOrders.filter(o => o.status === 'completed');
-        
-        // Calculate real average response time from order data
         const avgResponseTime = completedOrders.length > 0 ? 
           completedOrders.reduce((sum, order) => {
             const created = new Date(order.createdAt);
-            const responded = new Date(order.respondedAt || order.updatedAt);
+            const responded = new Date(order.respondedAt || order.updatedAt || created);
             const diffHours = Math.abs(responded - created) / (1000 * 60 * 60);
-            return sum + (diffHours > 0 ? diffHours : 12); // Default 12 hours if no response time
+            return sum + (diffHours > 0 ? diffHours : 12);
           }, 0) / completedOrders.length : 12;
 
-        // Calculate latest average rating from ratings data
         const latestAverageRating = supplierRatings.length > 0 ? 
-          supplierRatings.reduce((sum, rating) => {
-            const avgRating = rating.weightedScore || 
-                            ((rating.criteria?.timeliness || 0) + (rating.criteria?.quality || 0) + (rating.criteria?.communication || 0)) / 3;
-            return sum + avgRating;
-          }, 0) / supplierRatings.length : (currentSupplier?.rating || 0);
+          supplierRatings.reduce((sum, rating) => sum + (rating.weightedScore || 0), 0) / supplierRatings.length : (currentSupplier?.rating || 0);
 
         const performance = {
           onTimeDelivery: completedOrders.length > 0 ? 
             Math.round((completedOrders.filter(o => o.deliveredOnTime !== false).length / completedOrders.length) * 100) : 0,
-          qualityScore: Math.round(latestAverageRating * 20), // Convert 5-point scale to 100-point
+          qualityScore: Math.round(latestAverageRating * 20),
           responseTime: Math.round(avgResponseTime)
         };
 
-        // Calculate real earnings from actual order amounts
         const now = new Date();
         const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -393,35 +362,18 @@ function Dashboard_sup() {
         const earnings = {
           thisMonth: thisMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0),
           lastMonth: lastMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0),
-          totalEarnings: supplierOrders
-            .filter(o => o.status === 'completed' || o.status === 'approved')
-            .reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0)
+          totalEarnings: supplierOrders.filter(o => o.status === 'completed' || o.status === 'approved').reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0)
         };
 
-        // Recent orders
-        const recentOrders = supplierOrders
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 5)
-          .map(order => ({
-            id: order._id,
-            date: order.createdAt,
-            status: order.status,
-            amount: parseFloat(order.totalAmount) || 0,
-            items: order.items?.length || 1
-          }));
+        const recentOrders = supplierOrders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5).map(order => ({
+          id: order._id,
+          date: order.createdAt,
+          status: order.status,
+          amount: parseFloat(order.totalAmount) || 0,
+          items: order.items?.length || 1
+        }));
 
-        // Generate chart data using real supplier orders
         const chartData = generateSupplierChartData(supplierOrders, materials, earnings);
-
-        console.log('Dashboard data summary:', {
-          supplierId,
-          supplierName: currentSupplier.companyName,
-          totalOrders: supplierOrders.length,
-          completedOrders: completedOrders.length,
-          currentRating: latestAverageRating,
-          thisMonthEarnings: earnings.thisMonth,
-          materialsCount: materials.length
-        });
 
         setSupplierData({
           profile: {
@@ -431,10 +383,10 @@ function Dashboard_sup() {
             totalOrders: supplierOrders.length
           },
           orders: orderStats,
-          materials: Array.isArray(materials) ? materials.slice(0, 8) : [],
+          materials: Array.isArray(materials) ? materials.slice(0,8) : [],
           performance,
           recentOrders,
-          notifications: samplesData.slice(0, 3), // Use sample requests as notifications
+          notifications: (Array.isArray(samplesData) ? samplesData : (samplesData?.samples || [])).slice(0,3),
           earnings,
           chartData
         });
@@ -442,7 +394,6 @@ function Dashboard_sup() {
       } catch (error) {
         console.error("Error fetching supplier dashboard data:", error);
         setRequests([]);
-        // Set empty state with proper structure to avoid UI errors
         setSupplierData(prevData => ({
           ...prevData,
           profile: { name: "Data Loading Error", email: "", rating: 0, totalOrders: 0 },
@@ -512,18 +463,18 @@ function Dashboard_sup() {
               <div className="profile-info">
                 <span className="profile-name">{supplierData.profile.name}</span>
                 <div className="profile-rating">
-                  ⭐ {supplierData.profile.rating.toFixed(1)} ({supplierData.profile.totalOrders} orders)
+                  ⭐ {supplierData.profile.rating?.toFixed(1) || 0} ({supplierData.profile.totalOrders} orders)
                 </div>
               </div>
               <div className="profile-avatar">
                 <img src="/avatar.png" alt="profile" onError={(e) => {e.target.classList.add('hidden')}} />
-                <div className="avatar-fallback">{supplierData.profile.name.charAt(0)}</div>
+                <div className="avatar-fallback">{supplierData.profile.name?.charAt(0) || 'S'}</div>
               </div>
             </div>
           </div>
           <div className="topbar-right">
             <button className="notif-btn" onClick={() => setNotifOpen(!notifOpen)}>
-              <span className="bell-icon">🔔</span>
+              <FaBell className="bell-icon" />
               {pendingOrders.length > 0 && (
                 <span className="notif-count">{pendingOrders.length}</span>
               )}
@@ -539,6 +490,7 @@ function Dashboard_sup() {
               <div className="stat-header">
                 <h3>Orders</h3>
                 <span className="stat-icon">📦</span>
+                <span className="stat-icon"><FaBox /></span>
               </div>
               <div className="stat-main">{loading ? "..." : supplierData.orders.active + supplierData.orders.completed + supplierData.orders.pending}</div>
               <div className="stat-breakdown">
@@ -552,6 +504,7 @@ function Dashboard_sup() {
               <div className="stat-header">
                 <h3>This Month</h3>
                 <span className="stat-icon">💰</span>
+                <span className="stat-icon"><FaMoneyBillWave /></span>
               </div>
               <div className="stat-main">LKR {loading ? "..." : (supplierData.earnings.thisMonth / 1000).toFixed(0)}K</div>
               <div className="stat-breakdown">
@@ -578,6 +531,7 @@ function Dashboard_sup() {
               <div className="stat-header">
                 <h3>Materials</h3>
                 <span className="stat-icon">🏗️</span>
+                <span className="stat-icon"><FaBox /></span>
               </div>
               <div className="stat-main">{loading ? "..." : supplierData.materials.length}</div>
               <div className="stat-breakdown">
@@ -769,11 +723,13 @@ function Dashboard_sup() {
           <div className="actions-grid">
             <Link to="/Sample_order_list" className="action-card">
               <div className="action-icon">📋</div>
+              <div className="action-icon"><FaClipboardList /></div>
               <div className="action-title">Sample Orders</div>
               <div className="action-desc">Manage sample requests</div>
             </Link>
             <Link to="/Order_details_sup" className="action-card">
               <div className="action-icon">📦</div>
+              <div className="action-icon"><FaBox /></div>
               <div className="action-title">Order Status</div>
               <div className="action-desc">Track order progress</div>
             </Link>
@@ -785,14 +741,17 @@ function Dashboard_sup() {
       <div className={`notif-panel ${notifOpen ? "open" : ""}`}>
         <div className="panel-header">
           <h3>📋 Pending Approval Results</h3>
+          <h3><FaClipboardList /> Pending Approval Results</h3>
           <button className="close-btn" onClick={() => setNotifOpen(false)}>
             ✕
+            <FaTimes />
           </button>
         </div>
         <div className="panel-content">
           {pendingOrders.length === 0 ? (
             <div className="empty-notifications">
               <span className="empty-icon">✅</span>
+              <FaCheckCircle className="empty-icon" />
               <p>All caught up!</p>
               <small>No new requests require your attention</small>
             </div>

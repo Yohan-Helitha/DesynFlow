@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Sample_order_list.css";
+import { FaBox } from 'react-icons/fa';
 import Sidebar from "../Sidebar/Sidebar";
 
 function Sample_order_list() {
@@ -24,7 +25,7 @@ function Sample_order_list() {
     <div className="page-with-sidebar">
       <Sidebar />
       <div className="sample-order-list-page">
-        <h2>📦 Sample Order Requests</h2>
+  <h2><FaBox className="header-icon" /> Sample Order Requests</h2>
       {loading ? (
         <p>Loading...</p>
       ) : samples.length === 0 ? (

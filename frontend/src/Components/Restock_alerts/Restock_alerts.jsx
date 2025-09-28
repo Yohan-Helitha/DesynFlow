@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Restock_alerts.css';
 import { Link } from 'react-router-dom';
+import { FaTimes, FaClipboardList } from 'react-icons/fa';
 import Sidebar from '../Sidebar/Sidebar';
 
 function RestockAlerts() {
@@ -326,7 +327,7 @@ function RestockAlerts() {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Alert Details - {selectedAlert.materialName}</h3>
-                <button className="close-btn" onClick={() => setSelectedAlert(null)}>×</button>
+                <button className="close-btn" onClick={() => setSelectedAlert(null)}><FaTimes /></button>
               </div>
               
               <div className="modal-body">
@@ -393,7 +394,7 @@ function RestockAlerts() {
                     setSelectedAlert(null);
                   }}
                 >
-                  📋 Create Purchase Order
+                  <FaClipboardList /> Create Purchase Order
                 </button>
                 <button 
                   className="btn-secondary"

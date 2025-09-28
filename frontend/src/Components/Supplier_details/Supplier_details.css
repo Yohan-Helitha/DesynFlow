@@ -286,9 +286,15 @@ tbody tr:last-child td:last-child {
 }
 
 .rating::before {
-  content: "⭐";
-  font-size: 0.8em;
-  margin-right: 3px;
+  content: ""; /* replaced emoji star with inline React Icon in markup */
+}
+
+.rating-icon {
+  width: 0.9em;
+  height: 0.9em;
+  vertical-align: middle;
+  margin-right: 6px;
+  color: #f59e0b;
 }
 
 /* ===== Action Buttons ===== */
