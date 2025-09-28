@@ -29,6 +29,7 @@ import inspectorLocationRoutes from "./modules/auth/routes/inspectorLocationRout
 import assignmentRoutes from "./modules/auth/routes/assignmentRoutes.js";
 import reportRoutes from "./modules/auth/routes/reportRoutes.js";
 import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
+import inspectionFormRoutes from "./modules/auth/routes/inspectionFormRoutes.js";
 
 
 app.use("/api/auth", authRouter);
@@ -38,6 +39,7 @@ app.use("/api/inspector-location", inspectorLocationRoutes);
 app.use("/api/assignment", assignmentRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/inspection-request", inspectionRequestRoutes);
+app.use("/api/inspectorForms", inspectionFormRoutes);
 
 app.get("/health", (req, res) => {
   res.json({
