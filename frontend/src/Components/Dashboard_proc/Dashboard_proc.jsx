@@ -3,17 +3,171 @@ import "./Dashboard_proc.css";
 import { Link } from "react-router-dom";
 import Notifications_proc from "../Notifications_proc/Notifications_proc";
 import Sidebar from "../Sidebar/Sidebar";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
+
+// Generate TRULY dynamic chart data from real backend data
+const generateChartData = (orders, suppliers, topSuppliers) => {
+  // Current date for dynamic calculations
+  const now = new Date();
+  const months = [];
+  const monthlyOrderCounts = [];
+  const monthlyBudgetSpent = [];
+
+  // Generate last 6 months dynamically
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(date.toLocaleDateString('en', { month: 'short' }));
+    
+    // Count actual orders for this month
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    
+    const monthOrders = orders.filter(order => {
+      const orderDate = new Date(order.createdAt || order.orderDate || now);
+      return orderDate >= monthStart && orderDate <= monthEnd;
+    });
+    
+    monthlyOrderCounts.push(monthOrders.length);
+    
+    // Calculate actual budget spent for this month from real orders
+    const monthBudget = monthOrders.reduce((sum, order) => {
+      return sum + (parseFloat(order.totalAmount) || parseFloat(order.amount) || 0);
+    }, 0);
+    monthlyBudgetSpent.push(monthBudget);
+  }
+
+  // Real order status distribution from actual data
+  const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'Pending').length;
+  const approvedCount = orders.filter(o => o.approvalStatus === 'approved' || o.status === 'approved').length;
+  const completedCount = orders.filter(o => o.status === 'completed' || o.status === 'Completed').length;
+  const rejectedCount = orders.filter(o => o.approvalStatus === 'rejected' || o.status === 'rejected').length;
+
+  const orderStatusData = {
+    labels: ['Pending', 'Approved', 'Completed', 'Rejected'],
+    datasets: [{
+      data: [pendingCount, approvedCount, completedCount, rejectedCount],
+      backgroundColor: ['#fbbf24', '#10b981', '#674636', '#ef4444'],
+      borderWidth: 2,
+      borderColor: '#ffffff'
+    }]
+  };
+
+  // Real supplier performance from actual ratings
+  const supplierPerformanceData = {
+    labels: topSuppliers.slice(0, 5).map(s => s.name || s.companyName || `Supplier ${s._id?.slice(-4) || ''}`),
+    datasets: [{
+      label: 'Average Rating',
+      data: topSuppliers.slice(0, 5).map(s => parseFloat(s.averageRating || 0).toFixed(1)),
+      backgroundColor: 'rgba(103, 70, 54, 0.6)',
+      borderColor: '#674636',
+      borderWidth: 2
+    }]
+  };
+
+  // Real budget trends from actual order amounts
+  const budgetTrendsData = {
+    labels: months,
+    datasets: [{
+      label: 'Budget Spent (LKR)',
+      data: monthlyBudgetSpent,
+      borderColor: '#674636',
+      backgroundColor: 'rgba(103, 70, 54, 0.1)',
+      tension: 0.4,
+      fill: true
+    }]
+  };
+
+  // Real material demand from actual orders
+  const materialCounts = {};
+  orders.forEach(order => {
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach(item => {
+        const materialType = item.materialType || item.material || item.name || 'Other';
+        materialCounts[materialType] = (materialCounts[materialType] || 0) + (item.quantity || 1);
+      });
+    } else if (order.materialType) {
+      materialCounts[order.materialType] = (materialCounts[order.materialType] || 0) + 1;
+    }
+  });
+
+  const materialEntries = Object.entries(materialCounts);
+  const topMaterials = materialEntries.sort(([,a], [,b]) => b - a).slice(0, 6);
+
+  const materialDemandData = {
+    labels: topMaterials.map(([material]) => material),
+    datasets: [{
+      label: 'Quantity Ordered',
+      data: topMaterials.map(([, count]) => count),
+      backgroundColor: [
+        'rgba(103, 70, 54, 0.8)',
+        'rgba(139, 69, 19, 0.8)',
+        'rgba(160, 82, 45, 0.8)',
+        'rgba(210, 180, 140, 0.8)',
+        'rgba(222, 184, 135, 0.8)',
+        'rgba(205, 133, 63, 0.8)'
+      ]
+    }]
+  };
+
+  return {
+    monthlyOrders: {
+      labels: months,
+      datasets: [{
+        label: 'Orders',
+        data: monthlyOrderCounts,
+        borderColor: '#674636',
+        backgroundColor: 'rgba(103, 70, 54, 0.1)',
+        tension: 0.4
+      }]
+    },
+    supplierPerformance: supplierPerformanceData,
+    budgetTrends: budgetTrendsData,
+    orderStatusDistribution: orderStatusData,
+    materialDemand: materialDemandData
+  };
+};
 
 function Dashboard_proc() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
   const [dashboardData, setDashboardData] = useState({
     suppliers: { total: 0, active: 0, pending: 0 },
-    orders: { total: 0, pending: 0, completed: 0, approved: 0 },
-    budget: { totalRequests: 0, pendingApproval: 0, approvedThisMonth: 0 },
+    orders: { total: 0, pending: 0, completed: 0, approved: 0, rejected: 0 },
+    budget: { totalRequests: 0, pendingApproval: 0, approvedThisMonth: 0, totalValue: 0, avgOrderValue: 0 },
     recentActivities: [],
     topSuppliers: [],
-    systemMetrics: { orderVolume: 0, avgDeliveryTime: 0, supplierSatisfaction: 0 }
+    systemMetrics: { orderVolume: 0, avgDeliveryTime: 0, supplierSatisfaction: 0 },
+    chartData: {
+      monthlyOrders: { labels: [], datasets: [] },
+      supplierPerformance: { labels: [], datasets: [] },
+      budgetTrends: { labels: [], datasets: [] },
+      orderStatusDistribution: { labels: [], datasets: [] },
+      materialDemand: { labels: [], datasets: [] }
+    }
   });
   const [loading, setLoading] = useState(true);
 
@@ -48,8 +202,15 @@ function Dashboard_proc() {
           total: orders.length,
           pending: orders.filter(o => o.status === 'pending').length,
           completed: orders.filter(o => o.status === 'completed').length,
-          approved: orders.filter(o => o.approvalStatus === 'approved').length
+          approved: orders.filter(o => o.approvalStatus === 'approved').length,
+          rejected: orders.filter(o => o.approvalStatus === 'rejected').length
         };
+
+        // Calculate budget statistics
+        const totalBudgetValue = orders.reduce((sum, order) => {
+          return sum + (order.totalAmount || order.totalPrice || 0);
+        }, 0);
+        const avgOrderValue = orders.length > 0 ? totalBudgetValue / orders.length : 0;
 
         // Generate recent activities
         const recentActivities = [
@@ -75,13 +236,23 @@ function Dashboard_proc() {
             Math.round(topSuppliers.reduce((acc, s) => acc + (s.averageRating || 0), 0) / topSuppliers.length * 20) : 0
         };
 
+        // Generate chart data
+        const chartData = generateChartData(orders, suppliers, topSuppliers);
+
         setDashboardData({
           suppliers: supplierStats,
           orders: orderStats,
-          budget: { totalRequests: orders.length, pendingApproval: orderStats.pending, approvedThisMonth: orderStats.approved },
+          budget: { 
+            totalRequests: orders.length, 
+            pendingApproval: orderStats.pending, 
+            approvedThisMonth: orderStats.approved,
+            totalValue: totalBudgetValue,
+            avgOrderValue: avgOrderValue
+          },
           recentActivities,
           topSuppliers: topSuppliers.slice(0, 5),
-          systemMetrics
+          systemMetrics,
+          chartData
         });
 
       } catch (error) {
@@ -92,6 +263,13 @@ function Dashboard_proc() {
     };
 
     fetchDashboardData();
+
+    // Set up auto-refresh every 30 seconds for real-time data
+    const intervalId = setInterval(() => {
+      fetchDashboardData();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   // Check notification count from localStorage
@@ -114,10 +292,10 @@ function Dashboard_proc() {
         <div className="topbar">
           <h1>Welcome Back</h1>
           <div className="user">
-            <div className="notification" onClick={toggleNotifications} style={{ position: 'relative', cursor: 'pointer' }}>
+            <div className="notification-button" onClick={toggleNotifications}>
               🔔
               {notifCount > 0 && (
-                <span style={{ position: 'absolute', top: 0, right: 0, width: '10px', height: '10px', background: 'red', borderRadius: '50%', border: '1px solid #fff', display: 'inline-block' }}></span>
+                <span className="notification-badge"></span>
               )}
             </div>
             <span>Procurement Officer</span>
@@ -160,14 +338,14 @@ function Dashboard_proc() {
 
             <div className="stat-card budget">
               <div className="stat-header">
-                <h3>Budget Approvals</h3>
+                <h3>Budget Overview</h3>
                 <span className="stat-icon">💰</span>
               </div>
               <div className="stat-content">
-                <div className="stat-main">{loading ? "..." : dashboardData.budget.pendingApproval}</div>
+                <div className="stat-main">LKR {loading ? "..." : (dashboardData.budget.totalValue / 1000).toFixed(0)}K</div>
                 <div className="stat-details">
-                  <span className="approved">Approved: {dashboardData.budget.approvedThisMonth}</span>
-                  <span className="total">Total Requests: {dashboardData.budget.totalRequests}</span>
+                  <span className="approved">Avg Order: LKR {(dashboardData.budget.avgOrderValue / 1000).toFixed(0)}K</span>
+                  <span className="pending">Pending: {dashboardData.budget.pendingApproval}</span>
                 </div>
               </div>
               <Link to="/Budget_approval" className="stat-action">Review Budgets</Link>
@@ -190,6 +368,97 @@ function Dashboard_proc() {
             <div className="metric-item">
               <div className="metric-value">{dashboardData.systemMetrics.supplierSatisfaction}%</div>
               <div className="metric-label">Supplier Satisfaction</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Analytics Charts */}
+        <div className="analytics-section">
+          <h2>Analytics & Insights</h2>
+          <div className="charts-grid">
+            {/* Order Trends Chart */}
+            <div className="chart-container">
+              <h3>Monthly Order Trends</h3>
+              <div className="chart-wrapper">
+                <Line
+                  data={dashboardData.chartData.monthlyOrders}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      title: { display: false }
+                    },
+                    scales: {
+                      y: { beginAtZero: true }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Order Status Distribution */}
+            <div className="chart-container">
+              <h3>Order Status Distribution</h3>
+              <div className="chart-wrapper">
+                <Doughnut
+                  data={dashboardData.chartData.orderStatusDistribution}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { position: 'bottom' }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Supplier Performance */}
+            <div className="chart-container">
+              <h3>Top Supplier Ratings</h3>
+              <div className="chart-wrapper">
+                <Bar
+                  data={dashboardData.chartData.supplierPerformance}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false }
+                    },
+                    scales: {
+                      y: { beginAtZero: true, max: 5 }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Budget Trends */}
+            <div className="chart-container">
+              <h3>Budget Spending Trends</h3>
+              <div className="chart-wrapper">
+                <Line
+                  data={dashboardData.chartData.budgetTrends}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false }
+                    },
+                    scales: {
+                      y: { 
+                        beginAtZero: true,
+                        ticks: {
+                          callback: function(value) {
+                            return 'LKR ' + (value / 1000).toFixed(0) + 'K';
+                          }
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>

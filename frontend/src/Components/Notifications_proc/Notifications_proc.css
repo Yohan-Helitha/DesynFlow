@@ -89,13 +89,16 @@
   background: linear-gradient(135deg, #FFF8E8 0%, rgba(247, 238, 211, 0.8) 100%);
   border: 2px solid rgba(103, 70, 54, 0.15);
   border-radius: 8px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
   box-shadow: 0 6px 20px rgba(103, 70, 54, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #674636;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* Approved notifications - green touch */
@@ -130,6 +133,33 @@
   border-color: rgba(103, 70, 54, 0.3);
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgba(103, 70, 54, 0.15);
+}
+
+/* Notification content and icon styling */
+.notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.notification-icon {
+  font-size: 16px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.notification-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #674636;
+  word-wrap: break-word;
+}
+
+.notification-text strong {
+  font-weight: 600;
+  color: #674636;
 }
 
 .note p {

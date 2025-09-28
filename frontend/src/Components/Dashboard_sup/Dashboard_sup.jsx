@@ -2,6 +2,158 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard_sup.css";
 import { Link } from "react-router-dom";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
+
+// Generate TRULY dynamic supplier chart data from real backend data
+const generateSupplierChartData = (orders, materials, earnings) => {
+  const now = new Date();
+  const months = [];
+  const monthlyEarningsData = [];
+  const monthlyDeliveryPercentage = [];
+  const monthlyQualityScores = [];
+
+  // Generate last 6 months dynamically with real data
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(date.toLocaleDateString('en', { month: 'short' }));
+    
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    
+    // Calculate real monthly earnings from completed orders
+    const monthOrders = orders.filter(order => {
+      const orderDate = new Date(order.createdAt || order.orderDate || now);
+      return orderDate >= monthStart && orderDate <= monthEnd && 
+             (order.status === 'completed' || order.status === 'Completed');
+    });
+    
+    const monthEarnings = monthOrders.reduce((sum, order) => {
+      return sum + (parseFloat(order.totalAmount) || parseFloat(order.amount) || 0);
+    }, 0);
+    monthlyEarningsData.push(monthEarnings);
+
+    // Calculate real delivery performance
+    const completedOnTime = monthOrders.filter(order => {
+      const deliveryDate = new Date(order.deliveryDate || order.completedDate || order.updatedAt);
+      const expectedDate = new Date(order.expectedDelivery || order.dueDate || deliveryDate);
+      return deliveryDate <= expectedDate;
+    }).length;
+    
+    const deliveryPercentage = monthOrders.length > 0 ? (completedOnTime / monthOrders.length) * 100 : 0;
+    monthlyDeliveryPercentage.push(Math.round(deliveryPercentage));
+
+    // Calculate quality scores from actual ratings or order completion data
+    const monthQualityScore = monthOrders.length > 0 ? 
+      (monthOrders.filter(o => o.status === 'completed').length / monthOrders.length) * 100 : 0;
+    monthlyQualityScores.push(Math.round(monthQualityScore));
+  }
+
+  // Real order fulfillment rate from actual order statuses
+  const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'Completed').length;
+  const inProgressOrders = orders.filter(o => o.status === 'in-progress' || o.status === 'processing' || o.status === 'In Progress').length;
+  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'Pending').length;
+  const cancelledOrders = orders.filter(o => o.status === 'cancelled' || o.status === 'rejected' || o.status === 'Cancelled').length;
+
+  const fulfillmentData = {
+    labels: ['Completed', 'In Progress', 'Pending', 'Cancelled'],
+    datasets: [{
+      data: [completedOrders, inProgressOrders, pendingOrders, cancelledOrders],
+      backgroundColor: ['#10b981', '#fbbf24', '#3b82f6', '#ef4444'],
+      borderWidth: 2,
+      borderColor: '#ffffff'
+    }]
+  };
+
+  // Real material catalog performance from actual order data
+  const materialOrderCounts = {};
+  orders.forEach(order => {
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach(item => {
+        const materialName = item.materialId?.materialName || item.materialType || item.name || 'Unknown Material';
+        materialOrderCounts[materialName] = (materialOrderCounts[materialName] || 0) + (item.quantity || 1);
+      });
+    }
+  });
+
+  const topMaterialEntries = Object.entries(materialOrderCounts).sort(([,a], [,b]) => b - a).slice(0, 5);
+  
+  const materialPerformance = {
+    labels: topMaterialEntries.length > 0 ? 
+      topMaterialEntries.map(([name]) => name) : 
+      materials.slice(0, 5).map(m => m.materialId?.materialName || m.name || 'Material'),
+    datasets: [{
+      label: 'Total Orders',
+      data: topMaterialEntries.length > 0 ? 
+        topMaterialEntries.map(([, count]) => count) :
+        materials.slice(0, 5).map(() => 0),
+      backgroundColor: 'rgba(103, 70, 54, 0.6)',
+      borderColor: '#674636',
+      borderWidth: 2
+    }]
+  };
+
+  // Real performance metrics trend from actual delivery data
+  const performanceTrend = {
+    labels: months,
+    datasets: [
+      {
+        label: 'On-Time Delivery %',
+        data: monthlyDeliveryPercentage,
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        tension: 0.4
+      },
+      {
+        label: 'Quality Score %',
+        data: monthlyQualityScores,
+        borderColor: '#674636',
+        backgroundColor: 'rgba(103, 70, 54, 0.1)',
+        tension: 0.4
+      }
+    ]
+  };
+
+  return {
+    monthlyEarnings: {
+      labels: months,
+      datasets: [{
+        label: 'Earnings (LKR)',
+        data: monthlyEarningsData,
+        borderColor: '#674636',
+        backgroundColor: 'rgba(103, 70, 54, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    orderFulfillment: fulfillmentData,
+    materialPerformance: materialPerformance,
+    performanceTrend: performanceTrend
+  };
+};
 
 function Dashboard_sup() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -17,7 +169,13 @@ function Dashboard_sup() {
     performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0 },
     recentOrders: [],
     notifications: [],
-    earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0 }
+    earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0 },
+    chartData: {
+      monthlyEarnings: { labels: [], datasets: [] },
+      orderFulfillment: { labels: [], datasets: [] },
+      materialPerformance: { labels: [], datasets: [] },
+      performanceTrend: { labels: [], datasets: [] }
+    }
   });
   const [loading, setLoading] = useState(true);
 
@@ -96,12 +254,23 @@ function Dashboard_sup() {
 
   useEffect(() => {
     fetchPendingOrders();
+
+    // Set up auto-refresh every 30 seconds for real-time data
+    const intervalId = setInterval(() => {
+      fetchPendingOrders();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
     const fetchSupplierDashboardData = async () => {
       setLoading(true);
-      const supplierId = "123"; // This should come from authentication/session
+      // Get supplier ID from authentication/session or use a dynamic method
+      const supplierId = localStorage.getItem('currentSupplierId') || 
+                        sessionStorage.getItem('supplierId') || 
+                        new URLSearchParams(window.location.search).get('supplierId') || 
+                        "67014ff3f5c9c9a11987c331"; // Fallback to a valid supplier ID from your DB
 
       try {
         // Fetch sample requests
@@ -141,18 +310,45 @@ function Dashboard_sup() {
 
         // Calculate performance metrics
         const completedOrders = supplierOrders.filter(o => o.status === 'completed');
+        
+        // Calculate real average response time from order data
+        const avgResponseTime = completedOrders.length > 0 ? 
+          completedOrders.reduce((sum, order) => {
+            const created = new Date(order.createdAt);
+            const responded = new Date(order.respondedAt || order.updatedAt);
+            const diffHours = Math.abs(responded - created) / (1000 * 60 * 60);
+            return sum + (diffHours > 0 ? diffHours : 12); // Default 12 hours if no response time
+          }, 0) / completedOrders.length : 12;
+
         const performance = {
           onTimeDelivery: completedOrders.length > 0 ? 
             Math.round((completedOrders.filter(o => o.deliveredOnTime !== false).length / completedOrders.length) * 100) : 0,
           qualityScore: currentSupplier?.rating ? Math.round(currentSupplier.rating * 20) : 0,
-          responseTime: Math.floor(Math.random() * 24) + 1 // Mock response time in hours
+          responseTime: Math.round(avgResponseTime)
         };
 
-        // Calculate earnings (mock data)
+        // Calculate real earnings from actual order amounts
+        const now = new Date();
+        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+        const thisMonthOrders = supplierOrders.filter(o => {
+          const orderDate = new Date(o.createdAt);
+          return orderDate >= thisMonthStart && (o.status === 'completed' || o.status === 'approved');
+        });
+
+        const lastMonthOrders = supplierOrders.filter(o => {
+          const orderDate = new Date(o.createdAt);
+          return orderDate >= lastMonthStart && orderDate <= lastMonthEnd && (o.status === 'completed' || o.status === 'approved');
+        });
+
         const earnings = {
-          thisMonth: supplierOrders.reduce((sum, o) => sum + (o.totalAmount || Math.random() * 5000), 0),
-          lastMonth: Math.random() * 8000,
-          totalEarnings: supplierOrders.length * 3000 + Math.random() * 50000
+          thisMonth: thisMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0),
+          lastMonth: lastMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0),
+          totalEarnings: supplierOrders
+            .filter(o => o.status === 'completed' || o.status === 'approved')
+            .reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0)
         };
 
         // Recent orders
@@ -163,15 +359,18 @@ function Dashboard_sup() {
             id: order._id,
             date: order.createdAt,
             status: order.status,
-            amount: order.totalAmount || Math.random() * 5000,
+            amount: parseFloat(order.totalAmount) || 0,
             items: order.items?.length || 1
           }));
 
+        // Generate chart data
+        const chartData = generateSupplierChartData(orderStats, materials, earnings);
+
         setSupplierData({
           profile: {
-            name: currentSupplier?.name || "Supplier Name",
-            email: currentSupplier?.email || "supplier@example.com",
-            rating: currentSupplier?.rating || 0,
+            name: currentSupplier?.companyName || currentSupplier?.name || `Supplier ${supplierId.slice(-4)}`,
+            email: currentSupplier?.email || currentSupplier?.contactEmail || `contact@supplier${supplierId.slice(-4)}.com`,
+            rating: parseFloat(currentSupplier?.rating || currentSupplier?.averageRating || 0),
             totalOrders: supplierOrders.length
           },
           orders: orderStats,
@@ -179,7 +378,8 @@ function Dashboard_sup() {
           performance,
           recentOrders,
           notifications: samplesData.slice(0, 3), // Use sample requests as notifications
-          earnings
+          earnings,
+          chartData
         });
 
       } catch (error) {
@@ -191,6 +391,13 @@ function Dashboard_sup() {
     };
 
     fetchSupplierDashboardData();
+
+    // Set up auto-refresh every 30 seconds for real-time dashboard data
+    const dashboardIntervalId = setInterval(() => {
+      fetchSupplierDashboardData();
+    }, 30000);
+
+    return () => clearInterval(dashboardIntervalId);
   }, []);
 
   const handleNoted = (id) => {
@@ -242,7 +449,7 @@ function Dashboard_sup() {
                 </div>
               </div>
               <div className="profile-avatar">
-                <img src="/avatar.png" alt="profile" onError={(e) => {e.target.style.display = 'none'}} />
+                <img src="/avatar.png" alt="profile" onError={(e) => {e.target.classList.add('hidden')}} />
                 <div className="avatar-fallback">{supplierData.profile.name.charAt(0)}</div>
               </div>
             </div>
@@ -279,7 +486,7 @@ function Dashboard_sup() {
                 <h3>This Month</h3>
                 <span className="stat-icon">💰</span>
               </div>
-              <div className="stat-main">${loading ? "..." : supplierData.earnings.thisMonth.toLocaleString()}</div>
+              <div className="stat-main">LKR {loading ? "..." : (supplierData.earnings.thisMonth / 1000).toFixed(0)}K</div>
               <div className="stat-breakdown">
                 <span className="growth">
                   {supplierData.earnings.thisMonth > supplierData.earnings.lastMonth ? "📈" : "📉"} 
@@ -308,6 +515,97 @@ function Dashboard_sup() {
               <div className="stat-main">{loading ? "..." : supplierData.materials.length}</div>
               <div className="stat-breakdown">
                 <span className="available">Available catalog items</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Analytics Charts */}
+        <div className="analytics-section">
+          <h2>Business Analytics</h2>
+          <div className="charts-grid">
+            {/* Monthly Earnings Trend */}
+            <div className="chart-container">
+              <h3>Monthly Earnings Trend</h3>
+              <div className="chart-wrapper">
+                <Line
+                  data={supplierData.chartData.monthlyEarnings}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      title: { display: false }
+                    },
+                    scales: {
+                      y: { 
+                        beginAtZero: true,
+                        ticks: {
+                          callback: function(value) {
+                            return 'LKR ' + (value / 1000).toFixed(0) + 'K';
+                          }
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Order Fulfillment Status */}
+            <div className="chart-container">
+              <h3>Order Fulfillment Status</h3>
+              <div className="chart-wrapper">
+                <Doughnut
+                  data={supplierData.chartData.orderFulfillment}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { position: 'bottom' }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Material Performance */}
+            <div className="chart-container">
+              <h3>Top Material Orders</h3>
+              <div className="chart-wrapper">
+                <Bar
+                  data={supplierData.chartData.materialPerformance}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false }
+                    },
+                    scales: {
+                      y: { beginAtZero: true }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Performance Metrics Trend */}
+            <div className="chart-container">
+              <h3>Performance Metrics</h3>
+              <div className="chart-wrapper">
+                <Line
+                  data={supplierData.chartData.performanceTrend}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { position: 'bottom' }
+                    },
+                    scales: {
+                      y: { beginAtZero: true, max: 100 }
+                    }
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -364,7 +662,6 @@ function Dashboard_sup() {
                 ))
               )}
             </div>
-            <Link to="/Supplier_details" className="manage-materials">Manage Materials →</Link>
           </div>
         </div>
 
@@ -412,16 +709,6 @@ function Dashboard_sup() {
               <div className="action-icon">📦</div>
               <div className="action-title">Order Status</div>
               <div className="action-desc">Track order progress</div>
-            </Link>
-            <Link to="/Supplier_details" className="action-card">
-              <div className="action-icon">🏗️</div>
-              <div className="action-title">Update Catalog</div>
-              <div className="action-desc">Manage materials & pricing</div>
-            </Link>
-            <Link to="/Rate_supplier" className="action-card">
-              <div className="action-icon">⭐</div>
-              <div className="action-title">Performance</div>
-              <div className="action-desc">View ratings & feedback</div>
             </Link>
           </div>
         </div>

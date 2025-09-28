@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import "./Rate_supplier.css";
 
 function RateSupplier() {
   const [suppliers, setSuppliers] = useState([]);
@@ -7,28 +8,59 @@ function RateSupplier() {
     supplierId: "",
     criteria: { timeliness: 0, quality: 0, communication: 0 }
   });
+  const [userRole, setUserRole] = useState("procurement");
+  const [myRatings, setMyRatings] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Detect user role
+  useEffect(() => {
+    const isSupplierContext = location.pathname.includes('/Dashboard_sup') || 
+                            window.location.search.includes('supplier=true') ||
+                            localStorage.getItem('currentUserRole') === 'supplier';
+    
+    if (isSupplierContext) {
+      setUserRole("supplier");
+    }
+  }, [location]);
 
   // Resolve API base (backend actually running on 3000 by default)
   const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:3000";
 
-  // Fetch suppliers
+  // Fetch data based on user role
   useEffect(() => {
-    fetch(`${API_BASE}/api/suppliers`)
-      .then(res => {
-        if (!res.ok) throw new Error(`Supplier fetch failed ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        setSuppliers(data);
-        // If navigated from Orders with a specific supplier, preselect and restrict
-        if (location.state?.supplierId) {
-          setFormData(prev => ({ ...prev, supplierId: location.state.supplierId }));
-        }
-      })
-      .catch(err => console.error("Failed to fetch suppliers", err));
-  }, [API_BASE, location.state?.supplierId]);
+    if (userRole === "supplier") {
+      // For suppliers, fetch ratings they've received
+      const currentSupplierId = localStorage.getItem('currentSupplierId') || "123";
+      fetch(`${API_BASE}/api/supplier-ratings/${currentSupplierId}`)
+        .then(res => {
+          if (!res.ok) throw new Error(`Ratings fetch failed ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          setMyRatings(Array.isArray(data) ? data : []);
+        })
+        .catch(err => {
+          console.error("Failed to fetch my ratings", err);
+          setMyRatings([]);
+        });
+    } else {
+      // For procurement officers, fetch suppliers to rate
+      fetch(`${API_BASE}/api/suppliers`)
+        .then(res => {
+          if (!res.ok) throw new Error(`Supplier fetch failed ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          setSuppliers(data);
+          // If navigated from Orders with a specific supplier, preselect and restrict
+          if (location.state?.supplierId) {
+            setFormData(prev => ({ ...prev, supplierId: location.state.supplierId }));
+          }
+        })
+        .catch(err => console.error("Failed to fetch suppliers", err));
+    }
+  }, [API_BASE, userRole, location.state?.supplierId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,75 +108,129 @@ function RateSupplier() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Rate a Supplier</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Supplier:
-          <select
-            name="supplierId"
-            value={formData.supplierId}
-            onChange={handleChange}
-            required
-            disabled={!!location.state?.supplierId}
-          >
-            {!location.state?.supplierId && <option value="">Select Supplier</option>}
-            {location.state?.supplierId
-              ? suppliers.filter(s => s._id === location.state.supplierId).map(s => (
-                  <option key={s._id} value={s._id}>{s.companyName}</option>
-                ))
-              : suppliers.map(s => (
-                  <option key={s._id} value={s._id}>{s.companyName}</option>
+    <div className="rate-supplier-container">
+      {userRole === "supplier" ? (
+        <>
+          <h2 className="page-title">My Ratings</h2>
+          <p className="page-subtitle">View ratings and feedback you've received from clients</p>
+          
+          <div className="ratings-display">
+            {myRatings.length === 0 ? (
+              <div className="no-ratings">
+                <p>No ratings received yet. Complete orders to start receiving feedback!</p>
+              </div>
+            ) : (
+              <div className="ratings-list">
+                {myRatings.map((rating, index) => (
+                  <div key={index} className="rating-card">
+                    <div className="rating-header">
+                      <h3>Rating #{index + 1}</h3>
+                      <span className="rating-date">
+                        {new Date(rating.createdAt || Date.now()).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="rating-scores">
+                      <div className="score-item">
+                        <span>Timeliness:</span>
+                        <span className="score">{rating.criteria?.timeliness || rating.timeliness || 0}/5</span>
+                      </div>
+                      <div className="score-item">
+                        <span>Quality:</span>
+                        <span className="score">{rating.criteria?.quality || rating.quality || 0}/5</span>
+                      </div>
+                      <div className="score-item">
+                        <span>Communication:</span>
+                        <span className="score">{rating.criteria?.communication || rating.communication || 0}/5</span>
+                      </div>
+                    </div>
+                    <div className="overall-rating">
+                      <strong>Overall Score: {rating.weightedScore?.toFixed(1) || 'N/A'}</strong>
+                    </div>
+                  </div>
                 ))}
-          </select>
-          {location.state?.orderId && (
-            <div style={{ fontSize: '12px', marginTop: '4px', color: '#555' }}>
-              Rating for Order: <strong>{location.state.orderId}</strong>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          <h2 className="page-title">Rate Supplier</h2>
+          
+          <form onSubmit={handleSubmit} className="rate-form">
+            {/* Supplier Selection */}
+            <div className="supplier-section">
+              <label className="supplier-label">Supplier:</label>
+              <select
+                name="supplierId"
+                value={formData.supplierId}
+                onChange={handleChange}
+                required
+                disabled={!!location.state?.supplierId}
+                className="supplier-select"
+              >
+                {!location.state?.supplierId && <option value="">Select Supplier</option>}
+                {location.state?.supplierId
+                  ? suppliers.filter(s => s._id === location.state.supplierId).map(s => (
+                      <option key={s._id} value={s._id}>{s.companyName}</option>
+                    ))
+                  : suppliers.map(s => (
+                      <option key={s._id} value={s._id}>{s.companyName}</option>
+                    ))}
+              </select>
+              {location.state?.orderId && (
+                <span className="order-info">Order: {location.state.orderId}</span>
+              )}
             </div>
-          )}
-        </label>
 
-        <label>
-          Timeliness (0-5):
-          <input
-            type="number"
-            name="timeliness"
-            value={formData.criteria.timeliness}
-            min="0"
-            max="5"
-            onChange={handleChange}
-            required
-          />
-        </label>
+            {/* Rating Section */}
+            <div className="rating-section">
+              <div className="rating-item">
+                <label>Timeliness:</label>
+                <input
+                  type="number"
+                  name="timeliness"
+                  value={formData.criteria.timeliness}
+                  min="0"
+                  max="5"
+                  onChange={handleChange}
+                  required
+                  className="rating-input"
+                />
+              </div>
 
-        <label>
-          Quality (0-5):
-          <input
-            type="number"
-            name="quality"
-            value={formData.criteria.quality}
-            min="0"
-            max="5"
-            onChange={handleChange}
-            required
-          />
-        </label>
+              <div className="rating-item">
+                <label>Quality:</label>
+                <input
+                  type="number"
+                  name="quality"
+                  value={formData.criteria.quality}
+                  min="0"
+                  max="5"
+                  onChange={handleChange}
+                  required
+                  className="rating-input"
+                />
+              </div>
 
-        <label>
-          Communication (0-5):
-          <input
-            type="number"
-            name="communication"
-            value={formData.criteria.communication}
-            min="0"
-            max="5"
-            onChange={handleChange}
-            required
-          />
-        </label>
+              <div className="rating-item">
+                <label>Communication:</label>
+                <input
+                  type="number"
+                  name="communication"
+                  value={formData.criteria.communication}
+                  min="0"
+                  max="5"
+                  onChange={handleChange}
+                  required
+                  className="rating-input"
+                />
+              </div>
 
-        <button type="submit">Submit Rating</button>
-      </form>
+              <button type="submit" className="submit-btn">Submit</button>
+            </div>
+          </form>
+        </>
+      )}
     </div>
   );
 }

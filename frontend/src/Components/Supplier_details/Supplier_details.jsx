@@ -11,21 +11,51 @@ function Supplier_details() {
   const [suppliers, setSuppliers] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [search, setSearch] = useState("");
+  const [userRole, setUserRole] = useState("procurement"); // Default to procurement
+  const [currentSupplierId, setCurrentSupplierId] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Detect user role and set current supplier ID
+  useEffect(() => {
+    // Check if coming from supplier dashboard or if URL contains supplier context
+    const isSupplierContext = location.pathname.includes('/Dashboard_sup') || 
+                            window.location.search.includes('supplier=true') ||
+                            localStorage.getItem('currentUserRole') === 'supplier';
+    
+    if (isSupplierContext) {
+      setUserRole("supplier");
+      // In a real app, get this from authentication
+      setCurrentSupplierId(localStorage.getItem('currentSupplierId') || "123");
+    }
+  }, [location]);
+
   const loadSuppliers = () => {
-    axios
-      .get("http://localhost:3000/api/suppliers")
-      .then((res) => setSuppliers(res.data))
-      .catch((err) => console.error("Error fetching suppliers:", err));
+    if (userRole === "supplier" && currentSupplierId) {
+      // For suppliers, load only their own data
+      axios
+        .get(`http://localhost:3000/api/suppliers/${currentSupplierId}`)
+        .then((res) => {
+          setSuppliers([res.data]); // Array with single supplier
+          setSelectedSupplier(res.data); // Auto-select their own profile
+        })
+        .catch((err) => console.error("Error fetching supplier profile:", err));
+    } else {
+      // For procurement officers, load all suppliers
+      axios
+        .get("http://localhost:3000/api/suppliers")
+        .then((res) => setSuppliers(res.data))
+        .catch((err) => console.error("Error fetching suppliers:", err));
+    }
   };
 
   // Fetch suppliers from backend
-  // Initial load
+  // Initial load (after role detection)
   useEffect(() => {
-    loadSuppliers();
-  }, []);
+    if (userRole) {
+      loadSuppliers();
+    }
+  }, [userRole, currentSupplierId]);
 
   // Re-fetch after a rating submission (navigated with state)
   useEffect(() => {
@@ -57,27 +87,34 @@ function Supplier_details() {
       <div className="suppliers-container">
         <div className="page-header">
           <div className="header-content">
-            <h2>Interior Design Suppliers</h2>
-            <p className="header-subtitle">Manage your supplier network and partnerships</p>
+            <h2>{userRole === "supplier" ? "My Supplier Profile" : "Interior Design Suppliers"}</h2>
+            <p className="header-subtitle">
+              {userRole === "supplier" 
+                ? "Manage your company profile and materials catalog"
+                : "Manage your supplier network and partnerships"
+              }
+            </p>
           </div>
         </div>
 
-        <div className="top-controls">
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Search suppliers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        {userRole === "procurement" && (
+          <div className="top-controls">
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Search suppliers..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <button className="btn-primary">
+              <Link to="/Add_suppliers">
+                <span className="icon">➕</span>
+                Add Supplier
+              </Link>
+            </button>
           </div>
-          <button className="btn-primary">
-            <Link to="/Add_suppliers">
-              <span className="icon">➕</span>
-              Add Supplier
-            </Link>
-          </button>
-        </div>
+        )}
 
       {/* Table */}
       <div className="table-container">

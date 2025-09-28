@@ -50,41 +50,58 @@ function Notifications_proc({ panelOpen, togglePanel }) {
           <p>No notifications yet.</p>
         ) : (
           notifications.map((n, idx) => {
-            // Determine status for color coding
+            // Determine notification type and status for display
             let statusClass = "";
-            if (n.type === "order" && n.status) {
-              if (n.status.toLowerCase().includes("approved")) {
-                statusClass = "approved";
-              } else if (n.status.toLowerCase().includes("rejected")) {
-                statusClass = "rejected";
-              }
+            let notificationContent = "";
+            let timestamp = "";
+
+            // Handle different notification formats
+            if (n.message) {
+              // Direct message notifications (from localStorage)
+              notificationContent = n.message;
+              if (n.type === "success") statusClass = "approved";
+              else if (n.type === "error") statusClass = "rejected";
+              else if (n.type === "info") statusClass = "info";
+              timestamp = n.timestamp || new Date().toISOString();
+            } else if (n.type === "order" && n.status) {
+              // Order status notifications
+              notificationContent = `Order #${n.orderId || 'Unknown'} was ${n.status}.`;
+              if (n.status.toLowerCase().includes("approved")) statusClass = "approved";
+              else if (n.status.toLowerCase().includes("rejected")) statusClass = "rejected";
+              timestamp = n.time || n.createdAt || new Date().toISOString();
             } else if (n.supplierId) {
-              statusClass = "approved"; // Supplier notifications are approvals
+              // Supplier-related notifications
+              const companyName = n.supplierId.companyName || n.supplierId || "Unknown Supplier";
+              notificationContent = `Order approved by supplier ${companyName}.`;
+              statusClass = "approved";
+              timestamp = n.createdAt || new Date().toISOString();
+            } else if (n.status) {
+              // Generic status notifications
+              notificationContent = `Status update: ${n.status}`;
+              statusClass = "info";
+              timestamp = n.createdAt || n.time || new Date().toISOString();
+            } else {
+              // Fallback for unknown notification types
+              notificationContent = n.text || n.description || "New notification received";
+              statusClass = "info";
+              timestamp = n.createdAt || n.timestamp || new Date().toISOString();
             }
             
             return (
-              <div key={n._id || n.orderId || idx} className={`note ${statusClass}`}>
-                {n.type === "order" ? (
-                  <p>
-                    Order <strong>{n.orderId}</strong> was{" "}
-                    <strong>{n.status}</strong>.
-                  </p>
-                ) : n.supplierId ? (
-                  <p>
-                    Order approved by the supplier{" "}
-                    <strong>{n.supplierId.companyName}</strong>.
-                  </p>
-                ) : (
-                  <p>
-                    Notification: <strong>{n.status}</strong>
-                  </p>
-                )}
+              <div key={n._id || n.orderId || n.id || idx} className={`note ${statusClass}`}>
+                <div className="notification-content">
+                  <div className="notification-icon">
+                    {statusClass === "approved" && "✅"}
+                    {statusClass === "rejected" && "❌"}
+                    {statusClass === "info" && "ℹ️"}
+                    {!statusClass && "🔔"}
+                  </div>
+                  <div className="notification-text">
+                    {notificationContent}
+                  </div>
+                </div>
                 <small>
-                  {n.time
-                    ? new Date(n.time).toLocaleString()
-                    : n.createdAt
-                    ? new Date(n.createdAt).toLocaleString()
-                    : ""}
+                  {new Date(timestamp).toLocaleString()}
                 </small>
               </div>
             );

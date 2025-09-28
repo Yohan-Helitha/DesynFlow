@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
+import "./OrderForm.css";
 
 function OrderForm({ onOrderCreated }) {
   const navigate = useNavigate();
@@ -215,7 +216,7 @@ function OrderForm({ onOrderCreated }) {
                 <option value="">Select Material</option>
                 {materials.map((mat, idx) => (
                   <option key={idx} value={mat._id || mat.name}>
-                    {mat.name} - ${(mat.pricePerUnit || 0).toFixed(2)}/unit
+                    {mat.name} - LKR {(mat.pricePerUnit || 0).toFixed(2)}/unit
                   </option>
                 ))}
               </select>
@@ -231,18 +232,18 @@ function OrderForm({ onOrderCreated }) {
               <input
                 type="number"
                 name="pricePerUnit"
-                placeholder="Price per Unit"
+                placeholder="Price per Unit (LKR)"
                 value={isNaN(item.pricePerUnit) ? "" : item.pricePerUnit}
                 readOnly
-                style={{ background: '#eee' }}
+                className="readonly-input"
               />
               <input
                 type="number"
                 name="total"
-                placeholder="Total"
+                placeholder="Total (LKR)"
                 value={isNaN(item.total) ? "" : item.total}
                 readOnly
-                style={{ background: '#eee' }}
+                className="readonly-input"
               />
             </div>
           );
