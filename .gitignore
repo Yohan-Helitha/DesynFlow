@@ -1,2 +1,12 @@
 #ignore environment variable
 server/.env
+
+# Package lock files (auto-generated, can cause merge conflicts)
+package-lock.json
+*/package-lock.json
+**/package-lock.json
+
+# Node modules
+node_modules/
+*/node_modules/
+**/node_modules/
