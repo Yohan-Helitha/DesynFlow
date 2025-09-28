@@ -53,6 +53,17 @@ import authReportRoutes from "./modules/auth/routes/reportRoutes.js";
 import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
 import inspectionFormRoutes from "./modules/auth/routes/inspectionFormRoutes.js";
 
+// Warehouse routes
+import manuProductsRoute from "./modules/warehouse-manager/routes/manuProductsRoute.js";
+import rawMaterialsRoute from "./modules/warehouse-manager/routes/rawMaterialsRoute.js";
+import invLocationsRoute from "./modules/warehouse-manager/routes/invLocationsRoute.js";
+import stockMovementRoute from "./modules/warehouse-manager/routes/stockMovementRoute.js";
+import transferRequestRoute from "./modules/warehouse-manager/routes/transferRequestRoute.js";
+import sReorderRequestsRoute from "./modules/warehouse-manager/routes/sReorderRequestsRoute.js";
+import disposalMaterialsRoute from "./modules/warehouse-manager/routes/disposalMaterialsRoute.js";
+import auditLogRoute from "./modules/warehouse-manager/routes/auditLogRoute.js";
+import thresholdAlertRoute from "./modules/warehouse-manager/routes/thresholdAlertRoute.js";
+
 const app = express();
 
 // Middleware
@@ -100,6 +111,17 @@ app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);
 app.use('/api', uploadRoutes);
 
+// Mount warehouse routes
+app.use("/api/warehouse/manu_products", manuProductsRoute);
+app.use("/api/warehouse/raw_materials", rawMaterialsRoute);
+app.use("/api/warehouse/inv_locations", invLocationsRoute);
+app.use("/api/warehouse/stock_movement", stockMovementRoute);
+app.use("/api/warehouse/transfer_request", transferRequestRoute);
+app.use("/api/warehouse/s_reorder_requests", sReorderRequestsRoute);
+app.use("/api/warehouse/disposal_materials", disposalMaterialsRoute);
+app.use("/api/warehouse/audit_log", auditLogRoute);
+app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({
@@ -112,7 +134,7 @@ app.get("/health", (req, res) => {
 
 // Database connection and server startup
 const mongoUri = process.env.MONGO_URI;
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 mongoose.connect(mongoUri)
   .then(() => {

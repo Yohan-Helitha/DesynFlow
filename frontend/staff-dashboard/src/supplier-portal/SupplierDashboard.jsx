@@ -18,7 +18,6 @@ import OrderDetailsSup from "./components/Order_details_sup/Order_details_sup";
 import SampleOrderList from "./components/Sample_order_list/Sample_order_list";
 import SampleOrderDetails from "./components/Sample_order_details/Sample_order_details";
 import RateSupplier from "./components/Rate_supplier/Rate_supplier";
-import LoginSup from "./components/Login_sup/Login_sup";
 
 function SupplierDashboard() {
   return (
@@ -39,7 +38,6 @@ function SupplierDashboard() {
       <Route path="/Sample_order_list" element={<SampleOrderList />} />
       <Route path="/Sample_order_details/:id" element={<SampleOrderDetails />} />
       <Route path="/Rate_supplier" element={<RateSupplier />} />
-      <Route path="/SupplierLogin" element={<LoginSup />} />
     </Routes>
   );
 }

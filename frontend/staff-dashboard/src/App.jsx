@@ -12,7 +12,7 @@ import SupplierDashboard from './supplier-portal/SupplierDashboard.jsx';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">        
+      <div className="min-h-screen">        
         <main>
           <Routes>
             {/* Staff Login as default route */}
@@ -34,8 +34,8 @@ function App() {
             {/* Warehouse Manager routes */}
             <Route path="/warehouse-manager/*" element={<WarehouseDashboard />} />
             
-            {/* Supplier Management routes */}
-            <Route path="/supplier/*" element={<SupplierDashboard />} />
+            {/* Procurement Officer route (maps to supplier portal) */}
+            <Route path="/procurement-officer" element={<SupplierDashboard />} />
           </Routes>
         </main>
       </div>

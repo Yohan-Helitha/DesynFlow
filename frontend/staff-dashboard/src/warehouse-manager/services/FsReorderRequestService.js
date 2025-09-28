@@ -1,7 +1,7 @@
 // src/services/FsReorderRequestService.js
 export const fetchSReorderRequests = async () => {
   try {
-    const res = await fetch("http://localhost:5000/s_reorder_requests");
+    const res = await fetch("http://localhost:4000/api/warehouse/s_reorder_requests");
     if (!res.ok) throw new Error("Failed to fetch stock reorder requests");
     const data = await res.json();
     return data.s_reorder_requests;
@@ -14,7 +14,7 @@ export const fetchSReorderRequests = async () => {
 // Add new product
 export const addSReorderRequest = async (requestData) => {
   try {
-    const res = await fetch(`http://localhost:5000/s_reorder_requests`, {
+    const res = await fetch(`http://localhost:4000/api/warehouse/s_reorder_requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -38,7 +38,7 @@ export const addSReorderRequest = async (requestData) => {
 
 export const fetchSReorderRequestById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:5000/s_reorder_requests/${id}`);
+    const res = await fetch(`http://localhost:4000/api/warehouse/s_reorder_requests/${id}`);
     if (!res.ok) throw new Error("Failed to fetch stock reorder request");
     const data = await res.json();
     console.log("Fetched request:", data); // debug
@@ -51,7 +51,7 @@ export const fetchSReorderRequestById = async (id) => {
 
 export const updateSReorderRequest = async (id, data) => {
   try {
-    const res = await fetch(`http://localhost:5000/s_reorder_requests/${id}`, {
+    const res = await fetch(`http://localhost:4000/api/warehouse/s_reorder_requests/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -76,7 +76,7 @@ export const updateSReorderRequest = async (id, data) => {
 // Delete product
 export const deleteSReorderRequest = async (id) => {
   try {
-    const res = await fetch(`http://localhost:5000/s_reorder_requests/${id}`, {
+    const res = await fetch(`http://localhost:4000/api/warehouse/s_reorder_requests/${id}`, {
       method: "DELETE"
     });
 
