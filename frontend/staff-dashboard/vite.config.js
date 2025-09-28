@@ -7,6 +7,19 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://backend:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+  build: {
+    outDir: 'dist'
+    sourcemap: true
+  }
+})
     strictPort: true,
     watch: {
       usePolling: true

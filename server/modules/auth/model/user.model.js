@@ -2,16 +2,13 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
-    userID: {
-        type: mongoose.Schema.Types.ObjectId,
-        auto: true
-    },
+
     username: {type: String, required: true},
     email: {type: String, required: true, trim:true},
     password: {type: String,required: true},
     phone: {type: String},
     role: {type: String,
-        enum:["client" , "customer service representative", "manager","project manager","finance manager","inspector","procurement officer","warehouse manager","team member","team leader"],
+    enum:["client" , "customer service representative", "manager","project manager","finance manager","inspector","procurement officer","warehouse manager","team member","team leader"],
         default:"client"
     },
 
@@ -42,3 +39,4 @@ const userSchema = new mongoose.Schema({
     };
 
 export default mongoose.model("User", userSchema);
+
