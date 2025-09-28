@@ -69,8 +69,32 @@
 /* Notifications slide panel */
 .notif-panel{ position:fixed; top:0; right:-420px; width:400px; height:100vh; background:var(--card-bg); box-shadow:-12px 0 40px rgba(0,0,0,0.08); border-left:1px solid rgba(103,70,54,0.06); transition: right .32s ease; z-index:1200;}
 .notif-panel.open{ right:0; }
-.panel-header{ padding:18px; border-bottom:1px solid rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:space-between; }
-.panel-header h3{ margin:0; font-size:16px; color:var(--accent-brown); }
+.order-details-container .panel-header{ 
+  padding:18px; 
+  border-bottom:1px solid rgba(0,0,0,0.04); 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; 
+  background:#674636 !important; 
+}
+.order-details-container .panel-header h3{ 
+  margin:0; 
+  font-size:16px; 
+  color:#FFF8E8 !important; 
+}
+.order-details-container .close-btn{ 
+  background:none !important; 
+  border:none !important; 
+  color:#FFF8E8 !important; 
+  font-size:20px; 
+  cursor:pointer; 
+  padding:4px 8px; 
+  border-radius:4px; 
+  transition:background-color 0.2s ease; 
+}
+.order-details-container .close-btn:hover{ 
+  background:rgba(255,248,232,0.3) !important; 
+}
 .panel-content{ padding:12px; height: calc(100vh - 72px); overflow:auto; }
 
 .notification-card{ background:#fff; padding:12px; border-radius:10px; margin-bottom:10px; box-shadow:0 6px 18px rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.03); }

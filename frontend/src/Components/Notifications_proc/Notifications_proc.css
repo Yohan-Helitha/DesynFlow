@@ -43,6 +43,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  color: #FFF8E8 !important;
 }
 
 .panel-header h2::before {
@@ -56,7 +57,7 @@
   border: none;
   font-size: 20px;
   font-weight: bold;
-  color: #674636 !important;
+  color: #FFF8E8 !important;
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 3px;
@@ -71,7 +72,7 @@
 
 .close-btn:hover {
   background: rgba(103, 70, 54, 0.1);
-  color: #674636;
+  color: #FFF8E8;
   transform: none;
 }
 
