@@ -9,22 +9,27 @@
     "test": "jest --verbose --coverage",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --coverage --watchAll=false"
+    "seed": "node seed/seedUsers.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "mongoose": "^8.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.2",
     "morgan": "^1.10.1",
-    "node-fetch": "^3.3.2",
-    "pino": "^9.9.0",
-    "pino-http": "^10.5.0",
-    "pino-pretty": "^13.1.1",
-    "puppeteer": "^21.5.0"
+    "multer": "^1.4.4",
+    "nodemailer": "^6.9.7",
+    "pino": "^8.16.0",
+    "pino-http": "^8.5.0",
+    "puppeteer": "^21.3.8",
+    "pino-pretty": "^10.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.3",

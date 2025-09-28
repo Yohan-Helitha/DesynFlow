@@ -1,29 +1,36 @@
-import React from 'react';
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import StaffLogin from './staff-login/staffLogin'
+import CSRDashboard from './CSR-portal/pages/CSRDashboard'
+import InspectorDashboard from './inspector-portal/pages/InspectorDashboard'
+import RequestTable from './CSR-portal/component/requestTable'
 import ProjectManagerDashboard from './project/ProjectManagerDashboard.jsx';
 import TeamLeaderMainDashboard from './project/TeamLeaderMainDashboard.jsx';
 
 function App() {
-  // TODO: Replace with actual authentication system
-  // This will be integrated with your authentication context/state
-  const userRole = 'project manager'; // This should come from authentication context
-  
   return (
-    <div>
-      {/* Render appropriate dashboard based on authenticated user role */}
-      {userRole === 'project manager' ? (
-        <ProjectManagerDashboard />
-      ) : userRole === 'team leader' ? (
-        <TeamLeaderMainDashboard />
-      ) : (
-        <div className="flex items-center justify-center min-h-screen bg-cream-primary">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-brown-primary mb-4">Access Denied</h1>
-            <p className="text-gray-600">You don't have permission to access this dashboard.</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    <Router>
+      <div className="min-h-screen bg-gray-100">        
+        <main>
+          <Routes>
+            {/* Staff Login as default route */}
+            <Route path="/" element={<StaffLogin />} />
+            <Route path="/login" element={<StaffLogin />} />
+            
+            {/* Role-based Dashboard Routes */}
+            <Route path="/csr-dashboard" element={<CSRDashboard />} />
+            <Route path="/inspector-dashboard" element={<InspectorDashboard />} />
+            
+            {/* Legacy Routes */}
+            <Route path="/csr" element={<CSRDashboard />} />
+            <Route path="/csr/requests" element={<RequestTable />} />
+            
+            {/* Add more role-based routes as needed */}
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  )
 }
 
-export default App;
+export default App

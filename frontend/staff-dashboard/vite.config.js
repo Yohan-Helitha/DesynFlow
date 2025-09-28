@@ -17,5 +17,16 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist'
+    sourcemap: true
+  }
+})
+    strictPort: true,
+    watch: {
+      usePolling: true
+    }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
   }
 })

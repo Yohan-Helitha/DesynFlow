@@ -4,7 +4,6 @@ import pinoHttp from "pino-http";
 import { logger } from './config/logger.js';
 import { env } from './config/env.js';
 
-
 import './modules/project/model/project.model.js';
 import './modules/project/model/task.model.js';
 import './modules/project/model/team.model.js';
@@ -47,8 +46,26 @@ app.use(cors()); // from allowing cors API can request different origins(not res
 app.use(express.json({limit: '2mb'})); // parse json body
 app.use(express.urlencoded({ extended: true })); // parse urlencoded body
 
-// Serve static files (generated reports)
 app.use('/reports', express.static('public/reports'));
+
+import authRouter from "./modules/auth/routes/authRouter.js";
+import userRouter from "./modules/auth/routes/userRouter.js";
+import paymentReceiptRoutes from "./modules/auth/routes/paymentReceiptRoutes.js";
+import inspectorLocationRoutes from "./modules/auth/routes/inspectorLocationRoutes.js";
+import assignmentRoutes from "./modules/auth/routes/assignmentRoutes.js";
+import reportRoutes from "./modules/auth/routes/reportRoutes.js";
+import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
+import inspectionFormRoutes from "./modules/auth/routes/inspectionFormRoutes.js";
+
+
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
+app.use("/api/payment-receipt", paymentReceiptRoutes);
+app.use("/api/inspector-location", inspectorLocationRoutes);
+app.use("/api/assignment", assignmentRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/inspection-request", inspectionRequestRoutes);
+app.use("/api/inspectorForms", inspectionFormRoutes);
 
 app.get("/health", (req, res) => {
   res.json({
@@ -58,7 +75,6 @@ app.get("/health", (req, res) => {
     time: new Date().toISOString(),
   });
 });
-
 
 app.use('/api', projectRoutes);
 app.use('/api', taskRoutes);

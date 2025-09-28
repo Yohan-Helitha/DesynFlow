@@ -1,6 +1,7 @@
 # Use official Node.js image
 FROM node:22
 
+
 # Install system dependencies for Puppeteer
 RUN apt-get update && apt-get install -y \
     ca-certificates \
@@ -47,6 +48,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+
 
 # Install dependencies
 RUN npm install --include=dev
