@@ -19,9 +19,6 @@ function Sidebar() {
         </div>
         <ul className="nav">
           <li>
-            <Link to="/">Dashboard</Link>
-          </li>
-          <li>
             <Link to="/Supplier_details">Suppliers</Link>
           </li>
           <li>
