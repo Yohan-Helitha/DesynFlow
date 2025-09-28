@@ -7,6 +7,7 @@ import RequestTable from './CSR-portal/component/requestTable'
 import ProjectManagerDashboard from './project/ProjectManagerDashboard.jsx';
 import TeamLeaderMainDashboard from './project/TeamLeaderMainDashboard.jsx';
 import WarehouseDashboard from './warehouse-manager/WarehouseDashboard.jsx';
+import SupplierDashboard from './supplier-portal/SupplierDashboard.jsx';
 
 function App() {
   return (
@@ -32,11 +33,15 @@ function App() {
             
             {/* Warehouse Manager routes */}
             <Route path="/warehouse-manager/*" element={<WarehouseDashboard />} />
+            
+            {/* Supplier Management routes */}
+            <Route path="/supplier/*" element={<SupplierDashboard />} />
           </Routes>
         </main>
       </div>
     </Router>
   )
 }
+
 
 export default App

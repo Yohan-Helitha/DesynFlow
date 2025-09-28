@@ -1,0 +1,240 @@
+/* Notification panel */
+.notification-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100%;
+  background: linear-gradient(180deg, #FFF8E8 0%, rgba(247, 238, 211, 0.95) 100%);
+  box-shadow: -6px 0 25px rgba(103, 70, 54, 0.15);
+  transform: translateX(100%);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(15px);
+  border-left: 3px solid rgba(103, 70, 54, 0.1);
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.notification-panel.active {
+  transform: translateX(0);
+}
+
+/* Header */
+.panel-header {
+  background: none;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #674636;
+  border-bottom: none;
+  backdrop-filter: none;
+  position: relative;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #FFF8E8 !important;
+}
+
+.panel-header .header-icon {
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Close button */
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: #FFF8E8 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 3px;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+}
+
+.close-btn:hover {
+  background: rgba(103, 70, 54, 0.1);
+  color: #FFF8E8;
+  transform: none;
+}
+
+
+/* Body */
+.panel-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  font-size: 15px;
+  background: rgba(255, 248, 232, 0.3);
+}
+
+.note {
+  background: linear-gradient(135deg, #FFF8E8 0%, rgba(247, 238, 211, 0.8) 100%);
+  border: 2px solid rgba(103, 70, 54, 0.15);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 20px rgba(103, 70, 54, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #674636;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Approved notifications - green touch */
+.note.approved {
+  border-left: 4px solid #22c55e;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(247, 238, 211, 0.8));
+}
+
+.note.approved:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), #F7EED3);
+  border-color: #22c55e;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(34, 197, 94, 0.2);
+}
+
+/* Rejected notifications - red touch */
+.note.rejected {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(247, 238, 211, 0.8));
+}
+
+.note.rejected:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), #F7EED3);
+  border-color: #ef4444;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.2);
+}
+
+/* Default hover for other notifications */
+.note:hover {
+  background: linear-gradient(135deg, #FFF8E8 0%, #F7EED3 100%);
+  border-color: rgba(103, 70, 54, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(103, 70, 54, 0.15);
+}
+
+/* Notification content and icon styling */
+.notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.notification-icon {
+  font-size: 16px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.notification-icon .icon-default,
+.notification-icon .icon-approved,
+.notification-icon .icon-rejected,
+.notification-icon .icon-info {
+  font-size: 18px;
+}
+
+.panel-header .header-icon svg,
+.close-btn svg,
+.clear-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.notification-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #674636;
+  word-wrap: break-word;
+}
+
+.notification-text strong {
+  font-weight: 600;
+  color: #674636;
+}
+
+.note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note strong {
+  color: #674636;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.note small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: rgba(103, 70, 54, 0.7);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.note small::before {
+  content: ""; /* removed emoji-based clock; icon rendered via React Icon in markup if needed */
+}
+
+/* Footer */
+.panel-footer {
+  padding: 16px 24px;
+  border-top: none;
+  text-align: center;
+  background: none;
+  backdrop-filter: none;
+}
+
+/* Clear button */
+.clear-btn {
+  background: rgba(103, 70, 54, 0.1);
+  color: rgba(103, 70, 54, 0.8);
+  border: 1px solid rgba(103, 70, 54, 0.2);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+.clear-btn:hover {
+  background: rgba(103, 70, 54, 0.15);
+  color: #674636;
+  border-color: rgba(103, 70, 54, 0.3);
+  transform: none;
+  box-shadow: none;
+}

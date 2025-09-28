@@ -1,0 +1,231 @@
+﻿/* ORDER FORM - CLEAN PROFESSIONAL STYLE */
+
+.order-form-container {
+  background: linear-gradient(135deg, rgba(255, 248, 232, 0.95) 0%, rgba(247, 238, 211, 0.9) 100%);
+  padding: 32px;
+  margin: 2rem auto;
+  max-width: 800px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(103, 70, 54, 0.1);
+  backdrop-filter: blur(10px);
+  font-family: "Inter", "Segoe UI", Tahoma, sans-serif;
+  position: relative;
+}
+
+.order-form-container:hover {
+  box-shadow: 0 12px 40px rgba(103, 70, 54, 0.15);
+}
+
+.order-form {
+  background: #FFF8E8;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(103, 70, 54, 0.08);
+}
+
+.order-form-container h2 {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #674636;
+  margin: 0 0 2rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(103, 70, 54, 0.1);
+}
+
+.form-group {
+  margin: 2rem 0;
+  transition: transform 0.3s ease;
+}
+
+.form-group:hover {
+  transform: translateY(-3px);
+}
+
+.form-group label,
+.order-form > label {
+  display: block;
+  color: #674636;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.order-form select,
+.order-form input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid rgba(103, 70, 54, 0.2);
+  border-radius: 8px;
+  background: #FFF8E8;
+  color: #674636;
+  font-size: 14px;
+  font-family: "Inter", "Segoe UI", Tahoma, sans-serif;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.order-form select:focus,
+.order-form input:focus {
+  outline: none;
+  border-color: #8B4513;
+  box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+}
+
+.order-item {
+  background: #F7EED3;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 12px;
+  border: 1px solid rgba(103, 70, 54, 0.15);
+  box-shadow: 0 4px 16px rgba(103, 70, 54, 0.08);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.order-item:hover {
+  box-shadow: 0 8px 24px rgba(103, 70, 54, 0.12);
+}
+
+.btn-add,
+.btn-submit {
+  background: #674636;
+  color: #FFF8E8;
+  padding: 12px 24px;
+  border: 1px solid rgba(103, 70, 54, 0.3);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 16px 8px;
+}
+
+
+
+.btn-add:hover,
+.btn-submit:hover {
+  background: #8B4513;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(103, 70, 54, 0.2);
+}
+
+.btn-add {
+  background: #8B4513;
+}
+
+.btn-submit {
+  background: #674636;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+  padding: 16px;
+  background: rgba(255, 248, 232, 0.5);
+  border-radius: 12px;
+}
+
+/* ===== Order Items Section Heading ===== */
+.order-form h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-align: center;
+  color: #674636;
+  margin: 24px 0 16px 0;
+  padding: 16px 0;
+}
+
+/* ===== Readonly Input Styles ===== */
+.readonly-input {
+  background: #F7EED3 !important;
+  color: #674636 !important;
+  cursor: not-allowed !important;
+  font-weight: 600 !important;
+  border-color: rgba(103, 70, 54, 0.3) !important;
+}
+
+.readonly-input:focus {
+  box-shadow: 0 0 0 2px rgba(103, 70, 54, 0.2) !important;
+}
+
+/* ===== Locked Supplier Styles ===== */
+.locked-supplier {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.locked-input {
+  padding: 12px;
+  border: 1px solid #8B4513;
+  border-radius: 8px;
+  background: #F7EED3;
+  font-size: 16px;
+  font-weight: 600;
+  color: #8B4513;
+  text-align: center;
+  cursor: not-allowed;
+}
+
+.locked-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #8B4513;
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .order-form-container {
+    margin: 16px;
+    border-radius: 12px;
+  }
+  
+  .order-form {
+    padding: 16px;
+    margin: 16px;
+  }
+  
+  .order-form-container h2 {
+    font-size: 1.8rem;
+    padding: 16px 0;
+  }
+  
+  .order-form h3 {
+    font-size: 1.5rem;
+  }
+  
+  .order-item {
+    padding: 16px;
+    margin: 16px 0;
+  }
+  
+  .btn-add,
+  .btn-submit {
+    padding: 10px 20px;
+    font-size: 14px;
+    margin: 8px 4px;
+  }
+  
+  .order-form select,
+  .order-form input {
+    padding: 12px;
+    font-size: 14px;
+  }
+  
+  .form-group label,
+  .order-form > label {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}

@@ -31,6 +31,7 @@
     "pino-http": "^8.5.0",
     "puppeteer": "^21.3.8",
     "pino-pretty": "^10.3.0"
+
   },
   "devDependencies": {
     "@babel/core": "^7.28.3",
