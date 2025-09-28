@@ -19,50 +19,47 @@ import UpdateTransferRequestForm from './forms/updateTransferRequestForm.jsx';
 import DisposalMaterials from './pages/disposalMaterials.jsx';
 import AddDisposalMaterialsForm from './forms/addDisposalMaterialsForm.jsx';
 import UpdateDisposalMaterialsForm from './forms/updateDisposalMaterialsForm.jsx';
-import QualityAssurance from './pages/qualityAssurance.jsx';
-import AddQualityAssuranceForm from './forms/addQualityAssuranceForm.jsx';
-import UpdateQualityAssuranceForm from './forms/updateQualityAssuranceForm.jsx';
-import SupplierManagement from './pages/supplierManagement.jsx';
-import AddSupplierForm from './forms/addSupplierForm.jsx';
-import UpdateSupplierForm from './forms/updateSupplierForm.jsx';
-import ProcurementManagement from './pages/procurementManagement.jsx';
-import AddProcurementForm from './forms/addProcurementForm.jsx';
-import UpdateProcurementForm from './forms/updateProcurementForm.jsx';
+import SReorderRequest from './pages/sReorderRequest.jsx';
+import AddSReorderRequestForm from './forms/addSReorderRequestForm.jsx';
+import UpdateSReorderRequestForm from './forms/updateSReorderRequestForm.jsx';
+import AuditLog from './pages/auditLog.jsx';
+import Notifications from './pages/notifications.jsx';
+import ThresholdAlerts from './pages/thresholdAlerts.jsx';
+import { NotificationsProvider } from './context/notificationContext.jsx';
 import './App.css';
 
 const WarehouseDashboard = () => {
   return (
     <div className="warehouse-manager">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/manufactured-products" element={<ManuProducts />} />
-        <Route path="/manufactured-products/add" element={<AddProductForm />} />
-        <Route path="/manufactured-products/update/:id" element={<UpdateProductForm />} />
-        <Route path="/raw-materials" element={<RawMaterials />} />
-        <Route path="/raw-materials/add" element={<AddMaterialsForm />} />
-        <Route path="/raw-materials/update/:id" element={<UpdateMaterialsForm />} />
-        <Route path="/inventory-locations" element={<InvLocation />} />
-        <Route path="/inventory-locations/add" element={<AddLocationForm />} />
-        <Route path="/inventory-locations/update/:id" element={<UpdateLocationForm />} />
-        <Route path="/stock-movement" element={<StockMovement />} />
-        <Route path="/stock-movement/add" element={<AddMovementForm />} />
-        <Route path="/stock-movement/update/:id" element={<UpdateMovementForm />} />
-        <Route path="/transfer-request" element={<TransferRequest />} />
-        <Route path="/transfer-request/add" element={<AddTransferRequestForm />} />
-        <Route path="/transfer-request/update/:id" element={<UpdateTransferRequestForm />} />
-        <Route path="/disposal-materials" element={<DisposalMaterials />} />
-        <Route path="/disposal-materials/add" element={<AddDisposalMaterialsForm />} />
-        <Route path="/disposal-materials/update/:id" element={<UpdateDisposalMaterialsForm />} />
-        <Route path="/quality-assurance" element={<QualityAssurance />} />
-        <Route path="/quality-assurance/add" element={<AddQualityAssuranceForm />} />
-        <Route path="/quality-assurance/update/:id" element={<UpdateQualityAssuranceForm />} />
-        <Route path="/supplier-management" element={<SupplierManagement />} />
-        <Route path="/supplier-management/add" element={<AddSupplierForm />} />
-        <Route path="/supplier-management/update/:id" element={<UpdateSupplierForm />} />
-        <Route path="/procurement-management" element={<ProcurementManagement />} />
-        <Route path="/procurement-management/add" element={<AddProcurementForm />} />
-        <Route path="/procurement-management/update/:id" element={<UpdateProcurementForm />} />
-      </Routes>
+      <NotificationsProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/manufactured-products" element={<ManuProducts />} />
+          <Route path="/manufactured-products/add" element={<AddProductForm />} />
+          <Route path="/manufactured-products/update/:id" element={<UpdateProductForm />} />
+          <Route path="/raw-materials" element={<RawMaterials />} />
+          <Route path="/raw-materials/add" element={<AddMaterialsForm />} />
+          <Route path="/raw-materials/update/:id" element={<UpdateMaterialsForm />} />
+          <Route path="/inventory-locations" element={<InvLocation />} />
+          <Route path="/inventory-locations/add" element={<AddLocationForm />} />
+          <Route path="/inventory-locations/update/:id" element={<UpdateLocationForm />} />
+          <Route path="/stock-movement" element={<StockMovement />} />
+          <Route path="/stock-movement/add" element={<AddMovementForm />} />
+          <Route path="/stock-movement/update/:id" element={<UpdateMovementForm />} />
+          <Route path="/transfer-request" element={<TransferRequest />} />
+          <Route path="/transfer-request/add" element={<AddTransferRequestForm />} />
+          <Route path="/transfer-request/update/:id" element={<UpdateTransferRequestForm />} />
+          <Route path="/disposal-materials" element={<DisposalMaterials />} />
+          <Route path="/disposal-materials/add" element={<AddDisposalMaterialsForm />} />
+          <Route path="/disposal-materials/update/:id" element={<UpdateDisposalMaterialsForm />} />
+          <Route path="/reorder-request" element={<SReorderRequest />} />
+          <Route path="/reorder-request/add" element={<AddSReorderRequestForm />} />
+          <Route path="/reorder-request/update/:id" element={<UpdateSReorderRequestForm />} />
+          <Route path="/audit-log" element={<AuditLog />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/threshold-alerts" element={<ThresholdAlerts />} />
+        </Routes>
+      </NotificationsProvider>
     </div>
   );
 };
