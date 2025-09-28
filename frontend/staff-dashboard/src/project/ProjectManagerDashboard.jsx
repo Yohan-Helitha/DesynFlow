@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Layout from "../components/Layout";
-import DashboardOverview from "../components/DashboardOverview";
-import AssignTeams from "../components/AssignTeams";
-import TeamManagement from "../components/TeamManagement";
-import ReportsManagement from "../components/ProjectReport";
+import Layout from "./components/Layout";
+import DashboardOverview from "./components/DashboardOverview";
+import AssignTeams from "./components/AssignTeams";
+import TeamManagement from "./components/TeamManagement";
+import ReportsManagement from "./components/ProjectReport";
 
 export default function ProjectManagerDashboard() {
   const [activeIndex, setActiveIndex] = useState(0);

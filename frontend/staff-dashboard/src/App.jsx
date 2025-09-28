@@ -1,33 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ProjectManagerDashboard from './project/ProjectManagerDashboard.jsx';
 import TeamLeaderMainDashboard from './project/TeamLeaderMainDashboard.jsx';
 
 function App() {
-  // For demo purposes, we'll use a state to switch between dashboards
-  // In a real app, this would be determined by authentication/user role
-  const [userRole, setUserRole] = useState('project-manager'); // 'project-manager' or 'team-leader'
-
-  const toggleRole = () => {
-    setUserRole(userRole === 'project-manager' ? 'team-leader' : 'project-manager');
-  };
-
+  // TODO: Replace with actual authentication system
+  // This will be integrated with your authentication context/state
+  const userRole = 'project manager'; // This should come from authentication context
+  
   return (
     <div>
-      {/* Demo role switcher - remove in production */}
-      <div className="fixed top-4 right-4 z-50">
-        <button
-          onClick={toggleRole}
-          className="bg-brown-primary text-white px-4 py-2 rounded shadow-lg hover:bg-brown-secondary transition-colors"
-        >
-          Switch to {userRole === 'project-manager' ? 'Team Leader' : 'Project Manager'}
-        </button>
-      </div>
-
-      {/* Render appropriate dashboard based on user role */}
-      {userRole === 'project-manager' ? (
+      {/* Render appropriate dashboard based on authenticated user role */}
+      {userRole === 'project manager' ? (
         <ProjectManagerDashboard />
-      ) : (
+      ) : userRole === 'team leader' ? (
         <TeamLeaderMainDashboard />
+      ) : (
+        <div className="flex items-center justify-center min-h-screen bg-cream-primary">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-brown-primary mb-4">Access Denied</h1>
+            <p className="text-gray-600">You don't have permission to access this dashboard.</p>
+          </div>
+        </div>
       )}
     </div>
   );

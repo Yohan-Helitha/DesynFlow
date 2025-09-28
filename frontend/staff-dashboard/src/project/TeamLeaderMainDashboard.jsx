@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import Layout from "../components/Layout";
+import Layout from "./components/Layout";
 import LeaderDashboard from "./leaderDashboard";
-import TaskBoard from "../components/task";
-import TeamAttendance from "../components/TeamAttendance";
-import ResourceRequests from "../components/ResourceRequests";
-import ProgressReports from "../components/ProgressReports";
+import TaskBoard from "./components/task";
+import TeamAttendance from "./components/TeamAttendance";
+import ResourceRequests from "./components/ResourceRequests";
+import ProgressReports from "./components/ProgressReports";
 
 export default function TeamLeaderMainDashboard() {
   const [activeIndex, setActiveIndex] = useState(0);

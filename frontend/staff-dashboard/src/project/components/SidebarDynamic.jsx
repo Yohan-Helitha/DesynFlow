@@ -17,9 +17,9 @@ const projectManagerNavItems = [
   { label: "Settings", icon: <FaCog />, id: "settings" },
 ];
 
-export default function Sidebar({ activeIndex, setActiveIndex, userRole = "project-manager" }) {
-  const navItems = userRole === "team-leader" ? teamLeaderNavItems : projectManagerNavItems;
-  const dashboardTitle = userRole === "team-leader" ? "Team Leader" : "Interior PM";
+export default function Sidebar({ activeIndex, setActiveIndex, userRole }) {
+  const navItems = userRole === "team leader" ? teamLeaderNavItems : projectManagerNavItems;
+  const dashboardTitle = userRole === "team leader" ? "Team Leader" : "Interior PM";
   
   return (
     <aside className="w-64 bg-brown-primary text-white flex flex-col shadow-lg">
@@ -45,7 +45,7 @@ export default function Sidebar({ activeIndex, setActiveIndex, userRole = "proje
         </nav>
       </div>
       <div className="mt-auto p-4 border-t border-green-primary border-opacity-30 text-center text-xs text-green-primary">
-        {userRole === "team-leader" ? "Team Leader Dashboard v1.0" : "Interior Design PM v1.0"}
+        {userRole === "team leader" ? "Team Leader Dashboard v1.0" : "Interior Design PM v1.0"}
       </div>
     </aside>
   );

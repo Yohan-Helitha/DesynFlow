@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import TeamOverviewCard from "../components/TeamOverviewCard";
-import ProjectOverviewCard from "../components/ProjectOverviewCard";
-import MilestoneList from "../components/MilestoneList";
-import ProgressBar from "../components/ProgressBar";
-import DocumentList from "../components/DocumentList";
-import CreateMeetingForm from "../components/CreateMeetingForm";
+import TeamOverviewCard from "./components/TeamOverviewCard";
+import ProjectOverviewCard from "./components/ProjectOverviewCard";
+import MilestoneList from "./components/MilestoneList";
+import ProgressBar from "./components/ProgressBar";
+import DocumentList from "./components/DocumentList";
+import CreateMeetingForm from "./components/CreateMeetingForm";
 
 export default function LeaderDashboard() {
   const leaderId = "68d638d66e8afdd7536b87f8";
