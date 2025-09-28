@@ -6,6 +6,7 @@ import './App.css';
 import Dashboard_proc from "./Components/Dashboard_proc/Dashboard_proc";
 import Supplier_details from "./Components/Supplier_details/Supplier_details";
 import Orders from "./Components/Orders/Orders";
+import Restock_alerts from "./Components/Restock_alerts/Restock_alerts";
 import Budget_approval from "./Components/Budget_approval/Budget_approval";
 import Budget_approval_form from "./Components/Budget_approval_form/Budget_approval_form";
 import OrderForm from "./Components/OrderForm/OrderForm";
@@ -27,6 +28,7 @@ function App() {
       <Route path="/" element={<Dashboard_proc />} />
       <Route path="/Supplier_details" element={<Supplier_details />} />
       <Route path="/Orders" element={<Orders />} />
+      <Route path="/Restock_alerts" element={<Restock_alerts />} />
       <Route path="/Budget_approval" element={<Budget_approval />} />
       <Route path="/Budget_approval_form" element={<Budget_approval_form />} />
       <Route path="/OrderForm" element={<OrderForm />} />

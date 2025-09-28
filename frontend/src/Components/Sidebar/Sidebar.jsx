@@ -28,6 +28,9 @@ function Sidebar() {
             <Link to="/Orders">Orders</Link>
           </li>
           <li>
+            <Link to="/Restock_alerts">Restock Alerts</Link>
+          </li>
+          <li>
             <Link to="/Budget_approval">Budget Approval</Link>
           </li>
           <li>
