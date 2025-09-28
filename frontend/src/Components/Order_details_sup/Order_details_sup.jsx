@@ -12,6 +12,12 @@ function OrderDetailsSup() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
+  // Helper to format amounts in LKR with thousands separators and two decimals
+  const formatLKR = (amount) => {
+    const num = Number(amount || 0);
+    return `LKR ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num)}`;
+  };
+
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -217,9 +223,9 @@ function OrderDetailsSup() {
                     <div className="info-row">
                       <span className="label">Total Value:</span>
                       <span className="value total">
-                        ${(o.items || []).reduce((sum, item) => 
+                        {formatLKR((o.items || []).reduce((sum, item) => 
                           sum + ((item.unitPrice || 0) * (item.qty || 0)), 0
-                        ).toFixed(2)}
+                        ))}
                       </span>
                     </div>
                   </div>
@@ -304,7 +310,7 @@ function OrderDetailsSup() {
                           <div key={idx} className="item-row">
                             <span className="material">{item.materialId?.materialName || item.materialId}</span>
                             <span className="quantity">Qty: {item.qty}</span>
-                            {item.unitPrice && <span className="price">${item.unitPrice}/unit</span>}
+                            {item.unitPrice && <span className="price">{formatLKR(item.unitPrice)}/unit</span>}
                           </div>
                         ))}
                       </div>
@@ -312,9 +318,9 @@ function OrderDetailsSup() {
                     <td>
                       <div className="total-cell">
                         <strong>
-                          ${(order.items || []).reduce((sum, item) => 
+                          {formatLKR((order.items || []).reduce((sum, item) => 
                             sum + ((item.unitPrice || 0) * (item.qty || 0)), 0
-                          ).toFixed(2)}
+                          ))}
                         </strong>
                       </div>
                     </td>

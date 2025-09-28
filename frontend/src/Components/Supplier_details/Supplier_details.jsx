@@ -83,6 +83,12 @@ function Supplier_details() {
     s.companyName.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Helper to format amounts in LKR consistently
+  const formatLKR = (amount) => {
+    const num = Number(amount || 0);
+    return `LKR ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num)}`;
+  };
+
   return (
     <>
       <div className="page-with-sidebar">
@@ -157,7 +163,7 @@ function Supplier_details() {
                         marginRight: "4px",
                         marginBottom: "4px"
                       }}>
-                        <strong>{material.name}</strong>: ${material.pricePerUnit}/unit
+                        <strong>{material.name}</strong>: {formatLKR(material.pricePerUnit)}/unit
                       </div>
                     ))
                   ) : (
@@ -227,7 +233,7 @@ function Supplier_details() {
                     }}>
                       <strong style={{ color: "#674636" }}>{material.name}</strong>
                       <span style={{ float: "right", color: "#28a745", fontWeight: "bold" }}>
-                        ${material.pricePerUnit}/unit
+                        {formatLKR(material.pricePerUnit)}/unit
                       </span>
                     </div>
                   ))

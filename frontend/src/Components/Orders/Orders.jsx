@@ -10,6 +10,12 @@ function Orders() {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
+  // Helper to format amounts in LKR with thousands separators and two decimals
+  const formatLKR = (amount) => {
+    const num = Number(amount || 0);
+    return `LKR ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num)}`;
+  };
+
 
 
   // Function to mark order as received
@@ -135,15 +141,15 @@ function Orders() {
                   <td>
                     <div className="price-list">
                       {order.items?.map((item, i) => (
-                        <div key={i} className="price-item">${item.unitPrice || item.pricePerUnit}</div>
+                        <div key={i} className="price-item">{formatLKR(item.unitPrice || item.pricePerUnit)}</div>
                       ))}
                     </div>
                   </td>
                   <td>
                     <span className="total-amount">
-                      ${order.items?.reduce((total, item) => 
+                      {formatLKR(order.items?.reduce((total, item) => 
                         total + ((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity) || 0), 0
-                      )?.toFixed(2) || '0.00'}
+                      ) || 0)}
                     </span>
                   </td>
                   <td>

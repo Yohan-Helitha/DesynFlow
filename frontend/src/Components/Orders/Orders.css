@@ -73,19 +73,24 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+  background: linear-gradient(135deg, #674636 0%, #5a3d2e 100%);
+  color: #FFF8E8;
+  box-shadow: 0 2px 4px rgba(103, 70, 54, 0.2);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  background: linear-gradient(135deg, #5a3d2e 0%, #4a3226 100%);
+  box-shadow: 0 4px 8px rgba(103, 70, 54, 0.3);
   transform: translateY(-1px);
+  color: white;
+}
+
+.btn-primary:hover a {
+  color: white;
 }
 
 .btn-primary a {
-  color: white;
+  color: #FFF8E8;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -283,27 +288,30 @@ body {
 }
 
 /* ===== Action Buttons ===== */
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 120px;
+.orders-table .action-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 0.5rem;
+  min-width: 200px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.action-btn {
-  padding: 0.3rem 0.6rem;
+.orders-table .action-btn {
+  padding: 0.4rem 0.8rem;
   border: 1px solid transparent;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  width: 100%;
+  gap: 0.3rem;
+  white-space: nowrap;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .action-btn.received {
@@ -524,13 +532,17 @@ body {
     font-size: 0.7rem;
   }
   
-  .action-buttons {
-    min-width: 100px;
-    gap: 0.2rem;
+  .orders-table .action-buttons {
+    min-width: 150px !important;
+    gap: 0.3rem;
+    flex-direction: row !important;
+    flex-wrap: wrap;
   }
   
-  .action-btn {
+  .orders-table .action-btn {
     font-size: 0.65rem;
     padding: 0.25rem 0.4rem;
+    flex: 1;
+    min-width: 70px;
   }
 }
