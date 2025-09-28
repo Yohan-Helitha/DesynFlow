@@ -117,12 +117,10 @@ function Supplier_details() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <button className="btn-primary">
-              <Link to="/Add_suppliers">
-                <FaPlus className="icon" />
-                Add Supplier
-              </Link>
-            </button>
+            <Link to="/Add_suppliers" className="btn-primary add-supplier-link">
+              <FaPlus className="icon" />
+              Add Supplier
+            </Link>
           </div>
         )}
 
