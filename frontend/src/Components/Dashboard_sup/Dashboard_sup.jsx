@@ -218,7 +218,7 @@ function Dashboard_sup() {
       fetchPendingOrders();
     } catch (error) {
       console.error("Error approving order:", error);
-      alert("Failed to approve order. Please try again.");
+  console.error('Failed to approve order. Please try again.');
     } finally {
       setProcessingId(null);
     }
@@ -247,7 +247,7 @@ function Dashboard_sup() {
       fetchPendingOrders();
     } catch (error) {
       console.error("Error rejecting order:", error);
-      alert("Failed to reject order. Please try again.");
+  console.error('Failed to reject order. Please try again.');
     } finally {
       setProcessingId(null);
     }

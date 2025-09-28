@@ -106,7 +106,7 @@ function RateSupplier() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.supplierId) {
-      alert("Please select a supplier");
+      console.warn('Please select a supplier');
       return;
     }
     try {
@@ -146,7 +146,7 @@ function RateSupplier() {
       const ws = data?.rating?.weightedScore?.toFixed ? Number(data.rating.weightedScore.toFixed(2)) : data?.rating?.weightedScore;
       const avg = data?.averageRating?.toFixed ? Number(data.averageRating.toFixed(2)) : data?.averageRating;
       
-      alert(`Rating submitted successfully! Order marked as received.\nWeighted Score: ${ws} | New Average: ${avg}`);
+  console.log(`Rating submitted successfully! Order marked as received. Weighted Score: ${ws} | New Average: ${avg}`);
       
       setFormData({
         supplierId: "",
@@ -162,7 +162,7 @@ function RateSupplier() {
       }
     } catch (err) {
       console.error("Error submitting rating", err);
-      alert("Failed to submit rating. Check console for details.");
+  console.error('Failed to submit rating. Check console for details.');
     }
   };
 

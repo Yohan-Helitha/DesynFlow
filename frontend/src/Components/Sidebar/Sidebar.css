@@ -74,6 +74,17 @@
   font-weight: bold;
 }
 
+.sidebar-header .close-btn svg {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  fill: #FFF8E8;
+}
+
+.sidebar-header .close-btn:focus {
+  outline: 3px solid rgba(255, 248, 232, 0.25);
+}
+
 .sidebar-header .close-btn:hover {
   background: rgba(255, 248, 232, 0.2);
   border-color: rgba(255, 248, 232, 0.4);

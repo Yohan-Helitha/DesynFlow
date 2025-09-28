@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./Sidebar.css";
 import { FaTimes } from 'react-icons/fa';
@@ -8,13 +8,28 @@ function Sidebar() {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  // Close sidebar on Escape key for accessibility
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape" && sidebarOpen) setSidebarOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [sidebarOpen]);
+
   return (
     <>
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <h2>Dashboard</h2>
-          <button className="close-btn" onClick={toggleSidebar}>
+          <button
+            type="button"
+            className="close-btn"
+            onClick={toggleSidebar}
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+            title={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+          >
             <FaTimes />
           </button>
         </div>

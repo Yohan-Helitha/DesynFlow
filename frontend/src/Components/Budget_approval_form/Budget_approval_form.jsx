@@ -15,16 +15,16 @@ function Budget_approval_form() {
     const budget = document.getElementById('budget').value.trim();
 
     if (!materialId || !materialName || !quantity || !supplierName || !supplierId || !budget) {
-      alert('⚠️ Please fill in all fields before submitting.');
+      console.warn('Please fill in all fields before submitting.');
       return;
     }
 
     if (quantity <= 0 || budget <= 0) {
-      alert('⚠️ Quantity and Budget must be greater than 0.');
+      console.warn('Quantity and Budget must be greater than 0.');
       return;
     }
 
-    alert('✅ Budget Approval Request Submitted Successfully!');
+  console.log('Budget Approval Request submitted successfully');
     e.target.reset();
   }
 

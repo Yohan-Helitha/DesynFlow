@@ -116,25 +116,27 @@ function Update_delete_suppliers() {
 
     try {
       await axios.put(`${API_BASE}/${editingSupplier}`, updated);
-      alert("✅ Supplier updated!");
+  console.log('Supplier updated successfully');
       handleCancel();
       fetchSuppliers();
     } catch (err) {
       console.error("Error updating supplier", err);
-      alert(" Failed to update supplier");
+  console.error('Failed to update supplier');
     }
   };
 
   // delete supplier
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete supplier "${name}"?`)) return;
+    const confirmed = window.confirm(`Delete supplier "${name}"?`);
+    console.log('Delete confirmation result:', confirmed);
+    if (!confirmed) return;
     try {
       await axios.delete(`${API_BASE}/${id}`);
-      alert(" Supplier deleted");
+        console.log('Supplier deleted successfully');
       fetchSuppliers();
     } catch (err) {
       console.error("Error deleting supplier", err);
-      alert(" Failed to delete supplier");
+        console.error('Failed to delete supplier');
     }
   };
 

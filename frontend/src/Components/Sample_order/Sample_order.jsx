@@ -103,7 +103,7 @@ function Sample_order() {
         return res.json();
       })
       .then(() => {
-        alert("Sample request sent successfully!");
+  console.log('Sample request sent successfully!');
         setFormData({
           supplierId: "",
           materialId: "",
@@ -113,7 +113,7 @@ function Sample_order() {
       })
       .catch((err) => {
         console.error(err);
-        alert("Error sending request");
+  console.error('Error sending request');
       });
   };
 

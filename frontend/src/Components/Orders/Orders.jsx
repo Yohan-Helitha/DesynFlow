@@ -36,7 +36,7 @@ function Orders() {
       );
     } catch (error) {
       console.error('Error marking order as received:', error);
-      alert('Failed to mark order as received. Please try again.');
+  console.error('Failed to mark order as received. Please try again.');
     }
   };
 

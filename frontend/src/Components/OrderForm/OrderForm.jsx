@@ -130,11 +130,11 @@ function OrderForm({ onOrderCreated }) {
     // Only submit if supplier is selected
     const isValidObjectId = v => /^[a-f\d]{24}$/i.test(v);
     if (!isValidObjectId(formData.supplierId)) {
-      alert("Please select a supplier.");
+      console.warn('Please select a supplier.');
       return;
     }
     if (formattedItems.length === 0) {
-      alert("Please add at least one valid item with a material selected.");
+      console.warn('Please add at least one valid item with a material selected.');
       return;
     }
     // Add dummy projectId and requestedBy to satisfy backend validation
@@ -152,7 +152,7 @@ function OrderForm({ onOrderCreated }) {
       });
       if (res.ok) {
         const newOrder = await res.json();
-        alert("Order created successfully!");
+  console.log('Order created successfully!');
         setFormData({
           supplierId: "",
           items: [{ materialId: "", materialName: "", quantity: "", pricePerUnit: 0, total: 0 }],
@@ -162,7 +162,7 @@ function OrderForm({ onOrderCreated }) {
         navigate("/Orders");
       } else {
         const error = await res.json();
-        alert("Failed to create order: " + (error.error || "Unknown error"));
+  console.error('Failed to create order: ' + (error.error || 'Unknown error'));
       }
     } catch (err) {
       console.error("Error creating order:", err);

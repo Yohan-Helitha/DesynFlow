@@ -66,7 +66,7 @@ function Add_suppliers() {
     e.preventDefault();
 
     if (formData.materials.length === 0) {
-      alert("Please add at least one material with its price.");
+        console.log("Please add at least one material with its price.");
       return;
     }
 
@@ -81,7 +81,7 @@ function Add_suppliers() {
 
     try {
       await axios.post("http://localhost:3000/api/suppliers", formattedData);
-      alert(`Supplier "${formData.companyName}" has been added successfully!`);
+        console.log(`Supplier "${formData.companyName}" has been added successfully!`);
       
       // Reset form for potential new entries
       setFormData({
@@ -96,7 +96,7 @@ function Add_suppliers() {
       setCurrentMaterial({ name: "", pricePerUnit: "" });
     } catch (err) {
       console.error("Error adding supplier:", err);
-      alert("Failed to add supplier. Please try again.");
+        console.error("Failed to add supplier. Please try again.");
     }
   };
 
