@@ -108,6 +108,12 @@ export const QuotationFormModal = ({
       return
     }
     try {
+      console.log('[CreateQuotationModal] Creating quotation with:', {
+        projectId: formData.projectId,
+        estimateVersion: formData.estimateVersion,
+        itemCounts: { labor: laborItems.length, material: materialItems.length }
+      });
+
       const created = await safeFetchJson('/api/quotations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -128,9 +134,13 @@ export const QuotationFormModal = ({
           grandTotal
         })
       })
+
+      console.log('[CreateQuotationModal] Quotation created successfully:', created);
+      
       if (onSubmit) onSubmit(created)
       onClose && onClose()
     } catch (err) {
+      console.error('[CreateQuotationModal] Error creating quotation:', err);
       setSubmitError(err.message)
     } finally {
       setSubmitting(false)

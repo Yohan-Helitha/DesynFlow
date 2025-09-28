@@ -30,8 +30,11 @@ export const ApprovedQuotations = () => {
     setLoading(true)
     try {
       const data = await safeFetchJson('/api/quotations')
+      console.log('[QuotationsHistory] Loaded quotations:', data?.length || 0, 'items');
+      console.log('[QuotationsHistory] Sample quotation:', data?.[0]);
       setQuotations(Array.isArray(data) ? data : [])
     } catch (err) {
+      console.error('[QuotationsHistory] Error loading quotations:', err);
       setError(err.message)
     } finally {
       setLoading(false)
@@ -40,6 +43,14 @@ export const ApprovedQuotations = () => {
 
   useEffect(() => {
     reload()
+  }, [])
+
+  // Add interval to auto-refresh quotations list
+  useEffect(() => {
+    const interval = setInterval(() => {
+      reload()
+    }, 30000) // Refresh every 30 seconds
+    return () => clearInterval(interval)
   }, [])
 
   const openModalWith = async (quotation, enableEdit) => {
@@ -179,22 +190,22 @@ export const ApprovedQuotations = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-3">
+          <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
             <FileText size={20} />
           </div>
-          <h2 className="text-xl font-semibold">Quotations History</h2>
+          <h2 className="text-xl font-semibold text-[#674636]">Quotations History</h2>
         </div>
         <div className="flex space-x-2">
           <div className="relative">
             <input
               type="text"
               placeholder="Search quotations..."
-              className="pl-3 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396] text-[#674636]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Filter size={16} className="text-gray-400" />
+              <Filter size={16} className="text-[#AAB396]" />
             </button>
           </div>
         </div>
@@ -209,12 +220,19 @@ export const ApprovedQuotations = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
                   <div className="flex items-center">Quotation ID<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>Project Name<ArrowUpDown size={14} className="ml-1" /></th>
-                
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('grandTotal')}>Grand Total<ArrowUpDown size={14} className="ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('status')}>Status<ArrowUpDown size={14} className="ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('createdAt')}>Created Date<ArrowUpDown size={14} className="ml-1" /></th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>
+                  <div className="flex items-center">Project Name<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('grandTotal')}>
+                  <div className="flex items-center">Grand Total<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('status')}>
+                  <div className="flex items-center">Status<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('createdAt')}>
+                  <div className="flex items-center">Created Date<ArrowUpDown size={14} className="ml-1" /></div>
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-[#F7EED3] divide-y divide-[#AAB396]">
@@ -266,7 +284,7 @@ export const ApprovedQuotations = () => {
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-6 py-4 text-center text-gray-500"
+                    className="px-6 py-4 text-center text-[#AAB396]"
                   >
                     No approved quotations found
                   </td>

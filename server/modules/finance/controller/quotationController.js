@@ -1,4 +1,5 @@
 import Quotation from '../model/quotation_estimation.js';
+import ProjectEstimation from '../model/project_estimation.js';
 import { generateQuotationPdf } from '../service/quotationPdfService.js';
 import Material from '../model/material.js';
 import SupplierMaterialCatalog from '../model/supplier_material_catalog.js';
@@ -21,6 +22,9 @@ if (!mongoose.models.Project) {
 export const createQuotation = async (req, res) => {
   try {
     const { projectId, estimateVersion, laborItems, materialItems, serviceItems, contingencyItems, taxes, remarks, fileUrl, createdBy } = req.body;
+    
+    console.log('[quotation] Creating quotation with data:', { projectId, estimateVersion, itemCounts: { labor: laborItems?.length, material: materialItems?.length } });
+
     // Find latest version for this project/estimate
     const latest = await Quotation.findOne({ projectId, estimateVersion }).sort({ version: -1 });
     let version = latest ? latest.version + 1 : 1;
@@ -89,6 +93,77 @@ export const createQuotation = async (req, res) => {
       // Log and continue without blocking creation
       console.warn('[quotation] PDF generation failed:', pdfErr?.message || pdfErr);
     }
+
+    // Mark the corresponding project estimation as having a quotation created
+    try {
+      console.log('[quotation] Looking for estimation to update with:', { projectId, estimateVersion, type: typeof projectId });
+      
+      // First, let's find all estimations for this project to debug
+      const allProjectEstimations = await ProjectEstimation.find({ projectId });
+      console.log('[quotation] All estimations for project:', allProjectEstimations.map(e => ({ 
+        id: e._id, 
+        version: e.version, 
+        status: e.status, 
+        quotationCreated: e.quotationCreated 
+      })));
+
+      // Try multiple search approaches
+      let updateResult = null;
+      
+      // Approach 1: Direct match
+      updateResult = await ProjectEstimation.findOneAndUpdate(
+        { 
+          projectId, 
+          version: Number(estimateVersion), 
+          status: 'Approved' 
+        },
+        { 
+          quotationCreated: true,
+          lastQuotationId: quotation._id
+        },
+        { new: true }
+      );
+      
+      // Approach 2: If no match, try with ObjectId conversion
+      if (!updateResult && mongoose.Types.ObjectId.isValid(projectId)) {
+        updateResult = await ProjectEstimation.findOneAndUpdate(
+          { 
+            projectId: new mongoose.Types.ObjectId(projectId), 
+            version: Number(estimateVersion), 
+            status: 'Approved' 
+          },
+          { 
+            quotationCreated: true,
+            lastQuotationId: quotation._id
+          },
+          { new: true }
+        );
+      }
+      
+      // Approach 3: If still no match, try without status filter (maybe it's not 'Approved')
+      if (!updateResult) {
+        updateResult = await ProjectEstimation.findOneAndUpdate(
+          { 
+            projectId, 
+            version: Number(estimateVersion)
+          },
+          { 
+            quotationCreated: true,
+            lastQuotationId: quotation._id
+          },
+          { new: true }
+        );
+      }
+      
+      if (updateResult) {
+        console.log(`[quotation] Successfully marked estimation ${updateResult._id} (version ${updateResult.version}) as having quotation created`);
+      } else {
+        console.warn(`[quotation] Failed to find estimation with projectId: ${projectId}, estimateVersion: ${estimateVersion}`);
+      }
+    } catch (estimationErr) {
+      console.error('[quotation] Failed to update estimation tracking:', estimationErr?.message || estimationErr);
+    }
+
     return res.status(201).json(quotation);
   } catch (err) {
     return res.status(500).json({ error: err.message });

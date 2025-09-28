@@ -50,8 +50,6 @@ export const PendingQuotations = () => {
         const data = await safeFetchJson(API_URL);
         const list = Array.isArray(data) ? data : [];
         // Filter: show only estimations with no quotation yet
-        // Assuming estimation has a flag/field like quotationCreated or lastQuotationId;
-        // if not present, we infer by absence of any matching quotation on the frontend side (fallback kept as-is for now).
         const pendingOnly = list.filter(e => !e.quotationCreated && !e.lastQuotationId);
         setQuotations(pendingOnly);
       } catch (err) {
@@ -64,15 +62,33 @@ export const PendingQuotations = () => {
   }, []);
 
   const handleView = (estimation) => {
-    setSelectedQuotation(estimation);
+    // Ensure we pass the correct project ID to the modal
+    const processedEstimation = {
+      ...estimation,
+      projectId: getProjectId(estimation)
+    };
+    setSelectedQuotation(processedEstimation);
     setShowCreateModal(true);
   };
 
-  const handleCreated = () => {
-    // Remove the created estimation row from table
+  const handleCreated = async (createdQuotation) => {
+    console.log('[PendingQuotations] Quotation created, refreshing list...', createdQuotation);
+    
+    // Remove the estimation from the pending list immediately for better UX
     setQuotations(prev => prev.filter(q => q._id !== (selectedQuotation?._id)));
     setShowCreateModal(false);
     setSelectedQuotation(null);
+    
+    // Optionally refresh the entire list to ensure consistency
+    try {
+      const data = await safeFetchJson(API_URL);
+      const list = Array.isArray(data) ? data : [];
+      const pendingOnly = list.filter(e => !e.quotationCreated && !e.lastQuotationId);
+      setQuotations(pendingOnly);
+      console.log('[PendingQuotations] List refreshed, pending count:', pendingOnly.length);
+    } catch (err) {
+      console.error('[PendingQuotations] Error refreshing after creation:', err);
+    }
   };
 
   const handleSort = (field) => {
@@ -84,28 +100,57 @@ export const PendingQuotations = () => {
     }
 	};
 
+  // Helper function to get project display name
+  const getProjectDisplay = (quotation) => {
+    if (quotation.projectId && typeof quotation.projectId === 'object') {
+      return quotation.projectId.projectName || quotation.projectId._id;
+    }
+    return quotation.projectId || '';
+  };
+
+  // Helper function to get project ID for sorting/filtering
+  const getProjectId = (quotation) => {
+    if (quotation.projectId && typeof quotation.projectId === 'object') {
+      return quotation.projectId._id;
+    }
+    return quotation.projectId || '';
+  };
+
   // Filter and sort quotations
   const filteredQuotations = quotations
     .filter((quotation) => {
-      // You may need to adjust these fields based on your backend response
+      const searchLower = searchTerm.toLowerCase();
+      const projectDisplay = getProjectDisplay(quotation).toLowerCase();
+      const projectId = getProjectId(quotation).toLowerCase();
+      const estimationId = quotation._id ? quotation._id.toLowerCase() : '';
+      
       return (
-        (quotation._id && quotation._id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (quotation.clientName && quotation.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (quotation.projectType && quotation.projectType.toLowerCase().includes(searchTerm.toLowerCase()))
+        estimationId.includes(searchLower) ||
+        projectDisplay.includes(searchLower) ||
+        projectId.includes(searchLower)
       );
     })
     .sort((a, b) => {
-      if (a[sortField] < b[sortField]) {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+      
+      // Handle project sorting specially
+      if (sortField === 'projectId') {
+        aVal = getProjectDisplay(a).toLowerCase();
+        bVal = getProjectDisplay(b).toLowerCase();
+      }
+      
+      if (aVal < bVal) {
         return sortDirection === 'asc' ? -1 : 1;
       }
-      if (a[sortField] > b[sortField]) {
+      if (aVal > bVal) {
         return sortDirection === 'asc' ? 1 : -1;
       }
       return 0;
     });
 
   // Pagination
-  const itemsPerPage = 4;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage);
   const paginatedQuotations = filteredQuotations.slice(
     (currentPage - 1) * itemsPerPage,
@@ -137,17 +182,31 @@ export const PendingQuotations = () => {
         </div>
       </div>
 
+      {/* Loading and Error States */}
+      {loading && (
+        <div className="text-center py-8 text-[#AAB396]">
+          Loading approved estimations...
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center py-8 text-red-600 bg-red-50 rounded-md border border-red-200">
+          Error loading estimations: {error}
+        </div>
+      )}
+
       {/* Pending Quotations Table */}
-      <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-[#AAB396]">
+      {!loading && !error && (
+        <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
                   <div className="flex items-center">Estimation ID<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>
-                  <div className="flex items-center">Project ID<ArrowUpDown size={14} className="ml-1" /></div>
+                  <div className="flex items-center">Project Name<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('version')}>
                   <div className="flex items-center">Estimate Version<ArrowUpDown size={14} className="ml-1" /></div>
@@ -179,7 +238,7 @@ export const PendingQuotations = () => {
                     {quotation._id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    {quotation.projectId}
+                    {getProjectDisplay(quotation)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
                     {quotation.version}
@@ -270,6 +329,7 @@ export const PendingQuotations = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* Create Quotation Modal */}
       {showCreateModal && selectedQuotation && (

@@ -3,7 +3,21 @@ import { Project } from '../model/project.js';
 
 // Get only Approved estimations
 async function getApprovedEstimates() {
-  return ProjectEstimation.find({ status: 'Approved' }).sort({ version: -1 });
+  const estimations = await ProjectEstimation.find({ status: 'Approved' })
+    .populate('projectId', 'projectName status progress')
+    .populate('createdBy', 'name email')
+    .populate('lastQuotationId', '_id version status')
+    .sort({ createdAt: -1, version: -1 });
+    
+  console.log('[estimations] Found approved estimations:', estimations.map(e => ({
+    id: e._id,
+    project: e.projectId?.projectName || e.projectId?._id,
+    version: e.version,
+    quotationCreated: e.quotationCreated,
+    lastQuotationId: e.lastQuotationId?._id
+  })));
+  
+  return estimations;
 }
 
 async function resolveProject(projectId) {

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { CreditCard, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CreditCard, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import { ViewInspectionPaymentModal } from './ViewInspectionPaymentModal';
 
 export const InspectionPaymentsHistory = () => {
@@ -9,10 +9,11 @@ export const InspectionPaymentsHistory = () => {
   const [error, setError] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('inspectionRequestId');
   const [sortDirection, setSortDirection] = useState('asc');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  const itemsPerPage = 10;
 
   // Build a full URL to the uploaded receipt that works in dev and prod and normalizes slashes
   const buildReceiptUrl = (payment) => {
@@ -72,12 +73,22 @@ export const InspectionPaymentsHistory = () => {
     }
   };
 
-  const sortedPayments = [...pendingPayments].sort((a, b) => {
-    if (!a[sortField] || !b[sortField]) return 0;
-    if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
-    if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
+  const sortedPayments = [...pendingPayments]
+    .filter((payment) => {
+      const q = searchTerm.toLowerCase();
+      return (
+        (payment.inspectionRequestId && payment.inspectionRequestId.toLowerCase().includes(q)) ||
+        (payment.clientName && payment.clientName.toLowerCase().includes(q)) ||
+        (payment.email && payment.email.toLowerCase().includes(q)) ||
+        (payment.siteLocation && payment.siteLocation.toLowerCase().includes(q))
+      );
+    })
+    .sort((a, b) => {
+      if (!a[sortField] || !b[sortField]) return 0;
+      if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
+      if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
 
   const totalPages = Math.ceil(sortedPayments.length / itemsPerPage);
   const paginatedPayments = sortedPayments.slice(
@@ -93,11 +104,25 @@ export const InspectionPaymentsHistory = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center mb-6">
-        <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
-          <CreditCard size={20} />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
+            <CreditCard size={20} />
+          </div>
+          <h2 className="text-xl font-semibold text-[#674636]">Inspection Payments History</h2>
         </div>
-        <h2 className="text-xl font-semibold text-[#674636]">Inspection Payments History</h2>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search payment history..."
+            className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396] text-[#674636]"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <Filter size={16} className="text-[#AAB396]" />
+          </button>
+        </div>
       </div>
 
       {/* Table */}

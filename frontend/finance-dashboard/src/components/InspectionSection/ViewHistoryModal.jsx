@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { ClipboardCheck, Eye } from 'lucide-react';
+import { ClipboardCheck, Eye, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ViewInspectionEstimationDetailModal } from './ViewInspectionEstimationDetailModal';
 
 export const ViewHistoryModal = ({ historyData }) => {
   const [selectedInspection, setSelectedInspection] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const handleViewInspection = (inspection) => {
     setSelectedInspection(inspection);
@@ -16,55 +19,83 @@ export const ViewHistoryModal = ({ historyData }) => {
     setSelectedInspection(null);
   };
 
+  // Filter and paginate data
+  const filteredData = (historyData || []).filter((item) => {
+    const q = searchTerm.toLowerCase();
+    const req = item.inspectionRequest || {};
+    return (
+      (item.inspectionRequestId && item.inspectionRequestId.toLowerCase().includes(q)) ||
+      (req.clientName && req.clientName.toLowerCase().includes(q)) ||
+      (req.email && req.email.toLowerCase().includes(q)) ||
+      (req.siteLocation && req.siteLocation.toLowerCase().includes(q))
+    );
+  });
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const pageSlice = filteredData.slice(startIdx, startIdx + itemsPerPage);
+
   return (
     <>
-      <div className="bg-[#FFF8E8] shadow-sm rounded-md p-6 mb-6 border border-[#AAB396]">
-        <h2 className="text-xl font-semibold mb-4 flex items-center text-[#674636]">
-          <span className="w-8 h-8 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
-            <ClipboardCheck size={20} />
-          </span>
-          Inspection Estimation History
-        </h2>
+      {/* Header to match Pending Inspections */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <div className="w-8 h-8 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
+            <ClipboardCheck size={18} />
+          </div>
+          <h2 className="text-xl font-semibold text-[#674636]">Inspection Estimation History</h2>
+        </div>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search history..."
+            className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396] text-[#674636]"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <Filter size={16} className="text-[#AAB396]" />
+          </button>
+        </div>
+      </div>
+      {/* Table container to match Pending Inspections */}
+      <div className="bg-[#FFF8E8] shadow-sm rounded-md overflow-hidden border border-[#AAB396]">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Inspection Request ID</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client ID</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Phone</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Site Location</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Property Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Distance (km)</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Estimated Cost</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Created Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase">Action</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Inspection Request ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Phone</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Site Location</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Property Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Distance (km)</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Estimated Cost</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Created Date</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
-              {historyData.map((item, index) => {
+              {pageSlice.map((item, index) => {
                 const req = item.inspectionRequest || {};
                 return (
                   <tr key={index} className="hover:bg-[#F7EED3] transition-colors">
-                    <td className="px-4 py-4 text-sm text-[#674636] font-mono text-xs">{item.inspectionRequestId || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[#674636] font-mono text-xs">{req.clientId || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[#674636]">{req.clientName || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[#674636]">{req.email || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[#674636]">{req.phone || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[#674636]">{req.siteLocation || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[#674636]">{req.propertyType || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[#674636]">{item.distanceKm || item.distance || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[#674636] font-semibold">
-                      {item.estimatedCost ? `$${item.estimatedCost.toLocaleString()}` : '-'}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-[#674636]">
-                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : (item.createdDate || item.date || '-')}
-                    </td>
-                    <td className="px-4 py-4 text-sm">
-                      <button 
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">{item.inspectionRequestId || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">{req.clientId || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.clientName || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.email || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.phone || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.siteLocation || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.propertyType || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item.distanceKm || item.distance || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-semibold">{item.estimatedCost ? `$${item.estimatedCost.toLocaleString()}` : '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : (item.createdDate || item.date || '-')}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
                         onClick={() => handleViewInspection(item)}
-                        className="px-3 py-1 bg-[#674636] text-[#FFF8E8] rounded text-sm font-medium hover:bg-[#AAB396] transition-colors flex items-center"
+                        className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md transition-colors flex items-center justify-center"
                       >
                         <Eye size={14} className="mr-1" />
                         View
@@ -73,17 +104,49 @@ export const ViewHistoryModal = ({ historyData }) => {
                   </tr>
                 );
               })}
+              {pageSlice.length === 0 && (
+                <tr>
+                  <td colSpan={11} className="px-6 py-8 text-center text-[#AAB396]">
+                    No inspection estimation history available
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
-          
-          {historyData.length === 0 && (
-            <div className="text-center py-8 text-[#AAB396]">
-              <ClipboardCheck size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No inspection estimation history available</p>
-              <p className="text-sm mt-2">Inspection estimations will appear here once created.</p>
-            </div>
-          )}
         </div>
+        {/* Pagination */}
+        {filteredData.length > 0 && (
+          <div className="px-6 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
+            <div className="text-sm text-[#674636]">
+              Showing {startIdx + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-md ${currentPage === 1 ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-md ${currentPage === page ? 'bg-[#674636] text-[#FFF8E8]' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-md ${currentPage === totalPages ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#FFF8E8]'}`}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}

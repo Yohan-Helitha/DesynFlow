@@ -16,7 +16,10 @@ const ProjectEstimationSchema = new Schema({
     type: String,
     enum: ['Pending', 'Approved', 'Rejected'],
     default: 'Pending'
-  }
+  },
+  // Quotation tracking fields
+  quotationCreated: { type: Boolean, default: false },
+  lastQuotationId: { type: Schema.Types.ObjectId, ref: 'QuotationEstimation' }
 }, { timestamps: true });
 
 ProjectEstimationSchema.index({ projectId: 1, version: 1 }, { unique: true });
