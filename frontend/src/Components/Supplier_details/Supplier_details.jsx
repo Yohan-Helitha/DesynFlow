@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Supplier_details.css";
@@ -82,20 +83,21 @@ function Supplier_details() {
   );
 
   return (
-    <div className="page-with-sidebar">
-      <Sidebar />
-      <div className="suppliers-container">
-        <div className="page-header">
-          <div className="header-content">
-            <h2>{userRole === "supplier" ? "My Supplier Profile" : "Interior Design Suppliers"}</h2>
-            <p className="header-subtitle">
-              {userRole === "supplier" 
-                ? "Manage your company profile and materials catalog"
-                : "Manage your supplier network and partnerships"
-              }
-            </p>
+    <>
+      <div className="page-with-sidebar">
+        <Sidebar />
+        <div className="suppliers-container">
+          <div className="page-header">
+            <div className="header-content">
+              <h2>{userRole === "supplier" ? "My Supplier Profile" : "Interior Design Suppliers"}</h2>
+              <p className="header-subtitle">
+                {userRole === "supplier" 
+                  ? "Manage your company profile and materials catalog"
+                  : "Manage your supplier network and partnerships"
+                }
+              </p>
+            </div>
           </div>
-        </div>
 
         {userRole === "procurement" && (
           <div className="top-controls">
@@ -185,79 +187,81 @@ function Supplier_details() {
           <Link to="/Update_delete_suppliers">Manage Suppliers</Link>
         </button>
       </div>
-
-      {/* Modal */}
-      {selectedSupplier && (
-        <div className="modal">
-          <div className="modal-content">
-            <button
-              className="close-btn"
-              onClick={() => setSelectedSupplier(null)}
-              aria-label="Close"
-            >
-              ×
-            </button>
-            <h3>{selectedSupplier.companyName}</h3>
-            <div className="info-grid">
-              <p>
-                <b>Contact:</b> {selectedSupplier.contactName}
-              </p>
-              <p>
-                <b>Email:</b> {selectedSupplier.email}
-              </p>
-              <p>
-                <b>Phone:</b> {selectedSupplier.phone}
-              </p>
-              <div>
-                <b>Materials & Pricing:</b>
-                <div style={{ marginTop: "8px" }}>
-                  {selectedSupplier.materials && selectedSupplier.materials.length > 0 ? (
-                    selectedSupplier.materials.map((material, idx) => (
-                      <div key={idx} style={{ 
-                        padding: "8px 12px", 
-                        margin: "4px 0", 
-                        backgroundColor: "#f8f9fa", 
-                        borderLeft: "4px solid #674636",
-                        borderRadius: "4px"
-                      }}>
-                        <strong style={{ color: "#674636" }}>{material.name}</strong>
-                        <span style={{ float: "right", color: "#28a745", fontWeight: "bold" }}>
-                          ${material.pricePerUnit}/unit
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <div style={{ color: "#666", fontStyle: "italic" }}>
-                      {selectedSupplier.materialTypes?.join(", ") || "No materials listed"}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <p>
-                <b>Regions:</b> {selectedSupplier.deliveryRegions?.join(", ")}
-              </p>
-              <p>
-                <b>Rating:</b> {selectedSupplier.rating}
-              </p>
-            </div>
-            <button 
-              className="place-order-btn"
-              onClick={() => {
-                navigate('/OrderForm', {
-                  state: {
-                    preselectedSupplier: selectedSupplier,
-                    supplierLocked: true
-                  }
-                });
-              }}
-            >
-              Place Order
-            </button>
-          </div>
-        </div>
-      )}
       </div>
     </div>
+    
+    {/* Modal rendered as portal at document body level */}
+    {selectedSupplier && createPortal(
+      <div className="modal">
+        <div className="modal-content">
+          <button
+            className="close-btn"
+            onClick={() => setSelectedSupplier(null)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <h3>{selectedSupplier.companyName}</h3>
+          <div className="info-grid">
+            <p>
+              <b>Contact:</b> {selectedSupplier.contactName}
+            </p>
+            <p>
+              <b>Email:</b> {selectedSupplier.email}
+            </p>
+            <p>
+              <b>Phone:</b> {selectedSupplier.phone}
+            </p>
+            <div>
+              <b>Materials & Pricing:</b>
+              <div style={{ marginTop: "8px" }}>
+                {selectedSupplier.materials && selectedSupplier.materials.length > 0 ? (
+                  selectedSupplier.materials.map((material, idx) => (
+                    <div key={idx} style={{ 
+                      padding: "8px 12px", 
+                      margin: "4px 0", 
+                      backgroundColor: "#f8f9fa", 
+                      borderLeft: "4px solid #674636",
+                      borderRadius: "4px"
+                    }}>
+                      <strong style={{ color: "#674636" }}>{material.name}</strong>
+                      <span style={{ float: "right", color: "#28a745", fontWeight: "bold" }}>
+                        ${material.pricePerUnit}/unit
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ color: "#666", fontStyle: "italic" }}>
+                    {selectedSupplier.materialTypes?.join(", ") || "No materials listed"}
+                  </div>
+                )}
+              </div>
+            </div>
+            <p>
+              <b>Regions:</b> {selectedSupplier.deliveryRegions?.join(", ")}
+            </p>
+            <p>
+              <b>Rating:</b> {selectedSupplier.rating}
+            </p>
+          </div>
+          <button 
+            className="place-order-btn"
+            onClick={() => {
+              navigate('/OrderForm', {
+                state: {
+                  preselectedSupplier: selectedSupplier,
+                  supplierLocked: true
+                }
+              });
+            }}
+          >
+            Place Order
+          </button>
+        </div>
+      </div>,
+      document.body
+    )}
+    </>
   );
 }
 
