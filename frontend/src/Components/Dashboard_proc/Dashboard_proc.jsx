@@ -477,23 +477,6 @@ function Dashboard_proc() {
               </div>
             </div>
 
-            {/* Order Status Distribution */}
-            <div className="chart-container">
-              <h3>Order Status Distribution</h3>
-              <div className="chart-wrapper">
-                <Doughnut
-                  data={dashboardData.chartData.orderStatusDistribution}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { position: 'bottom' }
-                    }
-                  }}
-                />
-              </div>
-            </div>
-
             {/* Supplier Performance */}
             <div className="chart-container">
               <h3>Top Supplier Ratings</h3>
