@@ -136,11 +136,11 @@ function RestockAlerts() {
 
   const getPriorityIcon = (priority) => {
     switch (priority) {
-      case 'critical': return '🔴';
-      case 'high': return '🟠';
-      case 'medium': return '🟡';
-      case 'low': return '🟢';
-      default: return '⚪';
+      case 'critical': return '●';
+      case 'high': return '●';
+      case 'medium': return '●';
+      case 'low': return '●';
+      default: return '●';
     }
   };
 
@@ -186,8 +186,8 @@ function RestockAlerts() {
       <div className="restock-alerts-container">
         <div className="page-header">
           <div className="header-content">
-            <h2>📦 Restock Alerts</h2>
-            <p className="header-subtitle">Monitor inventory levels and manage restocking requirements</p>
+            <h2>Restock Alerts</h2>
+            <p className="header-subtitle">Inventory Management & Restocking Overview</p>
           </div>
           <div className="header-stats">
             <div className="stat-card critical">
@@ -230,95 +230,95 @@ function RestockAlerts() {
           </div>
         </div>
 
-        <div className="alerts-grid">
-          {filteredAlerts.length > 0 ? (
-            filteredAlerts.map((alert) => (
-              <div key={alert.id} className={`alert-card ${getPriorityClass(alert.priority)}`}>
-                <div className="alert-header">
-                  <div className="alert-title">
-                    <span className="priority-icon">{getPriorityIcon(alert.priority)}</span>
-                    <h3>{alert.materialName}</h3>
-                  </div>
-                  <div className="alert-id">#{alert.id}</div>
-                </div>
-
-                <div className="alert-content">
-                  <div className="stock-info">
-                    <div className="stock-level">
-                      <span className="label">Current Stock:</span>
-                      <span className="value">{alert.currentStock} units</span>
-                    </div>
-                    <div className="stock-progress">
-                      <div className="progress-bar">
-                        <div 
-                          className="progress-fill"
-                          style={{ width: `${Math.min(getStockPercentage(alert.currentStock, alert.minThreshold), 100)}%` }}
-                        ></div>
+        <div className="alerts-table-container">
+          <table className="alerts-table">
+            <thead>
+              <tr>
+                <th>Priority</th>
+                <th>Material</th>
+                <th>Category</th>
+                <th>Current Stock</th>
+                <th>Min. Threshold</th>
+                <th>Stock Level</th>
+                <th>Supplier</th>
+                <th>Est. Run Out</th>
+                <th>Suggested Reorder</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAlerts.length > 0 ? (
+                filteredAlerts.map((alert) => (
+                  <tr key={alert.id} className={`alert-row ${getPriorityClass(alert.priority)}`}>
+                    <td>
+                      <div className="priority-cell">
+                        <span className={`priority-dot priority-${alert.priority}`}>{getPriorityIcon(alert.priority)}</span>
+                        <span className="priority-text">{alert.priority.charAt(0).toUpperCase() + alert.priority.slice(1)}</span>
                       </div>
-                      <span className="progress-text">
-                        {getStockPercentage(alert.currentStock, alert.minThreshold)}% of minimum
-                      </span>
+                    </td>
+                    <td>
+                      <div className="material-info">
+                        <span className="material-name">{alert.materialName}</span>
+                        <span className="alert-id">#{alert.id}</span>
+                      </div>
+                    </td>
+                    <td>{alert.category}</td>
+                    <td><span className="stock-number">{alert.currentStock}</span></td>
+                    <td><span className="threshold-number">{alert.minThreshold}</span></td>
+                    <td>
+                      <div className="stock-level-cell">
+                        <div className="progress-bar-small">
+                          <div 
+                            className={`progress-fill-small priority-${alert.priority}`}
+                            style={{ width: `${Math.min(getStockPercentage(alert.currentStock, alert.minThreshold), 100)}%` }}
+                          ></div>
+                        </div>
+                        <span className="progress-percentage">{getStockPercentage(alert.currentStock, alert.minThreshold)}%</span>
+                      </div>
+                    </td>
+                    <td>{alert.supplier}</td>
+                    <td><span className="run-out-date">{alert.estimatedRunOut}</span></td>
+                    <td>
+                      <div className="reorder-info">
+                        <span className="reorder-qty">{alert.suggestedReorder} units</span>
+                        <span className="reorder-cost">${(alert.suggestedReorder * alert.unitPrice).toFixed(2)}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="action-buttons-table">
+                        <button
+                          className="btn-create-order"
+                          onClick={() => handleCreateOrder(alert)}
+                          title="Create Order"
+                        >
+                          Create Order
+                        </button>
+                        <button
+                          className="btn-view-details"
+                          onClick={() => setSelectedAlert(alert)}
+                          title="View Details"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="10" className="no-alerts">
+                    <div className="empty-state">
+                      <p>No restock alerts at this time</p>
+                      <small>All inventory levels are within acceptable ranges</small>
                     </div>
-                  </div>
-
-                  <div className="alert-details">
-                    <div className="detail-row">
-                      <span className="label">Category:</span>
-                      <span className="value">{alert.category}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Supplier:</span>
-                      <span className="value">{alert.supplier}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Location:</span>
-                      <span className="value">{alert.location}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Estimated Run Out:</span>
-                      <span className="value urgency">{alert.estimatedRunOut}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Suggested Reorder:</span>
-                      <span className="value highlight">{alert.suggestedReorder} units</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="label">Est. Cost:</span>
-                      <span className="value cost">{formatCurrency(alert.suggestedReorder * alert.unitPrice)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="alert-actions">
-                  <button
-                    className="btn-primary create-order"
-                    onClick={() => handleCreateOrder(alert)}
-                  >
-                    📋 Create Order
-                  </button>
-                  <button
-                    className="btn-secondary view-details"
-                    onClick={() => setSelectedAlert(alert)}
-                  >
-                    👁️ View Details
-                  </button>
-                  <button
-                    className="btn-success mark-resolved"
-                    onClick={() => handleMarkResolved(alert.id)}
-                  >
-                    ✅ Mark Resolved
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="empty-state">
-              <div className="empty-icon">📦</div>
-              <h3>No Restock Alerts</h3>
-              <p>All inventory levels are within acceptable ranges</p>
-            </div>
-          )}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
+
+
 
         {/* Alert Details Modal */}
         {selectedAlert && (
