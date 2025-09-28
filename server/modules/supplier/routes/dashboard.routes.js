@@ -3,7 +3,8 @@ import {
   getSuppliersWithRatings,
   getAllOrders,
   getOrderTracking,
-  getSystemLogs
+  getSystemLogs,
+  getRecentActivities
 } from '../controller/dashboard.controller.js';
 
 const router = express.Router();
@@ -19,5 +20,8 @@ router.get('/orders/:purchaseOrderId/tracking', getOrderTracking);
 
 // Check system logs
 router.get('/logs', getSystemLogs);
+
+// Get recent activities for dashboard
+router.get('/recent-activities', getRecentActivities);
 
 export default router;

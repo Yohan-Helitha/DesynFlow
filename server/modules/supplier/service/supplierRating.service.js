@@ -29,11 +29,52 @@ const addRating = async (data) => {
 
 // Get top-rated suppliers
 const getTopRatedSuppliers = async () => {
-  const suppliers = await Supplier.find().sort({ rating: -1 });
-  return suppliers.map(s => ({
-    ...s.toObject(),
-    greenFlag: s.rating >= 4.5
-  }));
+  try {
+    // Import PurchaseOrder here to avoid circular imports
+    const { default: PurchaseOrder } = await import('../model/purchaseOrder.model.js');
+    
+    const suppliers = await Supplier.find().sort({ rating: -1 }).limit(10);
+    
+    // Calculate additional metrics for each supplier
+    const suppliersWithMetrics = await Promise.all(
+      suppliers.map(async (supplier) => {
+        // Count total orders for this supplier
+        const totalOrders = await PurchaseOrder.countDocuments({ 
+          supplierId: supplier._id 
+        });
+        
+        // Calculate completed orders
+        const completedOrders = await PurchaseOrder.countDocuments({ 
+          supplierId: supplier._id,
+          status: { $in: ['completed', 'received', 'delivered'] }
+        });
+        
+        return {
+          ...supplier.toObject(),
+          name: supplier.companyName || supplier.name,
+          averageRating: supplier.rating || 0,
+          totalOrders,
+          completedOrders,
+          greenFlag: (supplier.rating || 0) >= 4.5,
+          successRate: totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0
+        };
+      })
+    );
+    
+    // Sort by rating descending, then by total orders
+    return suppliersWithMetrics
+      .filter(s => s.averageRating > 0) // Only include rated suppliers
+      .sort((a, b) => {
+        if (b.averageRating !== a.averageRating) {
+          return b.averageRating - a.averageRating;
+        }
+        return b.totalOrders - a.totalOrders;
+      });
+      
+  } catch (error) {
+    console.error('Error fetching top suppliers:', error);
+    return [];
+  }
 };
 
 export default {

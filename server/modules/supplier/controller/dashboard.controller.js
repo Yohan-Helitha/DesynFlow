@@ -39,3 +39,13 @@ export const getSystemLogs = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+// Get recent activities for dashboard
+export const getRecentActivities = async (req, res) => {
+  try {
+    const activities = await DashboardService.getRecentActivities();
+    res.status(200).json(activities);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};

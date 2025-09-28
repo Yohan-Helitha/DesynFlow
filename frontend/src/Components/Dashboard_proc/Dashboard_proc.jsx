@@ -187,8 +187,10 @@ function Dashboard_proc() {
         const orders = await ordersResponse.json();
 
         // Fetch top rated suppliers
+        console.log('Fetching top suppliers...');
         const topSuppliersResponse = await fetch("http://localhost:3000/api/supplier-ratings/top");
         const topSuppliers = await topSuppliersResponse.json();
+        console.log('Top suppliers fetched:', topSuppliers);
 
         // Process supplier statistics
         const supplierStats = {
@@ -212,19 +214,48 @@ function Dashboard_proc() {
         }, 0);
         const avgOrderValue = orders.length > 0 ? totalBudgetValue / orders.length : 0;
 
-        // Generate recent activities
-        const recentActivities = [
-          ...suppliers.slice(-3).map(s => ({
-            type: 'supplier',
-            message: `New supplier "${s.name}" registered`,
-            timestamp: s.createdAt || new Date()
-          })),
-          ...orders.slice(-3).map(o => ({
-            type: 'order',
-            message: `Order #${o._id?.slice(-6)} ${o.status}`,
-            timestamp: o.updatedAt || new Date()
-          }))
-        ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+        // Fetch recent activities from backend
+        let recentActivities = [];
+        try {
+          const activitiesResponse = await fetch('http://localhost:3001/api/supplier/dashboard/recent-activities');
+          if (activitiesResponse.ok) {
+            recentActivities = await activitiesResponse.json();
+          } else {
+            console.error('Failed to fetch recent activities');
+            // Fallback to generated activities if API fails
+            recentActivities = [
+              ...suppliers.slice(-3).map(s => ({
+                type: 'supplier',
+                message: `New supplier "${s.name}" registered`,
+                timestamp: s.createdAt || new Date(),
+                icon: '👤'
+              })),
+              ...orders.slice(-3).map(o => ({
+                type: 'order',
+                message: `Order #${o._id?.slice(-6)} ${o.status}`,
+                timestamp: o.updatedAt || new Date(),
+                icon: '📦'
+              }))
+            ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+          }
+        } catch (error) {
+          console.error('Error fetching recent activities:', error);
+          // Fallback to generated activities if API fails
+          recentActivities = [
+            ...suppliers.slice(-3).map(s => ({
+              type: 'supplier',
+              message: `New supplier "${s.name}" registered`,
+              timestamp: s.createdAt || new Date(),
+              icon: '👤'
+            })),
+            ...orders.slice(-3).map(o => ({
+              type: 'order',
+              message: `Order #${o._id?.slice(-6)} ${o.status}`,
+              timestamp: o.updatedAt || new Date(),
+              icon: '📦'
+            }))
+          ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+        }
 
         // Calculate system metrics
         const completedOrders = orders.filter(o => o.status === 'completed');
@@ -353,21 +384,70 @@ function Dashboard_proc() {
           </div>
         </div>
 
-        {/* System Metrics */}
-        <div className="system-metrics">
-          <h2>System Performance</h2>
-          <div className="metrics-grid">
-            <div className="metric-item">
-              <div className="metric-value">{dashboardData.systemMetrics.orderVolume}</div>
-              <div className="metric-label">Total Order Volume</div>
+        {/* Recent Activities and Top Suppliers */}
+        <div className="dashboard-content">
+          {/* Recent Activities */}
+          <div className="activity-feed">
+            <h3>Recent Activities</h3>
+            <div className="activities">
+              {loading ? (
+                <div className="loading">Loading activities...</div>
+              ) : dashboardData.recentActivities.length === 0 ? (
+                <div className="no-activities">No recent activities</div>
+              ) : (
+                dashboardData.recentActivities.map((activity, index) => (
+                  <div key={index} className={`activity-item ${activity.type}`}>
+                    <div className="activity-icon">
+                      {activity.icon || (activity.type === 'supplier' ? '👤' : '📦')}
+                    </div>
+                    <div className="activity-content">
+                      <div className="activity-message">{activity.message}</div>
+                      <div className="activity-time">
+                        {new Date(activity.timestamp).toLocaleDateString()} {new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-            <div className="metric-item">
-              <div className="metric-value">{dashboardData.systemMetrics.avgDeliveryTime} days</div>
-              <div className="metric-label">Avg Delivery Time</div>
-            </div>
-            <div className="metric-item">
-              <div className="metric-value">{dashboardData.systemMetrics.supplierSatisfaction}%</div>
-              <div className="metric-label">Supplier Satisfaction</div>
+          </div>
+
+          {/* Top Suppliers */}
+          <div className="top-suppliers">
+            <h3>Top Rated Suppliers</h3>
+            <div className="suppliers-list">
+              {loading ? (
+                <div className="loading">Loading suppliers...</div>
+              ) : dashboardData.topSuppliers.length === 0 ? (
+                <div className="no-suppliers">
+                  <p>No rated suppliers yet</p>
+                  <small>Suppliers will appear here after receiving ratings from completed orders</small>
+                </div>
+              ) : (
+                dashboardData.topSuppliers.map((supplier, index) => (
+                  <div key={supplier._id} className="supplier-item">
+                    <div className="supplier-rank">#{index + 1}</div>
+                    <div className="supplier-info">
+                      <div className="supplier-name">
+                        {supplier.name || supplier.companyName || 'Unknown Supplier'}
+                        {supplier.greenFlag && <span className="green-flag">🏆</span>}
+                      </div>
+                      <div className="supplier-rating">
+                        ⭐ {supplier.averageRating?.toFixed(1) || supplier.rating?.toFixed(1) || 'N/A'}
+                        {supplier.successRate !== undefined && (
+                          <span className="success-rate"> • {supplier.successRate}% success</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="supplier-orders">
+                      {supplier.totalOrders || 0} orders
+                      {supplier.completedOrders !== undefined && (
+                        <div className="completed-orders">({supplier.completedOrders} completed)</div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -463,61 +543,7 @@ function Dashboard_proc() {
           </div>
         </div>
 
-        {/* Dashboard Content Grid */}
-        <div className="dashboard-content">
-          {/* Recent Activities */}
-          <div className="activity-feed">
-            <h3>Recent Activities</h3>
-            <div className="activities">
-              {loading ? (
-                <div className="loading">Loading activities...</div>
-              ) : dashboardData.recentActivities.length === 0 ? (
-                <div className="no-activities">No recent activities</div>
-              ) : (
-                dashboardData.recentActivities.map((activity, index) => (
-                  <div key={index} className={`activity-item ${activity.type}`}>
-                    <div className="activity-icon">
-                      {activity.type === 'supplier' ? '👤' : '📦'}
-                    </div>
-                    <div className="activity-content">
-                      <div className="activity-message">{activity.message}</div>
-                      <div className="activity-time">
-                        {new Date(activity.timestamp).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
 
-          {/* Top Suppliers */}
-          <div className="top-suppliers">
-            <h3>Top Rated Suppliers</h3>
-            <div className="suppliers-list">
-              {loading ? (
-                <div className="loading">Loading suppliers...</div>
-              ) : dashboardData.topSuppliers.length === 0 ? (
-                <div className="no-suppliers">No rated suppliers yet</div>
-              ) : (
-                dashboardData.topSuppliers.map((supplier, index) => (
-                  <div key={supplier._id} className="supplier-item">
-                    <div className="supplier-rank">#{index + 1}</div>
-                    <div className="supplier-info">
-                      <div className="supplier-name">{supplier.name}</div>
-                      <div className="supplier-rating">
-                        ⭐ {supplier.averageRating?.toFixed(1) || 'N/A'}
-                      </div>
-                    </div>
-                    <div className="supplier-orders">
-                      {supplier.totalOrders || 0} orders
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
       </main>
 
       {/* Notifications Panel (dynamic) */}

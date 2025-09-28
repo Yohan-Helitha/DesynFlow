@@ -163,7 +163,7 @@ function Dashboard_sup() {
   const [pendingOrders, setPendingOrders] = useState([]);
   const [processingId, setProcessingId] = useState(null);
   const [supplierData, setSupplierData] = useState({
-    profile: { name: "Supplier Name", email: "", rating: 0, totalOrders: 0 },
+    profile: { name: "", email: "", rating: 0, totalOrders: 0 },
     orders: { active: 0, completed: 0, pending: 0 },
     materials: [],
     performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0 },
@@ -267,10 +267,32 @@ function Dashboard_sup() {
     const fetchSupplierDashboardData = async () => {
       setLoading(true);
       // Get supplier ID from authentication/session or use a dynamic method
-      const supplierId = localStorage.getItem('currentSupplierId') || 
-                        sessionStorage.getItem('supplierId') || 
-                        new URLSearchParams(window.location.search).get('supplierId') || 
-                        "67014ff3f5c9c9a11987c331"; // Fallback to a valid supplier ID from your DB
+      let supplierId = localStorage.getItem('currentSupplierId') || 
+                      sessionStorage.getItem('supplierId') || 
+                      new URLSearchParams(window.location.search).get('supplierId');
+      
+      // If no supplier ID is found, try to get the first available supplier for demo purposes
+      if (!supplierId) {
+        console.log('No supplier ID found - attempting to fetch first available supplier');
+        try {
+          const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
+          const suppliers = await suppliersResponse.json();
+          if (suppliers && suppliers.length > 0) {
+            supplierId = suppliers[0]._id;
+            console.log('Using first available supplier:', supplierId);
+            // Store it for next time
+            localStorage.setItem('currentSupplierId', supplierId);
+          } else {
+            console.error('No suppliers found in database');
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Error fetching suppliers:', error);
+          setLoading(false);
+          return;
+        }
+      }
 
       try {
         // Fetch sample requests
@@ -288,7 +310,13 @@ function Dashboard_sup() {
         // Fetch supplier profile and orders
         const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
         const suppliers = await suppliersResponse.json();
-        const currentSupplier = suppliers.find(s => s._id === supplierId) || suppliers[0]; // Fallback to first supplier
+        const currentSupplier = suppliers.find(s => s._id === supplierId);
+        
+        if (!currentSupplier) {
+          console.error(`Supplier with ID ${supplierId} not found`);
+          setLoading(false);
+          return;
+        }
 
         // Fetch purchase orders for this supplier
         const ordersResponse = await fetch("http://localhost:3000/api/purchase-orders");
@@ -300,6 +328,17 @@ function Dashboard_sup() {
         // Fetch materials offered by this supplier
         const materialsResponse = await fetch(`http://localhost:3000/api/materials?supplierId=${supplierId}`);
         const materials = await materialsResponse.json();
+
+        // Fetch supplier ratings to get most up-to-date rating
+        let supplierRatings = [];
+        try {
+          const ratingsResponse = await fetch(`http://localhost:3000/api/supplier-ratings/${supplierId}`);
+          if (ratingsResponse.ok) {
+            supplierRatings = await ratingsResponse.json();
+          }
+        } catch (err) {
+          console.log('Ratings not available:', err);
+        }
 
         // Calculate order statistics
         const orderStats = {
@@ -320,10 +359,18 @@ function Dashboard_sup() {
             return sum + (diffHours > 0 ? diffHours : 12); // Default 12 hours if no response time
           }, 0) / completedOrders.length : 12;
 
+        // Calculate latest average rating from ratings data
+        const latestAverageRating = supplierRatings.length > 0 ? 
+          supplierRatings.reduce((sum, rating) => {
+            const avgRating = rating.weightedScore || 
+                            ((rating.criteria?.timeliness || 0) + (rating.criteria?.quality || 0) + (rating.criteria?.communication || 0)) / 3;
+            return sum + avgRating;
+          }, 0) / supplierRatings.length : (currentSupplier?.rating || 0);
+
         const performance = {
           onTimeDelivery: completedOrders.length > 0 ? 
             Math.round((completedOrders.filter(o => o.deliveredOnTime !== false).length / completedOrders.length) * 100) : 0,
-          qualityScore: currentSupplier?.rating ? Math.round(currentSupplier.rating * 20) : 0,
+          qualityScore: Math.round(latestAverageRating * 20), // Convert 5-point scale to 100-point
           responseTime: Math.round(avgResponseTime)
         };
 
@@ -363,14 +410,24 @@ function Dashboard_sup() {
             items: order.items?.length || 1
           }));
 
-        // Generate chart data
-        const chartData = generateSupplierChartData(orderStats, materials, earnings);
+        // Generate chart data using real supplier orders
+        const chartData = generateSupplierChartData(supplierOrders, materials, earnings);
+
+        console.log('Dashboard data summary:', {
+          supplierId,
+          supplierName: currentSupplier.companyName,
+          totalOrders: supplierOrders.length,
+          completedOrders: completedOrders.length,
+          currentRating: latestAverageRating,
+          thisMonthEarnings: earnings.thisMonth,
+          materialsCount: materials.length
+        });
 
         setSupplierData({
           profile: {
-            name: currentSupplier?.companyName || currentSupplier?.name || `Supplier ${supplierId.slice(-4)}`,
-            email: currentSupplier?.email || currentSupplier?.contactEmail || `contact@supplier${supplierId.slice(-4)}.com`,
-            rating: parseFloat(currentSupplier?.rating || currentSupplier?.averageRating || 0),
+            name: currentSupplier.companyName || currentSupplier.name || 'Unnamed Supplier',
+            email: currentSupplier.email || currentSupplier.contactEmail || 'No email provided',
+            rating: parseFloat(latestAverageRating),
             totalOrders: supplierOrders.length
           },
           orders: orderStats,
@@ -385,6 +442,16 @@ function Dashboard_sup() {
       } catch (error) {
         console.error("Error fetching supplier dashboard data:", error);
         setRequests([]);
+        // Set empty state with proper structure to avoid UI errors
+        setSupplierData(prevData => ({
+          ...prevData,
+          profile: { name: "Data Loading Error", email: "", rating: 0, totalOrders: 0 },
+          orders: { active: 0, completed: 0, pending: 0 },
+          materials: [],
+          performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0 },
+          recentOrders: [],
+          earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0 },
+        }));
       } finally {
         setLoading(false);
       }
