@@ -21,6 +21,10 @@ function Orders() {
       }
     };
     fetchOrders();
+
+    // Auto-refresh every 30 seconds to catch supplier status updates
+    const interval = setInterval(fetchOrders, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // Filtered orders by supplier or material
@@ -121,24 +125,36 @@ function Orders() {
                   <td>
                     <span className={`status-badge ${order.status?.toLowerCase() || 'pending'}`}>
                       {order.status === "Approved" ? "✅ Approved" :
+                       order.status === "Preparing" ? "🔄 Preparing" :
+                       order.status === "Dispatched" ? "📦 Dispatched" :
+                       order.status === "Received" ? "✅ Received" :
                        order.status === "Rejected" ? "❌ Rejected" :
                        order.status || "📤 Sent"}
                     </span>
                   </td>
                   <td>
                     <button
-                      className={`action-btn ${order.status !== 'Approved' ? 'disabled' : 'received'}`}
-                      disabled={order.status !== 'Approved'}
-                      onClick={() => {
-                        navigate('/Rate_supplier', {
-                          state: {
-                            supplierId: order.supplierId?._id || order.supplierId,
-                            orderId: order._id
-                          }
-                        });
+                      className={`action-btn ${order.status === 'Dispatched' ? 'received' : order.status === 'Received' ? 'completed' : 'disabled'}`}
+                      disabled={order.status !== 'Dispatched' && order.status !== 'Received'}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        
+                        const navigationState = {
+                          supplierId: order.supplierId?._id || order.supplierId,
+                          orderId: order._id,
+                          ...(order.status === 'Received' && { viewOnly: true })
+                        };
+                        
+                        // Force navigation using URL parameters
+                        const url = `/Rate_supplier?supplierId=${navigationState.supplierId}&orderId=${navigationState.orderId}${navigationState.viewOnly ? '&viewOnly=true' : ''}`;
+                        window.location.href = url;
                       }}
                     >
-                      {order.status === 'Approved' ? '📦 Mark Received' : '⏳ Pending'}
+                      {order.status === 'Dispatched' ? '📦 Mark Received' :
+                       order.status === 'Received' ? '⭐ View Rating' :
+                       order.status === 'Preparing' ? '🔄 Being Prepared' :
+                       order.status === 'Approved' ? '⏳ Waiting Supplier' : 
+                       '⏳ Pending'}
                     </button>
                   </td>
                 </tr>

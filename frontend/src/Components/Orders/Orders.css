@@ -267,6 +267,21 @@ body {
   color: #212529;
 }
 
+.status-badge.preparing {
+  background-color: #674636;
+  color: #ffffff;
+}
+
+.status-badge.dispatched {
+  background-color: #17a2b8;
+  color: #ffffff;
+}
+
+.status-badge.received {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
 /* ===== Action Buttons ===== */
 .action-btn {
   padding: 0.3rem 0.6rem;
@@ -290,6 +305,17 @@ body {
 .action-btn.received:hover {
   background-color: #0056b3;
   border-color: #0056b3;
+}
+
+.action-btn.completed {
+  background-color: #28a745;
+  color: #ffffff;
+  border-color: #28a745;
+}
+
+.action-btn.completed:hover {
+  background-color: #1e7e34;
+  border-color: #1e7e34;
 }
 
 .action-btn.disabled {

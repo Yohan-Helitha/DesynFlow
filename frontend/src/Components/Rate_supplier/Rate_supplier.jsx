@@ -13,16 +13,43 @@ function RateSupplier() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Debug: Log location state and URL params
+  console.log('Rate_supplier component loaded');
+  console.log('Location:', location);
+  console.log('Location state:', location.state);
+  
+  // Get URL parameters as fallback
+  const urlParams = new URLSearchParams(location.search);
+  const urlSupplierId = urlParams.get('supplierId');
+  const urlOrderId = urlParams.get('orderId');
+  const urlViewOnly = urlParams.get('viewOnly') === 'true';
+  
+  console.log('URL params:', { urlSupplierId, urlOrderId, urlViewOnly });
+
   // Detect user role
   useEffect(() => {
-    const isSupplierContext = location.pathname.includes('/Dashboard_sup') || 
-                            window.location.search.includes('supplier=true') ||
-                            localStorage.getItem('currentUserRole') === 'supplier';
+    // If coming from Orders page with order ID, this is a procurement officer rating
+    const isFromOrdersPage = urlOrderId || location.state?.orderId;
+    
+    // Only treat as supplier if explicitly from supplier dashboard AND not from orders
+    const isSupplierContext = !isFromOrdersPage && (
+                              location.pathname.includes('/Dashboard_sup') || 
+                              window.location.search.includes('supplier=true') ||
+                              localStorage.getItem('currentUserRole') === 'supplier'
+                            );
+    
+    console.log('Role detection:', { 
+      isFromOrdersPage, 
+      isSupplierContext, 
+      finalRole: isSupplierContext ? 'supplier' : 'procurement' 
+    });
     
     if (isSupplierContext) {
       setUserRole("supplier");
+    } else {
+      setUserRole("procurement");
     }
-  }, [location]);
+  }, [location, urlOrderId]);
 
   // Resolve API base (backend actually running on 3000 by default)
   const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:3000";
@@ -54,8 +81,10 @@ function RateSupplier() {
         .then(data => {
           setSuppliers(data);
           // If navigated from Orders with a specific supplier, preselect and restrict
-          if (location.state?.supplierId) {
-            setFormData(prev => ({ ...prev, supplierId: location.state.supplierId }));
+          const supplierId = location.state?.supplierId || urlSupplierId;
+          if (supplierId) {
+            console.log('Pre-selecting supplier:', supplierId);
+            setFormData(prev => ({ ...prev, supplierId: supplierId }));
           }
         })
         .catch(err => console.error("Failed to fetch suppliers", err));
@@ -81,6 +110,7 @@ function RateSupplier() {
       return;
     }
     try {
+      // Submit the rating
       let res = await fetch(`${API_BASE}/api/supplierRating`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,21 +121,52 @@ function RateSupplier() {
         throw new Error(`Submit failed (${res.status}): ${errText}`);
       }
       const data = await res.json();
+
+      // If this rating is for a specific order (from Orders page), mark order as received
+      const orderId = location.state?.orderId || urlOrderId;
+      if (orderId) {
+        try {
+          console.log('Updating order status to Received for order:', orderId);
+          const orderRes = await fetch(`${API_BASE}/api/purchase-orders/${orderId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "Received" })
+          });
+          if (!orderRes.ok) {
+            console.warn("Failed to update order status to Received");
+          } else {
+            console.log('Order status updated successfully');
+          }
+        } catch (orderErr) {
+          console.error("Error updating order status:", orderErr);
+        }
+      }
+
       // Optional: show computed weighted score
       const ws = data?.rating?.weightedScore?.toFixed ? Number(data.rating.weightedScore.toFixed(2)) : data?.rating?.weightedScore;
       const avg = data?.averageRating?.toFixed ? Number(data.averageRating.toFixed(2)) : data?.averageRating;
-      alert(`Rating submitted. Weighted Score: ${ws} | New Average: ${avg}`);
+      
+      alert(`Rating submitted successfully! Order marked as received.\nWeighted Score: ${ws} | New Average: ${avg}`);
+      
       setFormData({
         supplierId: "",
         criteria: { timeliness: 0, quality: 0, communication: 0 }
       });
-      // Pass state so Supplier_details can force re-fetch
-      navigate("/Supplier_details", { state: { justRated: true, ratedSupplierId: data?.rating?.supplierId || data?.rating?.supplier || data?.supplierId, weightedScore: avg ?? ws, averageRating: avg, ts: Date.now() } });
+      
+      // Navigate back to Orders page after successful rating
+      if (orderId) {
+        window.location.href = "/Orders";
+      } else {
+        // Pass state so Supplier_details can force re-fetch
+        navigate("/Supplier_details", { state: { justRated: true, ratedSupplierId: data?.rating?.supplierId || data?.rating?.supplier || data?.supplierId, weightedScore: avg ?? ws, averageRating: avg, ts: Date.now() } });
+      }
     } catch (err) {
       console.error("Error submitting rating", err);
       alert("Failed to submit rating. Check console for details.");
     }
   };
+
+  console.log('Rendering with userRole:', userRole);
 
   return (
     <div className="rate-supplier-container">
@@ -154,7 +215,21 @@ function RateSupplier() {
         </>
       ) : (
         <>
-          <h2 className="page-title">Rate Supplier</h2>
+          {console.log('Rendering PROCUREMENT FORM - userRole is NOT supplier')}
+          <h2 className="page-title">
+            {(location.state?.viewOnly || urlViewOnly) ? 'Order Rating' : 'Rate Supplier'}
+          </h2>
+          
+          {(location.state?.orderId || urlOrderId) && (
+            <div className="order-context">
+              <p className="order-info">
+                {(location.state?.viewOnly || urlViewOnly) ? 
+                  `Viewing rating for Order: ${location.state?.orderId || urlOrderId}` : 
+                  `Rating supplier for Order: ${location.state?.orderId || urlOrderId}`
+                }
+              </p>
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="rate-form">
             {/* Supplier Selection */}
@@ -165,20 +240,20 @@ function RateSupplier() {
                 value={formData.supplierId}
                 onChange={handleChange}
                 required
-                disabled={!!location.state?.supplierId}
+                disabled={!!(location.state?.supplierId || urlSupplierId)}
                 className="supplier-select"
               >
-                {!location.state?.supplierId && <option value="">Select Supplier</option>}
-                {location.state?.supplierId
-                  ? suppliers.filter(s => s._id === location.state.supplierId).map(s => (
+                {!(location.state?.supplierId || urlSupplierId) && <option value="">Select Supplier</option>}
+                {(location.state?.supplierId || urlSupplierId)
+                  ? suppliers.filter(s => s._id === (location.state?.supplierId || urlSupplierId)).map(s => (
                       <option key={s._id} value={s._id}>{s.companyName}</option>
                     ))
                   : suppliers.map(s => (
                       <option key={s._id} value={s._id}>{s.companyName}</option>
                     ))}
               </select>
-              {location.state?.orderId && (
-                <span className="order-info">Order: {location.state.orderId}</span>
+              {(location.state?.orderId || urlOrderId) && !(location.state?.viewOnly || urlViewOnly) && (
+                <span className="order-info">Order: {location.state?.orderId || urlOrderId}</span>
               )}
             </div>
 
@@ -226,7 +301,22 @@ function RateSupplier() {
                 />
               </div>
 
-              <button type="submit" className="submit-btn">Submit</button>
+              {!(location.state?.viewOnly || urlViewOnly) && (
+                <button type="submit" className="submit-btn">Submit Rating</button>
+              )}
+              
+              {(location.state?.viewOnly || urlViewOnly) && (
+                <div className="view-only-info">
+                  <p>This order has already been rated and marked as received.</p>
+                  <button 
+                    type="button" 
+                    className="back-btn" 
+                    onClick={() => navigate('/Orders')}
+                  >
+                    Back to Orders
+                  </button>
+                </div>
+              )}
             </div>
           </form>
         </>

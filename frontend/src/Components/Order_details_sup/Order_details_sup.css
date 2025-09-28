@@ -365,6 +365,16 @@
   color: #155724;
 }
 
+.stat.preparing {
+  background: rgba(103, 70, 54, 0.2);
+  color: #674636;
+}
+
+.stat.dispatched {
+  background: rgba(23, 162, 184, 0.2);
+  color: #0c5460;
+}
+
 /* Loading and Empty States */
 .loading-state {
   text-align: center;
@@ -534,6 +544,16 @@
   color: white;
 }
 
+.status-preparing {
+  background: linear-gradient(135deg, #674636, #8B4513);
+  color: white;
+}
+
+.status-dispatched {
+  background: linear-gradient(135deg, #17a2b8, #20c997);
+  color: white;
+}
+
 /* Action Buttons */
 .actions-cell {
   display: flex;
@@ -570,6 +590,31 @@
 
 .actions-cell .reject-btn:hover:not(:disabled) {
   background-color: #c82333;
+}
+
+.actions-cell .preparing-btn {
+  background-color: #674636;
+  color: white;
+}
+
+.actions-cell .preparing-btn:hover:not(:disabled) {
+  background-color: #5a3d2f;
+}
+
+.actions-cell .dispatched-btn {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.actions-cell .dispatched-btn:hover:not(:disabled) {
+  background-color: #138496;
+}
+
+.status-info {
+  font-size: 0.7rem;
+  color: #674636;
+  font-weight: 600;
+  padding: 0.3rem;
 }
 
 .action-btn:disabled {

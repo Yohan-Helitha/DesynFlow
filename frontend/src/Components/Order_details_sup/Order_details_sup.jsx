@@ -27,10 +27,14 @@ function OrderDetailsSup() {
 
   useEffect(() => {
     fetchOrders();
+    
+    // Auto-refresh every 30 seconds to keep data current
+    const interval = setInterval(fetchOrders, 30000);
+    return () => clearInterval(interval);
   }, []);
 
-  const notifications = orders.filter((o) => o.status === "Draft");
-  const approvedOrders = orders.filter((o) => o.status === "Approved");
+  const notifications = orders.filter((o) => o.status?.toLowerCase() === "draft");
+  const approvedOrders = orders.filter((o) => o.status?.toLowerCase() === "approved");
 
   // Filter orders by search term and status
   const filteredOrders = orders.filter(order => {
@@ -88,6 +92,50 @@ function OrderDetailsSup() {
     }
   };
 
+  const handlePreparing = async (id) => {
+    try {
+      setProcessingId(id);
+      await axios.put(`${API_BASE}/${id}`, { status: "Preparing" });
+      // Add notification to localStorage
+      const notif = {
+        type: "order",
+        orderId: id,
+        status: "Preparing",
+        time: new Date().toISOString(),
+      };
+      const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+      notifs.push(notif);
+      localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
+      await fetchOrders();
+    } catch (err) {
+      console.error("Error updating order to preparing:", err);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDispatched = async (id) => {
+    try {
+      setProcessingId(id);
+      await axios.put(`${API_BASE}/${id}`, { status: "Dispatched" });
+      // Add notification to localStorage
+      const notif = {
+        type: "order",
+        orderId: id,
+        status: "Dispatched",
+        time: new Date().toISOString(),
+      };
+      const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+      notifs.push(notif);
+      localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
+      await fetchOrders();
+    } catch (err) {
+      console.error("Error updating order to dispatched:", err);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   return (
     <div className="order-details-container">
       {/* Header Section */}
@@ -120,6 +168,8 @@ function OrderDetailsSup() {
             <option value="all">All Status</option>
             <option value="draft">Draft</option>
             <option value="approved">Approved</option>
+            <option value="preparing">Preparing</option>
+            <option value="dispatched">Dispatched</option>
             <option value="rejected">Rejected</option>
           </select>
         </div>
@@ -201,8 +251,10 @@ function OrderDetailsSup() {
           <h2>📊 Order Management Dashboard</h2>
           <div className="stats-summary">
             <span className="stat">Total: {filteredOrders.length}</span>
-            <span className="stat pending">Pending: {filteredOrders.filter(o => o.status === 'draft').length}</span>
-            <span className="stat approved">Approved: {filteredOrders.filter(o => o.status === 'approved').length}</span>
+            <span className="stat pending">Pending: {filteredOrders.filter(o => o.status?.toLowerCase() === 'draft').length}</span>
+            <span className="stat approved">Approved: {filteredOrders.filter(o => o.status?.toLowerCase() === 'approved').length}</span>
+            <span className="stat preparing">Preparing: {filteredOrders.filter(o => o.status?.toLowerCase() === 'preparing').length}</span>
+            <span className="stat dispatched">Dispatched: {filteredOrders.filter(o => o.status?.toLowerCase() === 'dispatched').length}</span>
           </div>
         </div>
 
@@ -267,10 +319,12 @@ function OrderDetailsSup() {
                       </div>
                     </td>
                     <td>
-                      <span className={`status-badge status-${order.status}`}>
-                        {order.status === 'draft' && '📝 Draft'}
-                        {order.status === 'approved' && '✅ Approved'}
-                        {order.status === 'rejected' && '❌ Rejected'}
+                      <span className={`status-badge status-${order.status?.toLowerCase()}`}>
+                        {order.status?.toLowerCase() === 'draft' && '📝 Draft'}
+                        {order.status?.toLowerCase() === 'approved' && '✅ Approved'}
+                        {order.status?.toLowerCase() === 'preparing' && '🔄 Preparing'}
+                        {order.status?.toLowerCase() === 'dispatched' && '📦 Dispatched'}
+                        {order.status?.toLowerCase() === 'rejected' && '❌ Rejected'}
                       </span>
                     </td>
                     <td>
@@ -281,22 +335,57 @@ function OrderDetailsSup() {
                     </td>
                     <td>
                       <div className="actions-cell">
-                        <button
-                          className="action-btn approve-btn"
-                          disabled={order.status === "approved" || processingId === order._id}
-                          onClick={() => handleApprove(order._id)}
-                        >
-                          {processingId === order._id ? "⏳" : "✅"}
-                          {processingId === order._id ? "Processing" : "Approve"}
-                        </button>
-                        <button
-                          className="action-btn reject-btn"
-                          disabled={order.status === "rejected" || processingId === order._id}
-                          onClick={() => handleReject(order._id)}
-                        >
-                          {processingId === order._id ? "⏳" : "❌"}
-                          {processingId === order._id ? "Processing" : "Reject"}
-                        </button>
+                        {/* Approval/Rejection for Draft orders */}
+                        {order.status?.toLowerCase() === 'draft' && (
+                          <>
+                            <button
+                              className="action-btn approve-btn"
+                              disabled={processingId === order._id}
+                              onClick={() => handleApprove(order._id)}
+                            >
+                              {processingId === order._id ? "⏳" : "✅"}
+                              {processingId === order._id ? "Processing" : "Approve"}
+                            </button>
+                            <button
+                              className="action-btn reject-btn"
+                              disabled={processingId === order._id}
+                              onClick={() => handleReject(order._id)}
+                            >
+                              {processingId === order._id ? "⏳" : "❌"}
+                              {processingId === order._id ? "Processing" : "Reject"}
+                            </button>
+                          </>
+                        )}
+                        
+                        {/* Supplier workflow buttons for Approved orders */}
+                        {order.status?.toLowerCase() === 'approved' && (
+                          <button
+                            className="action-btn preparing-btn"
+                            disabled={processingId === order._id}
+                            onClick={() => handlePreparing(order._id)}
+                          >
+                            {processingId === order._id ? "⏳" : "🔄"}
+                            {processingId === order._id ? "Processing" : "Start Preparing"}
+                          </button>
+                        )}
+                        
+                        {order.status?.toLowerCase() === 'preparing' && (
+                          <button
+                            className="action-btn dispatched-btn"
+                            disabled={processingId === order._id}
+                            onClick={() => handleDispatched(order._id)}
+                          >
+                            {processingId === order._id ? "⏳" : "📦"}
+                            {processingId === order._id ? "Processing" : "Mark Dispatched"}
+                          </button>
+                        )}
+                        
+                        {/* Show status for completed workflow */}
+                        {(order.status?.toLowerCase() === 'dispatched' || order.status?.toLowerCase() === 'rejected') && (
+                          <span className="status-info">
+                            {order.status?.toLowerCase() === 'dispatched' ? '✅ Order Dispatched' : '❌ Order Rejected'}
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>
