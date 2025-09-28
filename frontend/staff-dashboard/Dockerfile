@@ -5,11 +5,11 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Clear npm cache and install dependencies
+# Clear npm cache and install dependencies (fix for alpine rollup issue)
 RUN npm cache clean --force && npm install --include=dev
 
-# Install platform-specific rollup binary (if needed)
-RUN npm install @rollup/rollup-linux-x64-gnu --save-dev || true
+# Install platform-specific rollup binary
+RUN npm install @rollup/rollup-linux-x64-gnu --save-dev
 
 # Force rebuild native modules for correct platform
 RUN npm rebuild
