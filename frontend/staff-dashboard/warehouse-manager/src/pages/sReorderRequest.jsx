@@ -299,46 +299,75 @@ const SReorderRequest = () => {
                 <th className="border border-gray-300 px-4 py-2 w-32">Created At</th>
               </tr>
             </thead>
-            <tbody className="align-middle text-center text-xs bg-[#FFF8E8]">
+            <tbody className="align-middle text-center text-xs">
               {filteredRequests.length > 0 ? (
-                filteredRequests.map((request) => (
-                  <tr key={request._id} className="bg-[#FFF8E8]">
-                    {/* Actions */}
-                    <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-white z-40 relative" style={{ background: "#FFF8E8" }}>
-                      <div className="flex items-center justify-center gap-6">
-                        <div
-                          className="group relative cursor-pointer"
-                          onClick={() => navigate(`/update-s-reorder-requests/${request._id}`)}
-                        >
-                          <Edit2 className="w-5 h-5  text-[#674636] hover:text-[#A67C52]" />
-                          
-                        </div>
-                        <div
-                          className="group relative cursor-pointer"
-                          onClick={() => handleDelete(request._id)}
-                        >
-                          <Trash2 className="w-5 h-5  text-[#674636] hover:text-[#A67C52]"/>
-                          
-                        </div>
-                      </div>
-                    </td>
+                filteredRequests.map((request) => {
+                  const createdDate = request.createdAt ? new Date(request.createdAt) : null;
+                  const expectedDate = request.expectedDate ? new Date(request.expectedDate) : null;
 
-                    {/* Table Data */}
-                    <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40 relative" style={{ background: "#FFF8E8" }}>{request.stockReorderRequestId}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-48">{request.inventoryName}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-48">{request.inventoryAddress}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-48">{request.inventoryContact}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-48">{request.materialName}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-16">{request.materialId}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-16">{request.quantity}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-48">{request.type}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-16">{request.unit}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-16">{request.expectedDate ? new Date(request.expectedDate).toLocaleDateString() : "-"}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-32">{request.warehouseManagerName}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-16">{request.status}</td>
-                    <td className="border border-gray-300 px-4 py-2 w-32">{request.createdAt ? new Date(request.createdAt).toLocaleString() : "-"}</td>
-                  </tr>
-                ))
+                  let rowColor = "bg-[#FFF8E8]"; // default normal color
+
+                  if (
+                    request.status?.toLowerCase() === "pending" &&
+                    expectedDate
+                  ) {
+                    const today = new Date();
+                    const diffTime = expectedDate - today;
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+                    // Highlight if expected date is within 7 days from today and not passed
+                    if (diffDays >= 0 && diffDays <= 7) {
+                      rowColor = "bg-[#AAB396]"; // highlight color
+                    }
+                  }
+
+              
+
+                  return (
+                    <tr key={request._id}>
+                      {/* Actions */}
+                      <td className={`border border-gray-300 px-4 py-2 sticky left-0 z-40 ${rowColor}`}>
+                        <div className="flex items-center justify-center gap-6">
+                          <div
+                            className="group relative cursor-pointer"
+                            onClick={() => navigate(`/update-s-reorder-requests/${request._id}`)}
+                          >
+                            <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
+                          </div>
+                          <div
+                            className="group relative cursor-pointer"
+                            onClick={() => handleDelete(request._id)}
+                          >
+                            <Trash2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Table Data */}
+                      <td className={`border border-gray-300 px-4 py-2 sticky left-32 z-40 ${rowColor}`}>
+                        {request.stockReorderRequestId}
+                      </td>
+                      <td className={`border border-gray-300 px-4 py-2 w-48 ${rowColor}`}>{request.inventoryName}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-48 ${rowColor}`}>{request.inventoryAddress}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-48 ${rowColor}`}>{request.inventoryContact}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-48 ${rowColor}`}>{request.materialName}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-16 ${rowColor}`}>{request.materialId}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-16 ${rowColor}`}>{request.quantity}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-48 ${rowColor}`}>{request.type}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-16 ${rowColor}`}>{request.unit}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-16 ${rowColor}`}>
+                        {expectedDate ? expectedDate.toLocaleDateString() : "-"}
+                      </td>
+                      <td className={`border border-gray-300 px-4 py-2 w-32 ${rowColor}`}>
+                        {request.warehouseManagerName}
+                      </td>
+                      <td className={`border border-gray-300 px-4 py-2 w-16 ${rowColor}`}>{request.status}</td>
+                      <td className={`border border-gray-300 px-4 py-2 w-32 ${rowColor}`}>
+                        {createdDate ? createdDate.toLocaleString() : "-"}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan="14" className="text-center p-4">No stock reorder requests found.</td>
