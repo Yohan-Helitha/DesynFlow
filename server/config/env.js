@@ -1,4 +1,3 @@
-
 // database URI configuration using .env file
 
 import dotenv from 'dotenv';
