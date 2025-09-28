@@ -4,6 +4,31 @@ import pinoHttp from "pino-http";
 import { logger } from './config/logger.js';
 import { env } from './config/env.js';
 
+import './modules/project/model/project.model.js';
+import './modules/project/model/task.model.js';
+import './modules/project/model/team.model.js';
+import './modules/project/model/milestone.model.js';
+import './modules/project/model/material.model.js';
+import './modules/project/model/meeting.model.js';
+import './modules/project/model/progressupdate.model.js';
+
+//Routes
+import projectRoutes from './modules/project/routes/project.routes.js';
+import taskRoutes from './modules/project/routes/task.routes.js';
+import teamRoutes from './modules/project/routes/team.routes.js';
+import kpiRoutes from './modules/project/routes/kpi.routes.js';
+import viewReportRoutes from './modules/project/routes/viewReport.routes.js';
+import downloadReportRoutes from './modules/project/routes/downloadReport.routes.js';
+import completeArchiveRoutes from './modules/project/routes/completeArchive.routes.js';
+import milestoneTimelineRoutes from './modules/project/routes/milestoneTimeline.routes.js';
+import attendanceRoutes from './modules/project/routes/attendance.routes.js';
+import materialRequestRoutes from './modules/project/routes/materialRequest.routes.js';
+import reportRoutes from './modules/project/routes/report.routes.js';
+import fileRoutes from './modules/project/routes/file.routes.js';
+import meetingRoutes from './modules/project/routes/meeting.routes.js';
+import fileServeRoutes from './routes/fileServe.js';
+import uploadRoutes from './routes/upload.routes.js';
+
 const app = express();
 
 app.use(
@@ -21,6 +46,7 @@ app.use(cors()); // from allowing cors API can request different origins(not res
 app.use(express.json({limit: '2mb'})); // parse json body
 app.use(express.urlencoded({ extended: true })); // parse urlencoded body
 
+app.use('/reports', express.static('public/reports'));
 
 import authRouter from "./modules/auth/routes/authRouter.js";
 import userRouter from "./modules/auth/routes/userRouter.js";
@@ -49,5 +75,21 @@ app.get("/health", (req, res) => {
     time: new Date().toISOString(),
   });
 });
+
+app.use('/api', projectRoutes);
+app.use('/api', taskRoutes);
+app.use('/api', teamRoutes);
+app.use('/api', kpiRoutes);
+app.use('/api', viewReportRoutes);
+app.use('/api', downloadReportRoutes);
+app.use('/api', completeArchiveRoutes);
+app.use('/api', milestoneTimelineRoutes);
+app.use('/api', attendanceRoutes);
+app.use('/api', materialRequestRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api', fileRoutes);
+app.use('/api', meetingRoutes);
+app.use('/api', fileServeRoutes);
+app.use('/api', uploadRoutes);
 
 export { app };

@@ -1,4 +1,3 @@
-
 services:
   mongo:
     image: mongo:8.0.12
@@ -23,7 +22,7 @@ services:
       - mongo
     command: npm start
     restart: unless-stopped
-
+    
   client-portal:
     build: ../frontend/client-portal
     container_name: desynflow-client-portal

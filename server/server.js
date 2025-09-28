@@ -1,4 +1,3 @@
-
 import express from "express";
 import dotenv from "dotenv";
 import { connectDB, disconnectedDB } from "./config/db.js";
@@ -33,7 +32,7 @@ async function start() {
 
         // Graceful shutdown
         ["SIGINT", "SIGTERM"].forEach((sig) => {
-            process.on(sig, () => onShutdown(sig));
+        process.on(sig, () => onShutdown(sig));
         });
 
         // Optional: handle unhandled errors

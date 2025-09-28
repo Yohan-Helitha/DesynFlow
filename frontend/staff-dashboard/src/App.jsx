@@ -4,6 +4,8 @@ import StaffLogin from './staff-login/staffLogin'
 import CSRDashboard from './CSR-portal/pages/CSRDashboard'
 import InspectorDashboard from './inspector-portal/pages/InspectorDashboard'
 import RequestTable from './CSR-portal/component/requestTable'
+import ProjectManagerDashboard from './project/ProjectManagerDashboard.jsx';
+import TeamLeaderMainDashboard from './project/TeamLeaderMainDashboard.jsx';
 
 function App() {
   return (
