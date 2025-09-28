@@ -1,6 +1,6 @@
 import InspectorForm from '../model/inspectorDynamicForm.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
-import Report from '../model/report.model.js';
+import AuthInspectionReport from '../model/report.model.js';
 import ProjectManagerNotificationService from '../../../services/projectManagerNotificationService.js';
 
 // Create new inspector form entry
@@ -102,7 +102,7 @@ export const generateReportFromForm = async (req, res) => {
     if (!form) return res.status(404).json({ message: 'Form not found' });
     if (form.report_generated) return res.status(400).json({ message: 'Report already generated' });
 
-    const report = new Report({
+    const report = new AuthInspectionReport({
       InspectionRequest_ID: form.InspectionRequest_ID,
       inspector_ID: form.inspector_ID,
       propertyType: form.propertyType || 'N/A',

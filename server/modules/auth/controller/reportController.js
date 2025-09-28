@@ -1,4 +1,4 @@
-import Report from '../model/report.model.js';
+import AuthAuthInspectionReport from '../model/report.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
 import User from '../model/user.model.js';
 import ProjectManagerNotificationService from '../../../services/projectManagerNotificationService.js';
@@ -10,7 +10,7 @@ export const createReport = async (req, res) => {
     if (!inspectionRequest || !inspector || !propertyType || !siteLocation || !inspectionDate) {
       return res.status(400).json({ message: 'Missing required fields.' });
     }
-    const report = new Report({
+    const report = new AuthAuthInspectionReport({
       inspectionRequest,
       inspector,
       propertyType,
@@ -32,7 +32,7 @@ export const updateReport = async (req, res) => {
   try {
     const { reportId } = req.params;
     const { rooms, generalNotes, status } = req.body;
-    const report = await Report.findById(reportId);
+    const report = await AuthAuthInspectionReport.findById(reportId);
     if (!report) return res.status(404).json({ message: 'Report not found.' });
     if (rooms) report.rooms = rooms;
     if (generalNotes) report.generalNotes = generalNotes;
@@ -56,7 +56,7 @@ export const getReports = async (req, res) => {
     if (inspectionRequest) filter.inspectionRequest = inspectionRequest;
     if (inspector) filter.inspector = inspector;
     if (status) filter.status = status;
-    const reports = await Report.find(filter)
+    const reports = await AuthAuthInspectionReport.find(filter)
       .populate('inspectionRequest')
       .populate('inspector', 'name email');
     res.status(200).json(reports);
@@ -70,7 +70,7 @@ export const reviewReport = async (req, res) => {
   try {
     const { reportId } = req.params;
     const { action, remarks } = req.body; // action: 'approve', 'reject', 'review'
-    const report = await Report.findById(reportId);
+    const report = await AuthInspectionReport.findById(reportId);
     if (!report) return res.status(404).json({ message: 'Report not found.' });
     if (action === 'approve') {
       report.status = 'approved';
@@ -144,7 +144,7 @@ export const generateReport = async (req, res) => {
 export const getReportsByInspector = async (req, res) => {
   try {
     const { inspectorId } = req.params;
-    const reports = await Report.find({ inspectorId })
+    const reports = await AuthInspectionReport.find({ inspectorId })
       .sort({ createdAt: -1 })
       .populate('generatedBy', 'name email');
 
@@ -159,7 +159,7 @@ export const getReportsByInspector = async (req, res) => {
 export const getReportPDF = async (req, res) => {
   try {
     const { reportId } = req.params;
-    const report = await Report.findById(reportId)
+    const report = await AuthInspectionReport.findById(reportId)
       .populate('generatedBy', 'name email');
 
     if (!report) {

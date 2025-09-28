@@ -1,12 +1,18 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --include=dev
+# Clear npm cache and install dependencies (fix for alpine rollup issue)
+RUN npm cache clean --force && npm install --include=dev
+
+# Install platform-specific rollup binary
+RUN npm install @rollup/rollup-linux-x64-gnu --save-dev
+
+# Force rebuild native modules for correct platform
+RUN npm rebuild
 
 # Copy source code
 COPY . .

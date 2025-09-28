@@ -63,5 +63,5 @@ const reportSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const Report = mongoose.model('Report', reportSchema);
-export default Report;
+const AuthInspectionReport = mongoose.model('AuthInspectionReport', reportSchema);
+export default AuthInspectionReport;

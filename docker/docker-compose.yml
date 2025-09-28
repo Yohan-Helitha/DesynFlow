@@ -46,8 +46,12 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ../frontend/staff-dashboard:/app
-      - /app/node_modules
+      - ../frontend/staff-dashboard/src:/app/src
+      - ../frontend/staff-dashboard/public:/app/public
+      - ../frontend/staff-dashboard/index.html:/app/index.html
+      - ../frontend/staff-dashboard/vite.config.js:/app/vite.config.js
+      - ../frontend/staff-dashboard/tailwind.config.js:/app/tailwind.config.js
+      - ../frontend/staff-dashboard/postcss.config.js:/app/postcss.config.js
     depends_on:
       - backend
     environment:

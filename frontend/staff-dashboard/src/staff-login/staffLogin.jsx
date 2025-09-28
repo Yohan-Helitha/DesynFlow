@@ -43,9 +43,12 @@ const LoginPage = () => {
         if (data.require2FA) {
           navigate(`/verify-otp?email=${email}`);
         } else {
-          // Store token if provided
+          // Store token and user data if provided
           if (data.token) {
             localStorage.setItem("authToken", data.token);
+          }
+          if (data.user) {
+            localStorage.setItem("user", JSON.stringify(data.user));
           }
 
           // Role-based navigation
@@ -55,7 +58,11 @@ const LoginPage = () => {
             navigate("/csr-dashboard");
           } else if (userRole === "inspector") {
             navigate("/inspector-dashboard");
-          } else {
+          } else if (userRole === "project manager") {
+            navigate("/project-manager");
+          } else if (userRole === "team leader") {
+            navigate("/team-leader");
+          }else {
             // If role doesn't match any staff role, show error
             setError("Access denied. This portal is for staff members only.");
           }

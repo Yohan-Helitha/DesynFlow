@@ -7,7 +7,25 @@ import DocumentList from "./components/DocumentList";
 import CreateMeetingForm from "./components/CreateMeetingForm";
 
 export default function LeaderDashboard() {
-  const leaderId = "68d638d66e8afdd7536b87f8";
+  // Get the logged-in user's data and validate role
+  const getLoggedInLeader = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user?.role === "team leader") {
+        return {
+          id: user._id || user.id,
+          user: user
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting user data:', error);
+      return null;
+    }
+  };
+  
+  const leaderData = getLoggedInLeader();
+  const leaderId = leaderData?.id;
   const [team, setTeam] = useState(null);
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -19,6 +37,16 @@ export default function LeaderDashboard() {
   const [error, setError] = useState(null);
   const [showMeetingForm, setShowMeetingForm] = useState(false);
   const [editMeeting, setEditMeeting] = useState(null);
+
+  // Check if user is logged in and has team leader role
+  if (!leaderData || !leaderId) {
+    return (
+      <div className="p-8 text-red-700">
+        <h2 className="text-xl font-bold mb-4">Access Denied</h2>
+        <p>This dashboard is only accessible to users with "team leader" role. Please log in with appropriate credentials.</p>
+      </div>
+    );
+  }
 
   useEffect(() => {
     async function fetchData() {

@@ -53,7 +53,7 @@ import userRouter from "./modules/auth/routes/userRouter.js";
 import paymentReceiptRoutes from "./modules/auth/routes/paymentReceiptRoutes.js";
 import inspectorLocationRoutes from "./modules/auth/routes/inspectorLocationRoutes.js";
 import assignmentRoutes from "./modules/auth/routes/assignmentRoutes.js";
-import reportRoutes from "./modules/auth/routes/reportRoutes.js";
+import authReportRoutes from "./modules/auth/routes/reportRoutes.js";
 import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
 import inspectionFormRoutes from "./modules/auth/routes/inspectionFormRoutes.js";
 
@@ -63,7 +63,7 @@ app.use("/api/user", userRouter);
 app.use("/api/payment-receipt", paymentReceiptRoutes);
 app.use("/api/inspector-location", inspectorLocationRoutes);
 app.use("/api/assignment", assignmentRoutes);
-app.use("/api/reports", reportRoutes);
+app.use("/api/auth-reports", authReportRoutes);
 app.use("/api/inspection-request", inspectionRequestRoutes);
 app.use("/api/inspectorForms", inspectionFormRoutes);
 
