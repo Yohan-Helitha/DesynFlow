@@ -8,6 +8,7 @@ import ProjectManagerDashboard from './project/ProjectManagerDashboard.jsx';
 import TeamLeaderMainDashboard from './project/TeamLeaderMainDashboard.jsx';
 import WarehouseDashboard from './warehouse-manager/WarehouseDashboard.jsx';
 import SupplierDashboard from './supplier-portal/SupplierDashboard.jsx';
+import FinanceDashboard from './finance-portal/FinanceDashboard.jsx';
 
 function App() {
   return (
@@ -36,6 +37,9 @@ function App() {
             
             {/* Procurement Officer route (maps to supplier portal) */}
             <Route path="/procurement-officer" element={<SupplierDashboard />} />
+
+            {/* Finance Manager route */}
+            <Route path="/finance-manager" element={<FinanceDashboard />} />
           </Routes>
         </main>
       </div>
