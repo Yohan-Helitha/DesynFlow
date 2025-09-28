@@ -112,7 +112,7 @@ const AuditLogs = () => {
           <input
             type="text"
             placeholder="Search..."
-            className="border border-gray-400 px-4 py-2 rounded w-7xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="border border-gray-400 px-4 py-2 bg-white rounded w-7xl focus:outline-none focus:ring-2 focus:ring-amber-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -183,7 +183,7 @@ const AuditLogs = () => {
         <div className="overflow-x-auto text-xs align-middle">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-gray-200">
+              <tr style={{ background: "#674636", color:"#FFFFFF" }}>
                 <th className="border border-gray-300 px-4 py-2 w-32">Actions</th>
                 <th className="border border-gray-300 px-4 py-2 w-32">Log ID</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Entity</th>
@@ -207,10 +207,8 @@ const AuditLogs = () => {
                     <td className="border border-gray-300 px-4 py-2 w-32">
                       <div className="flex items-center justify-center gap-4">
                         <div className="group relative cursor-pointer" onClick={async () => handleDelete(log._id)}>
-                          <Trash2 className="w-5 h-5 text-gray-500 hover:text-gray-700" />
-                          <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            Delete
-                          </span>
+                          <Trash2 className="w-5 h-5 text-[#674636] hover:text-[#A67C52]" />
+                          
                         </div>
                       </div>
                     </td>

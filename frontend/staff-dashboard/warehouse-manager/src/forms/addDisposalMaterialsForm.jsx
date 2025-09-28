@@ -98,12 +98,12 @@ const AddDisposalMaterialsForm = ({ loggedInUserId }) => {
     <div>
       <Navbar />
       <div className="m-6">
-        <div className="border-2 border-gray-300 m-auto p-8 w-xl shadow">
+        <div className="border-2 border-gray-300 m-auto p-8 w-xl shadow bg-[#FFF8E8]">
           <h1 className="text-2xl font-bold mb-6">Add Disposal Material</h1>
 
           {errors.general && <p className="text-red-600 font-semibold mb-4">{errors.general}</p>}
 
-          <form onSubmit={handleSubmit} className="space-y-4 max-w-3xl text-sm">
+          <form onSubmit={handleSubmit} className="space-y-4 max-w-3xl text-sm ">
             {/* Material ID */}
             <div>
               <label className="block mb-2 font-medium text-gray-700">

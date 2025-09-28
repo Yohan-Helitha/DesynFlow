@@ -28,7 +28,7 @@ import { NotificationsProvider } from './context/notificationContext.jsx';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen" style={{ background: "#F7EED3" }}>
       <Router>
         <NotificationsProvider>
           <Routes>

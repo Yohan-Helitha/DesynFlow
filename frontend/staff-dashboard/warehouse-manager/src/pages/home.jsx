@@ -28,7 +28,7 @@ const fetchThresholdAlertsSafely = async () => {
 
 // Reusable Summary Card
 const SummaryCard = ({ title, value, icon, color }) => (
-  <div className={`bg-white p-5 rounded-xl shadow-md border-l-4 ${color} hover:shadow-lg transition-shadow duration-300`}>
+  <div className={`p-5 rounded-xl shadow-md border-l-4 ${color} bg-[#FFF8E8] hover:shadow-lg transition-shadow duration-300`}>
     <div className="flex items-center justify-between">
       <div>
         <p className="text-sm font-medium text-gray-500">{title}</p>
@@ -157,9 +157,9 @@ const Home = () => {
         </div>
 
         {/* --- Charts Section --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 ">
           {inventoryData.length>0 && (
-            <div className="bg-white p-6 rounded-xl shadow-md">
+            <div className="bg-[#FFF8E8] p-6 rounded-xl shadow-md">
               <h3 className="text-xl font-semibold mb-4 text-gray-700">Inventory Distribution</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -173,7 +173,7 @@ const Home = () => {
           )}
 
           {categoryData.length>0 && (
-            <div className="bg-white p-6 rounded-xl shadow-md">
+            <div className="bg-[#FFF8E8] p-6 rounded-xl shadow-md">
               <h3 className="text-xl font-semibold mb-4 text-gray-700">Category Distribution</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -189,7 +189,7 @@ const Home = () => {
 
         {/* Stock Levels */}
         {stockLevels.length>0 && (
-          <div className="bg-white p-6 rounded-xl shadow-md mb-8">
+          <div className="bg-[#FFF8E8] p-6 rounded-xl shadow-md mb-8">
             <h3 className="text-xl font-semibold mb-4 text-gray-700">Top 10 Stock Levels</h3>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={stockLevels} margin={{top:20,right:30,left:20,bottom:100}}>
@@ -209,7 +209,7 @@ const Home = () => {
         {/* Trends */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {monthlyDisposals.length>0 && (
-            <div className="bg-white p-6 rounded-xl shadow-md">
+            <div className="bg-[#FFF8E8] p-6 rounded-xl shadow-md">
               <h3 className="text-xl font-semibold mb-4 text-gray-700">Monthly Disposal Trends</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={monthlyDisposals}>
@@ -226,7 +226,7 @@ const Home = () => {
           )}
 
           {movementData.length>0 && (
-            <div className="bg-white p-6 rounded-xl shadow-md">
+            <div className="bg-[#FFF8E8] p-6 rounded-xl shadow-md">
               <h3 className="text-xl font-semibold mb-4 text-gray-700">Stock Movement Trends</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={movementData}>

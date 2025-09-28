@@ -148,10 +148,10 @@ const DisposalMaterials = () => {
               <BarChart data={chartArray}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="monthYear" />
-                <YAxis />
+                <YAxis domain={[0, 'dataMax + 2']} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill="#191970" barSize={20} /> 
+                <Bar dataKey="count" fill="#674636" barSize={30} /> 
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -162,7 +162,7 @@ const DisposalMaterials = () => {
             <input
             type="text"
             placeholder="Search..."
-            className="border border-gray-400 px-4 py-2 rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="border border-gray-400 px-4 py-2 bg-white rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -239,9 +239,9 @@ const DisposalMaterials = () => {
         <div className="overflow-x-auto text-xs">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">Actions</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">Disposal ID</th>
+              <tr style={{ background: "#674636", color:"#FFFFFF" }}>
+                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#674636" }}>Actions</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#674636" }}>Disposal ID</th>
                 <th className="border border-gray-300 px-4 py-2 w-16">Material ID</th>
                 <th className="border border-gray-300 px-4 py-2 w-32">Material Name</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Inventory Name</th>
@@ -253,17 +253,17 @@ const DisposalMaterials = () => {
                 <th className="border border-gray-300 px-4 py-2 w-32">Created At</th>
               </tr>
             </thead>
-            <tbody className="align-middle text-center text-xs bg-white">
+            <tbody className="align-middle text-center text-xs bg-[#FFF8E8]">
               {filteredDisposals.length > 0 ? (
                 filteredDisposals.map((disposal) => (
-                  <tr key={disposal._id}>
-                    <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">
+                  <tr key={disposal._id} className="bg-[#FFF8E8]">
+                    <td className="border border-gray-300 px-4 py-2 sticky left-0 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#FFF8E8" }}>
                       <div className="flex items-center justify-center gap-6">
                         <div
                           className="group relative cursor-pointer"
                           onClick={() => navigate(`/update-disposal-material/${disposal._id}`)}
                         >
-                          <Edit2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
+                          <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]"  />
                           <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
                             Update
                           </span>
@@ -273,14 +273,14 @@ const DisposalMaterials = () => {
                           className="group relative cursor-pointer"
                           onClick={() => handleDelete(disposal._id)}
                         >
-                          <Trash2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
+                          <Trash2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
                           <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
                             Delete
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">{disposal.disposalId}</td>
+                    <td className="border border-gray-300 px-4 py-2 sticky left-32 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#FFF8E8" }}>{disposal.disposalId}</td>
                     <td className="border border-gray-300 px-4 py-2 w-16">{disposal.materialId}</td>
                     <td className="border border-gray-300 px-4 py-2 w-32">{disposal.materialName}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{disposal.inventoryName}</td>

@@ -142,7 +142,7 @@ const RawMaterials = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="count" fill="#191970" barSize={20}/> 
+              <Bar dataKey="count" fill="#674636" barSize={30}/> 
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -153,7 +153,7 @@ const RawMaterials = () => {
             <input
             type="text"
             placeholder="Search..."
-            className="border border-gray-400 px-4 py-2 rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="border border-gray-400 px-4 py-2 bg-white rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -232,10 +232,10 @@ const RawMaterials = () => {
         <div className="overflow-x-auto text-xs">
             <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-                <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">Actions</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">Material ID</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-64 w-48 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">Material Name</th>
+                <tr style={{ background: "#674636", color:"#FFFFFF" }}>
+                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#674636" }}>Actions</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#674636" }}>Material ID</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-64 w-48 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#674636" }}>Material Name</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Category</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Type</th>
                 <th className="border border-gray-300 px-4 py-2 w-16">Unit</th>
@@ -254,15 +254,13 @@ const RawMaterials = () => {
                 filteredMaterials.map((material) => (
                     <tr 
                     key={material._id}
-                    className={material.currentLevel < material.reorderLevel ? "bg-red-100" : "bg-white"}
+                    className={material.currentLevel < material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"}
                     >
-                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-red-100" : "bg-white"} sticky left-0  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>
+                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-0  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>
                         <div className="flex items-center justify-center gap-8">
                             <div className="group relative cursor-pointer" onClick={() => navigate(`/update-material/${material._id}`)}>
-                            <Edit2 className="w-5 h-5  text-amber-500 hover:text-amber-600" />
-                            <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                Update
-                            </span>
+                            <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
+                            
                             </div>
 
                             <div className="group relative cursor-pointer" onClick={async () => {
@@ -278,16 +276,14 @@ const RawMaterials = () => {
                                 }
                                 }
                             }}>
-                            <Trash2 className="w-5 h-5  text-amber-500 hover:text-amber-600" />
-                            <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                Delete
-                            </span>
+                            <Trash2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
+                            
                             </div>
 
                         </div>
                     </td>
-                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-red-100" : "bg-white"} sticky left-32  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{material.materialId}</td>
-                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-red-100" : "bg-white"} sticky left-64  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{material.materialName}</td>
+                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-32  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{material.materialId}</td>
+                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-64  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{material.materialName}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{material.category}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{material.type}</td>
                     <td className="border border-gray-300 px-4 py-2 w-16">{material.unit}</td>

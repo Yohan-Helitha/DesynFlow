@@ -93,7 +93,7 @@ const UpdateDisposalMaterialsForm = () => {
     <div>
       <Navbar />
       <div className="m-6">
-        <div className="border-2 border-gray-300 m-auto p-8 w-xl shadow">
+        <div className="border-2 border-gray-300 m-auto p-8 w-xl shadow bg-[#FFF8E8]">
           <h1 className="text-2xl font-bold mb-6">Update Disposal Material</h1>
 
           {errors.general && (

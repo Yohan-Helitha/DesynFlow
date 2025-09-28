@@ -159,8 +159,8 @@ const StockMovement = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="sent" fill="#9d0208" name="Sent" barSize={20} />
-            <Bar dataKey="received" fill="#03045e" name="Received" barSize={20}/>
+            <Bar dataKey="sent" fill="#AAB396" name="Sent" barSize={30} />
+            <Bar dataKey="received" fill="#674636" name="Received" barSize={30}/>
           </BarChart>
         </ResponsiveContainer>
 
@@ -170,7 +170,7 @@ const StockMovement = () => {
           <input
             type="text"
             placeholder="Search..."
-            className="border border-gray-400 px-4 py-2 rounded w-7xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="border border-gray-400 px-4 py-2 bg-white rounded w-7xl focus:outline-none focus:ring-2 focus:ring-amber-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -253,9 +253,9 @@ const StockMovement = () => {
         <div className="overflow-x-auto text-xs">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">Actions</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">Stock ID</th>
+              <tr style={{ background: "#674636", color:"#FFFFFF" }}>
+                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#674636" }}>Actions</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#674636" }}>Stock ID</th>
                 <th className="border border-gray-300 px-4 py-2 w-16">Material ID</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">From Location</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">To Location</th>
@@ -270,37 +270,33 @@ const StockMovement = () => {
                 <th className="border border-gray-300 px-4 py-2 w-32">Created At</th>
               </tr>
             </thead>
-            <tbody className="align-middle text-center text-xs bg-white">
+            <tbody className="align-middle text-center text-xs bg-[#FFF8E8]">
               {filteredMovements.length > 0 ? (
                 filteredMovements.map((movement) => (
-                  <tr key={movement._id}>
+                  <tr key={movement._id} className="bg-[#FFF8E8]">
                     {/* Actions */}
-                    <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">
+                    <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#FFF8E8" }}>
                       <div className="flex items-center justify-center gap-6">
                         <div
                           className="group relative cursor-pointer"
                           onClick={() => navigate(`/update-movement/${movement._id}`)}
                         >
-                          <Edit2 className="w-5 h-5  text-amber-500 hover:text-amber-600" />
-                          <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100">
-                            Update
-                          </span>
+                          <Edit2 className="w-5 h-5  text-[#674636] hover:text-[#A67C52]" />
+                          
                         </div>
 
                         <div
                           className="group relative cursor-pointer"
                           onClick={() => handleDelete(movement._id)}
                         >
-                          <Trash2 className="w-5 h-5  text-amber-500 hover:text-amber-600" />
-                          <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100">
-                            Delete
-                          </span>
+                          <Trash2 className="w-5 h-5  text-[#674636] hover:text-[#A67C52]" />
+                          
                         </div>
                       </div>
                     </td>
 
                     {/* Table Data */}
-                    <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50">{movement.stockId}</td>
+                    <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50" style={{ background: "#FFF8E8" }}>{movement.stockId}</td>
                     <td className="border border-gray-300 px-4 py-2 w-16">{movement.materialId}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{movement.fromLocation}</td>
                     <td className="border border-gray-300 px-4 py-2 w-8">{movement.toLocation}</td>

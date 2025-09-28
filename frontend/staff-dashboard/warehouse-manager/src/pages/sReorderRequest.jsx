@@ -174,9 +174,9 @@ const SReorderRequest = () => {
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="total" name="Total Requests" stroke="#4CAF50" strokeWidth={2} />
-            <Line type="monotone" dataKey="pending" name="Pending Requests" stroke="#FFA500" strokeWidth={2} />
-            <Line type="monotone" dataKey="checked" name="Checked Requests" stroke="#2196F3" strokeWidth={2} />
+            <Line type="monotone" dataKey="total" name="Total Requests" stroke="#674636" strokeWidth={2} />
+            <Line type="monotone" dataKey="pending" name="Pending Requests" stroke="#AAB396" strokeWidth={2} />
+            <Line type="monotone" dataKey="checked" name="Checked Requests" stroke="#FF6F00" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
 
@@ -186,7 +186,7 @@ const SReorderRequest = () => {
             <input
             type="text"
             placeholder="Search..."
-            className="border border-gray-400 px-4 py-2 rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="border border-gray-400 px-4 py-2 bg-white rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -282,9 +282,9 @@ const SReorderRequest = () => {
         <div className="overflow-x-auto text-xs">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative">Actions</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative">Request ID</th>
+              <tr style={{ background: "#674636", color:"#FFFFFF" }}>
+                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative" style={{ background: "#674636" }}>Actions</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative" style={{ background: "#674636" }}>Request ID</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Inventory Name</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Inventory Address</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Inventory Contact</th>
@@ -299,36 +299,32 @@ const SReorderRequest = () => {
                 <th className="border border-gray-300 px-4 py-2 w-32">Created At</th>
               </tr>
             </thead>
-            <tbody className="align-middle text-center text-xs bg-white">
+            <tbody className="align-middle text-center text-xs bg-[#FFF8E8]">
               {filteredRequests.length > 0 ? (
                 filteredRequests.map((request) => (
-                  <tr key={request._id}>
+                  <tr key={request._id} className="bg-[#FFF8E8]">
                     {/* Actions */}
-                    <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-white z-40 relative">
+                    <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-white z-40 relative" style={{ background: "#FFF8E8" }}>
                       <div className="flex items-center justify-center gap-6">
                         <div
                           className="group relative cursor-pointer"
                           onClick={() => navigate(`/update-s-reorder-requests/${request._id}`)}
                         >
-                          <Edit2 className="w-5 h-5  text-amber-500 hover:text-amber-600" />
-                          <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100">
-                            Update
-                          </span>
+                          <Edit2 className="w-5 h-5  text-[#674636] hover:text-[#A67C52]" />
+                          
                         </div>
                         <div
                           className="group relative cursor-pointer"
                           onClick={() => handleDelete(request._id)}
                         >
-                          <Trash2 className="w-5 h-5  text-amber-500 hover:text-amber-600" />
-                          <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100">
-                            Delete
-                          </span>
+                          <Trash2 className="w-5 h-5  text-[#674636] hover:text-[#A67C52]"/>
+                          
                         </div>
                       </div>
                     </td>
 
                     {/* Table Data */}
-                    <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40 relative">{request.stockReorderRequestId}</td>
+                    <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40 relative" style={{ background: "#FFF8E8" }}>{request.stockReorderRequestId}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{request.inventoryName}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{request.inventoryAddress}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{request.inventoryContact}</td>

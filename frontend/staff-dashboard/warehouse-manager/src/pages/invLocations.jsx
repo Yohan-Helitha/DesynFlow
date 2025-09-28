@@ -271,6 +271,15 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+const redIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 const InvLocation = () => {
   const [inventories, setInventories] = useState([]);
   const navigate = useNavigate();
@@ -403,18 +412,35 @@ const InvLocation = () => {
         </div>
 
         {/* Map */}
-        <div className="h-96 mb-6">
-          <MapContainer center={mapCenter} zoom={2} style={{ height: "100%", width: "100%" }}>
+        <div className="h-96 w-3/4 mb-6 mx-auto">
+          <MapContainer
+            center={mapCenter}
+            zoom={5}
+            minZoom={2}         // restrict zoom-out level
+            maxZoom={18}
+            style={{ height: "100%", width: "100%" }}
+            maxBounds={[
+              [-90, -180],
+              [90, 180]
+            ]}
+            maxBoundsViscosity={1.0}
+            worldCopyJump={false} // prevents tile repetition
+          >
             <TileLayer
-              url="https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://www.esri.com">Esri</a>'
+              noWrap={true}
+              bounds={[
+                [-90, -180],
+                [90, 180]
+              ]}
             />
 
             {!loading &&
               filteredInventories
                 .filter((inv) => inv.lat && inv.lng)
                 .map((inv) => (
-                  <Marker key={inv._id} position={[inv.lat, inv.lng]}>
+                  <Marker key={inv._id} position={[inv.lat, inv.lng]} icon={redIcon}>
                     <Popup>
                       <strong>{inv.inventoryName}</strong>
                       <br />
@@ -429,13 +455,14 @@ const InvLocation = () => {
           </MapContainer>
         </div>
 
+
         {/* Search + Filter */}
         <div className="mb-6 flex justify-center items-center gap-2">
           <Search className="w-5 h-5 text-gray-700" />
           <input
             type="text"
             placeholder="Search..."
-            className="border border-gray-400 px-4 py-2 rounded w-5xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="border border-gray-400 px-4 py-2 bg-white rounded w-5xl focus:outline-none focus:ring-2 focus:ring-amber-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -491,10 +518,10 @@ const InvLocation = () => {
         <div className="overflow-x-auto text-xs">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40">Actions</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40">Inventory ID</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-64 w-32 bg-gray-200 z-40">Inventory Name</th>
+              <tr style={{ background: "#674636", color:"#FFFFFF" }}>
+                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40" style={{ background: "#674636" }}>Actions</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40" style={{ background: "#674636" }}>Inventory ID</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-64 w-32 bg-gray-200 z-40" style={{ background: "#674636" }}>Inventory Name</th>
                 <th className="border border-gray-300 px-4 py-2 w-64">Address</th>
                 <th className="border border-gray-300 px-4 py-2 w-16">Country</th>
                 <th className="border border-gray-300 px-4 py-2 w-16">Capacity (m³)</th>
@@ -503,7 +530,7 @@ const InvLocation = () => {
                 <th className="border border-gray-300 px-4 py-2 w-40">Created At</th>
               </tr>
             </thead>
-            <tbody className="text-center align-middle text-xs bg-white">
+            <tbody className="text-center align-middle text-xs bg-[#FFF8E8]">
               {loading ? (
                   <tr>
                     <td colSpan="9" className="p-4 text-center font-semibold">
@@ -512,22 +539,22 @@ const InvLocation = () => {
                   </tr>
                 ) : filteredInventories.length > 0 ? (
                   filteredInventories.map((inv) => (
-                    <tr key={inv._id}>
-                    <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-white z-40">
+                    <tr key={inv._id} className="bg-[#FFF8E8]">
+                    <td className="border border-gray-300 px-4 py-2 sticky left-0 z-40" style={{ background: "#FFF8E8" }}>
                       <div className="flex items-center justify-center gap-4">
                         <div
                           className="cursor-pointer"
                           onClick={() => navigate(`/update-location/${inv._id}`)}
                         >
-                          <Edit2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
+                          <Edit2 className="w-5 h-5 text-[#674636] hover:text-[#A67C52]" />
                         </div>
                         <div className="cursor-pointer" onClick={() => handleDelete(inv._id)}>
-                          <Trash2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
+                          <Trash2 className="w-5 h-5 text-[#674636] hover:text-[#A67C52]" />
                         </div>
                       </div>
                     </td>
-                    <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40">{inv.inventoryId}</td>
-                    <td className="border border-gray-300 px-4 py-2 sticky left-64 bg-white z-40">{inv.inventoryName}</td>
+                    <td className="border border-gray-300 px-4 py-2 sticky left-32 bg-white z-40" style={{ background: "#FFF8E8" }}>{inv.inventoryId}</td>
+                    <td className="border border-gray-300 px-4 py-2 sticky left-64 bg-white z-40" style={{ background: "#FFF8E8" }}>{inv.inventoryName}</td>
                     <td className="border border-gray-300 px-4 py-2 w-64">{inv.inventoryAddress}</td>
                     <td className="border border-gray-300 px-4 py-2 w-16">{inv.country}</td>
                     <td className="border border-gray-300 px-4 py-2 w-16">{inv.capacity}</td>
