@@ -24,6 +24,7 @@ function App() {
             <Route path="/csr/requests" element={<RequestTable />} />
             
             {/* Add more role-based routes as needed */}
+            <Route path="/csr-dashboard" element={<CSRDashboard />} />
           </Routes>
         </main>
       </div>
