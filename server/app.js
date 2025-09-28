@@ -64,6 +64,22 @@ import disposalMaterialsRoute from "./modules/warehouse-manager/routes/disposalM
 import auditLogRoute from "./modules/warehouse-manager/routes/auditLogRoute.js";
 import thresholdAlertRoute from "./modules/warehouse-manager/routes/thresholdAlertRoute.js";
 
+//finane routes
+import './modules/finance/model/index.js';
+import projectRoute from './modules/finance/routes/projectRoutes.js';
+import expensesRoute from './modules/finance/routes/expensesRoutes.js';
+import inspectionEstimationRoute from './modules/finance/routes/inspectionEstimationRoutes.js';
+import projectEstimationRoute from './modules/finance/routes/projectEstimationRoutes.js';
+import paymentRoute from './modules/finance/routes/paymentRoutes.js';
+
+import quotationRoute from './modules/finance/routes/quotationRoutes.js';
+import purchaseOrderRoute from './modules/finance/routes/purchaseOrderRoutes.js';
+import warrantyRoute from './modules/finance/routes/warrantyRoutes.js';
+import claimRoute from './modules/finance/routes/claimRoutes.js';
+import notificationRoute from './modules/finance/routes/notificationRoutes.js';
+import materialRoute from './modules/finance/routes/materialRoutes.js';
+import financeSummaryRoute from './modules/finance/routes/financeSummaryRoutes.js';
+
 const app = express();
 
 // Middleware
@@ -73,6 +89,8 @@ app.use(express.urlencoded({ extended: true })); // Parse urlencoded body
 
 // Static files
 app.use('/reports', express.static('public/reports'));
+// Serve uploaded files (e.g., generated PDFs)
+app.use('/uploads', express.static('uploads'));
 
 // Mount supplier routes
 app.use("/api/suppliers", supplierRouter);
@@ -121,6 +139,20 @@ app.use("/api/warehouse/s_reorder_requests", sReorderRequestsRoute);
 app.use("/api/warehouse/disposal_materials", disposalMaterialsRoute);
 app.use("/api/warehouse/audit_log", auditLogRoute);
 app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
+
+//finance module routes
+app.use('/api/expenses', expensesRoute);
+app.use('/api/inspection-estimation', inspectionEstimationRoute);
+app.use('/api/project-estimation', projectEstimationRoute);
+app.use('/api/payments', paymentRoute);
+app.use('/api/quotations', quotationRoute);
+app.use('/api/purchase-orders', purchaseOrderRoute);
+app.use('/api/warranties', warrantyRoute);
+app.use('/api/claims', claimRoute);
+app.use('/api/notifications', notificationRoute);
+app.use('/api/materials', materialRoute);
+app.use('/api/finance-summary', financeSummaryRoute);
+app.use('/api/projects', projectRoute);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
