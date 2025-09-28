@@ -1,20 +1,22 @@
 
-import purchaseOrderRouter from "./modules/supplier/routes/purchaseOrder.routes.js";
-//2iWElcKr29ZOpPPf
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import pinoHttp from "pino-http";
+import { logger } from './config/logger.js';
+import { env } from './config/env.js';
+
+// Configure dotenv
+dotenv.config();
+
+// Supplier routes
+import purchaseOrderRouter from "./modules/supplier/routes/purchaseOrder.routes.js";
 import supplierRouter from "./modules/supplier/routes/supplier.routes.js";
 import supplierRatingRouter from "./modules/supplier/routes/supplierRating.routes.js";
 import materialRouter from "./modules/supplier/routes/material.routes.js";
 import sampleRouter from "./modules/supplier/routes/sample.routes.js";
 import dashboardRouter from "./modules/supplier/routes/dashboard.routes.js";
-import express from 'express';
-import cors from 'cors';
-import pinoHttp from "pino-http";
-import { logger } from './config/logger.js';
-import { env } from './config/env.js';
 
 import './modules/project/model/project.model.js';
 import './modules/project/model/task.model.js';
@@ -41,49 +43,7 @@ import meetingRoutes from './modules/project/routes/meeting.routes.js';
 import fileServeRoutes from './routes/fileServe.js';
 import uploadRoutes from './routes/upload.routes.js';
 
-const app = express();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Mount supplier router
-app.use("/api/suppliers", supplierRouter);
-// Mount supplier rating router (primary + legacy path for compatibility)
-app.use("/api/supplierRating", supplierRatingRouter);
-app.use("/api/supplier-ratings", supplierRatingRouter); // Alternative naming for frontend
-app.use("/supplierRating", supplierRatingRouter); // legacy/non-versioned path
-console.log("Mounted supplierRating routes at /api/supplierRating, /api/supplier-ratings and /supplierRating");
-// Mount purchase order router
-app.use("/api/purchase-orders", purchaseOrderRouter);
-// Mount material router
-app.use("/api/materials", materialRouter);
-// Mount sample router
-app.use("/api/samples", sampleRouter);
-// Mount dashboard router
-app.use("/api/dashboard", dashboardRouter);
-
-const mongoUri = process.env.MONGO_URI;
-const port = process.env.PORT || 3000;
-
-mongoose.connect(mongoUri)
-  .then(() => {
-    console.log("Connected to MongoDB");
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
-  })
-  .catch((err) => console.log("MongoDB connection error:", err));
-
-export { app };
-);
-
-app.use(cors()); // from allowing cors API can request different origins(not restrcit to one port)
-app.use(express.json({limit: '2mb'})); // parse json body
-app.use(express.urlencoded({ extended: true })); // parse urlencoded body
-
-app.use('/reports', express.static('public/reports'));
-
+// Auth routes
 import authRouter from "./modules/auth/routes/authRouter.js";
 import userRouter from "./modules/auth/routes/userRouter.js";
 import paymentReceiptRoutes from "./modules/auth/routes/paymentReceiptRoutes.js";
@@ -93,7 +53,27 @@ import authReportRoutes from "./modules/auth/routes/reportRoutes.js";
 import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
 import inspectionFormRoutes from "./modules/auth/routes/inspectionFormRoutes.js";
 
+const app = express();
 
+// Middleware
+app.use(cors()); // Allow CORS API requests from different origins
+app.use(express.json({limit: '2mb'})); // Parse JSON body with 2MB limit
+app.use(express.urlencoded({ extended: true })); // Parse urlencoded body
+
+// Static files
+app.use('/reports', express.static('public/reports'));
+
+// Mount supplier routes
+app.use("/api/suppliers", supplierRouter);
+app.use("/api/supplierRating", supplierRatingRouter);
+app.use("/api/supplier-ratings", supplierRatingRouter); // Alternative naming for frontend
+app.use("/supplierRating", supplierRatingRouter); // Legacy path
+app.use("/api/purchase-orders", purchaseOrderRouter);
+app.use("/api/materials", materialRouter);
+app.use("/api/samples", sampleRouter);
+app.use("/api/dashboard", dashboardRouter);
+
+// Mount auth routes
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/payment-receipt", paymentReceiptRoutes);
@@ -103,15 +83,7 @@ app.use("/api/auth-reports", authReportRoutes);
 app.use("/api/inspection-request", inspectionRequestRoutes);
 app.use("/api/inspectorForms", inspectionFormRoutes);
 
-app.get("/health", (req, res) => {
-  res.json({
-    name: env.APP_NAME,
-    env: env.NODE_ENV,
-    status: "ok",
-    time: new Date().toISOString(),
-  });
-});
-
+// Mount project routes
 app.use('/api', projectRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', teamRoutes);
@@ -127,5 +99,28 @@ app.use('/api', fileRoutes);
 app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);
 app.use('/api', uploadRoutes);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({
+    name: env.APP_NAME,
+    env: env.NODE_ENV,
+    status: "ok",
+    time: new Date().toISOString(),
+  });
+});
+
+// Database connection and server startup
+const mongoUri = process.env.MONGO_URI;
+const port = process.env.PORT || 3000;
+
+mongoose.connect(mongoUri)
+  .then(() => {
+    console.log("Connected to MongoDB");
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  })
+  .catch((err) => console.log("MongoDB connection error:", err));
 
 export { app };
