@@ -13,4 +13,10 @@ router.post('/', controller.createQuotation);
 // Get next version number for a project + estimate version
 router.get('/project/:projectId/next-version', controller.getNextQuotationVersion);
 
+// Get a single quotation by id
+router.get('/:quotationId', controller.getQuotation);
+
+// Update editable fields of a quotation by id
+router.patch('/:quotationId', controller.updateQuotation);
+
 export default router;

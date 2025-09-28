@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Download, RefreshCw, Bell, Shield, User, Calendar, FileText, MapPin } from 'lucide-react';
+import { X, Download, Bell, Shield, User, Calendar, FileText, MapPin } from 'lucide-react';
 
 export const ViewWarrantyModal = ({ warranty, onClose }) => {
   const isActive = warranty.status === 'Active';
@@ -237,12 +237,7 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
             </button>
           )}
 
-          {!isActive && (
-            <button className="px-4 py-2 bg-[#AAB396] text-[#FFF8E8] border border-[#674636] rounded-md text-sm font-medium hover:bg-[#674636] transition-colors flex items-center">
-              <RefreshCw size={16} className="mr-2" />
-              Renew Warranty
-            </button>
-          )}
+          {/* Renew button removed for expired warranties */}
         </div>
       </div>
     </div>

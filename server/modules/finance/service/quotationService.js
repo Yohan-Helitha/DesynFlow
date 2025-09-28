@@ -3,13 +3,29 @@ import Quotation from '../model/quotation_estimation.js';
 // Create a new quotation (version 1 or new version)
 export const createQuotation = async (data) => {
   const { projectId, estimateVersion } = data;
-  const latest = await Quotation.findOne({ projectId, estimateVersion }).sort({ version: -1 });
-  const version = latest ? latest.version + 1 : 1;
+  let latest = await Quotation.findOne({ projectId, estimateVersion }).sort({ version: -1 });
+  let version = latest ? latest.version + 1 : 1;
   // Calculate totals
   const subtotal = calcSubtotal(data.laborItems, data.materialItems, data.serviceItems);
   const totalContingency = calcContingency(data.contingencyItems);
   const totalTax = calcTax(data.taxes);
   const grandTotal = subtotal + totalContingency + totalTax;
+
+  let attempts = 0;
+  while (attempts < 3) {
+    try {
+      return await Quotation.create({ ...data, version, subtotal, totalContingency, totalTax, grandTotal });
+    } catch (e) {
+      if (e && e.code === 11000) {
+        latest = await Quotation.findOne({ projectId, estimateVersion }).sort({ version: -1 });
+        version = latest ? latest.version + 1 : version + 1;
+        attempts += 1;
+        continue;
+      }
+      throw e;
+    }
+  }
+  // Final attempt fallback
   return Quotation.create({ ...data, version, subtotal, totalContingency, totalTax, grandTotal });
 };
 

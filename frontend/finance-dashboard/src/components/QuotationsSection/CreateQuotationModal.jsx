@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X, Plus, Trash } from 'lucide-react'
+import { safeFetchJson } from '../../utils/safeFetch'
 
 // NOTE: This component was restyled to visually align with ViewQuotationModal while
 // preserving editable form functionality. A derived totals summary section was added
@@ -107,7 +108,7 @@ export const QuotationFormModal = ({
       return
     }
     try {
-      const resp = await fetch('/api/quotations', {
+      const created = await safeFetchJson('/api/quotations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -118,20 +119,15 @@ export const QuotationFormModal = ({
           serviceItems,
           contingencyItems,
           taxes,
-            remarks: formData.remarks,
+          remarks: formData.remarks,
           createdBy: incomingCreatedBy || undefined,
-            // Backend calculates version & totals again for integrity, but we send ours for potential preview usage
-            subtotal,
-            totalContingency,
-            totalTax,
-            grandTotal
+          // Backend calculates version & totals again for integrity, but we send ours for potential preview usage
+          subtotal,
+          totalContingency,
+          totalTax,
+          grandTotal
         })
       })
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to create quotation')
-      }
-      const created = await resp.json()
       if (onSubmit) onSubmit(created)
       onClose && onClose()
     } catch (err) {
@@ -148,12 +144,9 @@ export const QuotationFormModal = ({
     async function fetchNext() {
       if (!formData.projectId || formData.estimateVersion === '' || formData.estimateVersion === null) return;
       try {
-        const res = await fetch(`/api/quotations/project/${formData.projectId}/next-version?estimateVersion=${formData.estimateVersion}`);
-        if (!res.ok) throw new Error('Failed to fetch next version');
-        const data = await res.json();
-        setFormData(f => ({ ...f, version: data.nextVersion }));
+        const data = await safeFetchJson(`/api/quotations/project/${formData.projectId}/next-version?estimateVersion=${formData.estimateVersion}`)
+        setFormData(f => ({ ...f, version: data?.nextVersion || 1 }));
       } catch (e) {
-        // fallback to 1 if error
         setFormData(f => ({ ...f, version: f.version || 1 }));
       }
     }
@@ -294,14 +287,24 @@ export const QuotationFormModal = ({
                     value={item.materialId}
                     onChange={e => {
                       const copy = [...formData.materialItems];
+                      const selectedMaterial = materials.find(m => m._id === e.target.value);
                       copy[idx].materialId = e.target.value;
+                      if (selectedMaterial) {
+                        copy[idx].unitPrice = selectedMaterial.unitPrice || 0;
+                        copy[idx].description = selectedMaterial.materialName;
+                        copy[idx].total = (copy[idx].quantity || 0) * (selectedMaterial.unitPrice || 0);
+                      } else {
+                        copy[idx].unitPrice = 0;
+                        copy[idx].description = '';
+                        copy[idx].total = 0;
+                      }
                       setFormData({ ...formData, materialItems: copy });
                     }}
                     className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-40 text-[#674636] bg-[#FFF8E8]"
                   >
                     <option value="">Select Material</option>
                     {materials.map(m => (
-                      <option key={m._id} value={m._id}>{m.name || m.description}</option>
+                      <option key={m._id} value={m._id}>{m.materialName}</option>
                     ))}
                   </select>
                   <input
@@ -323,7 +326,7 @@ export const QuotationFormModal = ({
                       const val = Number(e.target.value);
                       const copy = [...formData.materialItems];
                       copy[idx].quantity = val;
-                      copy[idx].total = copy[idx].quantity * copy[idx].unitPrice;
+                      copy[idx].total = val * (copy[idx].unitPrice || 0);
                       setFormData({ ...formData, materialItems: copy });
                     }}
                     className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-20 text-[#674636] bg-[#FFF8E8]"
@@ -332,16 +335,10 @@ export const QuotationFormModal = ({
                     type="number"
                     placeholder="Unit Price"
                     value={item.unitPrice}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      const copy = [...formData.materialItems];
-                      copy[idx].unitPrice = val;
-                      copy[idx].total = copy[idx].quantity * copy[idx].unitPrice;
-                      setFormData({ ...formData, materialItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
+                    readOnly
+                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8] cursor-not-allowed"
                   />
-                  <span className="text-sm text-[#AAB396] px-2">{item.total || 0}</span>
+                  <span className="text-sm text-[#AAB396] px-2">{(item.quantity || 0) * (item.unitPrice || 0)}</span>
                   <button type="button" onClick={() => removeItem('materialItems', idx)} className="p-1 hover:bg-red-100 rounded">
                     <Trash size={16} className="text-red-500" />
                   </button>

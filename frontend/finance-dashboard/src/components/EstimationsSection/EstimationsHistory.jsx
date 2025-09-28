@@ -4,6 +4,7 @@ import { CheckCircle, Filter, ArrowUpDown, ChevronLeft, ChevronRight } from 'luc
 import { EstimationDetailsModal } from './EstimationDetailsModal';
 import { EstimateToEstimateModal } from './EstimateToEstimateModal';
 import { ViewInspectionEstimationModal } from '../InspectionSection/ViewInspectionEstimationModal';
+import { safeFetchJson } from '../../utils/safeFetch';
 
 // Utility to format numbers as currency-ish
 const fmt = (n) => (typeof n === 'number' ? n.toLocaleString() : '0');
@@ -26,10 +27,8 @@ export const EstimationsHistory = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/project-estimation/all');
-      if (!res.ok) throw new Error('Failed to fetch estimations');
-      const data = await res.json();
-      setEstimations(data);
+      const data = await safeFetchJson('/api/project-estimation/all');
+      setEstimations(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message || 'Unknown error');
     } finally {

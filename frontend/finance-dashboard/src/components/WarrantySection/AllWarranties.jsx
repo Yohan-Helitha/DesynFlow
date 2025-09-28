@@ -8,7 +8,6 @@ import {
   Eye,
   Plus,
   Bell,
-  RefreshCw,
   ToggleLeft,
   ToggleRight,
   Loader2,
@@ -68,11 +67,6 @@ export const AllWarranties = () => {
   const handleSendReminder = (warrantyId) => {
     console.log(`Sending reminder for warranty ${warrantyId}`);
     // TODO: Implement reminder functionality
-  };
-
-  const handleRenewWarranty = (warrantyId) => {
-    console.log(`Renewing warranty ${warrantyId}`);
-    // TODO: Implement renewal functionality
   };
 
   const handleSort = (field) => {
@@ -371,14 +365,8 @@ export const AllWarranties = () => {
                         </button>
                       )
                     ) : (
-                      // Actions for expired warranties
-                      <button
-                        onClick={() => handleRenewWarranty(warranty._id)}
-                        className="text-[#FFF8E8] bg-[#674636] hover:opacity-90 px-3 py-1 rounded-md"
-                      >
-                        <RefreshCw size={16} className="inline mr-1" />
-                        Renew
-                      </button>
+                      // No actions for expired warranties (Renew removed)
+                      null
                     )}
                   </td>
                 </tr>

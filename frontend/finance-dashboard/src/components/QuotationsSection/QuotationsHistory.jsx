@@ -10,6 +10,8 @@ import {
   Download,
 } from 'lucide-react'
 import { ViewQuotationModal } from './ViewQuotationModal'
+import UpdateQuotationModal from './UpdateQuotationModal'
+import { safeFetchJson } from '../../utils/safeFetch'
 
 
 export const ApprovedQuotations = () => {
@@ -18,42 +20,86 @@ export const ApprovedQuotations = () => {
   const [error, setError] = useState(null)
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
+  const [editMode, setEditMode] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortField, setSortField] = useState('updatedAt')
+  const [sortField, setSortField] = useState('createdAt')
   const [sortDirection, setSortDirection] = useState('desc')
   const [currentPage, setCurrentPage] = useState(1)
 
+  const reload = async () => {
+    setLoading(true)
+    try {
+      const data = await safeFetchJson('/api/quotations')
+      setQuotations(Array.isArray(data) ? data : [])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    setLoading(true)
-    fetch('/api/quotations')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch quotations')
-        return res.json()
-      })
-      .then(data => {
-        setQuotations(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        setError(err.message)
-        setLoading(false)
-      })
+    reload()
   }, [])
 
-  const handleView = (quotation) => {
-    setSelectedQuotation(quotation)
+  const openModalWith = async (quotation, enableEdit) => {
+    try {
+      const full = await safeFetchJson(`/api/quotations/${quotation._id}`)
+      setSelectedQuotation(full || quotation)
+    } catch (_) {
+      setSelectedQuotation(quotation)
+    }
+    setEditMode(!!enableEdit)
     setShowViewModal(true)
   }
 
-  const handleSendToClient = (quotationId) => {
-    console.log(`Send quotation ${quotationId} to client`)
-    // In a real app, you would call an API to send the quotation
+  const handleView = (quotation) => openModalWith(quotation, false)
+  const handleGenerate = (quotation) => {
+    const blocked = ['Confirmed', 'Locked'].includes(quotation?.status)
+    if (blocked) return
+    return openModalWith(quotation, true)
   }
 
-  const handleDownload = (quotationId) => {
-    console.log(`Download quotation ${quotationId}`)
-    // In a real app, you would generate and download a PDF
+  const handleDownload = async (quotation) => {
+    try {
+      let url = quotation?.fileUrl
+      if (!url && quotation?._id) {
+        const full = await safeFetchJson(`/api/quotations/${quotation._id}`)
+        url = full?.fileUrl
+      }
+      if (!url) {
+        alert('No PDF available for this quotation yet.')
+        return
+      }
+      const isAbsolute = /^https?:\/\//i.test(url)
+      if (!isAbsolute && !url.startsWith('/')) url = '/' + url
+      window.open(url, '_blank', 'noopener')
+    } catch (err) {
+      alert('Failed to open quotation PDF.')
+    }
+  }
+
+  const handleUpdate = async (updated) => {
+    try {
+      const payload = {
+        laborItems: updated.laborItems || [],
+        materialItems: updated.materialItems || [],
+        serviceItems: updated.serviceItems || [],
+        contingencyItems: updated.contingencyItems || [],
+        taxes: updated.taxes || [],
+        remarks: updated.remarks || ''
+      }
+      await safeFetchJson(`/api/quotations/${updated._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      setShowViewModal(false)
+      setSelectedQuotation(null)
+      await reload()
+    } catch (err) {
+      alert(err.message || 'Failed to update quotation')
+    }
   }
 
   const handleSort = (field) => {
@@ -88,6 +134,9 @@ export const ApprovedQuotations = () => {
         return getProjectDisplay(q).toLowerCase();
       case 'createdBy':
         return getUserDisplay(q.createdBy).toLowerCase();
+      case 'createdAt':
+      case 'updatedAt':
+        return q[field] ? new Date(q[field]).getTime() : 0;
       case '_id':
         return String(q._id);
       default:
@@ -161,32 +210,54 @@ export const ApprovedQuotations = () => {
                   <div className="flex items-center">Quotation ID<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>Project Name<ArrowUpDown size={14} className="ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('createdBy')}>Client Name<ArrowUpDown size={14} className="ml-1" /></th>
+                
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('grandTotal')}>Grand Total<ArrowUpDown size={14} className="ml-1" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('status')}>Status<ArrowUpDown size={14} className="ml-1" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('updatedAt')}>Approved Date<ArrowUpDown size={14} className="ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('createdAt')}>Created Date<ArrowUpDown size={14} className="ml-1" /></th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-[#F7EED3] divide-y divide-[#AAB396]">
               {paginatedQuotations.map((quotation) => {
                 const projDisp = getProjectDisplay(quotation);
-                const userDisp = getUserDisplay(quotation.createdBy);
+                
                 return (
                   <tr key={quotation._id} className="hover:bg-[#FFF8E8]">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{quotation._id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{projDisp}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{userDisp || '—'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${quotation.grandTotal?.toLocaleString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{quotation.status}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{quotation.updatedAt ? new Date(quotation.updatedAt).toLocaleDateString() : ''}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : ''}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleView(quotation)} className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md mr-2">
-                        <Eye size={16} className="inline mr-1" />View
-                      </button>
-                      <button onClick={() => handleDownload(quotation._id)} className="text-purple-600 hover:text-purple-900 bg-purple-50 px-3 py-1 rounded-md mr-2">
-                        <Download size={16} className="inline mr-1" />Download
-                      </button>
+                      <div className="flex items-center justify-end space-x-2">
+                        <button onClick={() => handleView(quotation)} className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md flex items-center transition-colors">
+                          <Eye size={16} className="inline mr-1" />View
+                        </button>
+                        {(() => {
+                          const isLocked = ['Confirmed', 'Locked'].includes(quotation.status)
+                          return (
+                            <button
+                              disabled={isLocked}
+                              title={isLocked ? 'Quotation is locked' : 'Open editable view'}
+                              onClick={() => { if (isLocked) return; handleGenerate(quotation) }}
+                              className={`px-3 py-1 rounded-md flex items-center transition-colors ${
+                                isLocked
+                                  ? 'opacity-50 cursor-not-allowed bg-[#F7EED3] text-[#AAB396]'
+                                  : 'text-[#674636] bg-[#F7EED3] hover:bg-[#AAB396] hover:text-[#FFF8E8]'
+                              }`}
+                            >
+                              Generate
+                            </button>
+                          )
+                        })()}
+                        <button
+                          onClick={() => handleDownload(quotation)}
+                          className="bg-[#674636] text-[#FFF8E8] hover:bg-[#AAB396] hover:text-[#674636] px-3 py-1 rounded-md flex items-center transition-colors"
+                        >
+                          <Download size={16} className="inline mr-1" />
+                          Download
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -207,8 +278,8 @@ export const ApprovedQuotations = () => {
 
         {/* Pagination */}
         {filteredQuotations.length > 0 && (
-          <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
+            <div className="text-sm text-[#674636]">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
               {Math.min(currentPage * itemsPerPage, filteredQuotations.length)}{' '}
               of {filteredQuotations.length} entries
@@ -219,8 +290,8 @@ export const ApprovedQuotations = () => {
                 disabled={currentPage === 1}
                 className={`p-2 rounded-md ${
                   currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'text-[#AAB396] cursor-not-allowed'
+                    : 'text-[#674636] hover:bg-[#FFF8E8]'
                 }`}
               >
                 <ChevronLeft size={16} />
@@ -231,8 +302,8 @@ export const ApprovedQuotations = () => {
                   onClick={() => setCurrentPage(page)}
                   className={`w-8 h-8 rounded-md ${
                     currentPage === page
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-[#674636] text-[#FFF8E8]'
+                      : 'text-[#674636] hover:bg-[#FFF8E8]'
                   }`}
                 >
                   {page}
@@ -245,8 +316,8 @@ export const ApprovedQuotations = () => {
                 disabled={currentPage === totalPages}
                 className={`p-2 rounded-md ${
                   currentPage === totalPages
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'text-[#AAB396] cursor-not-allowed'
+                    : 'text-[#674636] hover:bg-[#FFF8E8]'
                 }`}
               >
                 <ChevronRight size={16} />
@@ -258,10 +329,18 @@ export const ApprovedQuotations = () => {
 
       {/* View Quotation Modal */}
       {showViewModal && (
-        <ViewQuotationModal
-          quotation={selectedQuotation}
-          onClose={() => setShowViewModal(false)}
-        />
+        editMode ? (
+          <UpdateQuotationModal
+            quotation={selectedQuotation}
+            onClose={() => setShowViewModal(false)}
+            onSave={handleUpdate}
+          />
+        ) : (
+          <ViewQuotationModal
+            quotation={selectedQuotation}
+            onClose={() => setShowViewModal(false)}
+          />
+        )
       )}
     </div>
   )

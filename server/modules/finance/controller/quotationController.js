@@ -3,9 +3,9 @@ import { generateQuotationPdf } from '../service/quotationPdfService.js';
 import Material from '../model/material.js';
 import SupplierMaterialCatalog from '../model/supplier_material_catalog.js';
 import { Project } from '../model/project.js'; // Ensure Project model is registered
+import mongoose from 'mongoose';
 
 // Fallback: in case hot-reload or import order caused model not to register
-import mongoose from 'mongoose';
 if (!mongoose.models.Project) {
   // Re-register using the schema from the imported module (Project.modelName === 'Project')
   // Normally unnecessary, but keeps endpoint resilient.
@@ -20,35 +20,52 @@ if (!mongoose.models.Project) {
 // Create a new quotation (version 1)
 export const createQuotation = async (req, res) => {
   try {
-  const { projectId, estimateVersion, laborItems, materialItems, serviceItems, contingencyItems, taxes, remarks, fileUrl, createdBy } = req.body;
+    const { projectId, estimateVersion, laborItems, materialItems, serviceItems, contingencyItems, taxes, remarks, fileUrl, createdBy } = req.body;
     // Find latest version for this project/estimate
     const latest = await Quotation.findOne({ projectId, estimateVersion }).sort({ version: -1 });
-    const version = latest ? latest.version + 1 : 1;
+    let version = latest ? latest.version + 1 : 1;
+
     // Calculate totals
     const subtotal = calcSubtotal(laborItems, materialItems, serviceItems);
     const totalContingency = calcContingency(contingencyItems);
     const totalTax = calcTax(taxes);
     const grandTotal = subtotal + totalContingency + totalTax;
-    // Persist initial quotation (fileUrl computed after PDF generation)
-    let quotation = await Quotation.create({
-      projectId,
-      estimateVersion,
-      version,
-      status: 'Draft',
-      locked: false,
-      remarks,
-      // createdBy optional: only set if provided (prevents legacy schema cache requiring it)
-      ...(createdBy ? { createdBy } : {}),
-      laborItems,
-      materialItems,
-      serviceItems,
-      contingencyItems,
-      taxes,
-      subtotal,
-      totalContingency,
-      totalTax,
-      grandTotal
-    });
+
+    let quotation;
+    let attempts = 0;
+    while (attempts < 3) {
+      try {
+        quotation = await Quotation.create({
+          projectId,
+          estimateVersion,
+          version,
+          status: 'Draft',
+          locked: false,
+          remarks,
+          ...(createdBy ? { createdBy } : {}),
+          laborItems,
+          materialItems,
+          serviceItems,
+          contingencyItems,
+          taxes,
+          subtotal,
+          totalContingency,
+          totalTax,
+          grandTotal
+        });
+        break; // success
+      } catch (e) {
+        // Handle duplicate version due to race: E11000 duplicate key error on unique index
+        if (e && e.code === 11000) {
+          const latestNow = await Quotation.findOne({ projectId, estimateVersion }).sort({ version: -1 });
+          version = latestNow ? latestNow.version + 1 : version + 1;
+          attempts += 1;
+          continue;
+        }
+        throw e;
+      }
+    }
+
     // Generate PDF and update fileUrl
     try {
       const { url } = await generateQuotationPdf({
@@ -72,9 +89,9 @@ export const createQuotation = async (req, res) => {
       // Log and continue without blocking creation
       console.warn('[quotation] PDF generation failed:', pdfErr?.message || pdfErr);
     }
-    res.status(201).json(quotation);
+    return res.status(201).json(quotation);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 

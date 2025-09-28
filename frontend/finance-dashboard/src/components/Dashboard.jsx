@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Header } from './Header';
 import { SummaryCard } from './SummaryCard';
 import { IncomeChart } from './IncomeChart';
@@ -11,8 +11,7 @@ import {
   FileText,
   ShoppingCart,
 } from 'lucide-react';
-
-import { useEffect, useState } from 'react';
+import { safeFetchJson } from '../utils/safeFetch';
 
 export const Dashboard = () => {
   const [pendingCount, setPendingCount] = useState(null);
@@ -22,46 +21,34 @@ export const Dashboard = () => {
   const [pendingPurchaseRequests, setPendingPurchaseRequests] = useState(null);
 
   useEffect(() => {
-    // Fetch pending purchase requests (POs with status 'PendingFinanceApproval')
-    fetch('/api/purchase-orders?status=PendingFinanceApproval')
-      .then((res) => res.ok ? res.json() : [])
-      .then((data) => setPendingPurchaseRequests(Array.isArray(data) ? data.length : 0))
-      .catch(() => setPendingPurchaseRequests(0));
-    // Fetch pending inspection estimates count
-    fetch('/api/inspection-estimation/pending')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setPendingCount(data.length);
-        } else {
-          setPendingCount(0);
-        }
-      })
-      .catch(() => setPendingCount(0));
+    async function load() {
+      try {
+        const [
+          poRes,
+          inspRes,
+          payPend,
+          inspPayPend,
+          sumRes,
+          apprEst
+        ] = await Promise.all([
+          safeFetchJson('/api/purchase-orders?status=PendingFinanceApproval'),
+          safeFetchJson('/api/inspection-estimation/pending'),
+          safeFetchJson('/api/payments/pending'),
+          safeFetchJson('/api/inspection-estimation/payment-pending'),
+          safeFetchJson('/api/finance-summary'),
+          safeFetchJson('/api/project-estimation/approved'),
+        ]);
+        setPendingPurchaseRequests(Array.isArray(poRes) ? poRes.length : 0);
+        setPendingCount(Array.isArray(inspRes) ? inspRes.length : 0);
+        setPendingPaymentApprovals(Array.isArray(payPend) ? payPend.length : 0 + Array.isArray(inspPayPend) ? inspPayPend.length : 0);
+        setFinanceSummary(sumRes);
+        setApprovedEstimationsCount(Array.isArray(apprEst) ? apprEst.length : 0);
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-    // Fetch counts for pending payment approvals from two sources and sum them
-    Promise.all([
-      fetch('/api/payments/pending').then((r) => r.ok ? r.json() : []),
-      fetch('/api/inspection-estimation/payment-pending').then((r) => r.ok ? r.json() : []),
-    ])
-      .then(([payments, inspectionPayments]) => {
-        const paymentsCount = Array.isArray(payments) ? payments.length : 0;
-        const inspectionCount = Array.isArray(inspectionPayments) ? inspectionPayments.length : 0;
-        setPendingPaymentApprovals(paymentsCount + inspectionCount);
-      })
-      .catch(() => setPendingPaymentApprovals(0));
-
-    // Fetch finance summary
-    fetch('/api/finance-summary')
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => setFinanceSummary(data))
-      .catch(() => setFinanceSummary(null));
-
-    // Fetch approved project estimations count for Pending Quotations Generations card
-    fetch('/api/project-estimation/approved')
-      .then((res) => res.ok ? res.json() : [])
-      .then((data) => setApprovedEstimationsCount(Array.isArray(data) ? data.length : 0))
-      .catch(() => setApprovedEstimationsCount(0));
+    load();
   }, []);
 
   const handleCardClick = (destination) => {

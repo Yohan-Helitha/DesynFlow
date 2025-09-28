@@ -10,11 +10,14 @@ import {
   X,
 } from 'lucide-react'
 import { QuotationFormModal as CreateQuotationModal } from './CreateQuotationModal'
+import { fetchMaterials } from '../../utils/fetchMaterials';
+import { safeFetchJson } from '../../utils/safeFetch';
 
 // Fetch approved estimations from backend
 const API_URL = '/api/project-estimation/approved';
 
 export const PendingQuotations = () => {
+  const [materials, setMaterials] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,14 +28,32 @@ export const PendingQuotations = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch materials for modal dropdown
+  useEffect(() => {
+    async function getMaterials() {
+      try {
+        const data = await fetchMaterials();
+        setMaterials(data);
+      } catch (err) {
+        // Optionally handle error
+        console.error('Failed to load materials', err);
+      }
+    }
+    getMaterials();
+  }, []);
+
   useEffect(() => {
     async function fetchQuotations() {
       setLoading(true);
       try {
-        const res = await fetch(API_URL);
-        if (!res.ok) throw new Error('Failed to fetch approved estimations');
-        const data = await res.json();
-        setQuotations(data);
+        // Pull approved estimations
+        const data = await safeFetchJson(API_URL);
+        const list = Array.isArray(data) ? data : [];
+        // Filter: show only estimations with no quotation yet
+        // Assuming estimation has a flag/field like quotationCreated or lastQuotationId;
+        // if not present, we infer by absence of any matching quotation on the frontend side (fallback kept as-is for now).
+        const pendingOnly = list.filter(e => !e.quotationCreated && !e.lastQuotationId);
+        setQuotations(pendingOnly);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -42,9 +63,16 @@ export const PendingQuotations = () => {
     fetchQuotations();
   }, []);
 
-  const handleView = (quotation) => {
-    setSelectedQuotation(quotation);
+  const handleView = (estimation) => {
+    setSelectedQuotation(estimation);
     setShowCreateModal(true);
+  };
+
+  const handleCreated = () => {
+    // Remove the created estimation row from table
+    setQuotations(prev => prev.filter(q => q._id !== (selectedQuotation?._id)));
+    setShowCreateModal(false);
+    setSelectedQuotation(null);
   };
 
   const handleSort = (field) => {
@@ -247,9 +275,10 @@ export const PendingQuotations = () => {
       {showCreateModal && selectedQuotation && (
         <CreateQuotationModal
           onClose={() => setShowCreateModal(false)}
-          onSubmit={() => setShowCreateModal(false)}
+          onSubmit={handleCreated}
           projectId={selectedQuotation.projectId}
           estimateVersion={selectedQuotation.version}
+          materials={materials}
         />
       )}
     </div>

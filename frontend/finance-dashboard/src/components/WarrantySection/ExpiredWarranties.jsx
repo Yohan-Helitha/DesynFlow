@@ -142,17 +142,10 @@ export const ExpiredWarranties = () => {
                   <td className="px-6 py-4 text-right text-sm font-medium">
                     <button
                       onClick={() => handleView(w)}
-                      className="text-[#674636] hover:bg-[#FFF8E8] border border-[#AAB396] px-3 py-1 rounded-md mr-2"
+                      className="text-[#674636] hover:bg-[#FFF8E8] border border-[#AAB396] px-3 py-1 rounded-md"
                     >
                       <Eye size={16} className="inline mr-1" />
                       View
-                    </button>
-                    <button
-                      onClick={() => handleRenewWarranty(w.id)}
-                      className="text-[#FFF8E8] bg-[#674636] hover:opacity-90 px-3 py-1 rounded-md"
-                    >
-                      <RefreshCw size={16} className="inline mr-1" />
-                      Renew
                     </button>
                   </td>
                 </tr>

@@ -49,7 +49,6 @@ const QuotationSchema = new Schema({
   },
   locked: { type: Boolean, default: false },
   remarks: { type: String },
-  // made createdBy optional to allow system-generated quotations when user context not provided
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   sentTo: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -71,7 +70,8 @@ const QuotationSchema = new Schema({
 
 }, { timestamps: true });
 
-// Ensure unique version per project
-QuotationSchema.index({ projectId: 1, version: 1 }, { unique: true });
+// Ensure unique version per project and estimate
+// Previously was { projectId: 1, version: 1 } which caused collisions across different estimate versions
+QuotationSchema.index({ projectId: 1, estimateVersion: 1, version: 1 }, { unique: true, name: 'project_estimate_version_unique' });
 
 export default mongoose.model('QuotationEstimation', QuotationSchema);
