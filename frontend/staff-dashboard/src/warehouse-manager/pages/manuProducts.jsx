@@ -146,7 +146,7 @@ const ManuProducts = () => {
             <BarChart data={chartArray}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="monthYear" />
-              <YAxis />
+              <YAxis domain={[0, 'dataMax + 2']} />
               <Tooltip />
               <Legend />
               <Bar dataKey="count" fill="#674636" barSize={30} /> 
