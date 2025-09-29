@@ -20,6 +20,8 @@ const InspectorDashboard = () => {
       setInspector(response.data);
     } catch (error) {
       console.error('Error fetching inspector profile:', error);
+      // Set fallback inspector data if auth fails
+      setInspector({ name: 'Inspector', username: 'inspector' });
     }
   };
 
@@ -41,15 +43,15 @@ const InspectorDashboard = () => {
       case 'reports':
         return (
           <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-4">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-2">
+            <div className="border-b border-brown-primary-300 pb-4">
+              <h2 className="text-2xl font-bold text-brown-primary flex items-center space-x-2">
                 <span>📄</span>
                 <span>Inspection Reports</span>
               </h2>
-              <p className="text-gray-600 mt-1">View your inspection reports</p>
+              <p className="text-brown-secondary mt-1">View your inspection reports</p>
             </div>
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <p className="text-blue-700">
+            <div className="bg-cream-light rounded-lg p-4 border border-brown-primary-300">
+              <p className="text-brown-primary-300">
                 <strong>Note:</strong> Reports functionality will be integrated with existing report system.
                 Your completed inspection forms will automatically generate reports.
               </p>
@@ -63,14 +65,14 @@ const InspectorDashboard = () => {
 
   if (!inspector) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-cream-primary">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-cream-primary">
       {/* Sidebar */}
       <InspectorSidebar
         activeSection={activeSection}
@@ -83,19 +85,19 @@ const InspectorDashboard = () => {
       <div className="flex-1 p-6 overflow-y-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Inspector Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {inspector.name}</p>
+          <h1 className="text-3xl font-bold text-brown-primary">Inspector Dashboard</h1>
+          <p className="text-brown-secondary">Welcome back, {inspector.name}</p>
         </div>
 
         {/* Messages */}
         {message && (
-          <div className="mb-6 p-4 rounded-lg bg-blue-100 text-blue-700 border border-blue-300">
+          <div className="mb-6 p-4 rounded-lg bg-green-primary text-cream-primary border border-soft-green">
             {message}
           </div>
         )}
 
         {/* Dynamic Content */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-cream-primary rounded-lg shadow-lg p-6 border border-brown-primary-300">
           {renderContent()}
         </div>
       </div>

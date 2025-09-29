@@ -94,25 +94,25 @@ const LocationManagement = ({ inspector, setMessage }) => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">📍 Location Management</h2>
-        <p className="text-gray-600">Update your location and availability status</p>
+        <h2 className="text-2xl font-bold text-brown-primary mb-2">📍 Location Management</h2>
+        <p className="text-brown-secondary">Update your location and availability status</p>
       </div>
 
       {/* Current Location */}
-      <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-800 mb-4">Current Location</h3>
+      <div className="bg-cream-light rounded-lg p-6 border border-brown-primary-300">
+        <h3 className="text-lg font-semibold text-brown-primary mb-4">Current Location</h3>
         
         {location ? (
           <div className="mb-4">
-            <p className="text-gray-700">
+            <p className="text-brown-secondary">
               📍 Latitude: <span className="font-mono">{location.inspector_latitude}</span>
             </p>
-            <p className="text-gray-700">
+            <p className="text-brown-secondary">
               📍 Longitude: <span className="font-mono">{location.inspector_longitude}</span>
             </p>
           </div>
         ) : (
-          <p className="text-gray-500 mb-4">No location data available</p>
+          <p className="text-brown-secondary mb-4">No location data available</p>
         )}
 
         <button
@@ -120,8 +120,8 @@ const LocationManagement = ({ inspector, setMessage }) => {
           disabled={updating}
           className={`w-full py-3 px-4 rounded-lg font-semibold ${
             updating
-              ? 'bg-gray-400 text-white cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-brown-primary-300 text-cream-primary cursor-not-allowed'
+              : 'bg-green-primary text-cream-primary hover:bg-soft-green'
           }`}
         >
           {updating ? 'Updating Location...' : '📍 Update My Location'}
@@ -129,16 +129,16 @@ const LocationManagement = ({ inspector, setMessage }) => {
       </div>
 
       {/* Availability Status */}
-      <div className="bg-green-50 rounded-lg p-6 border border-green-200">
-        <h3 className="text-lg font-semibold text-green-800 mb-4">Availability Status</h3>
+      <div className="bg-cream-light rounded-lg p-6 border border-green-primary">
+        <h3 className="text-lg font-semibold text-green-primary mb-4">Availability Status</h3>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <button
             onClick={() => updateStatus('available')}
             className={`p-4 rounded-lg border-2 text-center ${
               status === 'available'
-                ? 'border-green-500 bg-green-100 text-green-800'
-                : 'border-gray-300 bg-white text-gray-600 hover:border-green-300'
+                ? 'border-green-primary bg-soft-green text-brown-primary'
+                : 'border-brown-primary-300 bg-cream-primary text-brown-secondary hover:border-green-primary'
             }`}
           >
             <div className="text-2xl mb-1">✅</div>
@@ -149,8 +149,8 @@ const LocationManagement = ({ inspector, setMessage }) => {
             onClick={() => updateStatus('unavailable')}
             className={`p-4 rounded-lg border-2 text-center ${
               status === 'unavailable'
-                ? 'border-red-500 bg-red-100 text-red-800'
-                : 'border-gray-300 bg-white text-gray-600 hover:border-red-300'
+                ? 'border-red-brown bg-warm-brown text-cream-primary'
+                : 'border-brown-primary-300 bg-cream-primary text-brown-secondary hover:border-red-brown'
             }`}
           >
             <div className="text-2xl mb-1">❌</div>
@@ -159,14 +159,14 @@ const LocationManagement = ({ inspector, setMessage }) => {
         </div>
 
         {/* Current Status */}
-        <div className="bg-white rounded-lg p-3 border border-green-200">
-          <span className="text-sm font-semibold text-gray-700">Current Status: </span>
+        <div className="bg-cream-primary rounded-lg p-3 border border-green-primary">
+          <span className="text-sm font-semibold text-brown-primary">Current Status: </span>
           <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
             status === 'available' 
-              ? 'bg-green-200 text-green-800'
+              ? 'bg-soft-green text-brown-primary'
               : status === 'busy'
-              ? 'bg-yellow-200 text-yellow-800'
-              : 'bg-red-200 text-red-800'
+              ? 'bg-green-secondary text-brown-primary'
+              : 'bg-red-brown text-cream-primary'
           }`}>
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
@@ -174,9 +174,9 @@ const LocationManagement = ({ inspector, setMessage }) => {
       </div>
 
       {/* Instructions */}
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-800 mb-2">💡 Instructions:</h3>
-        <ul className="text-sm text-gray-700 space-y-1">
+      <div className="bg-cream-primary rounded-lg p-4 border border-brown-primary-300">
+        <h3 className="text-sm font-semibold text-brown-primary mb-2">💡 Instructions:</h3>
+        <ul className="text-sm text-brown-secondary space-y-1">
           <li>• Click "Update My Location" to share your GPS coordinates</li>
           <li>• Set your availability status (Available/Unavailable)</li>
           <li>• Status automatically becomes "Busy" when assigned to work</li>
