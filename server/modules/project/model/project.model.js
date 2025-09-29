@@ -26,7 +26,8 @@ const ProjectSchema = new Schema({
     uploadDate: { type: Date, default: Date.now }
   }], // Inspection report PDFs and other documents
   finalDesign3DUrl: { type: String },
-  designAccessRestriction: { type: Boolean, default: false }
+  designAccessRestriction: { type: Boolean, default: false },
+  estimateCreated: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.model('Project', ProjectSchema);

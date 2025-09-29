@@ -1,5 +1,5 @@
-import Material from '../model/material.js';
-import SupplierMaterialCatalog from '../model/supplier_material_catalog.js';
+import Material from '../../supplier/model/material.model.js';
+import MaterialCatalog from '../../supplier/model/materialCatalog.model.js';
 
 export async function getAllMaterials(req, res) {
   try {
@@ -13,7 +13,7 @@ export async function getAllMaterials(req, res) {
 // Materials with a default unitPrice derived from SupplierMaterialCatalog (min active price per material)
 export async function getMaterialsWithPrices(req, res) {
   try {
-    const priced = await SupplierMaterialCatalog.aggregate([
+    const priced = await MaterialCatalog.aggregate([
       { $match: { active: true } },
       { $group: { _id: '$materialId', unitPrice: { $min: '$pricePerUnit' } } },
       {

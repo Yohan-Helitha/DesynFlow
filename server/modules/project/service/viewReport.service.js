@@ -1,4 +1,4 @@
-import InspectionReport from "../../user/model/report.model.js";
+import AuthInspectionReport from '../../auth/model/report.model.js';
 
 export const getSubmittedInspectionReport = async (inspectionRequestId) => {
 	

@@ -1,4 +1,4 @@
-import PurchaseOrder from '../model/purchase_order.js';
+import PurchaseOrder from '../../supplier/model/purchaseOrder.model.js';
 import mongoose from 'mongoose';
 
 // View requests by status or finance approval status

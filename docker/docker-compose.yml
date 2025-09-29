@@ -20,7 +20,7 @@ services:
       - /app/node_modules
     depends_on:
       - mongo
-    command: npm start
+    command: npm run dev
     restart: unless-stopped
     
   client-portal:

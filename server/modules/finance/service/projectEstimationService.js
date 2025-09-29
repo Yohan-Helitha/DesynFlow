@@ -1,5 +1,5 @@
 import ProjectEstimation from '../model/project_estimation.js';
-import { Project } from '../model/project.js';
+import Project from '../../project/model/project.model.js';
 
 // Get only Approved estimations
 async function getApprovedEstimates() {

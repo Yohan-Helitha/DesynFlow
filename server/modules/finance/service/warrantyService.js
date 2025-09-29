@@ -1,7 +1,7 @@
 import Warranty from '../model/warrenty.js';
-import Material from '../model/material.js';
-import { Project } from '../model/project.js';
-import { User } from '../model/user.js';
+import Material from '../../supplier/model/material.model.js';
+import Project from '../../project/model/project.model.js';
+import User from '../../auth/model/user.model.js';
 
 export const createWarranty = async ({ projectId, itemId, clientId, startDate, duration }) => {
   const start = new Date(startDate);

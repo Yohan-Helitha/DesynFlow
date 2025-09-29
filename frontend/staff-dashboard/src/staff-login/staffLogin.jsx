@@ -66,9 +66,9 @@ const LoginPage = () => {
             navigate("/warehouse-manager");
           } else if (userRole === "procurement officer") {
             navigate("/procurement-officer");
-          }else if (userRole === "finance manager") {
+          } else if (userRole === "finance manager") {
             navigate("/finance-manager");
-          }else {
+          } else {
             // If role doesn't match any staff role, show error
             setError("Access denied. This portal is for staff members only.");
           }

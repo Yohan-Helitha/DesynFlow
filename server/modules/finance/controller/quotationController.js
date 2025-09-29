@@ -1,9 +1,9 @@
 import Quotation from '../model/quotation_estimation.js';
 import ProjectEstimation from '../model/project_estimation.js';
 import { generateQuotationPdf } from '../service/quotationPdfService.js';
-import Material from '../model/material.js';
-import SupplierMaterialCatalog from '../model/supplier_material_catalog.js';
-import { Project } from '../model/project.js'; // Ensure Project model is registered
+import Material from '../../supplier/model/material.model.js';
+import MaterialCatalog from '../../supplier/model/materialCatalog.model.js';
+import Project from '../../project/model/project.model.js'; // Ensure Project model is registered
 import mongoose from 'mongoose';
 
 // Fallback: in case hot-reload or import order caused model not to register

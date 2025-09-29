@@ -1,8 +1,8 @@
 
 import * as projectEstimationService from '../service/projectEstimationService.js';
 import mongoose from 'mongoose';
-import { Project } from '../model/project.js';
-import InspectionRequest from '../model/inspection_request.js';
+import Project from '../../project/model/project.model.js';
+import InspectionRequest from '../../auth/model/inspectionRequest.model.js';
 
 
 async function getApprovedEstimates(req, res) {

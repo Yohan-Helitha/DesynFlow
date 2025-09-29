@@ -39,7 +39,7 @@ function App() {
             <Route path="/procurement-officer" element={<SupplierDashboard />} />
 
             {/* Finance Manager route */}
-            <Route path="/finance-manager" element={<FinanceDashboard />} />
+            <Route path="/finance-manager/*" element={<FinanceDashboard />} />
           </Routes>
         </main>
       </div>

@@ -1,6 +1,6 @@
 
 import InspectionEstimation from '../model/inspection_estimation.js';
-import InspectionRequest from '../model/inspection_request.js';
+import InspectionRequest from '../../auth/model/inspectionRequest.model.js';
 import { adjustBalance, incrementIncome, decrementIncome } from './financeSummaryService.js';
 
 

@@ -1,5 +1,5 @@
 
-import InspectionReport from '../../user/model/report.model.js';
+import AuthInspectionReport from '../../auth/model/report.model.js';
 
 // View submitted inspection report by project or inspection request
 export const viewInspectionReport = async (req, res) => {
