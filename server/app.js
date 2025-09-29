@@ -1,22 +1,8 @@
-
-import express from "express";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import cors from "cors";
+import express from 'express';
+import cors from 'cors';
 import pinoHttp from "pino-http";
 import { logger } from './config/logger.js';
 import { env } from './config/env.js';
-
-// Configure dotenv
-dotenv.config();
-
-// Supplier routes
-import purchaseOrderRouter from "./modules/supplier/routes/purchaseOrder.routes.js";
-import supplierRouter from "./modules/supplier/routes/supplier.routes.js";
-import supplierRatingRouter from "./modules/supplier/routes/supplierRating.routes.js";
-import materialRouter from "./modules/supplier/routes/material.routes.js";
-import sampleRouter from "./modules/supplier/routes/sample.routes.js";
-import dashboardRouter from "./modules/supplier/routes/dashboard.routes.js";
 
 import './modules/project/model/project.model.js';
 import './modules/project/model/task.model.js';
@@ -43,7 +29,25 @@ import meetingRoutes from './modules/project/routes/meeting.routes.js';
 import fileServeRoutes from './routes/fileServe.js';
 import uploadRoutes from './routes/upload.routes.js';
 
-// Auth routes
+const app = express();
+
+app.use(
+  pinoHttp({
+    logger,
+    customLogLevel: function (res, err) {
+      if (res.statusCode >= 500 || err) return "error";
+      if (res.statusCode >= 400) return "warn";
+      return "info";
+    },
+  })
+);
+
+app.use(cors()); // from allowing cors API can request different origins(not restrcit to one port)
+app.use(express.json({limit: '2mb'})); // parse json body
+app.use(express.urlencoded({ extended: true })); // parse urlencoded body
+
+app.use('/reports', express.static('public/reports'));
+
 import authRouter from "./modules/auth/routes/authRouter.js";
 import userRouter from "./modules/auth/routes/userRouter.js";
 import paymentReceiptRoutes from "./modules/auth/routes/paymentReceiptRoutes.js";
@@ -53,55 +57,7 @@ import authReportRoutes from "./modules/auth/routes/reportRoutes.js";
 import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
 import inspectionFormRoutes from "./modules/auth/routes/inspectionFormRoutes.js";
 
-// Warehouse routes
-import manuProductsRoute from "./modules/warehouse-manager/routes/manuProductsRoute.js";
-import rawMaterialsRoute from "./modules/warehouse-manager/routes/rawMaterialsRoute.js";
-import invLocationsRoute from "./modules/warehouse-manager/routes/invLocationsRoute.js";
-import stockMovementRoute from "./modules/warehouse-manager/routes/stockMovementRoute.js";
-import transferRequestRoute from "./modules/warehouse-manager/routes/transferRequestRoute.js";
-import sReorderRequestsRoute from "./modules/warehouse-manager/routes/sReorderRequestsRoute.js";
-import disposalMaterialsRoute from "./modules/warehouse-manager/routes/disposalMaterialsRoute.js";
-import auditLogRoute from "./modules/warehouse-manager/routes/auditLogRoute.js";
-import thresholdAlertRoute from "./modules/warehouse-manager/routes/thresholdAlertRoute.js";
 
-//finane routes
-import projectRoute from './modules/finance/routes/projectRoutes.js';
-import expensesRoute from './modules/finance/routes/expensesRoutes.js';
-import inspectionEstimationRoute from './modules/finance/routes/inspectionEstimationRoutes.js';
-import projectEstimationRoute from './modules/finance/routes/projectEstimationRoutes.js';
-import paymentRoute from './modules/finance/routes/paymentRoutes.js';
-
-import quotationRoute from './modules/finance/routes/quotationRoutes.js';
-import purchaseOrderRoute from './modules/finance/routes/purchaseOrderRoutes.js';
-import warrantyRoute from './modules/finance/routes/warrantyRoutes.js';
-import claimRoute from './modules/finance/routes/claimRoutes.js';
-import notificationRoute from './modules/finance/routes/notificationRoutes.js';
-import materialRoute from './modules/finance/routes/materialRoutes.js';
-import financeSummaryRoute from './modules/finance/routes/financeSummaryRoutes.js';
-
-const app = express();
-
-// Middleware
-app.use(cors()); // Allow CORS API requests from different origins
-app.use(express.json({limit: '2mb'})); // Parse JSON body with 2MB limit
-app.use(express.urlencoded({ extended: true })); // Parse urlencoded body
-
-// Static files
-app.use('/reports', express.static('public/reports'));
-// Serve uploaded files (e.g., generated PDFs)
-app.use('/uploads', express.static('uploads'));
-
-// Mount supplier routes
-app.use("/api/suppliers", supplierRouter);
-app.use("/api/supplierRating", supplierRatingRouter);
-app.use("/api/supplier-ratings", supplierRatingRouter); // Alternative naming for frontend
-app.use("/supplierRating", supplierRatingRouter); // Legacy path
-app.use("/api/purchase-orders", purchaseOrderRouter);
-app.use("/api/materials", materialRouter);
-app.use("/api/samples", sampleRouter);
-app.use("/api/dashboard", dashboardRouter);
-
-// Mount auth routes
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/payment-receipt", paymentReceiptRoutes);
@@ -111,7 +67,15 @@ app.use("/api/auth-reports", authReportRoutes);
 app.use("/api/inspection-request", inspectionRequestRoutes);
 app.use("/api/inspectorForms", inspectionFormRoutes);
 
-// Mount project routes
+app.get("/health", (req, res) => {
+  res.json({
+    name: env.APP_NAME,
+    env: env.NODE_ENV,
+    status: "ok",
+    time: new Date().toISOString(),
+  });
+});
+
 app.use('/api', projectRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', teamRoutes);
@@ -127,52 +91,5 @@ app.use('/api', fileRoutes);
 app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);
 app.use('/api', uploadRoutes);
-
-// Mount warehouse routes
-app.use("/api/warehouse/manu_products", manuProductsRoute);
-app.use("/api/warehouse/raw_materials", rawMaterialsRoute);
-app.use("/api/warehouse/inv_locations", invLocationsRoute);
-app.use("/api/warehouse/stock_movement", stockMovementRoute);
-app.use("/api/warehouse/transfer_request", transferRequestRoute);
-app.use("/api/warehouse/s_reorder_requests", sReorderRequestsRoute);
-app.use("/api/warehouse/disposal_materials", disposalMaterialsRoute);
-app.use("/api/warehouse/audit_log", auditLogRoute);
-app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
-
-//finance module routes
-app.use('/api/expenses', expensesRoute);
-app.use('/api/inspection-estimation', inspectionEstimationRoute);
-app.use('/api/project-estimation', projectEstimationRoute);
-app.use('/api/payments', paymentRoute);
-app.use('/api/quotations', quotationRoute);
-app.use('/api/purchase-orders', purchaseOrderRoute);
-app.use('/api/warranties', warrantyRoute);
-app.use('/api/claims', claimRoute);
-app.use('/api/notifications', notificationRoute);
-app.use('/api/materials', materialRoute);
-app.use('/api/finance-summary', financeSummaryRoute);
-
-// Health check endpoint
-app.get("/health", (req, res) => {
-  res.json({
-    name: env.APP_NAME,
-    env: env.NODE_ENV,
-    status: "ok",
-    time: new Date().toISOString(),
-  });
-});
-
-// Database connection and server startup
-const mongoUri = process.env.MONGO_URI;
-const port = process.env.PORT || 4000;
-
-mongoose.connect(mongoUri)
-  .then(() => {
-    console.log("Connected to MongoDB");
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
-  })
-  .catch((err) => console.log("MongoDB connection error:", err));
 
 export { app };
