@@ -102,7 +102,7 @@ const Notifications = () => {
           .map((n) => (
             <li
               key={n.id}
-              className={`flex flex-col md:flex-row md:justify-between items-start md:items-center border-l-4 ${n.borderColor} bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200`}
+              className={`flex flex-col md:flex-row md:justify-between items-start md:items-center border-l-4 ${n.borderColor} bg-[#F7EED3] rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200`}
             >
               <div className="flex flex-col">
                 <span className="font-semibold text-gray-800 text-lg">
@@ -199,7 +199,7 @@ const Notifications = () => {
             </button>
           </div>
 
-          <div className="border border-gray-300 p-6 rounded-lg bg-gray-50 shadow">
+          <div className="border border-gray-300 p-6 rounded-lg bg-[#FFF8E8] shadow">
             {activeTab === "alerts" && (
               <>
                 <div className="flex border-b border-gray-200 mb-4">
