@@ -44,7 +44,7 @@ function FinanceDashboard() {
           <Route path="estimations" element={<EstimationsSection />} />
           <Route path="quotations" element={<QuotationsSection />} />
           <Route path="payments" element={<PaymentsSection />} />
-          <Route path="purchase-orders" element={<PurchaseOrdersSection />} />
+          <Route path="purchaseOrders" element={<PurchaseOrdersSection />} />
           <Route path="expenses" element={<ExpensesSection />} />
           <Route path="warranty" element={<WarrantySection />} />
         </Routes>
