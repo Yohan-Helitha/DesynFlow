@@ -15,12 +15,11 @@ import {
 
 const router = express.Router();
 
-// Create a new inspection form (inspector) with optional photo uploads
+// Create a new inspection form (inspector)
 router.post(
   '/',
   authMiddleware,
   roleMiddleware(['inspector']),
-  uploadMiddleware.array('room_photo', 5), // accept up to 5 files
   createInspectorForm
 );
 
@@ -30,6 +29,14 @@ router.get(
   authMiddleware,
   roleMiddleware(['admin', 'csr', 'finance', 'inspector']),
   getInspectorForms
+);
+
+// Get logged-in inspector's own forms (MUST be before /:formId route)
+router.get(
+  '/my',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  getMyInspectorForms
 );
 
 // Get a single inspection form by ID (all roles)
@@ -44,7 +51,6 @@ router.patch(
   '/:formId',
   authMiddleware,
   roleMiddleware(['inspector']),
-  uploadMiddleware.array('room_photo', 5), // allow updating photos
   updateInspectorForm
 );
 
@@ -70,14 +76,6 @@ router.post(
   authMiddleware,
   roleMiddleware(['inspector']),
   generateReportFromForm
-);
-
-// Get logged-in inspector's own forms
-router.get(
-  '/my',
-  authMiddleware,
-  roleMiddleware(['inspector']),
-  getMyInspectorForms
 );
 
 export default router;

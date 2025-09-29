@@ -22,7 +22,13 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
   useEffect(() => {
     if (selectedAssignment && selectedAssignment.inspectionRequest) {
       const request = selectedAssignment.inspectionRequest;
-      setInspectionRequestId(selectedAssignment.InspectionRequest_ID);
+      console.log('Setting up form for assignment:', selectedAssignment);
+      console.log('InspectionRequest_ID:', selectedAssignment.InspectionRequest_ID);
+      
+      // Extract the actual ID string from the populated object
+      const requestId = selectedAssignment.InspectionRequest_ID?._id || selectedAssignment.InspectionRequest_ID;
+      console.log('Extracted requestId:', requestId);
+      setInspectionRequestId(requestId);
       
       // Pre-populate floors based on inspection request
       const numberOfFloors = request.numberOfFloors || 1;
@@ -54,26 +60,53 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
     
     // Fetch saved forms when assignment is selected
     if (selectedAssignment) {
-      fetchSavedForms();
+      // Extract the actual ID string from the populated object
+      const requestId = selectedAssignment.InspectionRequest_ID?._id || selectedAssignment.InspectionRequest_ID;
+      // Pass the assignment ID directly to avoid state timing issues
+      fetchSavedForms(requestId);
     }
   }, [selectedAssignment]);
 
   // Fetch saved forms for this assignment
-  const fetchSavedForms = async () => {
+  const fetchSavedForms = async (requestId = null) => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) return;
 
+      console.log('Fetching saved forms...');
       const response = await axios.get(`${API_BASE}/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Filter forms for current assignment
-      const assignmentForms = response.data.forms?.filter(
-        form => form.InspectionRequest_ID === inspectionRequestId
-      ) || [];
+      console.log('API Response:', response.data);
+      console.log('All forms from API:', response.data.forms);
+      
+      // Use passed requestId or fall back to state value
+      const currentRequestId = requestId || inspectionRequestId;
+      console.log('Current requestId for filtering:', currentRequestId);
+
+      // Filter forms for current assignment only if we have a requestId
+      let assignmentForms = response.data.forms || [];
+      
+      if (currentRequestId) {
+        // Debug: Log each form's InspectionRequest_ID to see the format
+        assignmentForms.forEach((form, index) => {
+          console.log(`Form ${index + 1} InspectionRequest_ID:`, form.InspectionRequest_ID);
+          console.log(`Type:`, typeof form.InspectionRequest_ID);
+        });
+        
+        assignmentForms = assignmentForms.filter(form => {
+          // Handle both populated objects and string IDs
+          const formRequestId = form.InspectionRequest_ID?._id || form.InspectionRequest_ID;
+          return formRequestId === currentRequestId;
+        });
+        console.log('Filtered forms for assignment:', assignmentForms);
+      } else {
+        console.log('No requestId - showing all forms:', assignmentForms);
+      }
       
       setSavedForms(assignmentForms);
+      console.log('Updated savedForms state:', assignmentForms);
     } catch (err) {
       console.error('Error fetching saved forms:', err);
     }
@@ -345,6 +378,9 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
         recommendations: recommendations.trim()
       };
 
+      console.log('Saving form with data:', formData);
+      console.log('Current inspectionRequestId:', inspectionRequestId);
+
       let response;
       if (isEditMode && editingFormId) {
         // Update existing form
@@ -363,7 +399,8 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
       console.log('Form saved:', response.data);
       
       // Refresh saved forms and reset form
-      await fetchSavedForms();
+      console.log('Calling fetchSavedForms after save...');
+      await fetchSavedForms(inspectionRequestId);
       resetForm();
       
     } catch (err) {
