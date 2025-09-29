@@ -1,6 +1,10 @@
 
 import {
   getTeamsService,
+  getAvailableUsersService,
+  createTeamService,
+  checkTeamAssignmentService,
+  deleteTeamService,
   assignTeamLeaderService,
   updateTeamMemberRoleService,
   updateTeamMemberAvailabilityService
@@ -8,18 +12,68 @@ import {
 
 // View all teams and their members
 export const getTeams = async (req, res) => {
-
   try {
-
     const teams = await getTeamsService();
-    res.json(teams);
-
+    
+    // Check if each team is assigned to a project
+    const teamsWithStatus = await Promise.all(
+      teams.map(async (team) => {
+        const isAssigned = await checkTeamAssignmentService(team._id);
+        const teamObj = team.toJSON ? team.toJSON() : team;
+        return {
+          ...teamObj,
+          isAssignedToProject: isAssigned
+        };
+      })
+    );
+    
+    res.json(teamsWithStatus);
   } catch (error) {
-
     res.status(500).json({ message: 'Error fetching teams', error: error.message });
-
   }
+};
 
+// Get available users (not assigned to any active team)
+export const getAvailableUsers = async (req, res) => {
+  try {
+    const users = await getAvailableUsersService();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching available users', error: error.message });
+  }
+};
+
+// Create new team
+export const createTeam = async (req, res) => {
+  try {
+    const { teamName, memberIds, leaderId } = req.body;
+
+    if (!teamName || !memberIds || !leaderId || memberIds.length !== 5) {
+      return res.status(400).json({ 
+        message: 'Team name, exactly 5 member IDs, and leader ID are required' 
+      });
+    }
+
+    const newTeam = await createTeamService(teamName, memberIds, leaderId);
+    res.status(201).json(newTeam);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Delete team
+export const deleteTeam = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    await deleteTeamService(id);
+    res.json({ message: 'Team deleted successfully' });
+  } catch (error) {
+    if (error.message.includes('Cannot delete team')) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'Error deleting team', error: error.message });
+  }
 };
 
 // Assign or reassign team leader

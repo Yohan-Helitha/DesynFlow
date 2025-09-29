@@ -96,18 +96,144 @@ const sampleUsers = [
     isActive: true
   },
   
-  // Team Member
+  // Team Members (15 total)
   {
-    username: 'tom_member',
-    email: 'tom.member@desynflow.com',
+    username: 'tom_member1',
+    email: 'tom.member1@desynflow.com',
     password: 'member123',
     phone: '+94709012345',
     role: 'team member',
     isVerified: true,
     isActive: true
   },
+  {
+    username: 'sarah_member2',
+    email: 'sarah.member2@desynflow.com',
+    password: 'member123',
+    phone: '+94709012346',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'john_member3',
+    email: 'john.member3@desynflow.com',
+    password: 'member123',
+    phone: '+94709012347',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'maria_member4',
+    email: 'maria.member4@desynflow.com',
+    password: 'member123',
+    phone: '+94709012348',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'james_member5',
+    email: 'james.member5@desynflow.com',
+    password: 'member123',
+    phone: '+94709012349',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'lisa_member6',
+    email: 'lisa.member6@desynflow.com',
+    password: 'member123',
+    phone: '+94709012350',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'david_member7',
+    email: 'david.member7@desynflow.com',
+    password: 'member123',
+    phone: '+94709012351',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'emma_member8',
+    email: 'emma.member8@desynflow.com',
+    password: 'member123',
+    phone: '+94709012352',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'alex_member9',
+    email: 'alex.member9@desynflow.com',
+    password: 'member123',
+    phone: '+94709012353',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'carol_member10',
+    email: 'carol.member10@desynflow.com',
+    password: 'member123',
+    phone: '+94709012354',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'mike_member11',
+    email: 'mike.member11@desynflow.com',
+    password: 'member123',
+    phone: '+94709012355',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'anna_member12',
+    email: 'anna.member12@desynflow.com',
+    password: 'member123',
+    phone: '+94709012356',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'robert_member13',
+    email: 'robert.member13@desynflow.com',
+    password: 'member123',
+    phone: '+94709012357',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'sophia_member14',
+    email: 'sophia.member14@desynflow.com',
+    password: 'member123',
+    phone: '+94709012358',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
+  {
+    username: 'daniel_member15',
+    email: 'daniel.member15@desynflow.com',
+    password: 'member123',
+    phone: '+94709012359',
+    role: 'team member',
+    isVerified: true,
+    isActive: true
+  },
   
-  // Team Leader
+  // Team Leader (existing)
   {
     username: 'anna_leader',
     email: 'anna.leader@desynflow.com',
