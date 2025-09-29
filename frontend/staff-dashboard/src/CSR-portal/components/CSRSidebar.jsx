@@ -23,18 +23,17 @@ const CSRSidebar = ({ activeSection, onSelect, onLogout }) => {
   ];
 
   return (
-    <div className="bg-white shadow-lg h-screen w-80 flex flex-col">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-800 mb-1">CSR Portal</h1>
-        <p className="text-sm text-gray-600">Customer Service Representative</p>
+    <div className="bg-red-brown shadow-lg h-screen w-80 flex flex-col">
+    
+      <div className="p-6 border-b border-brown-primary-300">
+        <h1 className="text-xl font-bold text-cream-primary mb-1">CSR Portal</h1>
+        <p className="text-sm text-cream-primary">Customer Service Representative</p>
         <div className="flex items-center mt-3">
           <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-          <span className="text-sm text-gray-600">Online</span>
+          <span className="text-sm text-cream-primary">Online</span>
         </div>
       </div>
 
-      {/* Navigation Sections */}
       <div className="flex-1 p-4">
         <nav className="space-y-2">
           {sections.map((section) => (
@@ -51,7 +50,7 @@ const CSRSidebar = ({ activeSection, onSelect, onLogout }) => {
                 <span className="text-2xl flex-shrink-0">{section.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm mb-1">{section.name}</div>
-                  <div className="text-xs text-gray-500 leading-relaxed">
+                  <div className="text-xs text-cream-primary leading-relaxed">
                     {section.description}
                   </div>
                 </div>
@@ -65,12 +64,12 @@ const CSRSidebar = ({ activeSection, onSelect, onLogout }) => {
       </div>
 
       {/* Footer with Logout */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t red-brown">
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center space-x-2 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+          className="w-full flex items-center justify-center space-x-2 p-3 text-cream-primary hover:bg-brown-primary rounded-lg transition-colors duration-200"
         >
-          <span className="text-lg">🚪</span>
+          <span className="text-lg"></span>
           <span className="font-medium">Logout</span>
         </button>
       </div>

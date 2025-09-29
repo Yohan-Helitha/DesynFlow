@@ -45,7 +45,7 @@ const InspectionRequests = () => {
     <div className="space-y-6">
       {/* Section Description */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Inspection Requests</h2>
+        <h2 className="text-2xl font-bold text-cream-primary mb-2">Inspection Requests</h2>
         <p className="text-gray-600">Cards display client name, property location, and preferred date. Click "View Details" for complete information.</p>
       </div>
       
@@ -54,15 +54,15 @@ const InspectionRequests = () => {
         {requests.map((request) => (
           <div 
             key={request._id} 
-            className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02]"
+            className="bg-cream-primary rounded-xl shadow-lg border border-warm-primary p-6 hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02]"
           >
             {/* Card Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Request</span>
+                <div className="w-3 h-3 bg-brown-primary rounded-full"></div>
+                <span className="text-xs font-medium text-brown-secondary uppercase tracking-wide">Request</span>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-cream-light">
                 ID: {request._id.slice(-6)}
               </div>
             </div>
@@ -71,26 +71,26 @@ const InspectionRequests = () => {
             <div className="space-y-4 mb-6">
               {/* Client Name */}
               <div className="bg-gray-50 rounded-lg p-3">
-                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-1">
+                <label className="text-xs font-semibold text-cream-light uppercase tracking-wide block mb-1">
                   👤 Client Name
                 </label>
-                <p className="text-lg font-bold text-gray-900">{request.clientName || 'N/A'}</p>
+                <p className="text-lg font-bold text-brown-primary-300">{request.clientName || 'N/A'}</p>
               </div>
               
               {/* Property Location */}
               <div className="bg-gray-50 rounded-lg p-3">
-                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-1">
+                <label className="text-xs font-semibold text-cream-light uppercase tracking-wide block mb-1">
                   📍 Property Location
                 </label>
-                <p className="text-gray-800 font-medium">{request.propertyAddress || 'N/A'}</p>
+                <p className="text-brown-primary-300 font-medium">{request.propertyAddress || 'N/A'}</p>
               </div>
               
               {/* Preferred Date */}
               <div className="bg-gray-50 rounded-lg p-3">
-                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-1">
+                <label className="text-xs font-semibold text-cream-light uppercase tracking-wide block mb-1">
                   📅 Preferred Date
                 </label>
-                <p className="text-gray-800 font-medium">
+                <p className="text-brown-primary-300 font-medium">
                   {request.preferredDate 
                     ? new Date(request.preferredDate).toLocaleDateString('en-US', {
                         weekday: 'short',
@@ -107,7 +107,7 @@ const InspectionRequests = () => {
             {/* View Details Button */}
             <button
               onClick={() => handleViewDetails(request)}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-blue-300"
+              className="w-full bg-dark-brown text-cream-primary  py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-blue-300"
             >
               View Details →
             </button>
