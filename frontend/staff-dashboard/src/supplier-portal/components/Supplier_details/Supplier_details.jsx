@@ -5,7 +5,6 @@ import axios from "axios";
 import "./Supplier_details.css";
 import { FaPlus, FaEye, FaFileAlt, FaTimes, FaBox } from 'react-icons/fa';
 import { Link } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
 import { generateSupplierProfilePDF } from "../../utils/pdfGenerator";
 
 // Removed unused legacy URL & fetchHandler
@@ -70,7 +69,16 @@ function Supplier_details() {
       });
       loadSuppliers();
     }
-  }, [location.state?.justRated]);
+    
+    // Handle new supplier added
+    if (location.state?.newSupplierAdded) {
+      loadSuppliers();
+      // Show success message
+      setTimeout(() => {
+        alert(`Supplier "${location.state.supplierName}" has been added successfully!`);
+      }, 500);
+    }
+  }, [location.state?.justRated, location.state?.newSupplierAdded]);
 
   // After suppliers fetched, ensure latest rating from navigation state is applied if still present
   useEffect(() => {
@@ -92,9 +100,7 @@ function Supplier_details() {
 
   return (
     <>
-      <div className="page-with-sidebar">
-        <Sidebar />
-        <div className="suppliers-container">
+      <div className="suppliers-container">
           <div className="page-header">
             <div className="header-content">
               <h2>{userRole === "supplier" ? "My Supplier Profile" : "Interior Design Suppliers"}</h2>
@@ -194,7 +200,6 @@ function Supplier_details() {
         </button>
       </div>
       </div>
-    </div>
     
     {/* Modal rendered as portal at document body level */}
     {selectedSupplier && createPortal(
@@ -261,7 +266,7 @@ function Supplier_details() {
             <button 
               className="place-order-btn"
               onClick={() => {
-                navigate('/OrderForm', {
+                navigate('/procurement-officer/order_form', {
                   state: {
                     preselectedSupplier: selectedSupplier,
                     supplierLocked: true

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './Orders.css';
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaClipboardList, FaPlus, FaBox, FaCheckCircle, FaTimesCircle, FaFileAlt, FaStar, FaHourglassHalf, FaRegClock } from 'react-icons/fa';
 import { generateOrderReceiptPDF } from '../../utils/pdfGenerator';
 
@@ -12,6 +12,7 @@ function Orders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Helper to format amounts in LKR with thousands separators and two decimals
   const formatLKR = (amount) => {
@@ -71,6 +72,42 @@ function Orders() {
     const interval = setInterval(fetchOrders, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Handle successful order creation navigation
+  useEffect(() => {
+    if (location.state?.newOrderCreated) {
+      // Show success message
+      setTimeout(() => {
+        const orderData = location.state.orderData;
+        const orderId = orderData?._id?.slice(-8) || 'New Order';
+        alert(`Order #${orderId} has been created successfully!`);
+      }, 500);
+      
+      // Refresh orders to include the new order
+      const fetchOrders = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          console.log("Fetching orders from API...");
+          const res = await fetch("http://localhost:4000/api/purchase-orders");
+          
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          
+          const data = await res.json();
+          console.log("Orders fetched successfully:", data);
+          setOrders(data);
+        } catch (err) {
+          console.error("Error fetching orders:", err);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchOrders();
+    }
+  }, [location.state?.newOrderCreated]);
 
   // Filtered orders by supplier or material
   const filteredOrders = orders.filter(order => {

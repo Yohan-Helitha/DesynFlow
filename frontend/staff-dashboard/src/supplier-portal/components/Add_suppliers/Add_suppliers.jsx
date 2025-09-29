@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./Add_suppliers.css";
 import { Link, useNavigate } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
 
 function Add_suppliers() {
   const navigate = useNavigate();
@@ -80,20 +79,17 @@ function Add_suppliers() {
     };
 
     try {
-      await axios.post("http://localhost:4000/api/suppliers", formattedData);
-        console.log(`Supplier "${formData.companyName}" has been added successfully!`);
+      const response = await axios.post("http://localhost:4000/api/suppliers", formattedData);
+      console.log(`Supplier "${formData.companyName}" has been added successfully!`);
       
-      // Reset form for potential new entries
-      setFormData({
-        companyName: "",
-        contactName: "",
-        email: "",
-        phone: "",
-        materialTypes: "",
-        deliveryRegions: "",
-        materials: []
+      // Navigate to supplier details page after successful addition
+      navigate('/procurement-officer/supplier_details', {
+        state: {
+          newSupplierAdded: true,
+          supplierName: formData.companyName,
+          supplierId: response.data._id || response.data.id
+        }
       });
-      setCurrentMaterial({ name: "", pricePerUnit: "" });
     } catch (err) {
       console.error("Error adding supplier:", err);
         console.error("Failed to add supplier. Please try again.");
@@ -101,14 +97,12 @@ function Add_suppliers() {
   };
 
   return (
-    <div className="page-with-sidebar">
-      <Sidebar />
-      <div className="add-supplier-container">
+    <div className="add-supplier-container">
         <div className="header-with-back">
           <button 
             type="button"
             className="back-to-suppliers-btn"
-            onClick={() => navigate('/Supplier_details')}
+            onClick={() => navigate('/procurement-officer/supplier_details')}
           >
             ← Back to Suppliers
           </button>
@@ -300,7 +294,6 @@ function Add_suppliers() {
           </button>
         </div>
       </form>
-      </div>
     </div>
   );
 }

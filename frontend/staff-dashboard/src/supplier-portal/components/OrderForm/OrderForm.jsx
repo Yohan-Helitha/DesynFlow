@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
 import "./OrderForm.css";
 
 function OrderForm({ onOrderCreated }) {
@@ -159,7 +158,12 @@ function OrderForm({ onOrderCreated }) {
         });
         if (onOrderCreated) onOrderCreated(newOrder); // notify parent to refresh
         // Navigate back to Orders list (rating now only via Received button there)
-        navigate("/Orders");
+        navigate("/procurement-officer/orders", {
+          state: {
+            newOrderCreated: true,
+            orderData: newOrder
+          }
+        });
       } else {
         const error = await res.json();
   console.error('Failed to create order: ' + (error.error || 'Unknown error'));
@@ -170,9 +174,7 @@ function OrderForm({ onOrderCreated }) {
   };
 
   return (
-    <div className="page-with-sidebar">
-      <Sidebar />
-      <div className="order-form-container">
+    <div className="order-form-container">
         <h2>Create New Order</h2>
       <form onSubmit={handleSubmit} className="order-form">
         <label>
@@ -254,7 +256,6 @@ function OrderForm({ onOrderCreated }) {
 
         <button type="submit" className="btn-submit">Create Order</button>
       </form>
-      </div>
     </div>
   );
 }

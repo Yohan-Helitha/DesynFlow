@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./Dashboard_proc.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NotificationsProc from "../Notifications_proc/Notifications_proc";
-import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser } from 'react-icons/fa';
+import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser, FaTruck, FaExchangeAlt } from 'react-icons/fa';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -154,6 +154,7 @@ const generateChartData = (orders, suppliers, topSuppliers) => {
 function Dashboard_proc() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
     suppliers: { total: 0, active: 0, pending: 0 },
     orders: { total: 0, pending: 0, completed: 0, approved: 0, rejected: 0 },
@@ -330,6 +331,12 @@ function Dashboard_proc() {
             <span>Procurement Officer</span>
             
           </div>
+        </div>
+
+        {/* Floating Dashboard Toggle Button */}
+        <div className="floating-toggle-btn" onClick={() => navigate('/procurement-officer/dashboard_sup')}>
+          <FaTruck className="toggle-icon" />
+          <span>Switch to Supplier View</span>
         </div>
 
         {/* Dashboard Stats Cards */}

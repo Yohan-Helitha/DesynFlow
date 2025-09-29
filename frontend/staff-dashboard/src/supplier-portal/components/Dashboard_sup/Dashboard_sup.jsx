@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard_sup.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +15,7 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar } from 'react-icons/fa';
+import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar, FaUserTie, FaTruck } from 'react-icons/fa';
 
 ChartJS.register(
   CategoryScale,
@@ -159,6 +159,7 @@ const generateSupplierChartData = (orders, materials, earnings) => {
 function Dashboard_sup() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [requests, setRequests] = useState([]);
+  const navigate = useNavigate();
   const [hiddenRequests, setHiddenRequests] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const [pendingOrders, setPendingOrders] = useState([]);
@@ -434,14 +435,51 @@ function Dashboard_sup() {
         <div className="sidebar-header">
           <h2>Supplier Panel</h2>
           <button className="close-btn" onClick={toggleSidebar}>
-            ×
+            <FaTimes />
           </button>
         </div>
+
+        {/* Dashboard Toggle Section */}
+        <div className="dashboard-toggle">
+          <h3>View Mode</h3>
+          <div className="toggle-buttons">
+            <div 
+              onClick={() => navigate('/procurement-officer')}
+              className="toggle-btn"
+              title="Procurement Officer Dashboard"
+            >
+              <FaUserTie />
+              <span>Procurement View</span>
+            </div>
+            <div 
+              className="toggle-btn active"
+              title="Supplier Dashboard View"
+            >
+              <FaTruck />
+              <span>Supplier View</span>
+            </div>
+          </div>
+        </div>
+
         <ul className="nav">
-          <li>Overview</li>
-          <li><Link to="/procurement-officer/order_details_sup">Orders</Link></li>
-          <li><Link to="/procurement-officer/sample_order_list">Samples</Link></li>
-          <li>Profile</li>
+          <li>
+            <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
+          </li>
+          <li>
+            <Link to="/procurement-officer/order_details_sup">My Orders</Link>
+          </li>
+          <li>
+            <Link to="/procurement-officer/sample_order_list">Sample Orders</Link>
+          </li>
+          <li>
+            <span style={{color: '#AAB3A0', cursor: 'default'}}>Materials Catalog</span>
+          </li>
+          <li>
+            <span style={{color: '#AAB3A0', cursor: 'default'}}>Performance Reports</span>
+          </li>
+          <li>
+            <span style={{color: '#AAB3A0', cursor: 'default'}}>Profile Settings</span>
+          </li>
         </ul>
       </aside>
 
@@ -481,6 +519,12 @@ function Dashboard_sup() {
               <span className="notif-text">Pending Approvals</span>
             </button>
           </div>
+        </div>
+
+        {/* Floating Dashboard Toggle Button */}
+        <div className="floating-toggle-btn" onClick={() => navigate('/procurement-officer')}>
+          <FaUserTie className="toggle-icon" />
+          <span>Switch to Procurement View</span>
         </div>
 
         {/* Supplier Stats Overview */}
