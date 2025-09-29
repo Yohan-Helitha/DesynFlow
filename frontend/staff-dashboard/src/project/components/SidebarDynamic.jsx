@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaHome, FaTasks, FaCalendarAlt, FaBoxOpen, FaCog, FaChartBar, FaUsers, FaClipboardList, FaFileAlt } from 'react-icons/fa';
+import { FaHome, FaTasks, FaCalendarAlt, FaBoxOpen, FaCog, FaChartBar, FaUsers, FaClipboardList, FaFileAlt, FaCreditCard } from 'react-icons/fa';
 
 const teamLeaderNavItems = [
   { label: "Team Overview", icon: <FaHome />, id: "overview" },
@@ -14,7 +14,7 @@ const projectManagerNavItems = [
   { label: "Assign Teams", icon: <FaUsers />, id: "assign-teams" },
   { label: "Manage Team", icon: <FaClipboardList />, id: "manage-team" },
   { label: "Reports", icon: <FaFileAlt />, id: "reports" },
-  { label: "Settings", icon: <FaCog />, id: "settings" },
+  { label: "Budget", icon: <FaCreditCard  />, id: "budget" },
 ];
 
 export default function Sidebar({ activeIndex, setActiveIndex, userRole }) {

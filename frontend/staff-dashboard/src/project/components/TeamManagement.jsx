@@ -176,13 +176,13 @@ export default function TeamManagement() {
                   ) : (
                     <>
                       <button 
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                        className="px-3 py-1 bg-brown-primary text-white rounded hover:bg-brown-primary-300 text-sm"
                         onClick={() => {/* TODO: Implement edit */}}
                       >
                         Edit
                       </button>
                       <button 
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                        className="px-3 py-1 bg-red-brown text-white rounded hover:bg-dark-brown text-sm"
                         onClick={() => handleDeleteTeam(team._id)}
                       >
                         Delete

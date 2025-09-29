@@ -15,7 +15,7 @@ import {
   User,
 } from "lucide-react";
 import { useNotifications } from "../context/notificationContext.jsx";
-import logo from "./desynflow_logo.png";
+// import logo from "./desynflow_logo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -46,11 +46,11 @@ const Navbar = () => {
           <h1 className="text-xl font-semibold" style={{ color: "#FFFFFF" }}>
             Warehouse Management
           </h1> */}
-          <img
+          {/* <img
             src={logo}
             alt="Logo"
             className="w-30 h-30 object-contain"
-          />
+          /> */}
         </div>
 
         <div className="flex items-center space-x-3 cursor-pointer">

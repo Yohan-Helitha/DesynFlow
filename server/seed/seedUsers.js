@@ -253,6 +253,17 @@ const sampleUsers = [
     role: 'client',
     isVerified: false,
     isActive: true
+  },
+  
+  // Third client for more testing options
+  {
+    username: 'bob_client3',
+    email: 'bob.client@gmail.com',
+    password: 'password789',
+    phone: '+94719876543',
+    role: 'client',
+    isVerified: true,
+    isActive: true
   }
 ];
 
