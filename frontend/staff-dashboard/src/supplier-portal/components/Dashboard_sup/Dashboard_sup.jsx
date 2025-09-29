@@ -268,65 +268,55 @@ function Dashboard_sup() {
   useEffect(() => {
     const fetchSupplierDashboardData = async () => {
       setLoading(true);
-      // Get supplier ID from authentication/session or use a dynamic method
-      let supplierId = localStorage.getItem('currentSupplierId') || 
-                      sessionStorage.getItem('supplierId') || 
-                      new URLSearchParams(window.location.search).get('supplierId');
 
-      // If no supplier ID is found, try to get the first available supplier for demo purposes
-      if (!supplierId) {
-        try {
-          const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
-          const suppliers = await suppliersResponse.json();
-          if (suppliers && suppliers.length > 0) {
-            supplierId = suppliers[0]._id;
-            localStorage.setItem('currentSupplierId', supplierId);
-          } else {
-            setLoading(false);
-            return;
-          }
-        } catch (error) {
-          console.error('Error fetching suppliers:', error);
+      try {
+        // Fetch all suppliers data instead of specific supplier
+        const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
+        const suppliers = await suppliersResponse.json();
+        
+        if (!suppliers || suppliers.length === 0) {
           setLoading(false);
           return;
         }
-      }
 
-      try {
-        const samplesResponse = await fetch(`http://localhost:4000/api/samples/${supplierId}`);
-        const samplesData = await samplesResponse.json();
+        // Fetch all samples from all suppliers
+        const allSamplesPromises = suppliers.map(supplier => 
+          fetch(`http://localhost:4000/api/samples/${supplier._id}`)
+            .then(res => res.json())
+            .catch(() => [])
+        );
+        const allSamplesResults = await Promise.all(allSamplesPromises);
+        const allSamples = allSamplesResults.flat().filter(sample => sample && sample._id);
+        setRequests(allSamples);
 
-        if (Array.isArray(samplesData)) setRequests(samplesData);
-        else if (samplesData && Array.isArray(samplesData.samples)) setRequests(samplesData.samples);
-        else setRequests([]);
-
-        const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
-        const suppliers = await suppliersResponse.json();
-        const currentSupplier = suppliers.find(s => s._id === supplierId);
-        if (!currentSupplier) { setLoading(false); return; }
-
+        // Fetch all orders from all suppliers
         const ordersResponse = await fetch("http://localhost:4000/api/purchase-orders");
         const allOrders = await ordersResponse.json();
-        const supplierOrders = allOrders.filter(order => 
-          order.supplierId === supplierId || order.supplier?.toString() === supplierId
-        );
 
-        const materialsResponse = await fetch(`http://localhost:4000/api/materials?supplierId=${supplierId}`);
+        // Fetch all materials from all suppliers
+        const materialsResponse = await fetch("http://localhost:4000/api/materials");
         const materials = await materialsResponse.json();
 
-        let supplierRatings = [];
+        // Fetch all supplier ratings
+        let allSupplierRatings = [];
         try {
-          const ratingsResponse = await fetch(`http://localhost:4000/api/supplier-ratings/${supplierId}`);
-          if (ratingsResponse.ok) supplierRatings = await ratingsResponse.json();
+          const ratingsPromises = suppliers.map(supplier => 
+            fetch(`http://localhost:4000/api/supplier-ratings/${supplier._id}`)
+              .then(res => res.ok ? res.json() : [])
+              .catch(() => [])
+          );
+          const ratingsResults = await Promise.all(ratingsPromises);
+          allSupplierRatings = ratingsResults.flat();
         } catch (err) { console.log('Ratings not available:', err); }
 
+        // Aggregate order statistics from all suppliers
         const orderStats = {
-          active: supplierOrders.filter(o => o.status === 'active' || o.status === 'processing').length,
-          completed: supplierOrders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
-          pending: supplierOrders.filter(o => o.status === 'pending').length
+          active: allOrders.filter(o => o.status === 'active' || o.status === 'processing').length,
+          completed: allOrders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
+          pending: allOrders.filter(o => o.status === 'pending').length
         };
 
-        const completedOrders = supplierOrders.filter(o => o.status === 'completed');
+        const completedOrders = allOrders.filter(o => o.status === 'completed');
         const avgResponseTime = completedOrders.length > 0 ? 
           completedOrders.reduce((sum, order) => {
             const created = new Date(order.createdAt);
@@ -335,8 +325,12 @@ function Dashboard_sup() {
             return sum + (diffHours > 0 ? diffHours : 12);
           }, 0) / completedOrders.length : 12;
 
-        const latestAverageRating = supplierRatings.length > 0 ? 
-          supplierRatings.reduce((sum, rating) => sum + (rating.weightedScore || 0), 0) / supplierRatings.length : (currentSupplier?.rating || 0);
+        // Calculate average rating across all suppliers
+        const totalSupplierRating = suppliers.reduce((sum, supplier) => sum + (supplier.rating || 0), 0);
+        const avgSupplierRating = suppliers.length > 0 ? totalSupplierRating / suppliers.length : 0;
+        
+        const latestAverageRating = allSupplierRatings.length > 0 ? 
+          allSupplierRatings.reduce((sum, rating) => sum + (rating.weightedScore || 0), 0) / allSupplierRatings.length : avgSupplierRating;
 
         const performance = {
           onTimeDelivery: completedOrders.length > 0 ? 
@@ -350,12 +344,13 @@ function Dashboard_sup() {
         const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-        const thisMonthOrders = supplierOrders.filter(o => {
+        // Calculate earnings from all suppliers
+        const thisMonthOrders = allOrders.filter(o => {
           const orderDate = new Date(o.createdAt);
           return orderDate >= thisMonthStart && (o.status === 'completed' || o.status === 'approved');
         });
 
-        const lastMonthOrders = supplierOrders.filter(o => {
+        const lastMonthOrders = allOrders.filter(o => {
           const orderDate = new Date(o.createdAt);
           return orderDate >= lastMonthStart && orderDate <= lastMonthEnd && (o.status === 'completed' || o.status === 'approved');
         });
@@ -363,10 +358,11 @@ function Dashboard_sup() {
         const earnings = {
           thisMonth: thisMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0),
           lastMonth: lastMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0),
-          totalEarnings: supplierOrders.filter(o => o.status === 'completed' || o.status === 'approved').reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0)
+          totalEarnings: allOrders.filter(o => o.status === 'completed' || o.status === 'approved').reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0)
         };
 
-        const recentOrders = supplierOrders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5).map(order => ({
+        // Get recent orders from all suppliers
+        const recentOrders = allOrders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5).map(order => ({
           id: order._id,
           date: order.createdAt,
           status: order.status,
@@ -374,20 +370,20 @@ function Dashboard_sup() {
           items: order.items?.length || 1
         }));
 
-        const chartData = generateSupplierChartData(supplierOrders, materials, earnings);
+        const chartData = generateSupplierChartData(allOrders, materials, earnings);
 
         setSupplierData({
           profile: {
-            name: currentSupplier.companyName || currentSupplier.name || 'Unnamed Supplier',
-            email: currentSupplier.email || currentSupplier.contactEmail || 'No email provided',
+            name: `All Suppliers (${suppliers.length})`,
+            email: `${suppliers.length} Active Suppliers`,
             rating: parseFloat(latestAverageRating),
-            totalOrders: supplierOrders.length
+            totalOrders: allOrders.length
           },
           orders: orderStats,
           materials: Array.isArray(materials) ? materials.slice(0,8) : [],
           performance,
           recentOrders,
-          notifications: (Array.isArray(samplesData) ? samplesData : (samplesData?.samples || [])).slice(0,3),
+          notifications: allSamples.slice(0,3),
           earnings,
           chartData
         });
