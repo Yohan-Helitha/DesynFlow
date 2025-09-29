@@ -185,7 +185,7 @@ function Dashboard_sup() {
   // Fetch pending approval orders
   const fetchPendingOrders = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/purchase-orders");
+      const response = await axios.get("http://localhost:4000/api/purchase-orders");
       const allOrders = response.data;
       const pending = allOrders.filter(order => order.status === "Draft");
       setPendingOrders(pending);
@@ -199,7 +199,7 @@ function Dashboard_sup() {
   const handleApprove = async (id) => {
     try {
       setProcessingId(id);
-      await axios.put(`http://localhost:3000/api/purchase-orders/${id}`, { status: "Approved" });
+      await axios.put(`http://localhost:4000/api/purchase-orders/${id}`, { status: "Approved" });
       
       // Add notification to localStorage
       const orderToApprove = pendingOrders.find(o => o._id === id);
@@ -228,7 +228,7 @@ function Dashboard_sup() {
   const handleReject = async (id) => {
     try {
       setProcessingId(id);
-      await axios.put(`http://localhost:3000/api/purchase-orders/${id}`, { status: "Rejected" });
+      await axios.put(`http://localhost:4000/api/purchase-orders/${id}`, { status: "Rejected" });
       
       // Add notification to localStorage
       const orderToReject = pendingOrders.find(o => o._id === id);
@@ -275,7 +275,7 @@ function Dashboard_sup() {
       // If no supplier ID is found, try to get the first available supplier for demo purposes
       if (!supplierId) {
         try {
-          const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
+          const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
           const suppliers = await suppliersResponse.json();
           if (suppliers && suppliers.length > 0) {
             supplierId = suppliers[0]._id;
@@ -292,30 +292,30 @@ function Dashboard_sup() {
       }
 
       try {
-        const samplesResponse = await fetch(`http://localhost:3000/api/samples/${supplierId}`);
+        const samplesResponse = await fetch(`http://localhost:4000/api/samples/${supplierId}`);
         const samplesData = await samplesResponse.json();
 
         if (Array.isArray(samplesData)) setRequests(samplesData);
         else if (samplesData && Array.isArray(samplesData.samples)) setRequests(samplesData.samples);
         else setRequests([]);
 
-        const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
+        const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
         const suppliers = await suppliersResponse.json();
         const currentSupplier = suppliers.find(s => s._id === supplierId);
         if (!currentSupplier) { setLoading(false); return; }
 
-        const ordersResponse = await fetch("http://localhost:3000/api/purchase-orders");
+        const ordersResponse = await fetch("http://localhost:4000/api/purchase-orders");
         const allOrders = await ordersResponse.json();
         const supplierOrders = allOrders.filter(order => 
           order.supplierId === supplierId || order.supplier?.toString() === supplierId
         );
 
-        const materialsResponse = await fetch(`http://localhost:3000/api/materials?supplierId=${supplierId}`);
+        const materialsResponse = await fetch(`http://localhost:4000/api/materials?supplierId=${supplierId}`);
         const materials = await materialsResponse.json();
 
         let supplierRatings = [];
         try {
-          const ratingsResponse = await fetch(`http://localhost:3000/api/supplier-ratings/${supplierId}`);
+          const ratingsResponse = await fetch(`http://localhost:4000/api/supplier-ratings/${supplierId}`);
           if (ratingsResponse.ok) supplierRatings = await ratingsResponse.json();
         } catch (err) { console.log('Ratings not available:', err); }
 
@@ -439,8 +439,8 @@ function Dashboard_sup() {
         </div>
         <ul className="nav">
           <li>Overview</li>
-          <li><Link to="/Order_details_sup">Orders</Link></li>
-          <li><Link to="/Sample_order_list">Samples</Link></li>
+          <li><Link to="/procurement-officer/order_details_sup">Orders</Link></li>
+          <li><Link to="/procurement-officer/sample_order_list">Samples</Link></li>
           <li>Profile</li>
         </ul>
       </aside>

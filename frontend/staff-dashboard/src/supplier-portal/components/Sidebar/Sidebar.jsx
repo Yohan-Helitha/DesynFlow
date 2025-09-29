@@ -35,19 +35,22 @@ function Sidebar() {
         </div>
         <ul className="nav">
           <li>
-            <Link to="/Supplier_details">Suppliers</Link>
+            <Link to="/procurement-officer">Dashboard</Link>
           </li>
           <li>
-            <Link to="/Orders">Orders</Link>
+            <Link to="/procurement-officer/supplier_details">Suppliers</Link>
           </li>
           <li>
-            <Link to="/Restock_alerts">Restock Alerts</Link>
+            <Link to="/procurement-officer/orders">Orders</Link>
           </li>
           <li>
-            <Link to="/Budget_approval">Budget Approval</Link>
+            <Link to="/procurement-officer/restock_alerts">Restock Alerts</Link>
           </li>
           <li>
-            <Link to="/Dashboard_sup">Supplier Dashboard</Link>
+            <Link to="/procurement-officer/budget_approval">Budget Approval</Link>
+          </li>
+          <li>
+            <Link to="/procurement-officer/dashboard_sup">Supplier Dashboard</Link>
           </li>
           <li>
             <Link to="/SupplierLogin"><FaSignInAlt style={{marginRight:8}}/>Login Supplier</Link>

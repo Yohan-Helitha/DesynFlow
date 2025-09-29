@@ -4,7 +4,7 @@ import "./Update_delete_suppliers.css";
 import { Link } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 
-const API_BASE = "http://localhost:3000/api/suppliers"; // your backend
+const API_BASE = "http://localhost:4000/api/suppliers"; // your backend
 
 function Update_delete_suppliers() {
   const [suppliers, setSuppliers] = useState([]);

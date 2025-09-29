@@ -37,7 +37,7 @@ function Supplier_details() {
     if (userRole === "supplier" && currentSupplierId) {
       // For suppliers, load only their own data
       axios
-        .get(`http://localhost:3000/api/suppliers/${currentSupplierId}`)
+        .get(`http://localhost:4000/api/suppliers/${currentSupplierId}`)
         .then((res) => {
           setSuppliers([res.data]); // Array with single supplier
           setSelectedSupplier(res.data); // Auto-select their own profile
@@ -46,7 +46,7 @@ function Supplier_details() {
     } else {
       // For procurement officers, load all suppliers
       axios
-        .get("http://localhost:3000/api/suppliers")
+        .get("http://localhost:4000/api/suppliers")
         .then((res) => setSuppliers(res.data))
         .catch((err) => console.error("Error fetching suppliers:", err));
     }
@@ -117,7 +117,7 @@ function Supplier_details() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Link to="/Add_suppliers" className="btn-primary add-supplier-link">
+            <Link to="/procurement-officer/add_suppliers" className="btn-primary add-supplier-link">
               <FaPlus className="icon" />
               Add Supplier
             </Link>
@@ -190,7 +190,7 @@ function Supplier_details() {
 
       <div className="action-buttons">
         <button className="update-delete-supplier-btn">
-          <Link to="/Update_delete_suppliers">Manage Suppliers</Link>
+          <Link to="/procurement-officer/update_delete_suppliers">Manage Suppliers</Link>
         </button>
       </div>
       </div>

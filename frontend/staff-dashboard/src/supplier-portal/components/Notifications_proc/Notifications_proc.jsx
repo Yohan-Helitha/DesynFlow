@@ -9,7 +9,7 @@ function Notifications_proc({ panelOpen, togglePanel }) {
   useEffect(() => {
     if (panelOpen) {
       // Get backend notifications
-      fetch("http://localhost:3000/notification")
+      fetch("http://localhost:4000/notification")
         .then((res) => res.json())
         .then((data) => {
           // Get local notifications

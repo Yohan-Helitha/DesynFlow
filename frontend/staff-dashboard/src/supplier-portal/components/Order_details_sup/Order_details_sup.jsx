@@ -3,7 +3,7 @@ import axios from "axios";
 import "./Order_details_sup.css";
 import { FaBell, FaSearch, FaClipboardList, FaCheckCircle, FaTimesCircle, FaBox, FaSyncAlt, FaHourglassHalf, FaFileAlt } from 'react-icons/fa';
 
-const API_BASE = "http://localhost:3000/api/purchase-orders"; // correct backend port
+const API_BASE = "http://localhost:4000/api/purchase-orders"; // correct backend port
 
 function OrderDetailsSup() {
   const [orders, setOrders] = useState([]);

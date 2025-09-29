@@ -15,7 +15,7 @@ function Sample_order() {
 
   // Fetch suppliers from backend
   useEffect(() => {
-    fetch("http://localhost:3000/api/suppliers")
+    fetch("http://localhost:4000/api/suppliers")
       .then((res) => res.json())
       .then((data) => setSuppliers(data))
       .catch((err) => console.error("Error fetching suppliers:", err));
@@ -25,7 +25,7 @@ function Sample_order() {
   useEffect(() => {
     if (formData.supplierId) {
       // First try to fetch from MaterialCatalog
-      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
+      fetch(`http://localhost:4000/api/materials?supplierId=${formData.supplierId}`)
         .then(res => res.json())
         .then(data => {
           if (data && data.length > 0) {
@@ -93,7 +93,7 @@ function Sample_order() {
       reviewNote: formData.reviewNote
     };
           console.log('Submitting sample order payload:', payload);
-          fetch("http://localhost:3000/api/samples/upload", {
+          fetch("http://localhost:4000/api/samples/upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)

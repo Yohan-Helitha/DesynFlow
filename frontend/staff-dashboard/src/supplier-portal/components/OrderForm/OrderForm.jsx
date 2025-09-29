@@ -15,7 +15,7 @@ function OrderForm({ onOrderCreated }) {
   });
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/suppliers")
+    fetch("http://localhost:4000/api/suppliers")
       .then(res => res.json())
       .then(data => setSuppliers(data))
       .catch(() => setSuppliers([]));
@@ -36,7 +36,7 @@ function OrderForm({ onOrderCreated }) {
   // Fetch materials from MaterialCatalog for selected supplier
   useEffect(() => {
     if (formData.supplierId) {
-      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
+      fetch(`http://localhost:4000/api/materials?supplierId=${formData.supplierId}`)
         .then(res => res.json())
         .then(data => {
           // Transform data to include material info with pricing
@@ -145,7 +145,7 @@ function OrderForm({ onOrderCreated }) {
       items: formattedItems
     };
     try {
-      const res = await fetch("http://localhost:3000/api/purchase-orders", {
+      const res = await fetch("http://localhost:4000/api/purchase-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

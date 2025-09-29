@@ -80,7 +80,7 @@ function Add_suppliers() {
     };
 
     try {
-      await axios.post("http://localhost:3000/api/suppliers", formattedData);
+      await axios.post("http://localhost:4000/api/suppliers", formattedData);
         console.log(`Supplier "${formData.companyName}" has been added successfully!`);
       
       // Reset form for potential new entries

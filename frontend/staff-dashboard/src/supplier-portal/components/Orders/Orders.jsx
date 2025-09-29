@@ -2,13 +2,15 @@ import React, { useEffect, useState } from 'react';
 import './Orders.css';
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
 import { FaClipboardList, FaPlus, FaBox, FaCheckCircle, FaTimesCircle, FaFileAlt, FaStar, FaHourglassHalf, FaRegClock } from 'react-icons/fa';
 import { generateOrderReceiptPDF } from '../../utils/pdfGenerator';
 
 function Orders() {
+  console.log("Orders component is rendering...");
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   // Helper to format amounts in LKR with thousands separators and two decimals
@@ -22,7 +24,7 @@ function Orders() {
   // Function to mark order as received
   const markAsReceived = async (orderId) => {
     try {
-      await axios.put(`http://localhost:3000/api/purchase-orders/${orderId}/status`, {
+      await axios.put(`http://localhost:4000/api/purchase-orders/${orderId}/status`, {
         status: 'Received'
       });
       
@@ -44,11 +46,23 @@ function Orders() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/purchase-orders"); // backend API
+        setLoading(true);
+        setError(null);
+        console.log("Fetching orders from API...");
+        const res = await fetch("http://localhost:4000/api/purchase-orders"); // backend API
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const data = await res.json();
+        console.log("Orders fetched successfully:", data);
         setOrders(data);
       } catch (err) {
         console.error("Error fetching orders:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchOrders();
@@ -68,10 +82,32 @@ function Orders() {
     return supplierName.includes(term) || materialList.includes(term);
   });
 
-  return (
-    <div className="page-with-sidebar">
-      <Sidebar />
+  // Show loading state
+  if (loading) {
+    return (
       <div className="orders-container">
+        <div className="loading-state">
+          <h2>Loading orders...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="orders-container">
+        <div className="error-state">
+          <h2>Error loading orders</h2>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="orders-container">
         <div className="page-header">
           <div className="header-content">
             <h2><FaClipboardList className="header-icon" /> Purchase Orders Management</h2>
@@ -79,7 +115,7 @@ function Orders() {
           </div>
           <div className="header-actions">
             <button className="btn-primary">
-              <Link to="/OrderForm">
+              <Link to="/procurement-officer/order_form">
                 <FaPlus className="icon" />
                 New Order
               </Link>
@@ -224,7 +260,6 @@ function Orders() {
             )}
           </tbody>
         </table>
-      </div>
       </div>
     </div>
   );

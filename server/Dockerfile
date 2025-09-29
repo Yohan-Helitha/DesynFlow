@@ -49,12 +49,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Install nodemon globally first
+RUN npm install -g nodemon
 
 # Install dependencies
 RUN npm install --include=dev
 
 # Copy source code
 COPY . .
+
+# Set the PORT environment variable explicitly
+ENV PORT=4000
 
 # Expose the port your app runs on
 EXPOSE 4000

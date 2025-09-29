@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard_proc.css";
 import { Link } from "react-router-dom";
 import NotificationsProc from "../Notifications_proc/Notifications_proc";
-import Sidebar from "../Sidebar/Sidebar";
 import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser } from 'react-icons/fa';
 import {
   Chart as ChartJS,
@@ -180,16 +179,16 @@ function Dashboard_proc() {
       setLoading(true);
       try {
         // Fetch suppliers data
-        const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
+        const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
         const suppliers = await suppliersResponse.json();
 
         // Fetch orders data
-        const ordersResponse = await fetch("http://localhost:3000/api/dashboard/orders");
+        const ordersResponse = await fetch("http://localhost:4000/api/dashboard/orders");
         const orders = await ordersResponse.json();
 
         // Fetch top rated suppliers
         console.log('Fetching top suppliers...');
-        const topSuppliersResponse = await fetch("http://localhost:3000/api/supplier-ratings/top");
+        const topSuppliersResponse = await fetch("http://localhost:4000/api/supplier-ratings/top");
         const topSuppliers = await topSuppliersResponse.json();
         console.log('Top suppliers fetched:', topSuppliers);
 
@@ -218,7 +217,7 @@ function Dashboard_proc() {
         // Fetch recent activities from backend
         let recentActivities = [];
         try {
-          const activitiesResponse = await fetch('http://localhost:3001/api/supplier/dashboard/recent-activities');
+          const activitiesResponse = await fetch('http://localhost:4000/api/dashboard/recent-activities');
           if (activitiesResponse.ok) {
             recentActivities = await activitiesResponse.json();
           } else {
@@ -317,8 +316,6 @@ function Dashboard_proc() {
 
   return (
     <div className="dashboard-page">
-      <Sidebar />
-
       {/* Main content */}
       <main className="main">
         <div className="topbar">
@@ -350,7 +347,7 @@ function Dashboard_proc() {
                   <span className="pending">Pending: {dashboardData.suppliers.pending}</span>
                 </div>
               </div>
-              <Link to="/Update_delete_suppliers" className="stat-action">Manage Suppliers</Link>
+              <Link to="/procurement-officer/update_delete_suppliers" className="stat-action">Manage Suppliers</Link>
             </div>
 
             <div className="stat-card orders">
@@ -365,7 +362,7 @@ function Dashboard_proc() {
                   <span className="completed">Completed: {dashboardData.orders.completed}</span>
                 </div>
               </div>
-              <Link to="/Orders" className="stat-action">View Orders</Link>
+              <Link to="/procurement-officer/orders" className="stat-action">View Orders</Link>
             </div>
 
             <div className="stat-card budget">
@@ -380,7 +377,7 @@ function Dashboard_proc() {
                   <span className="pending">Pending: {dashboardData.budget.pendingApproval}</span>
                 </div>
               </div>
-              <Link to="/Budget_approval" className="stat-action">Review Budgets</Link>
+              <Link to="/procurement-officer/budget_approval" className="stat-action">Review Budgets</Link>
             </div>
           </div>
         </div>

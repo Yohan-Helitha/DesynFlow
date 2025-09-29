@@ -52,7 +52,7 @@ function RateSupplier() {
   }, [location, urlOrderId]);
 
   // Resolve API base (backend actually running on 3000 by default)
-  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:3000";
+  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:4000";
 
   // Fetch data based on user role
   useEffect(() => {

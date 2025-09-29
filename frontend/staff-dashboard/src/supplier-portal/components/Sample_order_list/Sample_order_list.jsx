@@ -9,7 +9,7 @@ function Sample_order_list() {
 
   useEffect(() => {
     // Fetch all sample orders (could filter by supplier/user if needed)
-    fetch("http://localhost:3000/api/samples/all")
+    fetch("http://localhost:4000/api/samples/all")
       .then(res => res.json())
       .then(data => {
         setSamples(Array.isArray(data) ? data : []);
