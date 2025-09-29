@@ -144,6 +144,27 @@ const AddRawMaterialsForm = ({ loggedInUserId }) => {
     e.preventDefault();
     setErrors({}); // reset errors
 
+    if (!formData.inventoryName || !formData.materialName) {
+      setErrors({
+        inventoryName: "Inventory location and product name are required"
+      });
+      return;
+    }
+
+    // Duplicate check: same inventoryName & materialName
+    const duplicate = existingProducts.find(
+      (p) =>
+        p.inventoryName === formData.inventoryName &&
+        p.materialName.trim().toLowerCase() === formData.materialName.trim().toLowerCase()
+    );
+
+    if (duplicate) {
+      setErrors({
+        inventoryName: "This product already exists in the selected inventory"
+      });
+      return;
+    }
+
     const now = new Date();
     const monthNames = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -213,7 +234,7 @@ const AddRawMaterialsForm = ({ loggedInUserId }) => {
                   className={inputClass('materialId')}
                 >
                   <option value="">-- Select Material ID --</option>
-                  {existingProducts.map(p => (
+                  {[...new Map(existingProducts.map(p => [p.materialId, p])).values()].map(p => (
                     <option key={p.materialId} value={p.materialId}>
                       {p.materialId} - {p.materialName}
                     </option>
