@@ -12,103 +12,14 @@ function RestockAlerts() {
   const [loading, setLoading] = useState(true);
   const [selectedAlert, setSelectedAlert] = useState(null);
 
-  // Mock data for demonstration - In real app, this would come from warehouse API
-  const mockAlerts = [
-    {
-      id: 'RST-001',
-      materialName: 'Premium Oak Flooring',
-      category: 'Flooring',
-      currentStock: 5,
-      minThreshold: 20,
-      maxThreshold: 100,
-      priority: 'critical',
-      supplier: 'WoodCraft Suppliers',
-      supplierId: 'SUP-001',
-      lastOrderDate: '2024-08-15',
-      avgConsumption: 15,
-      estimatedRunOut: '2024-09-30',
-      suggestedReorder: 75,
-      unitPrice: 45.50,
-      location: 'Warehouse A - Section B2'
-    },
-    {
-      id: 'RST-002',
-      materialName: 'Ceramic Wall Tiles',
-      category: 'Tiles',
-      currentStock: 12,
-      minThreshold: 25,
-      maxThreshold: 150,
-      priority: 'high',
-      supplier: 'Ceramic Pro Ltd',
-      supplierId: 'SUP-003',
-      lastOrderDate: '2024-09-01',
-      avgConsumption: 8,
-      estimatedRunOut: '2024-10-15',
-      suggestedReorder: 100,
-      unitPrice: 12.75,
-      location: 'Warehouse B - Section A1'
-    },
-    {
-      id: 'RST-003',
-      materialName: 'Steel Reinforcement Bars',
-      category: 'Steel',
-      currentStock: 35,
-      minThreshold: 50,
-      maxThreshold: 200,
-      priority: 'medium',
-      supplier: 'MetalWorks Inc',
-      supplierId: 'SUP-005',
-      lastOrderDate: '2024-08-20',
-      avgConsumption: 12,
-      estimatedRunOut: '2024-10-08',
-      suggestedReorder: 120,
-      unitPrice: 85.00,
-      location: 'Warehouse C - Yard 1'
-    },
-    {
-      id: 'RST-004',
-      materialName: 'Electrical Cables 2.5mm',
-      category: 'Electrical',
-      currentStock: 8,
-      minThreshold: 30,
-      maxThreshold: 120,
-      priority: 'critical',
-      supplier: 'ElectroSupply Co',
-      supplierId: 'SUP-007',
-      lastOrderDate: '2024-09-10',
-      avgConsumption: 20,
-      estimatedRunOut: '2024-09-28',
-      suggestedReorder: 90,
-      unitPrice: 3.25,
-      location: 'Warehouse A - Section E3'
-    },
-    {
-      id: 'RST-005',
-      materialName: 'Paint - Interior White',
-      category: 'Paint',
-      currentStock: 18,
-      minThreshold: 25,
-      maxThreshold: 80,
-      priority: 'low',
-      supplier: 'ColorMaster Paints',
-      supplierId: 'SUP-009',
-      lastOrderDate: '2024-09-05',
-      avgConsumption: 6,
-      estimatedRunOut: '2024-10-20',
-      suggestedReorder: 50,
-      unitPrice: 28.90,
-      location: 'Warehouse B - Section C4'
-    }
-  ];
-
   useEffect(() => {
-    // Simulate API call to warehouse management system
+    // Initialize with empty alerts - data would come from API in real implementation
     const fetchAlerts = async () => {
       setLoading(true);
       // Simulate loading delay
       setTimeout(() => {
-        setAlerts(mockAlerts);
-        setFilteredAlerts(mockAlerts);
+        setAlerts([]);
+        setFilteredAlerts([]);
         setLoading(false);
       }, 1000);
     };

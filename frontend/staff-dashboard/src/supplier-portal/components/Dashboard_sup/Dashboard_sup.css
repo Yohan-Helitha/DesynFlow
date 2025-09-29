@@ -1562,23 +1562,23 @@ body {
 /* ===== Floating Toggle Button ===== */
 .floating-toggle-btn {
   position: fixed;
-  top: 100px;
+  top: 50px;
   right: 20px;
   background: linear-gradient(135deg, #8B4513, #A0522D);
   color: white;
   border: none;
-  border-radius: 25px;
-  padding: 12px 20px;
+  border-radius: 20px;
+  padding: 8px 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(139, 69, 19, 0.3);
   z-index: 999;
   transition: all 0.3s ease;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 12px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -1590,7 +1590,7 @@ body {
 }
 
 .floating-toggle-btn .toggle-icon {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .floating-toggle-btn span {
@@ -1600,9 +1600,10 @@ body {
 @media (max-width: 768px) {
   .floating-toggle-btn {
     right: 10px;
-    top: 80px;
-    padding: 10px 16px;
-    font-size: 12px;
+    top: 40px;
+    padding: 6px 12px;
+    font-size: 10px;
+    border-radius: 16px;
   }
   
   .floating-toggle-btn span {
