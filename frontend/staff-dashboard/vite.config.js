@@ -13,7 +13,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://backend:4000',
+        target: 'http://desynflow-backend:4000',
         changeOrigin: true,
         secure: false,
       },

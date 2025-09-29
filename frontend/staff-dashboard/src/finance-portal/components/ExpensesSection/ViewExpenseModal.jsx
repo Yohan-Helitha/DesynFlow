@@ -27,7 +27,7 @@ export const ViewExpenseModal = ({ expense, onClose }) => {
     if (!proofUrl) return null;
     if (/^https?:\/\//i.test(proofUrl)) return proofUrl;
     const base = (typeof window !== 'undefined' && window.location && window.location.port === '3000')
-      ? 'http://localhost:4000'
+      ? 'http://localhost:3000'
       : '';
     return `${base}${proofUrl}`;
   }, [proofUrl]);

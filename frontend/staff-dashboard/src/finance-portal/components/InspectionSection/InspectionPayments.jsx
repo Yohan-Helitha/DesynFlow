@@ -22,7 +22,7 @@ export const InspectionPayments = () => {
     if (/^https?:\/\//i.test(raw)) return raw;
     let normalized = String(raw).replace(/\\/g, '/');
     const lower = normalized.toLowerCase();
-    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
 
     // If path already includes uploads, slice from there to preserve folder casing
     let idx = lower.indexOf('/uploads/');
