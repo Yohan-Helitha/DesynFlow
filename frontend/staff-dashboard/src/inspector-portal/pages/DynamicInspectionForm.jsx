@@ -296,9 +296,10 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
           return false;
         }
 
-        if (!validateDimension(room.dimensions.length) || 
-            !validateDimension(room.dimensions.width) || 
-            !validateDimension(room.dimensions.height)) {
+        // Check if dimensions are valid numbers
+        if (isNaN(parseFloat(room.dimensions.length)) || 
+            isNaN(parseFloat(room.dimensions.width)) || 
+            isNaN(parseFloat(room.dimensions.height))) {
           setError(`Dimensions must be valid numbers for "${room.room_name}" on floor ${floor.floor_number}.`);
           return false;
         }
@@ -353,7 +354,7 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
         setSuccess('Inspection form updated successfully!');
       } else {
         // Create new form
-        response = await axios.post(`${API_BASE}/create`, formData, {
+        response = await axios.post(`${API_BASE}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSuccess('Inspection form saved successfully!');
@@ -489,52 +490,55 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
                           <label className="block text-sm font-medium text-brown-primary mb-1">
                             Dimensions (Length × Width × Height)
                           </label>
-                          <div className="flex space-x-2">
+                          <div className="flex space-x-2 items-center">
                             <input
                               type="text"
                               value={room.dimensions.length}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (validateDimension(value)) {
+                                // Allow only numbers and decimal point
+                                if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
                                   updateRoomDimension(floor.id, room.id, 'length', value);
                                 }
                               }}
-                              className="flex-1 border border-gray-300 p-2 rounded"
-                              placeholder="Length"
+                              className="w-20 border border-gray-300 p-2 rounded text-center"
+                              placeholder="L"
                               required
                             />
-                            <span className="self-center">×</span>
+                            <span className="text-gray-500">×</span>
                             <input
                               type="text"
                               value={room.dimensions.width}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (validateDimension(value)) {
+                                // Allow only numbers and decimal point
+                                if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
                                   updateRoomDimension(floor.id, room.id, 'width', value);
                                 }
                               }}
-                              className="flex-1 border border-gray-300 p-2 rounded"
-                              placeholder="Width"
+                              className="w-20 border border-gray-300 p-2 rounded text-center"
+                              placeholder="W"
                               required
                             />
-                            <span className="self-center">×</span>
+                            <span className="text-gray-500">×</span>
                             <input
                               type="text"
                               value={room.dimensions.height}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (validateDimension(value)) {
+                                // Allow only numbers and decimal point
+                                if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
                                   updateRoomDimension(floor.id, room.id, 'height', value);
                                 }
                               }}
-                              className="flex-1 border border-gray-300 p-2 rounded"
-                              placeholder="Height"
+                              className="w-20 border border-gray-300 p-2 rounded text-center"
+                              placeholder="H"
                               required
                             />
                             <select
                               value={room.dimensions.unit}
                               onChange={(e) => updateRoomDimension(floor.id, room.id, 'unit', e.target.value)}
-                              className="border border-gray-300 p-2 rounded"
+                              className="border border-gray-300 p-2 rounded bg-white"
                             >
                               <option value="feet">feet</option>
                               <option value="meters">meters</option>
