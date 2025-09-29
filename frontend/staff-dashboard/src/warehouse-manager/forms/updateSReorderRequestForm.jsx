@@ -191,7 +191,7 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
     try {
       await updateSReorderRequest(id, formData);
       alert("Stock Reorder Request updated successfully!");
-      navigate("/s-reorder-requests");
+      navigate("/reorder-request");
     } catch (err) {
       console.error("Update error:", err);
       if (err.errors) {
@@ -413,7 +413,7 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
               </button>
               <button 
                 type="button" 
-                onClick={() => navigate("/s-reorder-requests")} 
+                onClick={() => navigate("/reorder-request")} 
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md transition-colors duration-200"
               >
                 Cancel

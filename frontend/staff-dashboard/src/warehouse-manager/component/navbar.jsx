@@ -23,23 +23,23 @@ const Navbar = () => {
   const { unread } = useNotifications(); // get unread state
 
   const navigationIcons = [
-    { icon: Home, label: "Home", path: "/home" },
-    { icon: Package, label: "Manufactured Products", path: "/manu-products" },
-    { icon: Layers, label: "Raw Materials", path: "/raw-materials" },
-    { icon: MapPin, label: "Warehouse Locations", path: "/inv-location" },
-    { icon: MoveRight, label: "Stock Movements", path: "/stock-movement" },
-    { icon: Send, label: "Transfer Requests", path: "/transfer-request" },
-    { icon: RotateCcw, label: "Stock Reorder Requests", path: "/s-reorder-requests" },
-    { icon: Trash2, label: "Disposal Materials", path: "/disposal-materials" },
-    { icon: FileText, label: "Audit Log", path: "/audit-logs" },
-    { icon: Bell, label: "Notifications", path: "/notifications" },
+    { icon: Home, label: "Home", path: "" },
+    { icon: Package, label: "Manufactured Products", path: "manufactured-products" },
+    { icon: Layers, label: "Raw Materials", path: "raw-materials" },
+    { icon: MapPin, label: "Warehouse Locations", path: "inventory-locations" },
+    { icon: MoveRight, label: "Stock Movements", path: "stock-movement" },
+    { icon: Send, label: "Transfer Requests", path: "transfer-request" },
+    { icon: RotateCcw, label: "Stock Reorder Requests", path: "reorder-request" },
+    { icon: Trash2, label: "Disposal Materials", path: "disposal-materials" },
+    { icon: FileText, label: "Audit Log", path: "audit-logs" },
+    { icon: Bell, label: "Notifications", path: "notifications" },
   ];
 
   return (
     <div className="shadow-sm border-b border-gray-700" style={{ backgroundColor: "#2B1B0E"}}>
       {/* Top Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/home")}>
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("")}>
           {/* <div className="p-2 rounded-lg" style={{ backgroundColor: "#FFFFFF" }}>
             <Building2 className="w-6 h-6" style={{ color: "#000000" }} />
           </div>
@@ -68,7 +68,10 @@ const Navbar = () => {
         <div className="flex items-center justify-center space-x-4">
           {navigationIcons.map((item, index) => {
             const IconComponent = item.icon;
-            const isActive = location.pathname === item.path;
+            // For home route, check if we're at the warehouse-manager root
+            const isHome = item.path === "" && (location.pathname === "/warehouse-manager" || location.pathname === "/warehouse-manager/");
+            // For other routes, check if the current path ends with the item path
+            const isActive = isHome || (item.path !== "" && location.pathname.endsWith("/" + item.path));
 
             return (
               <button
