@@ -8,45 +8,62 @@ export const createInspectorForm = async (req, res) => {
   try {
     const {
       InspectionRequest_ID,
-      floor_number,
-      roomID,
-      room_name,
-      room_dimension,
-      inspector_notes
+      floors,
+      recommendations
     } = req.body;
 
     const inspector_ID = req.user._id;
 
-    if (!InspectionRequest_ID || !floor_number || !roomID || !room_name) {
-      return res.status(400).json({ message: 'Missing required fields.' });
+    // Validation
+    if (!InspectionRequest_ID || !floors || !Array.isArray(floors) || floors.length === 0) {
+      return res.status(400).json({ message: 'Missing required fields. Floors data is required.' });
+    }
+
+    // Validate floors structure
+    for (const floor of floors) {
+      if (!floor.floor_number || !floor.rooms || !Array.isArray(floor.rooms) || floor.rooms.length === 0) {
+        return res.status(400).json({ message: 'Each floor must have a floor number and at least one room.' });
+      }
+      
+      for (const room of floor.rooms) {
+        if (!room.room_name || !room.dimensions || 
+            !room.dimensions.length || !room.dimensions.width || !room.dimensions.height) {
+          return res.status(400).json({ message: 'Each room must have a name and complete dimensions.' });
+        }
+        
+        // Validate room name (no numbers allowed)
+        if (/\d/.test(room.room_name)) {
+          return res.status(400).json({ message: 'Room names cannot contain numbers.' });
+        }
+        
+        // Validate dimensions (only numbers allowed)
+        if (isNaN(room.dimensions.length) || isNaN(room.dimensions.width) || isNaN(room.dimensions.height)) {
+          return res.status(400).json({ message: 'Dimensions must be valid numbers.' });
+        }
+      }
     }
 
     const inspectionRequest = await InspectionRequest.findById(InspectionRequest_ID);
     if (!inspectionRequest) return res.status(404).json({ message: 'Inspection request not found' });
 
-    // Handle uploaded files
-    const room_photo = req.files ? req.files.map(file => file.path) : [];
-
     const inspectorForm = new InspectorForm({
       InspectionRequest_ID,
       inspector_ID,
-      floor_number,
-      roomID,
-      room_name,
-      room_dimension,
-      room_photo,
-      inspector_notes,
+      floors,
+      recommendations,
       inspection_Date: new Date(),
-      status: 'in-progress',
-      completion_status: 'draft',
-      report_generated: false
+      status: 'completed'
     });
 
     await inspectorForm.save();
 
-    res.status(201).json({ message: 'Inspector form created successfully', form: inspectorForm });
+    res.status(201).json({ 
+      message: 'Inspection form created successfully', 
+      form: inspectorForm 
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to create inspector form', error: error.message });
+    console.error('Error creating inspector form:', error);
+    res.status(500).json({ message: 'Failed to create form', error: error.message });
   }
 };
 

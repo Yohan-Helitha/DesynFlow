@@ -54,20 +54,27 @@ const InspectionForm = ({ selectedAssignment }) => {
   };
 
   useEffect(() => {
-    fetchForms();
-  }, []);
+    // Only fetch existing forms if we're not collecting data for a specific assignment
+    if (!selectedAssignment) {
+      fetchForms();
+    } else {
+      // For assignment-based form creation, skip fetching existing forms
+      setForms([]);
+      setLoading(false);
+    }
+  }, [selectedAssignment]);
 
   // Pre-fill form data when assignment is selected
   useEffect(() => {
     if (selectedAssignment && selectedAssignment.inspectionRequest) {
       const request = selectedAssignment.inspectionRequest;
       setFormData({
-        InspectionRequest_ID: request._id || "",
+        InspectionRequest_ID: selectedAssignment.InspectionRequest_ID || "",
         floor_number: "",
         roomID: "",
         room_name: `${request.clientName} - ${request.propertyAddress}` || "",
         room_dimension: "",
-        inspector_notes: `Assignment for ${request.clientName}. Location: ${request.propertyAddress}`,
+        inspector_notes: `Assignment for ${request.clientName}. Location: ${request.propertyAddress}. Phone: ${request.clientPhone}`,
       });
     }
   }, [selectedAssignment]);
@@ -280,15 +287,18 @@ const InspectionForm = ({ selectedAssignment }) => {
           {editingFormId ? "Edit Inspection Form" : selectedAssignment ? "Collect Inspection Data" : "New Inspection Form"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            name="InspectionRequest_ID"
-            placeholder="Inspection Request ID"
-            value={formData.InspectionRequest_ID}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
+          {/* Hide InspectionRequest_ID field when collecting data from assignment */}
+          {!selectedAssignment && (
+            <input
+              type="text"
+              name="InspectionRequest_ID"
+              placeholder="Inspection Request ID"
+              value={formData.InspectionRequest_ID}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
+            />
+          )}
           <input
             type="number"
             name="floor_number"

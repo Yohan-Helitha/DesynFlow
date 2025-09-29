@@ -48,6 +48,45 @@ export const listAssignments = async (req, res) => {
   }
 };
 
+// Get assignments for a specific inspector
+export const getInspectorAssignments = async (req, res) => {
+  try {
+    const { inspectorId } = req.params;
+    
+    const assignments = await Assignment.find({ 
+      inspector_ID: inspectorId,
+      status: { $in: ['assigned', 'in-progress'] }
+    })
+    .populate('InspectionRequest_ID')
+    .sort({ assignAt: -1 });
+    
+    // Transform the data to match frontend expectations
+    const transformedAssignments = assignments.map(assignment => {
+      const inspectionRequest = assignment.InspectionRequest_ID;
+      return {
+        ...assignment.toObject(),
+        inspectionRequest: inspectionRequest ? {
+          clientName: inspectionRequest.client_name,
+          clientPhone: inspectionRequest.phone_number,
+          propertyAddress: inspectionRequest.propertyLocation_address,
+          siteLocation: inspectionRequest.propertyLocation_address,
+          preferredDate: inspectionRequest.inspection_date,
+          scheduledDate: inspectionRequest.inspection_date,
+          propertyType: inspectionRequest.propertyType,
+          numberOfFloors: inspectionRequest.number_of_floor,
+          numberOfRooms: inspectionRequest.number_of_room,
+          roomNames: inspectionRequest.room_name
+        } : null
+      };
+    });
+    
+    res.status(200).json(transformedAssignments);
+  } catch (err) {
+    console.error('Error fetching inspector assignments:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Update assignment status (e.g., completed, canceled)
 export const updateAssignmentStatus = async (req, res) => {
   try {

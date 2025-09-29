@@ -3,7 +3,7 @@ import axios from 'axios';
 import InspectorSidebar from '../components/InspectorSidebar';
 import LocationManagement from '../components/LocationManagement';
 import AssignedJobs from '../components/AssignedJobs';
-import InspectionForm from './InspectionForm'; // Using existing InspectionForm
+import DynamicInspectionForm from './DynamicInspectionForm'; // Using new dynamic form
 // Note: Using existing ReportList from finance-portal for reports
 
 const InspectorDashboard = () => {
@@ -80,7 +80,7 @@ const InspectorDashboard = () => {
       case 'assignments':
         return <AssignedJobs inspector={inspector} onCollectData={handleCollectData} />;
       case 'inspection':
-        return <InspectionForm selectedAssignment={selectedAssignment} />;
+        return <DynamicInspectionForm selectedAssignment={selectedAssignment} />;
       case 'reports':
         return (
           <div className="space-y-6">
