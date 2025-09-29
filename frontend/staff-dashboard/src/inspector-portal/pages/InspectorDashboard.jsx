@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import InspectorSidebar from '../components/InspectorSidebar';
 import LocationManagement from '../components/LocationManagement';
+import AssignedJobs from '../components/AssignedJobs';
 import InspectionForm from './InspectionForm'; // Using existing InspectionForm
 // Note: Using existing ReportList from finance-portal for reports
 
@@ -9,19 +10,50 @@ const InspectorDashboard = () => {
   const [activeSection, setActiveSection] = useState('location');
   const [inspector, setInspector] = useState(null);
   const [message, setMessage] = useState('');
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
 
   // Fetch inspector profile
   const fetchInspector = async () => {
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error('No auth token found');
+        // Set fallback inspector data with ID
+        setInspector({ 
+          _id: 'fallback-inspector-id', 
+          name: 'Inspector', 
+          username: 'inspector',
+          email: 'inspector@example.com'
+        });
+        return;
+      }
+
       const response = await axios.get('http://localhost:4000/api/user/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInspector(response.data);
     } catch (error) {
       console.error('Error fetching inspector profile:', error);
-      // Set fallback inspector data if auth fails
-      setInspector({ name: 'Inspector', username: 'inspector' });
+      if (error.response?.status === 401) {
+        console.error('Authentication failed - token might be expired');
+        // Clear invalid token
+        localStorage.removeItem('authToken');
+        // Set fallback inspector data with ID for development
+        setInspector({ 
+          _id: 'fallback-inspector-id', 
+          name: 'Inspector', 
+          username: 'inspector',
+          email: 'inspector@example.com'
+        });
+      } else {
+        // Set fallback inspector data with ID
+        setInspector({ 
+          _id: 'fallback-inspector-id', 
+          name: 'Inspector', 
+          username: 'inspector',
+          email: 'inspector@example.com'
+        });
+      }
     }
   };
 
@@ -34,12 +66,21 @@ const InspectorDashboard = () => {
     window.location.href = '/login';
   };
 
+  // Handle "Collect Data" button click from assignments
+  const handleCollectData = (assignment) => {
+    setSelectedAssignment(assignment);
+    setActiveSection('inspection');
+    setMessage(`📝 Collecting data for: ${assignment.inspectionRequest?.clientName || 'Assignment'}`);
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'location':
         return <LocationManagement inspector={inspector} setMessage={setMessage} />;
+      case 'assignments':
+        return <AssignedJobs inspector={inspector} onCollectData={handleCollectData} />;
       case 'inspection':
-        return <InspectionForm />;
+        return <InspectionForm selectedAssignment={selectedAssignment} />;
       case 'reports':
         return (
           <div className="space-y-6">

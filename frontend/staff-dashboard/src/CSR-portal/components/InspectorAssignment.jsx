@@ -25,8 +25,17 @@ const InspectorAssignment = () => {
     try {
       const token = localStorage.getItem('authToken');
       
+      // Simple check: if no token, don't make API calls
+      if (!token) {
+        setInspectionRequests([]);
+        setInspectors([]);
+        setAssignments([]);
+        setLoading(false);
+        return;
+      }
+      
       const requestsRes = await axios.get(
-        'http://localhost:4000/api/inspection-request/list?status=pending',
+        'http://localhost:4000/api/inspection-request/all',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -45,6 +54,10 @@ const InspectorAssignment = () => {
       setAssignments(assignmentsRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
+      // Set empty arrays on error
+      setInspectionRequests([]);
+      setInspectors([]);
+      setAssignments([]);
     } finally {
       setLoading(false);
     }

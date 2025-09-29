@@ -10,12 +10,22 @@ const InspectionRequests = () => {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:4000/api/inspection-request/list', {
+      
+      // Simple check: if no token, don't make API call
+      if (!token) {
+        setRequests([]);
+        setLoading(false);
+        return;
+      }
+      
+      const response = await axios.get('http://localhost:4000/api/inspection-request/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRequests(response.data);
     } catch (error) {
       console.error('Error fetching requests:', error);
+      // Set empty array for now - will show "No Inspection Requests"
+      setRequests([]);
     } finally {
       setLoading(false);
     }

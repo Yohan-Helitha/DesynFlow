@@ -8,12 +8,21 @@ const LocationManagement = ({ inspector, setMessage }) => {
 
   // Get current location data
   const fetchLocation = async () => {
-    if (!inspector) return;
+    if (!inspector || (!inspector._id && !inspector.id)) {
+      console.log('No inspector data available for location fetch');
+      return;
+    }
     
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.log('No auth token available - using fallback mode');
+        // Don't show error message in fallback mode
+        return;
+      }
+      
       const response = await axios.get(
-        `http://localhost:4000/api/inspector-location/inspector/${inspector._id}`,
+        `http://localhost:4000/api/inspector-location/${inspector._id || inspector.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -23,17 +32,36 @@ const LocationManagement = ({ inspector, setMessage }) => {
       }
     } catch (error) {
       console.error('Error fetching location:', error);
+      if (error.response?.status === 401) {
+        console.log('Authentication failed - using fallback mode');
+        // Don't show error message in development fallback mode
+      } else if (error.response?.status === 404) {
+        console.log('No location data found for inspector - this is normal for new inspectors');
+        // Don't show error message for 404 - it's normal for new inspectors
+      } else {
+        console.error('Failed to fetch location:', error.message);
+        // Don't show error message for location fetch failures in development
+      }
     }
   };
 
   useEffect(() => {
-    fetchLocation();
+    if (inspector && (inspector._id || inspector.id)) {
+      fetchLocation();
+    } else {
+      console.log('Inspector data not ready yet, skipping location fetch');
+    }
   }, [inspector]);
 
   // Update location with GPS
   const updateLocation = async () => {
+    if (!inspector || (!inspector._id && !inspector.id)) {
+      setMessage('❌ Inspector profile not loaded. Please refresh the page.');
+      return;
+    }
+    
     if (!navigator.geolocation) {
-      setMessage('❌ GPS not supported by browser.');
+      setMessage('❌ GPS not supported by your browser.');
       return;
     }
 
@@ -42,10 +70,16 @@ const LocationManagement = ({ inspector, setMessage }) => {
       async (position) => {
         try {
           const token = localStorage.getItem('authToken');
+          if (!token) {
+            setMessage('ℹ️ In demo mode - location update simulated.');
+            setUpdating(false);
+            return;
+          }
+          
           await axios.post(
             'http://localhost:4000/api/inspector-location/update',
             {
-              inspectorId: inspector._id,
+              inspectorId: inspector._id || inspector.id,
               lat: position.coords.latitude,
               lng: position.coords.longitude,
               status: status
@@ -56,7 +90,14 @@ const LocationManagement = ({ inspector, setMessage }) => {
           setMessage('✅ Location updated successfully!');
           fetchLocation();
         } catch (error) {
-          setMessage('❌ Failed to update location.');
+          console.error('Error updating location:', error);
+          if (error.response?.status === 401) {
+            setMessage('❌ Authentication failed. Please login again.');
+          } else if (error.response?.status === 400) {
+            setMessage('❌ Invalid location data. Please try again.');
+          } else {
+            setMessage('❌ Failed to update location.');
+          }
         }
         setUpdating(false);
       },
@@ -69,26 +110,61 @@ const LocationManagement = ({ inspector, setMessage }) => {
 
   // Update availability status
   const updateStatus = async (newStatus) => {
+    if (!inspector || (!inspector._id && !inspector.id)) {
+      setMessage('❌ Inspector profile not loaded. Please refresh the page.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        setStatus(newStatus);
+        setMessage(`ℹ️ Demo mode - status changed to ${newStatus}`);
+        return;
+      }
+
       setStatus(newStatus);
       
       if (location) {
-        await axios.patch(
-          `http://localhost:4000/api/inspector-location/${location._id}`,
-          { status: newStatus },
+        // Use the existing update endpoint with current location data
+        await axios.post(
+          'http://localhost:4000/api/inspector-location/update',
+          {
+            inspectorId: inspector._id || inspector.id,
+            lat: location.inspector_latitude,
+            lng: location.inspector_longitude,
+            status: newStatus
+          },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
         setMessage(`✅ Status updated to ${newStatus}`);
         fetchLocation();
+      } else {
+        setMessage('❌ Please update your location first before changing status.');
       }
     } catch (error) {
-      setMessage('❌ Failed to update status.');
+      console.error('Error updating status:', error);
+      if (error.response?.status === 401) {
+        setMessage('❌ Authentication failed. Please login again.');
+      } else if (error.response?.status === 404) {
+        setMessage('❌ Location not found. Please update your location first.');
+      } else {
+        setMessage('❌ Failed to update status. Please try again.');
+      }
     }
   };
 
-  if (!inspector) return <div className="p-4">Loading...</div>;
+  if (!inspector) {
+    return (
+      <div className="p-6 bg-cream-light rounded-lg border border-brown-primary-300">
+        <div className="text-center">
+          <div className="text-brown-primary mb-2">⏳ Loading inspector data...</div>
+          <div className="text-sm text-brown-secondary">Please wait while we fetch your profile information.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -149,8 +225,8 @@ const LocationManagement = ({ inspector, setMessage }) => {
             onClick={() => updateStatus('unavailable')}
             className={`p-4 rounded-lg border-2 text-center ${
               status === 'unavailable'
-                ? 'border-red-brown bg-warm-brown text-cream-primary'
-                : 'border-brown-primary-300 bg-cream-primary text-brown-secondary hover:border-red-brown'
+                ? 'border-red-primary bg-red-light text-red-primary'
+                : 'border-brown-primary-300 bg-cream-primary text-brown-secondary hover:border-red-primary'
             }`}
           >
             <div className="text-2xl mb-1">❌</div>
@@ -163,10 +239,10 @@ const LocationManagement = ({ inspector, setMessage }) => {
           <span className="text-sm font-semibold text-brown-primary">Current Status: </span>
           <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
             status === 'available' 
-              ? 'bg-soft-green text-brown-primary'
+              ? 'bg-soft-green text-green-primary'
               : status === 'busy'
-              ? 'bg-green-secondary text-brown-primary'
-              : 'bg-red-brown text-cream-primary'
+              ? 'bg-yellow-light text-yellow-primary'
+              : 'bg-red-light text-red-primary'
           }`}>
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </span>

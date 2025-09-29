@@ -10,12 +10,21 @@ const PaymentManagement = () => {
   const fetchPayments = async () => {
     try {
       const token = localStorage.getItem('authToken');
+      
+      // Simple check: if no token, don't make API call
+      if (!token) {
+        setPayments([]);
+        setLoading(false);
+        return;
+      }
+      
       const response = await axios.get('http://localhost:4000/api/payment-receipt/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPayments(response.data);
     } catch (error) {
       console.error('Error fetching payments:', error);
+      setPayments([]); // Set empty array - will show "No Payment Details Available"
     } finally {
       setLoading(false);
     }

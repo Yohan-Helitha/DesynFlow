@@ -3,6 +3,7 @@ import {
   createInspectionRequest,
   uploadPaymentReceipt,
   getClientInspectionRequests,
+  getAllInspectionRequests,
   updateInspectionRequestStatus
 } from '../controller/inspectionRequestController.js';
 import {
@@ -41,6 +42,14 @@ router.get(
   authMiddleware,
   roleMiddleware(['client']),
   getClientInspectionRequests
+);
+
+// Get all inspection requests for CSR
+router.get(
+  '/all',
+  authMiddleware,
+  roleMiddleware(['customer service representative', 'csr']),
+  getAllInspectionRequests
 );
 
 // INSPECTOR ROUTES - Dynamic form handling

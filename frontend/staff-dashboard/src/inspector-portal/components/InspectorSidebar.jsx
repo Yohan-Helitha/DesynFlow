@@ -9,9 +9,15 @@ const InspectorSidebar = ({ activeSection, onSelect, onLogout, inspectorName }) 
       description: 'Update location & availability'
     },
     {
+      id: 'assignments',
+      name: 'My Assignments',
+      icon: '📋',
+      description: 'View assigned inspection jobs'
+    },
+    {
       id: 'inspection',
       name: 'Inspection Forms',
-      icon: '📋',
+      icon: '📝',
       description: 'Dynamic inspection forms'
     },
     {

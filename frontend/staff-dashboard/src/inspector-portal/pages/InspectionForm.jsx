@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const InspectionForm = () => {
+const InspectionForm = ({ selectedAssignment }) => {
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,6 +24,14 @@ const InspectionForm = () => {
       setLoading(true);
       setError('');
       const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        console.log('No auth token found - showing empty state');
+        setForms([]);
+        setLoading(false);
+        return;
+      }
+      
       const res = await axios.get(`${API_BASE}/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -32,7 +40,12 @@ const InspectionForm = () => {
       setForms(res.data.forms || res.data || []);
     } catch (err) {
       console.error('Error fetching forms:', err);
-      setError(`Failed to load forms: ${err.message}`);
+      if (err.response?.status === 401) {
+        console.log('Authentication failed - user needs to login');
+        setError('Authentication required. Please login to view your forms.');
+      } else {
+        setError(`Failed to load forms: ${err.message}`);
+      }
       // Set forms to empty array if API call fails
       setForms([]);
     } finally {
@@ -44,6 +57,21 @@ const InspectionForm = () => {
     fetchForms();
   }, []);
 
+  // Pre-fill form data when assignment is selected
+  useEffect(() => {
+    if (selectedAssignment && selectedAssignment.inspectionRequest) {
+      const request = selectedAssignment.inspectionRequest;
+      setFormData({
+        InspectionRequest_ID: request._id || "",
+        floor_number: "",
+        roomID: "",
+        room_name: `${request.clientName} - ${request.propertyAddress}` || "",
+        room_dimension: "",
+        inspector_notes: `Assignment for ${request.clientName}. Location: ${request.propertyAddress}`,
+      });
+    }
+  }, [selectedAssignment]);
+
   // Handle input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,12 +79,31 @@ const InspectionForm = () => {
 
   // Save form (create or update)
   const handleSave = async () => {
+    // Basic validation
+    if (!formData.InspectionRequest_ID || !formData.floor_number || !formData.roomID || !formData.room_name) {
+      alert('Please fill in all required fields (Inspection Request ID, Floor Number, Room ID, and Room Name)');
+      return;
+    }
+
     try {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        alert('Please login to save forms.');
+        return;
+      }
+      
       if (editingFormId) {
-        await axios.patch(`${API_BASE}/${editingFormId}`, formData);
+        await axios.patch(`${API_BASE}/${editingFormId}`, formData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setEditingFormId(null);
+        alert('Form updated successfully!');
       } else {
-        await axios.post(API_BASE, formData);
+        const response = await axios.post(API_BASE, formData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert('Form saved successfully!');
       }
       setFormData({
         InspectionRequest_ID: "",
@@ -69,31 +116,61 @@ const InspectionForm = () => {
       fetchForms();
     } catch (err) {
       console.error(err);
-      alert("Failed to save form");
+      if (err.response?.status === 401) {
+        alert("Authentication failed - Please login again");
+      } else {
+        alert("Failed to save form: " + (err.response?.data?.message || err.message));
+      }
     }
   };
 
   // Submit form
   const handleSubmitForm = async (form) => {
     try {
-      await axios.post(`${API_BASE}/submit/${form._id}`);
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        alert('Please login to submit forms.');
+        return;
+      }
+      
+      await axios.post(`${API_BASE}/submit/${form._id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       alert("Form submitted successfully!");
       fetchForms();
     } catch (err) {
       console.error(err);
-      alert("Failed to submit form");
+      if (err.response?.status === 401) {
+        alert("Authentication failed - Please login again");
+      } else {
+        alert("Failed to submit form: " + (err.response?.data?.message || err.message));
+      }
     }
   };
 
   // Generate report
   const handleGenerateReport = async (form) => {
     try {
-      await axios.post(`${API_BASE}/generate-report/${form._id}`);
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        alert('Please login to generate reports.');
+        return;
+      }
+      
+      await axios.post(`${API_BASE}/generate-report/${form._id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       alert("Report generated successfully!");
       fetchForms();
     } catch (err) {
       console.error(err);
-      alert("Failed to generate report");
+      if (err.response?.status === 401) {
+        alert("Authentication failed - Please login again");
+      } else {
+        alert("Failed to generate report: " + (err.response?.data?.message || err.message));
+      }
     }
   };
 
@@ -125,12 +202,30 @@ const InspectionForm = () => {
 
   // Delete form
   const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this form?')) {
+      return;
+    }
+    
     try {
-      await axios.delete(`${API_BASE}/${id}`);
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        alert('Please login to delete forms.');
+        return;
+      }
+      
+      await axios.delete(`${API_BASE}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Form deleted successfully!');
       fetchForms();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete form");
+      if (err.response?.status === 401) {
+        alert("Authentication failed - Please login again");
+      } else {
+        alert("Failed to delete form: " + (err.response?.data?.message || err.message));
+      }
     }
   };
 
@@ -164,10 +259,25 @@ const InspectionForm = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
+      {/* Assignment Context Banner */}
+      {selectedAssignment && (
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">📋 Assignment Context</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <p><span className="font-medium">Client:</span> {selectedAssignment.inspectionRequest?.clientName}</p>
+            <p><span className="font-medium">Location:</span> {selectedAssignment.inspectionRequest?.propertyAddress}</p>
+            <p><span className="font-medium">Phone:</span> {selectedAssignment.inspectionRequest?.clientPhone || selectedAssignment.inspectionRequest?.phone}</p>
+            <p><span className="font-medium">Date:</span> {selectedAssignment.inspectionRequest?.preferredDate 
+              ? new Date(selectedAssignment.inspectionRequest.preferredDate).toLocaleDateString()
+              : 'Not specified'}</p>
+          </div>
+        </div>
+      )}
+
       {/* Form Section */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-xl font-semibold mb-4">
-          {editingFormId ? "Edit Inspection Form" : "New Inspection Form"}
+          {editingFormId ? "Edit Inspection Form" : selectedAssignment ? "Collect Inspection Data" : "New Inspection Form"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
@@ -241,55 +351,84 @@ const InspectionForm = () => {
       </div>
 
       {/* Forms Card List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(forms || []).map((form) => {
-          const locked = form.report_generated;
-          return (
-            <div key={form._id} className="bg-white p-4 rounded-lg shadow-md">
-              <h3 className="font-semibold text-lg mb-2">{form.room_name}</h3>
-              <p>Floor: {form.floor_number}</p>
-              <p>Room ID: {form.roomID}</p>
-              <p>Dimension: {form.room_dimension}</p>
-              <p>Status: {form.completion_status}</p>
-              <p>Notes: {form.inspector_notes}</p>
-              <div className="mt-4 flex space-x-2">
-                {!locked && form.completion_status !== "submitted" && (
-                  <>
-                    <button
-                      onClick={() => handleEdit(form)}
-                      className="bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(form._id)}
-                      className="bg-red-500 px-3 py-1 rounded text-white hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => handleSubmitForm(form)}
-                      className="bg-green-500 px-3 py-1 rounded text-white hover:bg-green-600"
-                    >
-                      Submit
-                    </button>
-                  </>
-                )}
-                {form.completion_status === "submitted" && !locked && (
-                  <button
-                    onClick={() => handleGenerateReport(form)}
-                    className="bg-blue-500 px-3 py-1 rounded text-white hover:bg-blue-600"
-                  >
-                    Generate Report
-                  </button>
-                )}
-                {locked && (
-                  <span className="text-green-600 font-semibold">Report Generated</span>
-                )}
-              </div>
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-4">Your Inspection Forms</h3>
+        {forms.length === 0 ? (
+          <div className="bg-gray-50 border border-gray-200 p-8 rounded-lg text-center">
+            <div className="text-gray-400 mb-4">
+              <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </div>
-          );
-        })}
+            <h4 className="text-lg font-medium text-gray-600 mb-2">No Inspection Forms Yet</h4>
+            <p className="text-gray-500 mb-4">Create your first inspection form using the form above.</p>
+            <p className="text-sm text-gray-400">Fill in the details and click "Save Form" to get started.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {forms.map((form) => {
+              const locked = form.report_generated;
+              return (
+                <div key={form._id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                  <h3 className="font-semibold text-lg mb-2 text-blue-600">{form.room_name}</h3>
+                  <div className="space-y-1 text-sm text-gray-600 mb-4">
+                    <p><span className="font-medium">Request ID:</span> {form.InspectionRequest_ID}</p>
+                    <p><span className="font-medium">Floor:</span> {form.floor_number}</p>
+                    <p><span className="font-medium">Room ID:</span> {form.roomID}</p>
+                    <p><span className="font-medium">Dimension:</span> {form.room_dimension || 'Not specified'}</p>
+                    <p><span className="font-medium">Status:</span> 
+                      <span className={`ml-1 px-2 py-1 rounded-full text-xs ${
+                        form.completion_status === 'submitted' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {form.completion_status || 'Draft'}
+                      </span>
+                    </p>
+                    {form.inspector_notes && (
+                      <p><span className="font-medium">Notes:</span> {form.inspector_notes}</p>
+                    )}
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {!locked && form.completion_status !== "submitted" && (
+                      <>
+                        <button
+                          onClick={() => handleEdit(form)}
+                          className="bg-yellow-500 px-3 py-1 rounded text-white hover:bg-yellow-600 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(form._id)}
+                          className="bg-red-500 px-3 py-1 rounded text-white hover:bg-red-600 transition-colors"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={() => handleSubmitForm(form)}
+                          className="bg-green-500 px-3 py-1 rounded text-white hover:bg-green-600 transition-colors"
+                        >
+                          Submit
+                        </button>
+                      </>
+                    )}
+                    {form.completion_status === "submitted" && !locked && (
+                      <button
+                        onClick={() => handleGenerateReport(form)}
+                        className="bg-blue-500 px-3 py-1 rounded text-white hover:bg-blue-600 transition-colors"
+                      >
+                        Generate Report
+                      </button>
+                    )}
+                    {locked && (
+                      <span className="text-green-600 font-semibold bg-green-100 px-3 py-1 rounded">✅ Report Generated</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
