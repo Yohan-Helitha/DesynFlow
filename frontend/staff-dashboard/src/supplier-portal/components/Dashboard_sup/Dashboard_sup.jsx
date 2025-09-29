@@ -472,12 +472,6 @@ function Dashboard_sup() {
             <Link to="/procurement-officer/sample_order_list">Sample Orders</Link>
           </li>
           <li>
-            <span style={{color: '#AAB3A0', cursor: 'default'}}>Materials Catalog</span>
-          </li>
-          <li>
-            <span style={{color: '#AAB3A0', cursor: 'default'}}>Performance Reports</span>
-          </li>
-          <li>
             <span style={{color: '#AAB3A0', cursor: 'default'}}>Profile Settings</span>
           </li>
         </ul>

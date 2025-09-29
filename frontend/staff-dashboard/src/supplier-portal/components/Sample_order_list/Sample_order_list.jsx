@@ -1,11 +1,26 @@
 import React, { useEffect, useState } from "react";
 import "./Sample_order_list.css";
-import { FaBox } from 'react-icons/fa';
-import Sidebar from "../Sidebar/Sidebar";
+import { Link, useNavigate } from "react-router-dom";
+import { FaBox, FaTimes, FaUserTie, FaTruck } from 'react-icons/fa';
 
 function Sample_order_list() {
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  const navigate = useNavigate();
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+    // Toggle body class for sidebar state
+    document.body.classList.toggle('sidebar-open', !sidebarOpen);
+  };
+
+  // Cleanup body class on unmount
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove('sidebar-open');
+    };
+  }, []);
 
   useEffect(() => {
     // Fetch all sample orders (could filter by supplier/user if needed)
@@ -22,10 +37,63 @@ function Sample_order_list() {
   }, []);
 
   return (
-    <div className="page-with-sidebar">
-      <Sidebar />
+    <div>
+      {/* Sidebar */}
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <h2>Supplier Panel</h2>
+          <button className="close-btn" onClick={toggleSidebar}>
+            <FaTimes />
+          </button>
+        </div>
+
+        {/* Dashboard Toggle Section */}
+        <div className="dashboard-toggle">
+          <h3>View Mode</h3>
+          <div className="toggle-buttons">
+            <div 
+              onClick={() => navigate('/procurement-officer')}
+              className="toggle-btn"
+              title="Procurement Officer Dashboard"
+            >
+              <FaUserTie />
+              <span>Procurement Officer</span>
+            </div>
+            <div className="toggle-btn active" title="Supplier Dashboard">
+              <FaTruck />
+              <span>Supplier Portal</span>
+            </div>
+          </div>
+        </div>
+
+        <ul className="sidebar-nav">
+          <li>
+            <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
+          </li>
+          <li>
+            <Link to="/procurement-officer/order_details_sup">My Orders</Link>
+          </li>
+          <li className="active">
+            <Link to="/procurement-officer/sample_order_list">Sample Orders</Link>
+          </li>
+          <li>
+            <span style={{color: '#AAB3A0', cursor: 'default'}}>Profile Settings</span>
+          </li>
+        </ul>
+      </aside>
+
+      {/* Hamburger */}
+      {!sidebarOpen && (
+        <button className="hamburger" onClick={toggleSidebar}>
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      )}
+
+      {/* Main Content */}
       <div className="sample-order-list-page">
-  <h2><FaBox className="header-icon" /> Sample Order Requests</h2>
+        <h2><FaBox className="header-icon" /> Sample Order Requests</h2>
       {loading ? (
         <p>Loading...</p>
       ) : samples.length === 0 ? (
