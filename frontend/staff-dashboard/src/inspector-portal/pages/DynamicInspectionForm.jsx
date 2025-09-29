@@ -263,13 +263,8 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
   };
 
   const validateDimension = (value) => {
-    // Allow empty string, numbers, and decimal points for real-time input
-    return /^(\d*\.?\d*)?$/.test(value);
-  };
-
-  const validateDimensionComplete = (value) => {
-    // For form submission validation - must have a value and be a valid number
-    return value !== '' && /^\d*\.?\d*$/.test(value) && parseFloat(value) > 0;
+    // Allow empty values during input, only allow numbers and decimals
+    return value === '' || /^\d*\.?\d*$/.test(value);
   };
 
   // Form validation
@@ -301,10 +296,10 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
           return false;
         }
 
-        if (!validateDimensionComplete(room.dimensions.length) || 
-            !validateDimensionComplete(room.dimensions.width) || 
-            !validateDimensionComplete(room.dimensions.height)) {
-          setError(`Dimensions must be valid numbers greater than 0 for "${room.room_name}" on floor ${floor.floor_number}.`);
+        if (!validateDimension(room.dimensions.length) || 
+            !validateDimension(room.dimensions.width) || 
+            !validateDimension(room.dimensions.height)) {
+          setError(`Dimensions must be valid numbers for "${room.room_name}" on floor ${floor.floor_number}.`);
           return false;
         }
       }
