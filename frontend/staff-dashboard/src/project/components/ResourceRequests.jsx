@@ -8,17 +8,26 @@ export default function ResourceRequests({ project, leaderId }) {
   const [editRequest, setEditRequest] = useState(null);
 
   const fetchRequests = async () => {
-    if (!project?._id) return;
+    if (!project?._id) {
+      setLoading(false);
+      return;
+    }
     
     try {
       setLoading(true);
       const response = await fetch(`http://localhost:4000/api/material-requests/project/${project._id}`);
       if (response.ok) {
         const data = await response.json();
-        setRequests(data);
+        setRequests(Array.isArray(data) ? data : []);
+      } else {
+        // If API returns error (like 404 for new projects), set empty array
+        console.log(`No material requests found for project ${project._id}, this is normal for new projects`);
+        setRequests([]);
       }
     } catch (error) {
       console.error('Error fetching requests:', error);
+      // Set empty requests array instead of staying in loading state
+      setRequests([]);
     } finally {
       setLoading(false);
     }

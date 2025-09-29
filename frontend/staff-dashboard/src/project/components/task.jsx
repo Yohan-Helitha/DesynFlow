@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaUser, FaCalendarAlt, FaClipboardList, FaBolt, FaCheckCircle, FaBan, FaFilter, FaPlus, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaClipboardList, FaBolt, FaCheckCircle, FaBan, FaPlus, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
 const STATUS = {
   PENDING: 'Pending',
@@ -421,20 +421,20 @@ const TaskBoard = () => {
       <div className="flex items-center gap-2 mb-3">
         <div className={`inline-block px-2 py-1 text-xs rounded-md ${
           task.priority === 'high' 
-            ? 'bg-red-100 text-red-800' 
+            ? 'bg-red-brown text-white' 
             : task.priority === 'medium' 
-              ? 'bg-yellow-100 text-yellow-800' 
-              : 'bg-green-100 text-green-800'
+              ? 'bg-brown-primary-300 text-white' 
+              : 'bg-green-primary text-white'
         }`}>
           {task.priority}
         </div>
         {task.weight > 0 && (
-          <div className="inline-block px-2 py-1 text-xs rounded-md bg-blue-100 text-blue-800">
+          <div className="inline-block px-2 py-1 text-xs rounded-md bg-brown-primary-300 text-white">
             Weight: {task.weight}
           </div>
         )}
         {task.progressPercentage > 0 && (
-          <div className="inline-block px-2 py-1 text-xs rounded-md bg-gray-100 text-gray-800">
+          <div className="inline-block px-2 py-1 text-xs rounded-md bg-cream-primary text-dark-brown">
             {task.progressPercentage}%
           </div>
         )}
@@ -519,9 +519,6 @@ const TaskBoard = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-brown-primary">Task Management</h2>
         <div className="flex gap-3">
-          <button className="bg-white hover:bg-gray-50 text-brown-primary px-4 py-2 rounded-lg border border-brown-light transition-colors flex items-center gap-2">
-            <FaFilter /> Filter
-          </button>
           <button 
             className="bg-brown-primary hover:bg-brown-secondary text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             onClick={() => setShowAddModal(true)}
@@ -572,12 +569,12 @@ const TaskBoard = () => {
           </div>
         </div>
 
-        <div className="bg-blue-50 rounded-lg p-4">
+  <div className="bg-cream-light rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
               <FaBolt /> In Progress
             </span>
-            <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+            <span className="bg-brown-primary-300 text-white px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.IN_PROGRESS).length}
             </span>
           </div>
@@ -593,12 +590,12 @@ const TaskBoard = () => {
           </div>
         </div>
 
-        <div className="bg-green-50 rounded-lg p-4">
+  <div className="bg-cream-primary rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
               <FaCheckCircle /> Completed
             </span>
-            <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
+            <span className="bg-green-primary text-white px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.COMPLETED).length}
             </span>
           </div>
@@ -614,12 +611,12 @@ const TaskBoard = () => {
           </div>
         </div>
 
-        <div className="bg-red-50 rounded-lg p-4">
+  <div className="bg-cream-light rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
               <FaBan /> Blocked
             </span>
-            <span className="bg-red-200 text-red-800 px-2 py-1 rounded-full text-sm font-medium">
+            <span className="bg-red-brown text-white px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.BLOCKED).length}
             </span>
           </div>
