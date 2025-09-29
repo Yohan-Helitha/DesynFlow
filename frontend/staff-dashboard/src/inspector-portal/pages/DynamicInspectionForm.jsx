@@ -10,6 +10,11 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
   const [floors, setFloors] = useState([]);
   const [recommendations, setRecommendations] = useState('');
   const [inspectionRequestId, setInspectionRequestId] = useState('');
+  
+  // Saved forms management
+  const [savedForms, setSavedForms] = useState([]);
+  const [editingFormId, setEditingFormId] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const API_BASE = "http://localhost:4000/api/inspectorForms";
 
@@ -46,7 +51,113 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
       
       setFloors(initialFloors);
     }
+    
+    // Fetch saved forms when assignment is selected
+    if (selectedAssignment) {
+      fetchSavedForms();
+    }
   }, [selectedAssignment]);
+
+  // Fetch saved forms for this assignment
+  const fetchSavedForms = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await axios.get(`${API_BASE}/my`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Filter forms for current assignment
+      const assignmentForms = response.data.forms?.filter(
+        form => form.InspectionRequest_ID === inspectionRequestId
+      ) || [];
+      
+      setSavedForms(assignmentForms);
+    } catch (err) {
+      console.error('Error fetching saved forms:', err);
+    }
+  };
+
+  // Load form for editing
+  const loadFormForEdit = (form) => {
+    setEditingFormId(form._id);
+    setIsEditMode(true);
+    setFloors(form.floors.map(floor => ({
+      ...floor,
+      id: Date.now() + floor.floor_number,
+      isExpanded: true,
+      rooms: floor.rooms.map(room => ({
+        ...room,
+        id: Date.now() + Math.random()
+      }))
+    })));
+    setRecommendations(form.recommendations || '');
+    setError('');
+    setSuccess('');
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setEditingFormId(null);
+    setIsEditMode(false);
+    setError('');
+    setSuccess('');
+    
+    // Re-initialize with assignment data
+    if (selectedAssignment && selectedAssignment.inspectionRequest) {
+      const request = selectedAssignment.inspectionRequest;
+      const numberOfFloors = request.numberOfFloors || 1;
+      const suggestedRooms = request.roomNames || ['Room 1'];
+      
+      const initialFloors = [];
+      for (let floorNum = 1; floorNum <= numberOfFloors; floorNum++) {
+        const floorRooms = suggestedRooms.map(roomName => ({
+          id: Date.now() + Math.random(),
+          room_name: roomName,
+          dimensions: {
+            length: '',
+            width: '',
+            height: '',
+            unit: 'feet'
+          }
+        }));
+        
+        initialFloors.push({
+          id: Date.now() + floorNum,
+          floor_number: floorNum,
+          rooms: floorRooms,
+          isExpanded: true
+        });
+      }
+      
+      setFloors(initialFloors);
+      setRecommendations('');
+    }
+  };
+
+  // Delete saved form
+  const deleteSavedForm = async (formId) => {
+    if (!window.confirm('Are you sure you want to delete this saved form?')) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.delete(`${API_BASE}/${formId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setSavedForms(savedForms.filter(form => form._id !== formId));
+      setSuccess('Form deleted successfully!');
+      
+      // If we're editing this form, reset
+      if (editingFormId === formId) {
+        resetForm();
+      }
+    } catch (err) {
+      setError('Failed to delete form. Please try again.');
+      console.error('Error deleting form:', err);
+    }
+  };
 
   // Add new floor
   const addFloor = () => {
@@ -233,12 +344,26 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
         recommendations: recommendations.trim()
       };
 
-      const response = await axios.post(`${API_BASE}/create`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      let response;
+      if (isEditMode && editingFormId) {
+        // Update existing form
+        response = await axios.patch(`${API_BASE}/${editingFormId}`, formData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSuccess('Inspection form updated successfully!');
+      } else {
+        // Create new form
+        response = await axios.post(`${API_BASE}/create`, formData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSuccess('Inspection form saved successfully!');
+      }
 
-      setSuccess('Inspection form saved successfully!');
       console.log('Form saved:', response.data);
+      
+      // Refresh saved forms and reset form
+      await fetchSavedForms();
+      resetForm();
       
     } catch (err) {
       console.error('Error saving form:', err);
@@ -445,16 +570,96 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
         />
       </div>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
+      {/* Save/Update Buttons */}
+      <div className="flex justify-end space-x-4">
+        {isEditMode && (
+          <button
+            onClick={resetForm}
+            className="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors"
+          >
+            Cancel Edit
+          </button>
+        )}
         <button
           onClick={saveForm}
           disabled={loading}
           className="bg-green-primary text-cream-primary px-8 py-3 rounded-lg font-semibold hover:bg-soft-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Saving...' : '💾 Save Inspection Form'}
+          {loading ? 'Saving...' : isEditMode ? '💾 Update Form' : '💾 Save Form'}
         </button>
       </div>
+
+      {/* Saved Forms Section */}
+      {savedForms.length > 0 && (
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-4">📋 Saved Inspection Forms</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {savedForms.map((form) => (
+              <div key={form._id} className="border border-gray-300 rounded-lg p-4 hover:shadow-md transition-shadow">
+                {/* Form Header */}
+                <div className="mb-3">
+                  <h4 className="font-medium text-brown-primary">
+                    Inspection Form #{form._id.slice(-6)}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Created: {new Date(form.createdAt).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Status: <span className={`px-2 py-1 rounded text-xs ${
+                      form.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      form.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {form.status}
+                    </span>
+                  </p>
+                </div>
+
+                {/* Form Summary */}
+                <div className="mb-4 text-sm">
+                  <p><span className="font-medium">Floors:</span> {form.floors?.length || 0}</p>
+                  <p><span className="font-medium">Total Rooms:</span> {
+                    form.floors?.reduce((total, floor) => total + (floor.rooms?.length || 0), 0) || 0
+                  }</p>
+                  {form.recommendations && (
+                    <p className="mt-2">
+                      <span className="font-medium">Recommendations:</span>
+                      <span className="block text-gray-600 truncate">
+                        {form.recommendations.length > 50 ? 
+                          `${form.recommendations.substring(0, 50)}...` : 
+                          form.recommendations
+                        }
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => loadFormForEdit(form)}
+                    className="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded text-sm font-medium hover:bg-blue-200 transition-colors"
+                  >
+                    👁️ View Details
+                  </button>
+                  <button
+                    onClick={() => deleteSavedForm(form._id)}
+                    className="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded text-sm font-medium hover:bg-red-200 transition-colors"
+                  >
+                    🗑️ Delete
+                  </button>
+                  <button
+                    onClick={() => {/* Submit functionality - frontend only */}}
+                    className="flex-1 bg-green-100 text-green-700 py-2 px-3 rounded text-sm font-medium hover:bg-green-200 transition-colors"
+                  >
+                    ✅ Submit
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
