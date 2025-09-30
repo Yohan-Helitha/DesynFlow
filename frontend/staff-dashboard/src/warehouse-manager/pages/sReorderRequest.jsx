@@ -161,7 +161,7 @@ const SReorderRequest = () => {
           <h1 className="text-2xl font-bold mt-6 mb-10">Stock Reorder Requests</h1>
           <button
             className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
-            onClick={() => navigate("/reorder-request/add")}
+            onClick={() => navigate("/warehouse-manager/reorder-request/add")}
           >
             + Add Reorder Request
           </button>

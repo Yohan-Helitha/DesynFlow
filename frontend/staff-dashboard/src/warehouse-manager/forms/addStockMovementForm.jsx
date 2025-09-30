@@ -89,7 +89,7 @@ const AddStockMovementForm = ({ loggedInUserId }) => {
     try {
       await addStockMovement(payload);
       alert("Stock movement added successfully!");
-      navigate("/stock-movement");
+      navigate("/warehouse-manager/stock-movement");
     } catch (err) {
       if (err.errors) {
         setErrors(err.errors);
@@ -316,7 +316,7 @@ const AddStockMovementForm = ({ loggedInUserId }) => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/stock-movement")}
+                onClick={() => navigate("/warehouse-manager/stock-movement")}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Cancel

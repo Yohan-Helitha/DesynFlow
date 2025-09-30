@@ -76,7 +76,7 @@ const Navbar = () => {
             return (
               <button
                 key={index}
-                onClick={() => navigate(item.path)}
+                onClick={() => navigate(`/warehouse-manager/${item.path}`)}
                 className={`
                   cursor-pointer relative group flex items-center px-3 py-2 rounded-lg transition-all duration-200
                   ${isActive ? "bg-[#AAB396] text-[#37353E]" : "text-white hover:bg-[#3D2914]"}

@@ -261,7 +261,7 @@ const DisposalMaterials = () => {
                       <div className="flex items-center justify-center gap-6">
                         <div
                           className="group relative cursor-pointer"
-                          onClick={() => navigate(`/update-disposal-material/${disposal._id}`)}
+                          onClick={() => navigate(`/warehouse-manager/disposal-materials/update/${disposal._id}`)}
                         >
                           <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]"  />
                           <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">
