@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const InspectionRequestForm = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     client_name: "",
     email: "",
@@ -55,6 +57,10 @@ const InspectionRequestForm = () => {
       const data = await res.json();
       if (res.ok) {
         setMessage("Inspection request submitted successfully!");
+        // Navigate to dashboard after successful submission
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1500); // Show success message for 1.5 seconds before redirecting
       } else {
         setMessage(` ${data.message || "Failed to submit request"}`);
       }

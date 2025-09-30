@@ -21,6 +21,8 @@ const InspectionRequests = () => {
       const response = await axios.get('http://localhost:4000/api/inspection-request/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('Inspection Requests Data:', response.data);
       setRequests(response.data);
     } catch (error) {
       console.error('Error fetching requests:', error);
@@ -84,7 +86,7 @@ const InspectionRequests = () => {
                 <label className="text-xs font-semibold text-brown-primary uppercase tracking-wide block mb-1">
                   👤 Client Name
                 </label>
-                <p className="text-lg font-bold text-dark-brown">{request.clientName || 'N/A'}</p>
+                <p className="text-lg font-bold text-dark-brown">{request.client_name || 'N/A'}</p>
               </div>
               
               {/* Property Location */}
@@ -92,7 +94,7 @@ const InspectionRequests = () => {
                 <label className="text-xs font-semibold text-brown-primary uppercase tracking-wide block mb-1">
                   📍 Property Location
                 </label>
-                <p className="text-dark-brown font-medium">{request.propertyAddress || 'N/A'}</p>
+                <p className="text-dark-brown font-medium">{request.propertyLocation_address || 'N/A'}</p>
               </div>
               
               {/* Preferred Date */}
@@ -101,8 +103,8 @@ const InspectionRequests = () => {
                   📅 Preferred Date
                 </label>
                 <p className="text-dark-brown font-medium">
-                  {request.preferredDate 
-                    ? new Date(request.preferredDate).toLocaleDateString('en-US', {
+                  {request.inspection_date 
+                    ? new Date(request.inspection_date).toLocaleDateString('en-US', {
                         weekday: 'short',
                         year: 'numeric',
                         month: 'short', 
@@ -161,7 +163,7 @@ const InspectionRequests = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-cream-light rounded-lg p-4 border border-green-primary/30">
                   <label className="text-sm font-semibold text-green-primary block mb-2">👤 Client Name</label>
-                  <p className="text-lg font-bold text-dark-brown">{selectedRequest.clientName}</p>
+                  <p className="text-lg font-bold text-dark-brown">{selectedRequest.client_name}</p>
                 </div>
                 
                 <div className="bg-cream-light rounded-lg p-4 border border-green-secondary/30">
@@ -171,7 +173,7 @@ const InspectionRequests = () => {
                 
                 <div className="bg-cream-light rounded-lg p-4 border border-brown-primary-300/30">
                   <label className="text-sm font-semibold text-brown-primary-300 block mb-2">📞 Phone Number</label>
-                  <p className="text-dark-brown">{selectedRequest.phone}</p>
+                  <p className="text-dark-brown">{selectedRequest.phone_number}</p>
                 </div>
                 
                 <div className="bg-cream-light rounded-lg p-4 border border-warm-brown/30">
@@ -183,7 +185,7 @@ const InspectionRequests = () => {
               {/* Property Address */}
               <div className="bg-cream-light rounded-lg p-4 border border-cream-light">
                 <label className="text-sm font-semibold text-brown-primary block mb-2">📍 Property Address</label>
-                <p className="text-dark-brown text-lg">{selectedRequest.propertyAddress}</p>
+                <p className="text-dark-brown text-lg">{selectedRequest.propertyLocation_address}</p>
               </div>
 
               {/* Date and Status */}
@@ -191,7 +193,7 @@ const InspectionRequests = () => {
                 <div className="bg-cream-light rounded-lg p-4 border border-green-primary/30">
                   <label className="text-sm font-semibold text-green-primary block mb-2">📅 Preferred Date</label>
                   <p className="text-dark-brown text-lg">
-                    {new Date(selectedRequest.preferredDate).toLocaleDateString('en-US', {
+                    {new Date(selectedRequest.inspection_date).toLocaleDateString('en-US', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
