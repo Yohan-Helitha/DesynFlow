@@ -3,6 +3,10 @@ import bcrypt from 'bcrypt';
 import User from '../modules/auth/model/user.model.js';
 import InspectionRequest from '../modules/auth/model/inspectionRequest.model.js';
 import Assignment from '../modules/auth/model/assignment.model.js';
+import Team from '../modules/project/model/team.model.js';
+import Project from '../modules/project/model/project.model.js';
+import Task from '../modules/project/model/task.model.js';
+import MaterialRequest from '../modules/project/model/material.model.js';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -369,6 +373,18 @@ const createSampleData = async (users) => {
     const createdAssignments = await Assignment.insertMany(sampleAssignments);
     console.log(`✅ Created ${createdAssignments.length} sample assignments`);
 
+    // Create sample teams
+    await createSampleTeams(users);
+
+    // Create sample projects and assign teams
+    await createSampleProjects(users);
+
+    // Create sample tasks for projects
+    await createSampleTasks(users);
+
+    // Create sample material requests
+    await createSampleMaterialRequests(users);
+
     console.log('\n📋 Sample Data Summary:');
     console.log(`   • Inspection Requests: ${createdRequests.length}`);
     console.log(`   • Assignments: ${createdAssignments.length}`);
@@ -376,6 +392,317 @@ const createSampleData = async (users) => {
     
   } catch (error) {
     console.error('❌ Error creating sample data:', error);
+    throw error;
+  }
+};
+
+// Create sample teams
+const createSampleTeams = async (users) => {
+  try {
+    // Find users by role
+    const teamMembers = users.filter(u => u.role === 'team member');
+    const teamLeader = users.find(u => u.role === 'team leader');
+    const projectManager = users.find(u => u.role === 'project manager');
+    
+    if (teamMembers.length < 5 || !teamLeader) {
+      console.log('❌ Not enough team members or leader found for team creation');
+      return;
+    }
+
+    // Create Interior Design Team
+    const interiorDesignTeam = {
+      teamId: new mongoose.Types.ObjectId(),
+      teamName: 'Interior Design Team',
+      leaderId: teamLeader._id,
+      members: teamMembers.slice(0, 5).map(member => ({
+        userId: member._id,
+        role: member.role,
+        availability: 'Available',
+        workload: 0
+      })),
+      active: true
+    };
+
+    // Create Project Management Team (if we have enough members)
+    const projectManagementTeam = {
+      teamId: new mongoose.Types.ObjectId(),
+      teamName: 'Project Management Team',
+      leaderId: projectManager?._id || teamLeader._id,
+      members: teamMembers.slice(5, 10).map(member => ({
+        userId: member._id,
+        role: member.role,
+        availability: 'Available',
+        workload: 0
+      })),
+      active: true
+    };
+
+    const sampleTeams = [interiorDesignTeam];
+    
+    // Only add project management team if we have enough members
+    if (teamMembers.length >= 10) {
+      sampleTeams.push(projectManagementTeam);
+    }
+
+    const createdTeams = await Team.insertMany(sampleTeams);
+    console.log(`✅ Created ${createdTeams.length} sample teams`);
+    
+    // Display created teams
+    console.log('\n👥 Created Teams:');
+    createdTeams.forEach(team => {
+      console.log(`   • ${team.teamName} - Leader: ${teamLeader.username} - Members: ${team.members.length}`);
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating sample teams:', error);
+    throw error;
+  }
+};
+
+// Create sample projects and assign teams
+const createSampleProjects = async (users) => {
+  try {
+    // Find teams and users
+    const teams = await Team.find({});
+    const projectManager = users.find(u => u.role === 'project manager');
+    const financeManager = users.find(u => u.role === 'finance manager');
+    
+    if (teams.length === 0 || !projectManager) {
+      console.log('❌ No teams or project manager found for project creation');
+      return;
+    }
+
+    // Sample projects
+    const sampleProjects = [
+      {
+        projectId: new mongoose.Types.ObjectId(),
+        projectName: 'Luxury Villa Interior Design',
+        projectManagerId: projectManager._id,
+        clientId: users.find(u => u.role === 'client')?._id,
+        assignedTeamId: teams.find(t => t.teamName === 'Interior Design Team')?._id,
+        startDate: new Date('2025-11-01'),
+        dueDate: new Date('2026-02-28'),
+        status: 'In Progress',
+        progress: 25,
+        milestones: [], // Will be empty for now, can be populated separately if needed
+        timeline: [
+          {
+            name: 'Project Kickoff',
+            date: new Date('2025-11-01'),
+            description: 'Initial project meeting and requirements gathering'
+          },
+          {
+            name: 'Design Phase Complete',
+            date: new Date('2025-12-15'),
+            description: 'All design concepts finalized and approved'
+          }
+        ],
+        attachments: [],
+        estimateCreated: true
+      },
+      {
+        projectId: new mongoose.Types.ObjectId(),
+        projectName: 'Office Space Renovation',
+        projectManagerId: projectManager._id,
+        clientId: users.find(u => u.email === 'jane.client@gmail.com')?._id || users.find(u => u.role === 'client')?._id,
+        assignedTeamId: teams.find(t => t.teamName === 'Project Management Team')?._id,
+        startDate: new Date('2025-10-15'),
+        dueDate: new Date('2025-12-30'),
+        status: 'Active',
+        progress: 10,
+        milestones: [], // Will be empty for now
+        timeline: [
+          {
+            name: 'Planning Phase',
+            date: new Date('2025-10-15'),
+            description: 'Initial planning and space assessment'
+          }
+        ],
+        attachments: [],
+        estimateCreated: false
+      }
+    ];
+
+    const createdProjects = await Project.insertMany(sampleProjects);
+    console.log(`✅ Created ${createdProjects.length} sample projects`);
+    
+    // Display created projects
+    console.log('\n🏗️ Created Projects:');
+    createdProjects.forEach(project => {
+      const team = teams.find(t => t._id.equals(project.assignedTeamId));
+      console.log(`   • ${project.projectName} - Team: ${team?.teamName || 'Unassigned'} - Status: ${project.status}`);
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating sample projects:', error);
+    throw error;
+  }
+};
+
+// Create sample tasks for projects
+const createSampleTasks = async (users) => {
+  try {
+    // Find projects and team members
+    const projects = await Project.find({});
+    const teamMembers = users.filter(u => u.role === 'team member');
+    const teamLeader = users.find(u => u.role === 'team leader');
+    
+    if (projects.length === 0 || teamMembers.length === 0) {
+      console.log('❌ No projects or team members found for task creation');
+      return;
+    }
+
+    const sampleTasks = [];
+
+    // Create tasks for each project
+    projects.forEach((project, index) => {
+      const projectTasks = [
+        {
+          projectId: project._id,
+          name: 'Project Planning & Requirements',
+          description: 'Define project scope, gather requirements, and create initial project plan',
+          assignedTo: teamLeader._id,
+          weight: 5,
+          priority: 'high',
+          dueDate: new Date(project.startDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after start
+          status: 'In Progress',
+          progressPercentage: 60
+        },
+        {
+          projectId: project._id,
+          name: 'Design Mockups',
+          description: 'Create initial design mockups and wireframes for client approval',
+          assignedTo: teamMembers[index % teamMembers.length]._id,
+          weight: 8,
+          priority: 'high',
+          dueDate: new Date(project.startDate.getTime() + 14 * 24 * 60 * 60 * 1000), // 14 days after start
+          status: 'Pending',
+          progressPercentage: 0
+        },
+        {
+          projectId: project._id,
+          name: 'Material Research',
+          description: 'Research and source materials needed for the project',
+          assignedTo: teamMembers[(index + 1) % teamMembers.length]._id,
+          weight: 3,
+          priority: 'medium',
+          dueDate: new Date(project.startDate.getTime() + 10 * 24 * 60 * 60 * 1000), // 10 days after start
+          status: 'Pending',
+          progressPercentage: 0
+        },
+        {
+          projectId: project._id,
+          name: 'Client Presentations',
+          description: 'Prepare and conduct client presentations for design approval',
+          assignedTo: teamLeader._id,
+          weight: 4,
+          priority: 'medium',
+          dueDate: new Date(project.startDate.getTime() + 21 * 24 * 60 * 60 * 1000), // 21 days after start
+          status: 'Pending',
+          progressPercentage: 0
+        },
+        {
+          projectId: project._id,
+          name: 'Quality Assurance',
+          description: 'Conduct quality checks and ensure all requirements are met',
+          assignedTo: teamMembers[(index + 2) % teamMembers.length]._id,
+          weight: 6,
+          priority: 'high',
+          dueDate: new Date(project.dueDate.getTime() - 7 * 24 * 60 * 60 * 1000), // 7 days before end
+          status: 'Pending',
+          progressPercentage: 0
+        }
+      ];
+      
+      sampleTasks.push(...projectTasks);
+    });
+
+    const createdTasks = await Task.insertMany(sampleTasks);
+    console.log(`✅ Created ${createdTasks.length} sample tasks`);
+    
+    // Display created tasks summary
+    console.log('\n📋 Created Tasks Summary:');
+    projects.forEach(project => {
+      const projectTasks = createdTasks.filter(task => task.projectId.equals(project._id));
+      console.log(`   • ${project.projectName}: ${projectTasks.length} tasks`);
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating sample tasks:', error);
+    throw error;
+  }
+};
+
+// Create sample material requests
+const createSampleMaterialRequests = async (users) => {
+  try {
+    // Find projects and relevant users
+    const projects = await Project.find({});
+    const teamLeader = users.find(u => u.role === 'team leader');
+    const teamMembers = users.filter(u => u.role === 'team member');
+    
+    if (projects.length === 0 || !teamLeader) {
+      console.log('❌ No projects or team leader found for material request creation');
+      return;
+    }
+
+    const sampleMaterialRequests = [];
+
+    // Create material requests for each project
+    projects.forEach((project, index) => {
+      const projectRequests = [
+        {
+          projectId: project._id,
+          requestedBy: teamLeader._id,
+          items: [
+            { itemName: 'Premium Paint (White)', qty: 15 },
+            { itemName: 'Paint Brushes Set', qty: 3 },
+            { itemName: 'Masking Tape', qty: 10 }
+          ],
+          neededBy: new Date(project.startDate.getTime() + 5 * 24 * 60 * 60 * 1000), // 5 days after start
+          status: 'Pending',
+          warehouseNote: 'Required for initial phase of the project'
+        },
+        {
+          projectId: project._id,
+          requestedBy: teamMembers[index % teamMembers.length]._id,
+          items: [
+            { itemName: 'Hardwood Flooring', qty: 500 },
+            { itemName: 'Ceramic Tiles', qty: 200 },
+            { itemName: 'Adhesive', qty: 20 }
+          ],
+          neededBy: new Date(project.startDate.getTime() + 21 * 24 * 60 * 60 * 1000), // 21 days after start
+          status: 'Approved',
+          warehouseNote: 'Approved for flooring work phase'
+        },
+        {
+          projectId: project._id,
+          requestedBy: teamMembers[(index + 1) % teamMembers.length]._id,
+          items: [
+            { itemName: 'LED Light Fixtures', qty: 25 },
+            { itemName: 'Electrical Wire', qty: 100 },
+            { itemName: 'Switch Plates', qty: 15 }
+          ],
+          neededBy: new Date(project.startDate.getTime() + 35 * 24 * 60 * 60 * 1000), // 35 days after start
+          status: 'Pending'
+        }
+      ];
+      
+      sampleMaterialRequests.push(...projectRequests);
+    });
+
+    const createdMaterialRequests = await MaterialRequest.insertMany(sampleMaterialRequests);
+    console.log(`✅ Created ${createdMaterialRequests.length} sample material requests`);
+    
+    // Display created material requests summary
+    console.log('\n📦 Created Material Requests Summary:');
+    projects.forEach(project => {
+      const projectRequests = createdMaterialRequests.filter(req => req.projectId.equals(project._id));
+      console.log(`   • ${project.projectName}: ${projectRequests.length} requests`);
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating sample material requests:', error);
     throw error;
   }
 };
@@ -392,6 +719,10 @@ const seedDatabase = async () => {
     await User.deleteMany({});
     await InspectionRequest.deleteMany({});
     await Assignment.deleteMany({});
+    await Team.deleteMany({});
+    await Project.deleteMany({});
+    await Task.deleteMany({});
+    await MaterialRequest.deleteMany({});
     console.log('✅ Cleared existing data');
     
     // Hash passwords
