@@ -46,10 +46,8 @@ export const PendingQuotations = () => {
     async function fetchQuotations() {
       setLoading(true);
       try {
-        // Pull approved estimations
         const data = await safeFetchJson(API_URL);
         const list = Array.isArray(data) ? data : [];
-        // Filter: show only estimations with no quotation yet
         const pendingOnly = list.filter(e => !e.quotationCreated && !e.lastQuotationId);
         setQuotations(pendingOnly);
       } catch (err) {
@@ -62,7 +60,6 @@ export const PendingQuotations = () => {
   }, []);
 
   const handleView = (estimation) => {
-    // Ensure we pass the correct project ID to the modal
     const processedEstimation = {
       ...estimation,
       projectId: getProjectId(estimation)
@@ -74,12 +71,12 @@ export const PendingQuotations = () => {
   const handleCreated = async (createdQuotation) => {
     console.log('[PendingQuotations] Quotation created, refreshing list...', createdQuotation);
     
-    // Remove the estimation from the pending list immediately for better UX
+   
     setQuotations(prev => prev.filter(q => q._id !== (selectedQuotation?._id)));
     setShowCreateModal(false);
     setSelectedQuotation(null);
     
-    // Optionally refresh the entire list to ensure consistency
+   
     try {
       const data = await safeFetchJson(API_URL);
       const list = Array.isArray(data) ? data : [];
@@ -100,7 +97,7 @@ export const PendingQuotations = () => {
     }
 	};
 
-  // Helper function to get project display name
+  // get project display name
   const getProjectDisplay = (quotation) => {
     if (quotation.projectId && typeof quotation.projectId === 'object') {
       return quotation.projectId.projectName || quotation.projectId._id;
@@ -108,7 +105,7 @@ export const PendingQuotations = () => {
     return quotation.projectId || '';
   };
 
-  // Helper function to get project ID for sorting/filtering
+  // get project ID for sorting/filtering
   const getProjectId = (quotation) => {
     if (quotation.projectId && typeof quotation.projectId === 'object') {
       return quotation.projectId._id;
@@ -134,7 +131,7 @@ export const PendingQuotations = () => {
       let aVal = a[sortField];
       let bVal = b[sortField];
       
-      // Handle project sorting specially
+  
       if (sortField === 'projectId') {
         aVal = getProjectDisplay(a).toLowerCase();
         bVal = getProjectDisplay(b).toLowerCase();
@@ -182,7 +179,7 @@ export const PendingQuotations = () => {
         </div>
       </div>
 
-      {/* Loading and Error States */}
+      {/* Loading and Error*/}
       {loading && (
         <div className="text-center py-8 text-[#AAB396]">
           Loading approved estimations...

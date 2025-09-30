@@ -94,7 +94,7 @@ export const PendingPayments = () => {
 
   return (
     <div>
-      {/* Header with search */}
+      {/* search */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">

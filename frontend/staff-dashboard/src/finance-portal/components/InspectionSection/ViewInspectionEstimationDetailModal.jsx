@@ -158,7 +158,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
             </div>
           </div>
 
-          {/* Cost Breakdown if available */}
+          {/* Cost Breakdown */}
           {(inspection.laborCost || inspection.materialCost || inspection.serviceCost) && (
             <div className="bg-[#F7EED3] p-4 rounded-lg">
               <h4 className="font-semibold text-[#674636] mb-3 flex items-center">
@@ -198,7 +198,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
             </div>
           )}
 
-          {/* Technical Details if available */}
+          {/* Technical Details*/}
           {(inspection.inspectionType || inspection.priority || inspection.assignedTo) && (
             <div className="bg-[#F7EED3] p-4 rounded-lg">
               <h4 className="font-semibold text-[#674636] mb-3">Inspection Details</h4>

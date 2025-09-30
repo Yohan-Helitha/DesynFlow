@@ -15,7 +15,7 @@ export const InspectionPaymentsHistory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Build a full URL to the uploaded receipt that works in dev and prod and normalizes slashes
+  // full URL to the uploaded receipt
   const buildReceiptUrl = (payment) => {
     const raw = payment?.paymentReceiptUrl || payment?.receiptUrl;
     if (!raw) return '';

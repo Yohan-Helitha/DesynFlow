@@ -233,46 +233,66 @@ export const QuotationFormModal = ({
             <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Labor Cost</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.laborItems.map((item, idx) => (
-                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
-                  <input
-                    type="text"
-                    placeholder="Task"
-                    value={item.task}
-                    onChange={e => {
-                      const copy = [...formData.laborItems];
-                      copy[idx].task = e.target.value;
-                      setFormData({ ...formData, laborItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Hours"
-                    value={item.hours}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      const copy = [...formData.laborItems];
-                      copy[idx].hours = val;
-                      copy[idx].total = copy[idx].hours * copy[idx].rate;
-                      setFormData({ ...formData, laborItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Rate"
-                    value={item.rate}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      const copy = [...formData.laborItems];
-                      copy[idx].rate = val;
-                      copy[idx].total = copy[idx].hours * copy[idx].rate;
-                      setFormData({ ...formData, laborItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <span className="text-sm text-[#AAB396] px-2">{item.total || 0}</span>
-                  <button type="button" onClick={() => removeItem('laborItems', idx)} className="p-1 hover:bg-red-100 rounded">
+                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
+                  <div className="flex-1 min-w-[10rem] flex flex-col">
+                    <label htmlFor={`labor-task-${idx}`} className="text-[11px] text-[#AAB396]">Task</label>
+                    <input
+                      id={`labor-task-${idx}`}
+                      type="text"
+                      placeholder="Task"
+                      aria-label="Labor Task"
+                      value={item.task}
+                      onChange={e => {
+                        const copy = [...formData.laborItems];
+                        copy[idx].task = e.target.value;
+                        setFormData({ ...formData, laborItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="w-24 flex flex-col">
+                    <label htmlFor={`labor-hours-${idx}`} className="text-[11px] text-[#AAB396]">Hours</label>
+                    <input
+                      id={`labor-hours-${idx}`}
+                      type="number"
+                      placeholder="Hours"
+                      value={item.hours}
+                      min={0}
+                      aria-label="Labor Hours"
+                      onChange={e => {
+                        const val = Math.max(0, Number(e.target.value));
+                        const copy = [...formData.laborItems];
+                        copy[idx].hours = val;
+                        copy[idx].total = copy[idx].hours * copy[idx].rate;
+                        setFormData({ ...formData, laborItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="w-24 flex flex-col">
+                    <label htmlFor={`labor-rate-${idx}`} className="text-[11px] text-[#AAB396]">Rate</label>
+                    <input
+                      id={`labor-rate-${idx}`}
+                      type="number"
+                      placeholder="Rate"
+                      value={item.rate}
+                      min={0}
+                      aria-label="Labor Rate"
+                      onChange={e => {
+                        const val = Math.max(0, Number(e.target.value));
+                        const copy = [...formData.laborItems];
+                        copy[idx].rate = val;
+                        copy[idx].total = copy[idx].hours * copy[idx].rate;
+                        setFormData({ ...formData, laborItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] text-[#AAB396]">Total</span>
+                    <span className="text-sm text-[#674636] px-2">{item.total || 0}</span>
+                  </div>
+                  <button type="button" onClick={() => removeItem('laborItems', idx)} className="p-1 hover:bg-red-100 rounded self-center">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -292,64 +312,89 @@ export const QuotationFormModal = ({
             <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Material Cost</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.materialItems.map((item, idx) => (
-                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
-                  <select
-                    value={item.materialId}
-                    onChange={e => {
-                      const copy = [...formData.materialItems];
-                      const selectedMaterial = materials.find(m => m._id === e.target.value);
-                      copy[idx].materialId = e.target.value;
-                      if (selectedMaterial) {
-                        copy[idx].unitPrice = selectedMaterial.unitPrice || 0;
-                        copy[idx].description = selectedMaterial.materialName;
-                        copy[idx].total = (copy[idx].quantity || 0) * (selectedMaterial.unitPrice || 0);
-                      } else {
-                        copy[idx].unitPrice = 0;
-                        copy[idx].description = '';
-                        copy[idx].total = 0;
-                      }
-                      setFormData({ ...formData, materialItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-40 text-[#674636] bg-[#FFF8E8]"
-                  >
-                    <option value="">Select Material</option>
-                    {materials.map(m => (
-                      <option key={m._id} value={m._id}>{m.materialName}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={e => {
-                      const copy = [...formData.materialItems];
-                      copy[idx].description = e.target.value;
-                      setFormData({ ...formData, materialItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Qty"
-                    value={item.quantity}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      const copy = [...formData.materialItems];
-                      copy[idx].quantity = val;
-                      copy[idx].total = val * (copy[idx].unitPrice || 0);
-                      setFormData({ ...formData, materialItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-20 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Unit Price"
-                    value={item.unitPrice}
-                    readOnly
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8] cursor-not-allowed"
-                  />
-                  <span className="text-sm text-[#AAB396] px-2">{(item.quantity || 0) * (item.unitPrice || 0)}</span>
-                  <button type="button" onClick={() => removeItem('materialItems', idx)} className="p-1 hover:bg-red-100 rounded">
+                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
+                  <div className="w-40 flex flex-col">
+                    <label htmlFor={`material-id-${idx}`} className="text-[11px] text-[#AAB396]">Material</label>
+                    <select
+                      id={`material-id-${idx}`}
+                      value={item.materialId}
+                      aria-label="Material"
+                      onChange={e => {
+                        const copy = [...formData.materialItems];
+                        const selectedMaterial = materials.find(m => m._id === e.target.value);
+                        copy[idx].materialId = e.target.value;
+                        if (selectedMaterial) {
+                          copy[idx].unitPrice = selectedMaterial.unitPrice || 0;
+                          copy[idx].description = selectedMaterial.materialName;
+                          copy[idx].total = (copy[idx].quantity || 0) * (selectedMaterial.unitPrice || 0);
+                        } else {
+                          copy[idx].unitPrice = 0;
+                          copy[idx].description = '';
+                          copy[idx].total = 0;
+                        }
+                        setFormData({ ...formData, materialItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    >
+                      <option value="">Select Material</option>
+                      {materials.map(m => (
+                        <option key={m._id} value={m._id}>{m.materialName}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex-1 min-w-[10rem] flex flex-col">
+                    <label htmlFor={`material-desc-${idx}`} className="text-[11px] text-[#AAB396]">Description</label>
+                    <input
+                      id={`material-desc-${idx}`}
+                      type="text"
+                      placeholder="Description"
+                      aria-label="Material Description"
+                      value={item.description}
+                      onChange={e => {
+                        const copy = [...formData.materialItems];
+                        copy[idx].description = e.target.value;
+                        setFormData({ ...formData, materialItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="w-20 flex flex-col">
+                    <label htmlFor={`material-qty-${idx}`} className="text-[11px] text-[#AAB396]">Qty</label>
+                    <input
+                      id={`material-qty-${idx}`}
+                      type="number"
+                      placeholder="Qty"
+                      value={item.quantity}
+                      min={0}
+                      aria-label="Material Quantity"
+                      onChange={e => {
+                        const val = Math.max(0, Number(e.target.value));
+                        const copy = [...formData.materialItems];
+                        copy[idx].quantity = val;
+                        copy[idx].total = val * (copy[idx].unitPrice || 0);
+                        setFormData({ ...formData, materialItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="w-24 flex flex-col">
+                    <label htmlFor={`material-unitPrice-${idx}`} className="text-[11px] text-[#AAB396]">Unit Price</label>
+                    <input
+                      id={`material-unitPrice-${idx}`}
+                      type="number"
+                      placeholder="Unit Price"
+                      value={item.unitPrice}
+                      min={0}
+                      aria-label="Material Unit Price"
+                      readOnly
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8] cursor-not-allowed"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] text-[#AAB396]">Line Total</span>
+                    <span className="text-sm text-[#674636] px-2">{(item.quantity || 0) * (item.unitPrice || 0)}</span>
+                  </div>
+                  <button type="button" onClick={() => removeItem('materialItems', idx)} className="p-1 hover:bg-red-100 rounded self-center">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -369,31 +414,42 @@ export const QuotationFormModal = ({
             <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Service Cost</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.serviceItems.map((item, idx) => (
-                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
-                  <input
-                    type="text"
-                    placeholder="Service"
-                    value={item.service}
-                    onChange={e => {
-                      const copy = [...formData.serviceItems];
-                      copy[idx].service = e.target.value;
-                      setFormData({ ...formData, serviceItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Cost"
-                    value={item.cost}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      const copy = [...formData.serviceItems];
-                      copy[idx].cost = val;
-                      setFormData({ ...formData, serviceItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <button type="button" onClick={() => removeItem('serviceItems', idx)} className="p-1 hover:bg-red-100 rounded">
+                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
+                  <div className="flex-1 min-w-[10rem] flex flex-col">
+                    <label htmlFor={`service-name-${idx}`} className="text-[11px] text-[#AAB396]">Service</label>
+                    <input
+                      id={`service-name-${idx}`}
+                      type="text"
+                      placeholder="Service"
+                      value={item.service}
+                      aria-label="Service Name"
+                      onChange={e => {
+                        const copy = [...formData.serviceItems];
+                        copy[idx].service = e.target.value;
+                        setFormData({ ...formData, serviceItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="w-24 flex flex-col">
+                    <label htmlFor={`service-cost-${idx}`} className="text-[11px] text-[#AAB396]">Cost</label>
+                    <input
+                      id={`service-cost-${idx}`}
+                      type="number"
+                      placeholder="Cost"
+                      value={item.cost}
+                      min={0}
+                      aria-label="Service Cost"
+                      onChange={e => {
+                        const val = Math.max(0, Number(e.target.value));
+                        const copy = [...formData.serviceItems];
+                        copy[idx].cost = val;
+                        setFormData({ ...formData, serviceItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <button type="button" onClick={() => removeItem('serviceItems', idx)} className="p-1 hover:bg-red-100 rounded self-center">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -413,31 +469,42 @@ export const QuotationFormModal = ({
             <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Contingency Cost</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.contingencyItems.map((item, idx) => (
-                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
-                  <input
-                    type="text"
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={e => {
-                      const copy = [...formData.contingencyItems];
-                      copy[idx].description = e.target.value;
-                      setFormData({ ...formData, contingencyItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Amount"
-                    value={item.amount}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      const copy = [...formData.contingencyItems];
-                      copy[idx].amount = val;
-                      setFormData({ ...formData, contingencyItems: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-24 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <button type="button" onClick={() => removeItem('contingencyItems', idx)} className="p-1 hover:bg-red-100 rounded">
+                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
+                  <div className="flex-1 min-w-[10rem] flex flex-col">
+                    <label htmlFor={`cont-desc-${idx}`} className="text-[11px] text-[#AAB396]">Description</label>
+                    <input
+                      id={`cont-desc-${idx}`}
+                      type="text"
+                      placeholder="Description"
+                      aria-label="Contingency Description"
+                      value={item.description}
+                      onChange={e => {
+                        const copy = [...formData.contingencyItems];
+                        copy[idx].description = e.target.value;
+                        setFormData({ ...formData, contingencyItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="w-24 flex flex-col">
+                    <label htmlFor={`cont-amount-${idx}`} className="text-[11px] text-[#AAB396]">Amount</label>
+                    <input
+                      id={`cont-amount-${idx}`}
+                      type="number"
+                      placeholder="Amount"
+                      value={item.amount}
+                      min={0}
+                      aria-label="Contingency Amount"
+                      onChange={e => {
+                        const val = Math.max(0, Number(e.target.value));
+                        const copy = [...formData.contingencyItems];
+                        copy[idx].amount = val;
+                        setFormData({ ...formData, contingencyItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <button type="button" onClick={() => removeItem('contingencyItems', idx)} className="p-1 hover:bg-red-100 rounded self-center">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>
@@ -457,34 +524,48 @@ export const QuotationFormModal = ({
             <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Taxes</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.taxes.map((item, idx) => (
-                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
-                  <input
-                    type="text"
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={e => {
-                      const copy = [...formData.taxes];
-                      copy[idx].description = e.target.value;
-                      setFormData({ ...formData, taxes: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm flex-1 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <input
-                    type="number"
-                    placeholder="%"
-                    value={item.percentage}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      const copy = [...formData.taxes];
-                      copy[idx].percentage = val;
-                      const newSubtotal = computeSubtotal();
-                      copy[idx].amount = (newSubtotal * val) / 100;
-                      setFormData({ ...formData, taxes: copy });
-                    }}
-                    className="border border-[#AAB396] rounded-md px-2 py-1 text-sm w-20 text-[#674636] bg-[#FFF8E8]"
-                  />
-                  <span className="text-sm text-[#AAB396] px-2">{item.amount || 0}</span>
-                  <button type="button" onClick={() => removeItem('taxes', idx)} className="p-1 hover:bg-red-100 rounded">
+                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
+                  <div className="flex-1 min-w-[10rem] flex flex-col">
+                    <label htmlFor={`tax-desc-${idx}`} className="text-[11px] text-[#AAB396]">Description</label>
+                    <input
+                      id={`tax-desc-${idx}`}
+                      type="text"
+                      placeholder="Description"
+                      aria-label="Tax Description"
+                      value={item.description}
+                      onChange={e => {
+                        const copy = [...formData.taxes];
+                        copy[idx].description = e.target.value;
+                        setFormData({ ...formData, taxes: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="w-20 flex flex-col">
+                    <label htmlFor={`tax-perc-${idx}`} className="text-[11px] text-[#AAB396]">%</label>
+                    <input
+                      id={`tax-perc-${idx}`}
+                      type="number"
+                      placeholder="%"
+                      value={item.percentage}
+                      min={0}
+                      aria-label="Tax Percentage"
+                      onChange={e => {
+                        const val = Math.max(0, Number(e.target.value));
+                        const copy = [...formData.taxes];
+                        copy[idx].percentage = val;
+                        const newSubtotal = computeSubtotal();
+                        copy[idx].amount = (newSubtotal * val) / 100;
+                        setFormData({ ...formData, taxes: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] text-[#AAB396]">Amount</span>
+                    <span className="text-sm text-[#674636] px-2">{item.amount || 0}</span>
+                  </div>
+                  <button type="button" onClick={() => removeItem('taxes', idx)} className="p-1 hover:bg-red-100 rounded self-center">
                     <Trash size={16} className="text-red-500" />
                   </button>
                 </div>

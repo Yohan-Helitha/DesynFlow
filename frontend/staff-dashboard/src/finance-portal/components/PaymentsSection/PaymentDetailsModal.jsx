@@ -15,9 +15,11 @@ const PaymentDetailsModal = ({ payment, onClose }) => {
             <X size={20} />
           </button>
         </div>
+
         {/* Content */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            
             {/* Payment Info */}
             <div>
               <h4 className="text-sm font-medium text-[#674636] mb-2">Payment Information</h4>
@@ -32,6 +34,7 @@ const PaymentDetailsModal = ({ payment, onClose }) => {
                 )}
               </div>
             </div>
+
             {/* Client Info */}
             <div>
               <h4 className="text-sm font-medium text-[#674636] mb-2">Client Details</h4>

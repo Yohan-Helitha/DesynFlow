@@ -24,7 +24,7 @@ export const PendingPurchaseOrders = () => {
 
   const fetchApprovals = () => {
     setLoading(true);
-    // Fetch purchase orders directly by status or finance approval status
+    // Fetch purchase orders
     fetch('/api/purchase-orders?status=PendingFinanceApproval')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch pending purchase orders');

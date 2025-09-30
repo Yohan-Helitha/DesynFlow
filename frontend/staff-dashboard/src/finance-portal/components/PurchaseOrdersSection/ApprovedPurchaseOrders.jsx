@@ -40,14 +40,14 @@ export const ApprovedPurchaseOrders = () => {
       projectName: po.projectId?.projectName || '-',
       requestedBy: po.requestedBy?.name || po.requestedBy?.email || '-',
       requestedDate: po.createdAt ? new Date(po.createdAt).toLocaleDateString() : '-',
-      approvedBy: '-', // approver not populated; available via financeApproval.approverId if populated
+      approvedBy: '-', 
       approvedDate: po.financeApproval?.approvedAt ? new Date(po.financeApproval.approvedAt).toLocaleDateString() : '-',
       vendor: po.supplierId?.name || '-',
       totalAmount: Number(po.totalAmount) || 0,
-      deliveryDate: '-', // not tracked in schema
-      deliveryStatus: '-', // not tracked in schema
+      deliveryDate: '-', 
+      deliveryStatus: '-', 
       status: po.status,
-      priority: '-', // not tracked in schema
+      priority: '-',
       items: (po.items || []).map((it, idx) => ({
         id: it._id || idx + 1,
         name: (it.materialId && typeof it.materialId === 'object' ? it.materialId.materialName : (it.materialName || String(it.materialId || ''))) || '-',
