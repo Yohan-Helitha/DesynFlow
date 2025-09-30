@@ -11,8 +11,9 @@ export const PaymentActionModal = ({ payment, onClose }) => {
     setLoading(true);
     setError(null);
     try {
+      const id = payment._id || payment.inspectionRequestId || payment.id;
       const res = await fetch(
-        `/api/inspection-estimation/${payment.inspectionRequestId}/verify-payment`,
+        `/api/inspection-estimation/${id}/verify-payment`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

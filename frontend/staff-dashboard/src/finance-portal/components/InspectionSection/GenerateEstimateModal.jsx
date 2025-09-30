@@ -23,7 +23,11 @@ export const GenerateEstimateModal = ({ inspection, onClose, onDataChanged }) =>
 
   const handleGenerate = async () => {
     try {
-      const res = await fetch(`/api/inspection-estimation/${inspection.inspectionRequestId}/estimate`, {
+  const requestId = inspection?._id || inspection?.inspectionRequestId || inspection?.id;
+      if (!requestId) {
+        throw new Error('Missing inspection request ID');
+      }
+      const res = await fetch(`/api/inspection-estimation/${requestId}/estimate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ distance: parseFloat(distance), estimatedCost: parseFloat(estimatedCost) })

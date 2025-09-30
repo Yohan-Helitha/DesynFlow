@@ -6,8 +6,27 @@ import { EstimateToEstimateModal } from './EstimateToEstimateModal';
 import { ViewInspectionEstimationModal } from '../InspectionSection/ViewInspectionEstimationModal';
 import { safeFetchJson } from '../../utils/safeFetch';
 
-// Utility to format numbers as currency-ish
-const fmt = (n) => (typeof n === 'number' ? n.toLocaleString() : '0');
+const fmt = (n) => {
+  const num = typeof n === 'number' ? n : (n ? Number(n) : 0);
+  return Number.isFinite(num) ? num.toLocaleString() : '0';
+};
+
+const getProjectLabel = (item) => {
+  const p = item?.projectId;
+  if (p && typeof p === 'object') return p.projectName || p.projectId || p._id || '';
+  return p || '';
+};
+
+const getSortValue = (item, field) => {
+  const v = item?.[field];
+  if (field === 'projectId') return (getProjectLabel(item) || '').toString().toLowerCase();
+  if (field === 'createdAt' || field === 'updatedAt') return v ? new Date(v).getTime() : 0;
+  if (['laborCost','materialCost','serviceCost','contingencyCost','total','version'].includes(field)) {
+    const n = typeof v === 'number' ? v : Number(v);
+    return Number.isFinite(n) ? n : -Infinity;
+  }
+  return (v ?? '').toString().toLowerCase();
+};
 
 export const EstimationsHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,7 +61,9 @@ export const EstimationsHistory = () => {
     setCreateError(null);
     try {
       const payload = {
-        projectId: selectedEstimation.projectId,
+        projectId: (selectedEstimation.projectId && typeof selectedEstimation.projectId === 'object')
+          ? (selectedEstimation.projectId._id || selectedEstimation.projectId.id)
+          : selectedEstimation.projectId,
         materialCost: Number(costs.materialCost),
         laborCost: Number(costs.laborCost),
         serviceCost: Number(costs.serviceCost),
@@ -80,17 +101,27 @@ export const EstimationsHistory = () => {
     }
   };
 
+  const search = (searchTerm || '').toLowerCase();
   const filteredEstimations = estimations
-    .filter(
-      (est) =>
-        (est.projectId && est.projectId.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (est.version && est.version.toString().includes(searchTerm)) ||
-        (est.total && est.total.toString().includes(searchTerm)) ||
-        (est.createdAt && new Date(est.createdAt).toLocaleDateString().toLowerCase().includes(searchTerm.toLowerCase()))
-    )
+    .filter((est) => {
+      const projectStr = getProjectLabel(est).toString().toLowerCase();
+      const versionStr = (est.version ?? '').toString();
+      const totalStr = (est.total ?? '').toString();
+      const statusStr = (est.status || '').toString().toLowerCase();
+      const createdStr = est.createdAt ? new Date(est.createdAt).toLocaleDateString().toLowerCase() : '';
+      return (
+        projectStr.includes(search) ||
+        versionStr.includes(search) ||
+        totalStr.includes(search) ||
+        statusStr.includes(search) ||
+        createdStr.includes(search)
+      );
+    })
     .sort((a, b) => {
-      if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
-      if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
+      const av = getSortValue(a, sortField);
+      const bv = getSortValue(b, sortField);
+      if (av < bv) return sortDirection === 'asc' ? -1 : 1;
+      if (av > bv) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
 
@@ -136,13 +167,8 @@ export const EstimationsHistory = () => {
               <table className="min-w-full w-full divide-y divide-[#AAB396] border-collapse">
                 <thead className="bg-[#F7EED3]">
                   <tr>
-                    {/*
-                      Replace header columns
-                      - Expanded to include all key estimation fields
-                      - Sorting and formatting applied
-                    */}
                     { [
-                      { label: 'Project ID', field: 'projectId' },
+                      { label: 'Project', field: 'projectId' },
                       { label: 'Version', field: 'version' },
                       { label: 'Status', field: 'status' },
                       { label: 'Labor', field: 'laborCost' },
@@ -172,7 +198,7 @@ export const EstimationsHistory = () => {
                 <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                   {paginatedEstimations.map(item => (
                     <tr key={item._id || item.id} className="hover:bg-[#F7EED3]">
-                      <td className="px-3 py-2 text-xs font-mono text-[#674636]">{item.projectId}</td>
+                      <td className="px-3 py-2 text-xs font-mono text-[#674636]">{getProjectLabel(item)}</td>
                       <td className="px-3 py-2 text-xs text-[#674636]">v{item.version}</td>
                       <td className="px-3 py-2 text-xs">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${

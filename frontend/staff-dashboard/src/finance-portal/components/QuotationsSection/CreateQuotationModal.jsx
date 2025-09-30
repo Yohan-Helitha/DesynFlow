@@ -230,7 +230,7 @@ export const QuotationFormModal = ({
 
           {/* Labor Items */}
           <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Labor Items</h4>
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Labor Cost</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.laborItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
@@ -289,7 +289,7 @@ export const QuotationFormModal = ({
 
           {/* Material Items */}
           <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Material Items</h4>
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Material Cost</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.materialItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
@@ -366,7 +366,7 @@ export const QuotationFormModal = ({
 
           {/* Service Items */}
           <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Service Items</h4>
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Service Cost</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.serviceItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
@@ -410,7 +410,7 @@ export const QuotationFormModal = ({
 
           {/* Contingency Items */}
           <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Contingency Items</h4>
+            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Contingency Cost</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.contingencyItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-center">

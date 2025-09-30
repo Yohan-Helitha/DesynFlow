@@ -69,8 +69,6 @@ export const Dashboard = () => {
               <DollarSign size={20} />
             </div>
           }
-          change="+1.29%"
-          changeType="positive"
           onClick={() => handleCardClick('income')}
         />
 
@@ -82,8 +80,6 @@ export const Dashboard = () => {
               <Wallet size={20} />
             </div>
           }
-          change="+2.36%"
-          changeType="positive"
           onClick={() => handleCardClick('balance')}
         />
 

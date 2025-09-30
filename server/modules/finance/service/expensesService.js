@@ -3,7 +3,8 @@ import Expense from '../model/expenses.js';
 
 // Get all expenses
 const getAllExpenses = async () => {
-    return await Expense.find();
+    // newest first by createdAt
+    return await Expense.find().sort({ createdAt: -1 });
 };
 
 // Get expense by ID
@@ -19,7 +20,7 @@ const updateExpenseById = async (id, updateData) => {
 export {
     getAllExpenses,
     getExpensesByProjectAndCategory,
-        updateExpenseById
+    updateExpenseById,
 };
 
 // Create a new expense
@@ -29,7 +30,7 @@ export const createExpense = async ({ projectId, description, category, amount, 
         description,
         category,
         amount: Number(amount),
-        proof: proof || null
+        proof: proof || null,
     };
     return await Expense.create(data);
 };

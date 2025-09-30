@@ -50,6 +50,26 @@ export const ExpensesList = () => {
 
   const handleAddExpense = () => setShowAddModal(true)
 
+  const handleCreated = (created) => {
+    // Normalize createdAt to Date for sorting
+    const normalize = (e) => ({
+      ...e,
+      createdAt: e.createdAt || new Date().toISOString(),
+    })
+    setExpenses((prev) => {
+      const next = [normalize(created), ...prev]
+      return next
+    })
+    // Ensure newest shows first page
+    setCurrentPage(1)
+  }
+
+  const handleUpdated = (updated) => {
+    setExpenses((prev) => prev.map(e => (e._id === updated._id ? { ...e, ...updated } : e)))
+    // Keep modal in sync if it's open on this expense
+    setSelectedExpense((cur) => (cur && (cur._id === updated._id) ? { ...cur, ...updated } : cur))
+  }
+
   const handleDownloadReceipt = (receiptUrl) => {
     console.log(`Downloading receipt from ${receiptUrl}`)
     // Implement actual download if needed
@@ -64,6 +84,12 @@ export const ExpensesList = () => {
     }
   }
 
+  // Compute an effective date for sorting
+  const getEffectiveDate = (e) => {
+    const val = e.date || e.createdAt || e.updatedAt
+    return val ? new Date(val).getTime() : 0
+  }
+
   // Filter and sort expenses
   const filteredExpenses = expenses
     .filter(
@@ -76,6 +102,11 @@ export const ExpensesList = () => {
           (expense.submittedBy || '').toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
+      if (sortField === 'date') {
+        const ad = getEffectiveDate(a)
+        const bd = getEffectiveDate(b)
+        return sortDirection === 'asc' ? ad - bd : bd - ad
+      }
       if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1
       if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1
       return 0
@@ -199,8 +230,19 @@ export const ExpensesList = () => {
       </div>
 
       {/* Modals */}
-      {showViewModal && <ViewExpenseModal expense={selectedExpense} onClose={() => setShowViewModal(false)} />}
-      {showAddModal && <AddExpenseModal onClose={() => setShowAddModal(false)} />}
+      {showViewModal && (
+        <ViewExpenseModal
+          expense={selectedExpense}
+          onClose={() => setShowViewModal(false)}
+          onUpdated={handleUpdated}
+        />
+      )}
+      {showAddModal && (
+        <AddExpenseModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={handleCreated}
+        />
+      )}
     </div>
   )
 }

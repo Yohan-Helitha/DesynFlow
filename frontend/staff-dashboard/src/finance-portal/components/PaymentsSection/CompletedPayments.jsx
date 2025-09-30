@@ -12,8 +12,6 @@ import {
   Download,
 } from 'lucide-react'
 
-
-
 // Fetch reviewed payments from backend
 export const CompletedPayments = () => {
   const [payments, setPayments] = useState([]);
@@ -22,13 +20,13 @@ export const CompletedPayments = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState('verifiedTime');
+  const [sortField, setSortField] = useState('updatedAt'); // reviewed time
   const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setLoading(true);
-  fetch('/api/payments/processed')
+    fetch('/api/payments/processed')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch reviewed payments');
         return res.json();
@@ -57,19 +55,25 @@ export const CompletedPayments = () => {
     }
   };
 
+  const getDate = (p) => new Date(p.updatedAt || p.createdAt || 0).getTime();
+
   // Filter and sort payments
   const filteredPayments = payments
     .filter(
       (payment) =>
-        (payment.projectId && payment.projectId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (payment.clientId && payment.clientId.toLowerCase().includes(searchTerm.toLowerCase()))
+        (payment.projectId && String(payment.projectId).toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (payment.clientId && String(payment.clientId).toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
+      if (sortField === 'updatedAt') {
+        const ad = getDate(a)
+        const bd = getDate(b)
+        return sortDirection === 'asc' ? ad - bd : bd - ad
+      }
       if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
       if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-
 
   // Pagination
   const itemsPerPage = 10;
@@ -123,17 +127,17 @@ export const CompletedPayments = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('method')}>Method <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('type')}>Type <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Receipt</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('verifiedTime')}>Verified Time <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('updatedAt')}>Reviewed Time <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('status')}>Status <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{payment.projectId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.clientId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${payment.amount.toLocaleString()}</td>
+                <tr key={payment._id} className="hover:bg-[#F7EED3]">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{String(payment.projectId)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{String(payment.clientId)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${Number(payment.amount).toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.method}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.type}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] underline cursor-pointer">

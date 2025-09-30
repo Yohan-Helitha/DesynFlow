@@ -51,18 +51,8 @@ const PaymentDetailsModal = ({ payment, onClose }) => {
               )}
             </div>
           </div>
-          {/* Receipt */}
-          <div className="flex items-center space-x-4 mt-4">
-            {payment.receiptUrl ? (
-              <a href={buildUploadsUrl(payment.receiptUrl, 'payments')} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-white hover:bg-[#AAB396] flex items-center">
-                <Download size={16} className="mr-2" />
-                View Receipt
-              </a>
-            ) : (
-              <span className="text-gray-400">No Receipt</span>
-            )}
-          </div>
 
+          {/* Receipt */}
           {payment.receiptUrl && (
             <div className="mt-4">
               <div className="text-sm font-medium text-[#674636] mb-2">Receipt Preview</div>
@@ -88,6 +78,7 @@ const PaymentDetailsModal = ({ payment, onClose }) => {
               })()}
             </div>
           )}
+
           {/* Comment */}
           {payment.comment && (
             <div className="mt-4">
@@ -97,6 +88,19 @@ const PaymentDetailsModal = ({ payment, onClose }) => {
               </div>
             </div>
           )}
+
+          {/* Receipt */}
+          <div className="flex items-center space-x-4 mt-4">
+            {payment.receiptUrl ? (
+              <a href={buildUploadsUrl(payment.receiptUrl, 'payments')} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-white hover:bg-[#AAB396] flex items-center">
+                <Download size={16} className="mr-2" />
+                View Receipt
+              </a>
+            ) : (
+              <span className="text-gray-400">No Receipt</span>
+            )}
+          </div>
+
         </div>
       </div>
     </div>

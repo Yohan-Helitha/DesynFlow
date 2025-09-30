@@ -225,19 +225,12 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
             Close
           </button>
 
-          <button className="px-4 py-2 bg-[#674636] text-[#FFF8E8] rounded-md text-sm font-medium hover:bg-[#AAB396] transition-colors flex items-center">
-            <Download size={16} className="mr-2" />
-            Download Certificate
-          </button>
-
           {isActive && warranty.daysRemaining <= 30 && (
             <button className="px-4 py-2 bg-[#F7EED3] text-[#674636] border border-[#AAB396] rounded-md text-sm font-medium hover:bg-[#AAB396] hover:text-[#FFF8E8] transition-colors flex items-center">
               <Bell size={16} className="mr-2" />
               Send Reminder
             </button>
           )}
-
-          {/* Renew button removed for expired warranties */}
         </div>
       </div>
     </div>

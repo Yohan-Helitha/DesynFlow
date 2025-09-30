@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 
-export const AddExpenseModal = ({ onClose }) => {
+export const AddExpenseModal = ({ onClose, onCreated }) => {
   const [formData, setFormData] = useState({
     projectId: '',
     description: '',
@@ -27,11 +27,18 @@ export const AddExpenseModal = ({ onClose }) => {
     data.append('category', formData.category)
     data.append('amount', formData.amount)
     if (formData.proof) data.append('proof', formData.proof)
-    await fetch('/api/expenses', {
-      method: 'POST',
-      body: data,
-    })
-    onClose()
+
+    try {
+      const res = await fetch('/api/expenses', { method: 'POST', body: data })
+      const json = await res.json().catch(() => ({}))
+      const created = json?.expense || json // controller returns { expense } on success
+      if (res.ok && created) {
+        // Optimistically inform parent so it can prepend the new expense
+        onCreated && onCreated(created)
+      }
+    } finally {
+      onClose()
+    }
   }
 
   const categories = ['Labor', 'Procurement', 'Transport', 'Misc']

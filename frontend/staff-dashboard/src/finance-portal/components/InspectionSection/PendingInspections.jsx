@@ -79,24 +79,48 @@ export const PendingInspections = () => {
 
 
   const handleSort = (field) => {
-    if (sortField === field) {
+    const normalizedField = field === 'id' ? '_id' : field;
+    if (sortField === normalizedField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortField(field);
+      setSortField(normalizedField);
       setSortDirection('asc');
     }
   };
 
   const filteredInspections = pendingInspections
-    .filter(
-      (inspection) =>
-        (inspection.id || inspection._id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (inspection.clientName || inspection.client_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (inspection.siteLocation || inspection.site_location || '').toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((inspection) => {
+      const q = (searchTerm || '').toLowerCase();
+      if (!q) return true;
+      const fields = [
+        inspection._id,
+        inspection.id,
+        inspection.client_name,
+        inspection.clientName,
+        inspection.email,
+        inspection.phone_number,
+        inspection.propertyLocation_address,
+        inspection.propertyLocation_city,
+      ]
+        .filter(Boolean)
+        .map((v) => String(v).toLowerCase());
+      return fields.some((v) => v.includes(q));
+    })
     .sort((a, b) => {
-      if ((a[sortField] || '') < (b[sortField] || '')) return sortDirection === 'asc' ? -1 : 1;
-      if ((a[sortField] || '') > (b[sortField] || '')) return sortDirection === 'asc' ? 1 : -1;
+      let av;
+      let bv;
+      if (sortField === 'clientName') {
+        av = (a.clientName || a.client_name || '').toLowerCase();
+        bv = (b.clientName || b.client_name || '').toLowerCase();
+      } else if (sortField === '_id') {
+        av = String(a._id || '');
+        bv = String(b._id || '');
+      } else {
+        av = (a[sortField] || '').toString().toLowerCase();
+        bv = (b[sortField] || '').toString().toLowerCase();
+      }
+      if (av < bv) return sortDirection === 'asc' ? -1 : 1;
+      if (av > bv) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
   const itemsPerPage = 10;
@@ -173,13 +197,13 @@ export const PendingInspections = () => {
               <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                 {paginatedInspections.map((inspection) => (
                   <tr key={inspection.id || inspection._id} className="hover:bg-[#F7EED3] transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-[#674636] font-mono text-xs">{inspection.inspectionRequestId || inspection.id || inspection._id}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636] font-mono text-xs">{inspection.clientId || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.clientName || inspection.client_name}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.email}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.phone}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.siteLocation || inspection.site_location}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.propertyType || inspection.property_type}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-[#674636] font-mono text-xs">{String(inspection._id || inspection.id || inspection.inspectionRequestId || '')}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636] font-mono text-xs">{String(inspection.client_ID || inspection.clientId || '-')}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.clientName || inspection.client_name || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.email || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.phone_number || inspection.phone || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636]">{[inspection.propertyLocation_address, inspection.propertyLocation_city].filter(Boolean).join(', ') || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.propertyType || inspection.property_type || '-'}</td>
                     {/* Removed Floors column */}
                     <td className="px-6 py-4">
                       <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">

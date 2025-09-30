@@ -75,13 +75,13 @@ export const InspectionPaymentsHistory = () => {
 
   const sortedPayments = [...pendingPayments]
     .filter((payment) => {
-      const q = searchTerm.toLowerCase();
-      return (
-        (payment.inspectionRequestId && payment.inspectionRequestId.toLowerCase().includes(q)) ||
-        (payment.clientName && payment.clientName.toLowerCase().includes(q)) ||
-        (payment.email && payment.email.toLowerCase().includes(q)) ||
-        (payment.siteLocation && payment.siteLocation.toLowerCase().includes(q))
-      );
+      const q = (searchTerm || '').toLowerCase();
+      const idStr = String(payment._id || payment.inspectionRequestId || '').toLowerCase();
+      const nameStr = String(payment.client_name || payment.clientName || '').toLowerCase();
+      const emailStr = String(payment.email || '').toLowerCase();
+      const siteParts = [payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(' ').toLowerCase();
+      const legacySite = String(payment.siteLocation || '').toLowerCase();
+      return [idStr, nameStr, emailStr, siteParts, legacySite].some((v) => v.includes(q));
     })
     .sort((a, b) => {
       if (!a[sortField] || !b[sortField]) return 0;
@@ -147,13 +147,13 @@ export const InspectionPaymentsHistory = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
                 <tr key={payment._id || payment.inspectionRequestId} className="hover:bg-[#F7EED3] transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-[#674636] font-mono text-xs">{payment.inspectionRequestId}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] font-mono text-xs">{payment.clientId || (payment.client && payment.client._id)}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.clientName || (payment.client && payment.client.name)}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.email}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.phone}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.siteLocation}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.propertyType}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-[#674636] font-mono text-xs">{String(payment._id || payment.inspectionRequestId || '')}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] font-mono text-xs">{String(payment.client_ID || payment.clientId || (payment.client && payment.client._id) || '-')}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.client_name || payment.clientName || (payment.client && payment.client.name) || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.email || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.phone_number || payment.phone || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{[payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(', ') || payment.siteLocation || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.propertyType || '-'}</td>
                   <td className="px-6 py-4 text-sm text-[#674636] font-semibold">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `$${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
                   <td className="px-6 py-4 text-sm text-[#674636]">{payment.status || (payment.estimation && payment.estimation.status) || '-'}</td>
                   <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer">

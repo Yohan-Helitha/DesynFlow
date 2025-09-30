@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Eye, RefreshCw } from 'lucide-react';
+import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Wrench, RefreshCw } from 'lucide-react';
 import WarrantyClaimActionModal from './WarrantyClaimActionModal';
 
 // Table displaying warranty claims (warrenty_claim model)
@@ -162,7 +162,7 @@ export const WarrantyRequest = () => {
 											onClick={() => handleView(row)}
 											className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors"
 										>
-											<Eye size={16} className="inline mr-1" /> View
+											<Wrench size={16} className="inline mr-1" /> Action
 										</button>
 									</td>
 								</tr>

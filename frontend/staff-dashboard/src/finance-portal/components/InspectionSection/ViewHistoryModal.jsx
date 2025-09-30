@@ -19,15 +19,19 @@ export const ViewHistoryModal = ({ historyData }) => {
     setSelectedInspection(null);
   };
 
-  // Filter and paginate data
+  // Filter and paginate data (null-safe string coercion)
   const filteredData = (historyData || []).filter((item) => {
-    const q = searchTerm.toLowerCase();
-    const req = item.inspectionRequest || {};
+    const q = (searchTerm || '').toLowerCase();
+    const req = item?.inspectionRequest || {};
+    const reqIdText = String(item?.inspectionRequestId ?? '').toLowerCase();
+    const clientName = String(req?.client_name ?? '').toLowerCase();
+    const email = String(req?.email ?? '').toLowerCase();
+    const site = [req?.propertyLocation_address, req?.propertyLocation_city].filter(Boolean).join(' ').toLowerCase();
     return (
-      (item.inspectionRequestId && item.inspectionRequestId.toLowerCase().includes(q)) ||
-      (req.clientName && req.clientName.toLowerCase().includes(q)) ||
-      (req.email && req.email.toLowerCase().includes(q)) ||
-      (req.siteLocation && req.siteLocation.toLowerCase().includes(q))
+      (reqIdText && reqIdText.includes(q)) ||
+      (clientName && clientName.includes(q)) ||
+      (email && email.includes(q)) ||
+      (site && site.includes(q))
     );
   });
 
@@ -79,22 +83,22 @@ export const ViewHistoryModal = ({ historyData }) => {
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {pageSlice.map((item, index) => {
-                const req = item.inspectionRequest || {};
+                const req = item?.inspectionRequest || {};
                 return (
                   <tr key={index} className="hover:bg-[#F7EED3] transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">{item.inspectionRequestId || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">{req.clientId || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.clientName || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.email || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.phone || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.siteLocation || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req.propertyType || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item.distanceKm || item.distance || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-semibold">{item.estimatedCost ? `$${item.estimatedCost.toLocaleString()}` : '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : (item.createdDate || item.date || '-')}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">{String(item?.inspectionRequestId ?? '') || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">{String(req?.client_ID ?? '') || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.client_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.email || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.phone_number || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{[req?.propertyLocation_address, req?.propertyLocation_city].filter(Boolean).join(', ') || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.propertyType || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item?.distanceKm ?? item?.distance ?? '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-semibold">{typeof item?.estimatedCost === 'number' ? `$${item.estimatedCost.toLocaleString()}` : '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item?.createdAt ? new Date(item.createdAt).toLocaleDateString() : (req?.createdAt ? new Date(req.createdAt).toLocaleDateString() : (item?.createdDate || item?.date || '-'))}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => handleViewInspection(item)}
+                        onClick={() => setShowModal(true) || setSelectedInspection(item)}
                         className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md transition-colors flex items-center justify-center"
                       >
                         <Eye size={14} className="mr-1" />

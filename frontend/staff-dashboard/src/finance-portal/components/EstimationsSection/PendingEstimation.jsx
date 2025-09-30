@@ -312,14 +312,14 @@ export const PendingEstimation = () => {
               body: JSON.stringify(payload),
             });
             if (res.ok) {
-              // Re-fetch pending projects so UI updates
+              // Re-fetch pending projects
               try {
                 const refreshed = await fetch('/api/project-estimation/projects-with-inspections');
                 if (refreshed.ok) {
                   const data = await refreshed.json();
                   setProjects(data);
                 }
-              } catch(e) { /* swallow */ }
+              } catch(e) { console.error(e); }
             }
             setSelectedProject(null);
           }}

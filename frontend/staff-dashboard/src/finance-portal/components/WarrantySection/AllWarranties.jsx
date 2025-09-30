@@ -138,7 +138,7 @@ export const AllWarranties = () => {
     });
 
   // Pagination
-  const itemsPerPage = 4;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredWarranties.length / itemsPerPage);
   const paginatedWarranties = filteredWarranties.slice(
     (currentPage - 1) * itemsPerPage,
@@ -299,9 +299,9 @@ export const AllWarranties = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-[#F7EED3] divide-y divide-[#AAB396]">
+            <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedWarranties.map((warranty) => (
-                <tr key={warranty._id} className="hover:bg-[#FFF8E8]">
+                <tr key={warranty._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">
                     {warranty._id}
                   </td>
