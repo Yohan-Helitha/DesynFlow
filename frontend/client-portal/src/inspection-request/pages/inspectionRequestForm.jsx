@@ -230,14 +230,25 @@ const InspectionRequestForm = () => {
           </div>
         </div>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-green-primary text-white p-2 rounded hover:bg-soft-green"
-        >
-          {loading ? "Submitting..." : "Submit Inspection Request"}
-        </button>
+        {/* Submit Button - Always Visible */}
+        <div className="mt-8 pt-4 border-t border-brown-primary-300 bg-white">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-primary text-white p-4 rounded-lg hover:bg-soft-green transition-colors duration-200 font-bold text-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-h-[60px] flex items-center justify-center"
+            style={{ 
+              display: 'block !important', 
+              visibility: 'visible !important', 
+              position: 'relative', 
+              zIndex: 1000,
+              backgroundColor: '#4ade80',
+              color: '#ffffff',
+              border: '2px solid #22c55e'
+            }}
+          >
+            {loading ? "Submitting..." : "Submit Inspection Request"}
+          </button>
+        </div>
       </form>
     </div>
   );
