@@ -54,12 +54,12 @@ const InspectionRequestForm = () => {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage("✅ Inspection request submitted successfully!");
+        setMessage("Inspection request submitted successfully!");
       } else {
-        setMessage(`❌ ${data.message || "Failed to submit request"}`);
+        setMessage(` ${data.message || "Failed to submit request"}`);
       }
     } catch (error) {
-      setMessage("❌ Server error. Please try again.");
+      setMessage(" Server error. Please try again.");
     } finally {
       setLoading(false);
     }
