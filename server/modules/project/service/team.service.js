@@ -3,8 +3,12 @@ import User from '../../auth/model/user.model.js';
 import Project from '../model/project.model.js';
 import mongoose from 'mongoose';
 
-export const getTeamsService = async () => {
+export const getTeamsService = async (populateMembers = false) => {
   const teams = await Team.find().populate('leaderId', 'username email role');
+  
+  if (!populateMembers) {
+    return teams;
+  }
   
   // Manually populate each member's userId
   const teamsWithPopulatedMembers = await Promise.all(

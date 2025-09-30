@@ -33,6 +33,16 @@ export const getTeams = async (req, res) => {
   }
 };
 
+// View all teams with populated user data
+export const getTeamsPopulated = async (req, res) => {
+  try {
+    const teams = await getTeamsService(true); // Pass true for populated data
+    res.json(teams);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching teams with user data', error: error.message });
+  }
+};
+
 // Get available users (not assigned to any active team)
 export const getAvailableUsers = async (req, res) => {
   try {

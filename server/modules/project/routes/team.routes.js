@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getTeams,
+  getTeamsPopulated,
   getAvailableUsers,
   createTeam,
   deleteTeam,
@@ -13,6 +14,9 @@ const router = express.Router();
 
 // View all teams and their members
 router.get('/teams', getTeams);
+
+// View all teams with populated user data
+router.get('/teams/populated', getTeamsPopulated);
 
 // Get available users for team creation
 router.get('/users/available', getAvailableUsers);
