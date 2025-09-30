@@ -7,7 +7,6 @@ import { FaPlus, FaEye, FaFileAlt, FaTimes, FaBox } from 'react-icons/fa';
 import { Link } from "react-router-dom";
 import { generateSupplierProfilePDF } from "../../utils/pdfGenerator";
 
-// Removed unused legacy URL & fetchHandler
 
 function Supplier_details() {
   const [suppliers, setSuppliers] = useState([]);
