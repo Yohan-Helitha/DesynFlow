@@ -31,9 +31,8 @@ export const AddExpenseModal = ({ onClose, onCreated }) => {
     try {
       const res = await fetch('/api/expenses', { method: 'POST', body: data })
       const json = await res.json().catch(() => ({}))
-      const created = json?.expense || json // controller returns { expense } on success
+      const created = json?.expense || json
       if (res.ok && created) {
-        // Optimistically inform parent so it can prepend the new expense
         onCreated && onCreated(created)
       }
     } finally {
