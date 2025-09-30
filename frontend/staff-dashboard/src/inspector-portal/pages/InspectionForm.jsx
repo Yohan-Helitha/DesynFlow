@@ -72,7 +72,7 @@ const InspectionForm = ({ selectedAssignment }) => {
         InspectionRequest_ID: selectedAssignment.InspectionRequest_ID || "",
         floor_number: "",
         roomID: "",
-        room_name: `${request.clientName} - ${request.propertyAddress}` || "",
+        room_name: "", 
         room_dimension: "",
         inspector_notes: `Assignment for ${request.clientName}. Location: ${request.propertyAddress}. Phone: ${request.clientPhone}`,
       });
@@ -317,15 +317,29 @@ const InspectionForm = ({ selectedAssignment }) => {
             className="border p-2 rounded"
             required
           />
-          <input
-            type="text"
+         <select
             name="room_name"
-            placeholder="Room Name"
             value={formData.room_name}
             onChange={handleChange}
             className="border p-2 rounded"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '40px',
+              backgroundColor: 'white',
+              border: '1px solid #ccc',
+              cursor: 'pointer'
+            }}
             required
-          />
+            onFocus={() => console.log('Dropdown focused')}
+            onClick={() => console.log('Dropdown clicked')}
+          >
+            <option value="">Select a Room</option>
+            <option value="Living Room">Living Room</option>
+            <option value="Bedroom">Bedroom</option>
+            <option value="Kitchen">Kitchen</option>
+            <option value="Office">Office</option>
+          </select>
           <input
             type="text"
             name="room_dimension"
