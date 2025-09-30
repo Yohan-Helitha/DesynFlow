@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import User from '../modules/auth/model/user.model.js';
+import InspectionRequest from '../modules/auth/model/inspectionRequest.model.js';
+import Assignment from '../modules/auth/model/assignment.model.js';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -287,22 +289,110 @@ const hashPasswords = async (users) => {
   return users;
 };
 
+// Create sample inspection requests and assignments
+const createSampleData = async (users) => {
+  try {
+    // Find specific users
+    const clientUser = users.find(u => u.email === 'john.client@gmail.com') || users.find(u => u.role === 'client');
+    const client2User = users.find(u => u.email === 'jane.client@gmail.com') || users.find(u => u.role === 'client');
+    const inspectorUser = users.find(u => u.email === 'mike.inspector@desynflow.com') || users.find(u => u.role === 'inspector');
+    
+    if (!clientUser || !inspectorUser) {
+      console.log('❌ Required users not found for sample data creation');
+      return;
+    }
+
+    // Sample inspection requests
+    const sampleRequests = [
+      {
+        client_ID: clientUser._id,
+        client_name: 'John Smith',
+        email: 'john.client@gmail.com',
+        phone_number: '+94701234567',
+        propertyLocation_address: '123 Main Street, Colombo 03',
+        propertyLocation_city: 'Colombo',
+        propertyType: 'residential',
+        number_of_floor: 2,
+        number_of_room: 4,
+        room_name: ['Living Room', 'Kitchen', 'Master Bedroom', 'Guest Bedroom'],
+        inspection_date: new Date('2025-10-15'),
+        status: 'pending',
+        priority: 'high',
+        estimated_duration: 180
+      },
+      {
+        client_ID: client2User?._id || clientUser._id,
+        client_name: 'Jane Doe',
+        email: 'jane.client@gmail.com',
+        phone_number: '+94709234567',
+        propertyLocation_address: '456 Park Avenue, Kandy',
+        propertyLocation_city: 'Kandy',
+        propertyType: 'apartment',
+        number_of_floor: 1,
+        number_of_room: 3,
+        room_name: ['Living Room', 'Bedroom', 'Kitchen'],
+        inspection_date: new Date('2025-10-20'),
+        status: 'pending',
+        priority: 'medium',
+        estimated_duration: 120
+      },
+      {
+        client_ID: clientUser._id,
+        client_name: 'ABC Company Ltd',
+        email: 'contact@abccompany.lk',
+        phone_number: '+94112345678',
+        propertyLocation_address: '789 Business District, Colombo 02',
+        propertyLocation_city: 'Colombo',
+        propertyType: 'commercial',
+        number_of_floor: 3,
+        number_of_room: 8,
+        room_name: ['Reception', 'Office 1', 'Office 2', 'Conference Room', 'Kitchen', 'Storage', 'Server Room', 'Restroom'],
+        inspection_date: new Date('2025-10-25'),
+        status: 'pending',
+        priority: 'high',
+        estimated_duration: 240
+      }
+    ];
+
+    // Create inspection requests
+    const createdRequests = await InspectionRequest.insertMany(sampleRequests);
+    console.log(`✅ Created ${createdRequests.length} sample inspection requests`);
+
+    // Create assignments for mike_inspector
+    const sampleAssignments = createdRequests.map(request => ({
+      InspectionRequest_ID: request._id,
+      inspector_ID: inspectorUser._id,
+      assignAt: new Date(),
+      status: 'assigned'
+    }));
+
+    const createdAssignments = await Assignment.insertMany(sampleAssignments);
+    console.log(`✅ Created ${createdAssignments.length} sample assignments`);
+
+    console.log('\n📋 Sample Data Summary:');
+    console.log(`   • Inspection Requests: ${createdRequests.length}`);
+    console.log(`   • Assignments: ${createdAssignments.length}`);
+    console.log(`   • Inspector: ${inspectorUser.username} (${inspectorUser.email})`);
+    
+  } catch (error) {
+    console.error('❌ Error creating sample data:', error);
+    throw error;
+  }
+};
+
 // Seed the database
 const seedDatabase = async () => {
   try {
     console.log('🌱 Starting database seeding...');
+    console.log('🔗 Connected to database:', mongoose.connection.name);
+    console.log('� Connection URI:', process.env.MONGO_URI?.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
     
-    // Clear existing users (optional - uncomment if you want to reset)
-    // await User.deleteMany({});
-    // console.log('🗑️  Cleared existing users');
-    
-    // Check if users already exist
-    const existingUsers = await User.find({});
-    if (existingUsers.length > 0) {
-      console.log('ℹ️  Users already exist. Skipping seed...');
-      console.log('📊 Current user count:', existingUsers.length);
-      return;
-    }
+    // Clear existing data for fresh seed
+    console.log('🗑️  Clearing existing data...');
+    await User.deleteMany({});
+    await InspectionRequest.deleteMany({});
+    await Assignment.deleteMany({});
+    console.log('✅ Cleared existing data');
     
     // Hash passwords
     const hashedUsers = await hashPasswords(sampleUsers);
@@ -316,6 +406,10 @@ const seedDatabase = async () => {
     createdUsers.forEach(user => {
       console.log(`   • ${user.username} (${user.email}) - ${user.role}`);
     });
+    
+    // Create sample inspection requests and assignments
+    console.log('\n📝 Creating sample inspection requests and assignments...');
+    await createSampleData(createdUsers);
     
   } catch (error) {
     console.error('❌ Error seeding database:', error);
