@@ -80,7 +80,7 @@
   border: 1px solid rgba(103, 70, 54, 0.15);
   box-shadow: 0 4px 16px rgba(103, 70, 54, 0.08);
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 0.8fr 1fr 1fr;
   gap: 1rem;
   align-items: center;
 }

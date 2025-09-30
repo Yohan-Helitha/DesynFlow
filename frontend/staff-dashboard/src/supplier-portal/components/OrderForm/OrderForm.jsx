@@ -10,7 +10,7 @@ function OrderForm({ onOrderCreated }) {
   const [supplierLocked, setSupplierLocked] = useState(false);
   const [formData, setFormData] = useState({
     supplierId: "",
-    items: [{ materialId: "", materialName: "", quantity: "", pricePerUnit: 0, total: 0 }],
+    items: [{ materialId: "", materialName: "", quantity: "", unit: "", pricePerUnit: 0, total: 0 }],
   });
 
   useEffect(() => {
@@ -38,7 +38,7 @@ function OrderForm({ onOrderCreated }) {
       fetch(`http://localhost:4000/api/materials?supplierId=${formData.supplierId}`)
         .then(res => res.json())
         .then(data => {
-          // Transform data to include material info with pricing
+          // Transform data to include material info with pricing (unit will be selected by user)
           const materialsWithPricing = data.map(item => ({
             _id: item.materialId?._id || item.materialId,
             name: item.materialId?.materialName || `Material-${item._id}`,
@@ -87,7 +87,7 @@ function OrderForm({ onOrderCreated }) {
     const newItems = [...formData.items];
     if (name === "materialId") {
       newItems[index].materialId = value;
-      // Set pricePerUnit from materials list
+      // Set pricePerUnit from materials list, but keep unit selection independent
       const mat = materials.find(m => (m._id === value) || (m.name === value));
       // Track materialName explicitly to avoid showing/storing IDs in UI
       newItems[index].materialName = mat ? mat.name : "";
@@ -102,6 +102,8 @@ function OrderForm({ onOrderCreated }) {
       const price = mat && mat.pricePerUnit ? mat.pricePerUnit : Number(newItems[index].pricePerUnit) || 0;
       newItems[index].pricePerUnit = price;
       newItems[index].total = price * Number(value);
+    } else if (name === "unit") {
+      newItems[index].unit = value;
     }
     setFormData({ ...formData, items: newItems });
   };
@@ -110,22 +112,27 @@ function OrderForm({ onOrderCreated }) {
   const addItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { materialId: "", quantity: "", pricePerUnit: 0, total: 0 }],
+      items: [...formData.items, { materialId: "", materialName: "", quantity: "", unit: "", pricePerUnit: 0, total: 0 }],
     });
   };
 
   // submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Format items for backend: send materialId, qty, unitPrice
+    // Format items for backend: send materialId, qty, unit, unitPrice
+    console.log('Form data items before formatting:', formData.items);
+    
     const formattedItems = formData.items
-      .filter(item => item.materialId)
+      .filter(item => item.materialId && item.unit && item.quantity)
       .map(item => ({
         materialId: item.materialId,
         materialName: item.materialName || undefined,
         qty: Number(item.quantity),
+        unit: item.unit,
         unitPrice: Number(item.pricePerUnit)
       }));
+    
+    console.log('Sending items with units:', formattedItems);
     // Only submit if supplier is selected
     const isValidObjectId = v => /^[a-f\d]{24}$/i.test(v);
     if (!isValidObjectId(formData.supplierId)) {
@@ -133,7 +140,7 @@ function OrderForm({ onOrderCreated }) {
       return;
     }
     if (formattedItems.length === 0) {
-      console.warn('Please add at least one valid item with a material selected.');
+      console.warn('Please add at least one valid item with material, unit, and quantity selected.');
       return;
     }
     // Add dummy projectId and requestedBy to satisfy backend validation
@@ -154,7 +161,7 @@ function OrderForm({ onOrderCreated }) {
   console.log('Order created successfully!');
         setFormData({
           supplierId: "",
-          items: [{ materialId: "", materialName: "", quantity: "", pricePerUnit: 0, total: 0 }],
+          items: [{ materialId: "", materialName: "", quantity: "", unit: "", pricePerUnit: 0, total: 0 }],
         });
         if (onOrderCreated) onOrderCreated(newOrder); // notify parent to refresh
         // Navigate back to Orders list (rating now only via Received button there)
@@ -231,6 +238,19 @@ function OrderForm({ onOrderCreated }) {
                 onChange={(e) => handleItemChange(index, e)}
                 required
               />
+              <select
+                name="unit"
+                value={item.unit || ""}
+                onChange={(e) => handleItemChange(index, e)}
+                required
+                title="Select unit type"
+              >
+                <option value="">Select Unit</option>
+                <option value="Kilo">Kilo</option>
+                <option value="Meters">Meters</option>
+                <option value="Liters">Liters</option>
+                <option value="pieces">pieces</option>
+              </select>
               <input
                 type="number"
                 name="pricePerUnit"

@@ -58,6 +58,10 @@ function Orders() {
         
         const data = await res.json();
         console.log("Orders fetched successfully:", data);
+        if (data.length > 0) {
+          console.log("First order items:", data[0].items);
+          console.log("Sample item:", data[0].items?.[0]);
+        }
         setOrders(data);
       } catch (err) {
         console.error("Error fetching orders:", err);
@@ -177,6 +181,7 @@ function Orders() {
               <th>Supplier</th>
               <th>Materials</th>
               <th>Quantity</th>
+              <th>Unit</th>
               <th>Unit Price</th>
               <th>Total Amount</th>
               <th>Status</th>
@@ -209,6 +214,15 @@ function Orders() {
                     <div className="quantity-list">
                       {order.items?.map((item, i) => (
                         <div key={i} className="qty-item">{item.qty || item.quantity}</div>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="unit-list">
+                      {order.items?.map((item, i) => (
+                        <div key={i} className="unit-item" title={`Debug: ${JSON.stringify(item)}`}>
+                          {item.unit || 'N/A'}
+                        </div>
                       ))}
                     </div>
                   </td>
@@ -286,7 +300,7 @@ function Orders() {
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="no-data">
+                <td colSpan="9" className="no-data">
                     <div className="empty-state">
                     <FaClipboardList className="empty-icon" />
                     <p>No orders found</p>
