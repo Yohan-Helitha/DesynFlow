@@ -59,3 +59,19 @@ textarea {
 .submit-btn:hover {
   background-color: #5c4033;
 }
+
+/* No materials message */
+.no-materials-message {
+  color: #674636;
+  background: #FFF8E8;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+/* Material select styling */
+.material-select {
+  color: #674636;
+  background: #F7EED3;
+}

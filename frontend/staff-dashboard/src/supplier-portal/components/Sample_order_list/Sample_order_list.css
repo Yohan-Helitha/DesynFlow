@@ -295,6 +295,12 @@ body.sidebar-open .sample-order-list-page {
   margin-left: 280px;
 }
 
+/* Profile Settings Disabled Style */
+.profile-settings-disabled {
+  color: #AAB3A0;
+  cursor: default;
+}
+
 /* ===== Responsive Design ===== */
 @media (max-width: 768px) {
   .sidebar {

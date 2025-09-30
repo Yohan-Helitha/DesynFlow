@@ -154,3 +154,19 @@ body {
     margin-top: 8px;
   }
 }
+
+/* Phone validation styles */
+.phone-input-error {
+  border-color: #ff4444 !important;
+}
+
+.phone-input-normal {
+  border-color: #ddd;
+}
+
+.phone-error-message {
+  color: #ff4444;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}

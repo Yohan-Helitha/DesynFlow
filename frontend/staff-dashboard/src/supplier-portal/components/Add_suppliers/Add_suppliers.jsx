@@ -19,10 +19,44 @@ function Add_suppliers() {
     name: "",
     pricePerUnit: ""
   });
+  const [phoneError, setPhoneError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handlePhoneChange = (e) => {
+    const { value } = e.target;
+    
+    // Remove all non-digit characters
+    const numbersOnly = value.replace(/\D/g, '');
+    
+    // Validate phone number
+    if (numbersOnly === '') {
+      setPhoneError('');
+      setFormData({ ...formData, phone: '' });
+      return;
+    }
+    
+    if (numbersOnly.length > 10) {
+      setPhoneError('Phone number must be exactly 10 digits');
+      return;
+    }
+    
+    if (numbersOnly.length > 0 && numbersOnly[0] !== '0') {
+      setPhoneError('Phone number must start with 0');
+      setFormData({ ...formData, phone: numbersOnly });
+      return;
+    }
+    
+    if (numbersOnly.length === 10) {
+      setPhoneError('');
+    } else if (numbersOnly.length < 10) {
+      setPhoneError('Phone number must be exactly 10 digits');
+    }
+    
+    setFormData({ ...formData, phone: numbersOnly });
   };
 
   const handleMaterialChange = (e) => {
@@ -63,6 +97,17 @@ function Add_suppliers() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate phone number
+    if (!formData.phone || formData.phone.length !== 10) {
+      setPhoneError('Phone number must be exactly 10 digits');
+      return;
+    }
+    
+    if (formData.phone[0] !== '0') {
+      setPhoneError('Phone number must start with 0');
+      return;
+    }
 
     if (formData.materials.length === 0) {
         console.log("Please add at least one material with its price.");
@@ -156,10 +201,17 @@ function Add_suppliers() {
             type="tel"
             name="phone"
             value={formData.phone}
-            onChange={handleChange}
-            placeholder="Enter phone number"
+            onChange={handlePhoneChange}
+            placeholder="Enter phone number (e.g., 0771234567)"
+            maxLength="10"
             required
+            className={phoneError ? 'phone-input-error' : 'phone-input-normal'}
           />
+          {phoneError && (
+            <div className="phone-error-message">
+              {phoneError}
+            </div>
+          )}
         </div>
 
         {/* Materials with Pricing */}

@@ -146,7 +146,7 @@ function Sample_order() {
         <div className="form-group">
           <label>Material</label>
           {formData.supplierId && materials.length === 0 ? (
-            <div style={{ color: '#674636', background: '#FFF8E8', padding: '8px', borderRadius: '6px', marginBottom: '8px', textAlign: 'center' }}>
+            <div className="no-materials-message">
               No materials found for this supplier.
             </div>
           ) : null}
@@ -155,7 +155,7 @@ function Sample_order() {
             value={formData.materialId}
             onChange={handleChange}
             required
-            style={{ color: '#674636', background: '#F7EED3' }}
+            className="material-select"
             disabled={materials.length === 0}
           >
             <option value="">-- Select Material --</option>

@@ -210,38 +210,26 @@ function Update_delete_suppliers() {
                 Phone
                 <input name="phone" value={formData.phone} onChange={handleChange} required />
               </label>
-              <label style={{ marginBottom: "15px", display: "block" }}>
+              <label className="materials-label">
                 Materials & Pricing
               </label>
               
               {/* Add Material Section */}
-              <div style={{ 
-                border: "1px solid #ddd", 
-                padding: "15px", 
-                borderRadius: "5px", 
-                marginBottom: "15px",
-                backgroundColor: "#f9f9f9"
-              }}>
-                <div style={{ display: "flex", gap: "10px", alignItems: "end" }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: "12px", marginBottom: "5px", display: "block" }}>Material Name</label>
+              <div className="add-material-container">
+                <div className="material-input-row">
+                  <div className="material-input-group">
+                    <label className="material-input-label">Material Name</label>
                     <input
                       type="text"
                       name="name"
                       value={currentMaterial.name}
                       onChange={handleMaterialChange}
                       placeholder="e.g. Wood, Glass, Metal"
-                      style={{ 
-                        width: "100%", 
-                        padding: "6px", 
-                        border: "1px solid #ccc", 
-                        borderRadius: "4px",
-                        fontSize: "12px"
-                      }}
+                      className="material-input-field"
                     />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: "12px", marginBottom: "5px", display: "block" }}>Price per Unit ($)</label>
+                  <div className="material-input-group">
+                    <label className="material-input-label">Price per Unit ($)</label>
                     <input
                       type="number"
                       name="pricePerUnit"
@@ -250,28 +238,13 @@ function Update_delete_suppliers() {
                       placeholder="0.00"
                       step="0.01"
                       min="0"
-                      style={{ 
-                        width: "100%", 
-                        padding: "6px", 
-                        border: "1px solid #ccc", 
-                        borderRadius: "4px",
-                        fontSize: "12px"
-                      }}
+                      className="material-input-field"
                     />
                   </div>
                   <button 
                     type="button" 
                     onClick={addMaterial}
-                    style={{ 
-                      padding: "6px 12px", 
-                      backgroundColor: "#674636", 
-                      color: "white", 
-                      border: "none", 
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      height: "30px"
-                    }}
+                    className="add-material-btn"
                   >
                     Add
                   </button>
@@ -280,40 +253,15 @@ function Update_delete_suppliers() {
 
               {/* Materials List */}
               {formData.materials.length > 0 && (
-                <div style={{ 
-                  maxHeight: "150px", 
-                  overflowY: "auto", 
-                  border: "1px solid #ddd", 
-                  borderRadius: "5px",
-                  marginBottom: "15px"
-                }}>
+                <div className="materials-list">
                   {formData.materials.map((material, index) => (
-                    <div 
-                      key={index} 
-                      style={{ 
-                        display: "flex", 
-                        justifyContent: "space-between", 
-                        alignItems: "center",
-                        padding: "8px 12px", 
-                        borderBottom: "1px solid #eee",
-                        backgroundColor: index % 2 === 0 ? "#f8f8f8" : "white",
-                        fontSize: "12px"
-                      }}
-                    >
-                      <span style={{ fontWeight: "500" }}>{material.name}</span>
-                      <span style={{ color: "#674636" }}>${material.pricePerUnit.toFixed(2)}/unit</span>
+                    <div key={index} className="material-item-edit">
+                      <span className="material-name-edit">{material.name}</span>
+                      <span className="material-price-edit">${material.pricePerUnit.toFixed(2)}/unit</span>
                       <button 
                         type="button" 
                         onClick={() => removeMaterial(index)}
-                        style={{ 
-                          padding: "3px 6px", 
-                          backgroundColor: "#dc3545", 
-                          color: "white", 
-                          border: "none", 
-                          borderRadius: "3px",
-                          cursor: "pointer",
-                          fontSize: "10px"
-                        }}
+                        className="remove-material-btn"
                       >
                         Remove
                       </button>
@@ -329,7 +277,7 @@ function Update_delete_suppliers() {
                   value={formData.materialTypes} 
                   onChange={handleChange}
                   placeholder="For backward compatibility only" 
-                  style={{ fontSize: "12px", color: "#666" }}
+                  className="no-materials-text"
                 />
               </label>
               <label>

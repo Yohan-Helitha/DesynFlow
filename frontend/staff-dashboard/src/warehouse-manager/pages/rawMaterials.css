@@ -1,0 +1,24 @@
+/* Raw Materials Page Styles */
+
+/* Table header styles */
+.table-header-row {
+  background: #674636 !important;
+  color: #FFFFFF !important;
+}
+
+.table-header-actions {
+  background: #674636 !important;
+}
+
+.table-header-cell {
+  background: #674636 !important;
+}
+
+/* Table cell styles */
+.table-cell-actions {
+  background: #FFF8E8 !important;
+}
+
+.table-cell-sticky {
+  background: #FFF8E8 !important;
+}

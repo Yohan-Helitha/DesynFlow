@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css';
 import Home from './pages/home.jsx';
 import ManuProducts from './pages/manuProducts.jsx';
 import AddProductForm from './forms/addManuProductsForm.jsx';
@@ -28,7 +29,7 @@ import { NotificationsProvider } from './context/notificationContext.jsx';
 
 function App() {
   return (
-    <div className="min-h-screen" style={{ background: "#F7EED3" }}>
+    <div className="min-h-screen app-container">
       <Router>
         <NotificationsProvider>
           <Routes>

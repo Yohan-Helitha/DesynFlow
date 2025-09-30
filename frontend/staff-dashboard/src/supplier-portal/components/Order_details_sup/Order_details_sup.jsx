@@ -200,7 +200,7 @@ function OrderDetailsSup() {
             <Link to="/procurement-officer/sample_order_list">Sample Orders</Link>
           </li>
           <li>
-            <span style={{color: '#AAB3A0', cursor: 'default'}}>Profile Settings</span>
+            <span className="profile-settings-disabled">Profile Settings</span>
           </li>
         </ul>
       </aside>

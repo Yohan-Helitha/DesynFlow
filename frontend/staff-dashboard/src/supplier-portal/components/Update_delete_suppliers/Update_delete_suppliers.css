@@ -145,3 +145,106 @@ h2 {
 .uds-cancel-btn:hover {
   background: #f1e5d3;
 }
+
+/* Modal form styles */
+.materials-label {
+  margin-bottom: 15px;
+  display: block;
+}
+
+.add-material-container {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+}
+
+.material-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+
+.material-input-group {
+  flex: 1;
+}
+
+.material-input-label {
+  font-size: 12px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.material-input-field {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.add-material-btn {
+  background: #674636;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.add-material-btn:hover {
+  background: #50352b;
+}
+
+.materials-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: white;
+}
+
+.material-item-edit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #674636;
+}
+
+.material-name-edit {
+  font-weight: 500;
+}
+
+.material-price-edit {
+  color: #674636;
+}
+
+.remove-material-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  margin-left: 8px;
+}
+
+.remove-material-btn:hover {
+  background: #c82333;
+}
+
+.no-materials-text {
+  font-size: 12px;
+  color: #666;
+}

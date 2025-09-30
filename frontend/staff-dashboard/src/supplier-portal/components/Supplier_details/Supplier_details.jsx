@@ -158,21 +158,12 @@ function Supplier_details() {
                 <div className="materials-cell">
                   {s.materials && s.materials.length > 0 ? (
                     s.materials.map((material, idx) => (
-                      <div key={idx} className="material-item" style={{ 
-                        fontSize: "12px", 
-                        marginBottom: "2px",
-                        padding: "2px 6px",
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: "3px",
-                        display: "inline-block",
-                        marginRight: "4px",
-                        marginBottom: "4px"
-                      }}>
+                      <div key={idx} className="material-item material-item-inline">
                         <strong>{material.name}</strong>: {formatLKR(material.pricePerUnit)}/unit
                       </div>
                     ))
                   ) : (
-                    <span style={{ color: "#999" }}>
+                    <span className="no-materials-text">
                       {s.materialTypes?.join(", ") || "No materials"}
                     </span>
                   )}
@@ -225,24 +216,18 @@ function Supplier_details() {
             </p>
             <div>
               <b>Materials & Pricing:</b>
-              <div style={{ marginTop: "8px" }}>
+              <div className="materials-container">
                 {selectedSupplier.materials && selectedSupplier.materials.length > 0 ? (
                   selectedSupplier.materials.map((material, idx) => (
-                    <div key={idx} style={{ 
-                      padding: "8px 12px", 
-                      margin: "4px 0", 
-                      backgroundColor: "#f8f9fa", 
-                      borderLeft: "4px solid #674636",
-                      borderRadius: "4px"
-                    }}>
-                      <strong style={{ color: "#674636" }}>{material.name}</strong>
-                      <span style={{ float: "right", color: "#28a745", fontWeight: "bold" }}>
+                    <div key={idx} className="material-detail-item">
+                      <strong className="material-name">{material.name}</strong>
+                      <span className="material-price">
                         {formatLKR(material.pricePerUnit)}/unit
                       </span>
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: "#666", fontStyle: "italic" }}>
+                  <div className="no-materials-modal">
                     {selectedSupplier.materialTypes?.join(", ") || "No materials listed"}
                   </div>
                 )}
