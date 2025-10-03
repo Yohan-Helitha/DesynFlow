@@ -397,6 +397,7 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
       }
 
       console.log('Form saved:', response.data);
+
       
       // Refresh saved forms and reset form
       console.log('Calling fetchSavedForms after save...');
