@@ -21,6 +21,8 @@ const InspectionRequests = () => {
       const response = await axios.get('http://localhost:4000/api/inspection-request/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('Inspection Requests Data:', response.data);
       setRequests(response.data);
     } catch (error) {
       console.error('Error fetching requests:', error);
@@ -183,7 +185,7 @@ const InspectionRequests = () => {
               {/* Property Address */}
               <div className="bg-cream-light rounded-lg p-4 border border-cream-light">
                 <label className="text-sm font-semibold text-brown-primary block mb-2">📍 Property Address</label>
-                <p className="text-dark-brown text-lg">{selectedRequest.propertyAddress}</p>
+                <p className="text-dark-brown text-lg">{selectedRequest.propertyLocation_address}</p>
               </div>
 
               {/* Date and Status */}
@@ -191,7 +193,7 @@ const InspectionRequests = () => {
                 <div className="bg-cream-light rounded-lg p-4 border border-green-primary/30">
                   <label className="text-sm font-semibold text-green-primary block mb-2">📅 Preferred Date</label>
                   <p className="text-dark-brown text-lg">
-                    {new Date(selectedRequest.preferredDate).toLocaleDateString('en-US', {
+                    {new Date(selectedRequest.inspection_date).toLocaleDateString('en-US', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',

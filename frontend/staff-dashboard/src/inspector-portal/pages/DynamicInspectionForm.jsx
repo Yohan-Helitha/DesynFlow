@@ -508,19 +508,23 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
                           <label className="block text-sm font-medium text-brown-primary mb-1">
                             Room Name (no numbers allowed)
                           </label>
-                          <input
-                            type="text"
+                          <select
                             value={room.room_name}
                             onChange={(e) => {
                               const value = e.target.value;
-                              if (value === '' || validateRoomName(value)) {
-                                updateRoom(floor.id, room.id, 'room_name', value);
-                              }
+                              updateRoom(floor.id, room.id, 'room_name', value);
                             }}
-                            className="w-full border border-gray-300 p-2 rounded"
-                            placeholder="e.g. Living Room, Kitchen"
+                            className="w-full border border-gray-300 p-2 rounded bg-white"
                             required
-                          />
+                          >
+                            <option value="">Select Room Type</option>
+                            <option value="Living Room">Living Room</option>
+                            <option value="Bedroom">Bedroom</option>
+                            <option value="Master Bedroom">Master Bedroom</option>
+                            <option value="Guest Bedroom">Guest Bedroom</option>
+                            <option value="Kitchen">Kitchen</option>
+                            <option value="Dining Room">Dining Room</option>
+                          </select>
                         </div>
 
                         {/* Dimensions */}
