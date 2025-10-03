@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">76.92% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>10/13</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>3/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">76.92% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>10/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -104,30 +104,26 @@
 <a name='L39'></a><a href='#L39'>39</a>
 <a name='L40'></a><a href='#L40'>40</a>
 <a name='L41'></a><a href='#L41'>41</a>
-<a name='L42'></a><a href='#L42'>42</a>
-<a name='L43'></a><a href='#L43'>43</a>
-<a name='L44'></a><a href='#L44'>44</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L42'></a><a href='#L42'>42</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -135,42 +131,40 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// db configuration
-&nbsp;
-import mongoose from 'mongoose';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import mongoose from 'mongoose';
 import { env } from './env.js';
 import { logger } from './logger.js';
 &nbsp;
-<span class="cstat-no" title="statement not covered" >mongoose.set('strictQuery', true);</span>
+mongoose.set('strictQuery', true);
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >connectDB(</span>) {
+export async function connectDB() {
 &nbsp;
-    const uri = <span class="cstat-no" title="statement not covered" >env.MONGO_URI;</span>
+    const uri = env.MONGO_URI;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    try {</span>
+    try {
         
-<span class="cstat-no" title="statement not covered" >        await mongoose.connect(uri, {</span>
+        await mongoose.connect(uri, {
             autoIndex: true,
             serverSelectionTimeoutMS: 20000,
             socketTimeoutMS: 45000,
             maxPoolSize : 10, 
         });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        logger.info("Mongo DB connected successfully.")</span>
+        logger.info("Mongo DB connected successfully.")
 &nbsp;
     } catch (error) {
 &nbsp;
@@ -178,20 +172,20 @@ export async function <span class="fstat-no" title="function not covered" >conne
 <span class="cstat-no" title="statement not covered" >        throw error;</span>
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    mongoose.connection.on("error", <span class="fstat-no" title="function not covered" >(e</span>rror) =&gt; {</span>
+    mongoose.connection.on("error", <span class="fstat-no" title="function not covered" >(e</span>rror) =&gt; {
 <span class="cstat-no" title="statement not covered" >        logger.error({ error }, "MongoDB connection error");</span>
     });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    mongoose.connection.on("disconnected", <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >        logger.warn("MongoDB disconnected");</span>
+    mongoose.connection.on("disconnected", () =&gt; {
+        logger.warn("MongoDB disconnected");
     });
 &nbsp;
 }
 &nbsp;
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >disconnectedDB(</span>) {
-<span class="cstat-no" title="statement not covered" >    await mongoose.connection.close();</span>
-<span class="cstat-no" title="statement not covered" >    logger.info("MongoDB disconnected");</span>
+export async function disconnectedDB() {
+    await mongoose.connection.close();
+    logger.info("MongoDB disconnected");
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -199,7 +193,7 @@ export async function <span class="fstat-no" title="function not covered" >disco
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-01T10:09:00.066Z
+                at 2025-10-03T17:33:57.021Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
