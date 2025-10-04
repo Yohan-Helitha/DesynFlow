@@ -52,6 +52,7 @@ import assignmentRoutes from "./modules/auth/routes/assignmentRoutes.js";
 import authReportRoutes from "./modules/auth/routes/reportRoutes.js";
 import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
 import inspectionFormRoutes from "./modules/auth/routes/inspectionFormRoutes.js";
+import pmNotificationRoutes from "./modules/auth/routes/pmNotificationRoutes.js";
 
 // Warehouse routes
 import manuProductsRoute from "./modules/warehouse-manager/routes/manuProductsRoute.js";
@@ -110,6 +111,7 @@ app.use("/api/assignment", assignmentRoutes);
 app.use("/api/auth-reports", authReportRoutes);
 app.use("/api/inspection-request", inspectionRequestRoutes);
 app.use("/api/inspectorForms", inspectionFormRoutes);
+app.use("/api/pm-notifications", pmNotificationRoutes);
 
 // Mount project routes
 app.use('/api', projectRoutes);

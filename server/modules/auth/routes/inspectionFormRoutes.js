@@ -10,7 +10,8 @@ import {
   deleteInspectorForm,
   submitInspectorForm,
   generateReportFromForm,
-  getMyInspectorForms
+  getMyInspectorForms,
+  submitAndGenerateReport
 } from '../controller/inspectorFormController.js';
 
 const router = express.Router();
@@ -76,6 +77,14 @@ router.post(
   authMiddleware,
   roleMiddleware(['inspector']),
   generateReportFromForm
+);
+
+// 🔥 NEW: Submit form and generate report in one action
+router.post(
+  '/submit-and-generate/:formId',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  submitAndGenerateReport
 );
 
 export default router;
