@@ -16,7 +16,7 @@ const createPurchaseOrder = async (data) => {
         materialName = materialId;
         materialId = undefined;
       }
-      // Try to resolve by materialName from Material collection (if exists)
+      // Try to resolve by materialName from Material collection
       if (materialName) {
         try {
           const matDoc = await Material.findOne({ materialName });
@@ -35,7 +35,7 @@ const createPurchaseOrder = async (data) => {
         if (matDoc) {
           materialName = materialName || matDoc.materialName;
         }
-        
+
       } catch {}
     }
 
