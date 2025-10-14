@@ -56,14 +56,29 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
       }
       
       setFloors(initialFloors);
-    }
-    
-    // Fetch saved forms when assignment is selected
-    if (selectedAssignment) {
-      // Extract the actual ID string from the populated object
-      const requestId = selectedAssignment.InspectionRequest_ID?._id || selectedAssignment.InspectionRequest_ID;
-      // Pass the assignment ID directly to avoid state timing issues
+      // Fetch saved forms for this assignment
       fetchSavedForms(requestId);
+    } else {
+      // Standalone mode - initialize with default floor and fetch all forms
+      setInspectionRequestId(''); // Allow manual input in standalone mode
+      const defaultFloor = {
+        id: Date.now(),
+        floor_number: 1,
+        rooms: [{
+          id: Date.now() + Math.random(),
+          room_name: 'Room 1',
+          dimensions: {
+            length: '',
+            width: '',
+            height: '',
+            unit: 'feet'
+          }
+        }],
+        isExpanded: true
+      };
+      setFloors([defaultFloor]);
+      // Fetch all forms in standalone mode
+      fetchSavedForms(null);
     }
   }, [selectedAssignment]);
 
@@ -71,7 +86,11 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
   const fetchSavedForms = async (requestId = null) => {
     try {
       const token = localStorage.getItem('authToken');
-      if (!token) return;
+      if (!token) {
+        console.log('No auth token - skipping saved forms fetch in development mode');
+        setSavedForms([]);
+        return;
+      }
 
       console.log('Fetching saved forms...');
       const response = await axios.get(`${API_BASE}/my`, {
@@ -109,6 +128,10 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
       console.log('Updated savedForms state:', assignmentForms);
     } catch (err) {
       console.error('Error fetching saved forms:', err);
+      if (err.response?.status === 401) {
+        console.log('Authentication failed - skipping saved forms in development mode');
+        setSavedForms([]);
+      }
     }
   };
 
@@ -175,6 +198,11 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
 
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('Authentication required to delete forms.');
+        return;
+      }
+
       await axios.delete(`${API_BASE}/${formId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -187,8 +215,52 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
         resetForm();
       }
     } catch (err) {
-      setError('Failed to delete form. Please try again.');
+      if (err.response?.status === 401) {
+        setError('Authentication failed. Please login again.');
+      } else {
+        setError('Failed to delete form. Please try again.');
+      }
       console.error('Error deleting form:', err);
+    }
+  };
+
+  // Submit form for final processing and generate report
+  const submitForm = async (form) => {
+    if (!window.confirm('Are you sure you want to submit this form and generate a report? This action cannot be undone.')) return;
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('Authentication required to submit forms.');
+        return;
+      }
+
+      // Call the submit-and-generate endpoint to both submit form and generate report
+      const response = await axios.post(`${API_BASE}/submit-and-generate/${form._id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Refresh saved forms to show updated status
+      fetchSavedForms();
+      setSuccess(`Form submitted and report generated successfully! Report ID: ${response.data.report._id}`);
+      
+      // Optional: Show additional success information
+      setTimeout(() => {
+        setSuccess('Form submitted successfully! Report has been generated and project managers have been notified.');
+      }, 3000);
+      
+    } catch (err) {
+      if (err.response?.status === 401) {
+        setError('Authentication failed. Please login again.');
+      } else if (err.response?.status === 400 && err.response?.data?.message?.includes('already generated')) {
+        setError('Report has already been generated for this form.');
+      } else {
+        setError('Failed to submit form and generate report. Please try again.');
+      }
+      console.error('Error submitting form and generating report:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -240,6 +312,27 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
         ? { ...floor, rooms: floor.rooms.filter(room => room.id !== roomId) }
         : floor
     ));
+  };
+
+  // Remove floor (only if more than 1 floor exists)
+  const removeFloor = (floorId) => {
+    if (floors.length <= 1) {
+      setError('Cannot remove the last floor. At least one floor is required.');
+      return;
+    }
+    
+    if (window.confirm('Are you sure you want to remove this entire floor and all its rooms?')) {
+      const updatedFloors = floors.filter(floor => floor.id !== floorId);
+      
+      // Renumber remaining floors to maintain sequential order
+      const renumberedFloors = updatedFloors.map((floor, index) => ({
+        ...floor,
+        floor_number: index + 1
+      }));
+      
+      setFloors(renumberedFloors);
+      setSuccess('Floor removed successfully!');
+    }
   };
 
   // Update room data
@@ -362,7 +455,7 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
 
       // Prepare data for submission
       const formData = {
-        InspectionRequest_ID: inspectionRequestId,
+        InspectionRequest_ID: inspectionRequestId || null, // Allow null for standalone forms
         floors: floors.map(floor => ({
           floor_number: floor.floor_number,
           rooms: floor.rooms.map(room => ({
@@ -416,15 +509,6 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
     }
   };
 
-  if (!selectedAssignment) {
-    return (
-      <div className="bg-cream-light rounded-lg p-8 text-center border border-brown-primary-300">
-        <h3 className="text-lg font-medium text-brown-primary mb-2">No Assignment Selected</h3>
-        <p className="text-brown-secondary">Please select an assignment from "My Assignments" to start inspection.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Assignment Context Banner */}
@@ -472,16 +556,32 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
           {floors.map((floor) => (
             <div key={floor.id} className="border border-gray-300 rounded-lg">
               {/* Floor Header */}
-              <div 
-                className="bg-gray-50 p-4 cursor-pointer flex justify-between items-center rounded-t-lg"
-                onClick={() => toggleFloor(floor.id)}
-              >
-                <h3 className="text-lg font-medium">
-                  🏠 Floor {floor.floor_number} ({floor.rooms.length} rooms)
-                </h3>
-                <span className="text-gray-500">
-                  {floor.isExpanded ? '📂' : '📁'}
-                </span>
+              <div className="bg-gray-50 p-4 flex justify-between items-center rounded-t-lg">
+                <div 
+                  className="cursor-pointer flex-1 flex justify-between items-center"
+                  onClick={() => toggleFloor(floor.id)}
+                >
+                  <h3 className="text-lg font-medium">
+                    🏠 Floor {floor.floor_number} ({floor.rooms.length} rooms)
+                  </h3>
+                  <span className="text-gray-500">
+                    {floor.isExpanded ? '📂' : '📁'}
+                  </span>
+                </div>
+                
+                {/* Remove Floor Button - only show if more than 1 floor */}
+                {floors.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent floor toggle when clicking remove
+                      removeFloor(floor.id);
+                    }}
+                    className="ml-3 text-red-500 hover:text-red-700 text-sm px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                    title="Remove this floor"
+                  >
+                    ✕ Remove Floor
+                  </button>
+                )}
               </div>
 
               {/* Floor Content */}
@@ -695,10 +795,11 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
                     Delete
                   </button>
                   <button
-                    onClick={() => {/* Submit functionality - frontend only */}}
+                    onClick={() => submitForm(form)}
                     className="flex-1 bg-green-100 text-green-700 py-2 px-3 rounded text-sm font-medium hover:bg-green-200 transition-colors"
+                    disabled={form.status === 'completed' || form.report_generated}
                   >
-                    Submit
+                    {form.status === 'completed' || form.report_generated ? '✅ Submitted' : '📄 Submit & Generate Report'}
                   </button>
                 </div>
               </div>

@@ -16,8 +16,8 @@ export const createInspectorForm = async (req, res) => {
 
     const inspector_ID = req.user._id;
 
-    // Validation
-    if (!InspectionRequest_ID || !floors || !Array.isArray(floors) || floors.length === 0) {
+    // Validation - Allow standalone forms with null InspectionRequest_ID
+    if (!floors || !Array.isArray(floors) || floors.length === 0) {
       return res.status(400).json({ message: 'Missing required fields. Floors data is required.' });
     }
 
@@ -45,16 +45,20 @@ export const createInspectorForm = async (req, res) => {
       }
     }
 
-    const inspectionRequest = await InspectionRequest.findById(InspectionRequest_ID);
-    if (!inspectionRequest) return res.status(404).json({ message: 'Inspection request not found' });
+    // Only validate inspection request if InspectionRequest_ID is provided (assignment-based forms)
+    let inspectionRequest = null;
+    if (InspectionRequest_ID) {
+      inspectionRequest = await InspectionRequest.findById(InspectionRequest_ID);
+      if (!inspectionRequest) return res.status(404).json({ message: 'Inspection request not found' });
+    }
 
     const inspectorForm = new InspectorForm({
-      InspectionRequest_ID,
+      InspectionRequest_ID: InspectionRequest_ID || null, // Allow null for standalone forms
       inspector_ID,
       floors,
       recommendations,
       inspection_Date: new Date(),
-      status: 'completed'
+      status: 'draft' // New forms should be draft by default
     });
 
     await inspectorForm.save();

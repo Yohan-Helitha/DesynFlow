@@ -37,7 +37,14 @@ const InspectionForm = ({ selectedAssignment }) => {
       });
       console.log('API Response:', res.data); // Debug log
       // Add safety check to ensure forms is always an array
-      setForms(res.data.forms || res.data || []);
+      const formsData = res.data.forms || res.data || [];
+      // Ensure formsData is an array
+      if (Array.isArray(formsData)) {
+        setForms(formsData);
+      } else {
+        console.warn('API returned non-array data:', formsData);
+        setForms([]);
+      }
     } catch (err) {
       console.error('Error fetching forms:', err);
       if (err.response?.status === 401) {
@@ -185,7 +192,9 @@ const InspectionForm = ({ selectedAssignment }) => {
   const handleEdit = (form) => {
     setEditingFormId(form._id);
     setFormData({
-      InspectionRequest_ID: form.InspectionRequest_ID,
+      InspectionRequest_ID: typeof form.InspectionRequest_ID === 'object' 
+        ? form.InspectionRequest_ID?._id || ''
+        : form.InspectionRequest_ID || '',
       floor_number: form.floor_number,
       roomID: form.roomID,
       room_name: form.room_name,
@@ -390,13 +399,17 @@ const InspectionForm = ({ selectedAssignment }) => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {forms.map((form) => {
+            {forms.filter(form => form && typeof form === 'object' && form._id).map((form) => {
               const locked = form.report_generated;
               return (
                 <div key={form._id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-                  <h3 className="font-semibold text-lg mb-2 text-blue-600">{form.room_name}</h3>
+                  <h3 className="font-semibold text-lg mb-2 text-blue-600">{form.room_name || 'Unnamed Room'}</h3>
                   <div className="space-y-1 text-sm text-gray-600 mb-4">
-                    <p><span className="font-medium">Request ID:</span> {form.InspectionRequest_ID}</p>
+                    <p><span className="font-medium">Request ID:</span> {
+                      typeof form.InspectionRequest_ID === 'object' 
+                        ? form.InspectionRequest_ID?._id || 'N/A'
+                        : form.InspectionRequest_ID || 'N/A'
+                    }</p>
                     <p><span className="font-medium">Floor:</span> {form.floor_number}</p>
                     <p><span className="font-medium">Room ID:</span> {form.roomID}</p>
                     <p><span className="font-medium">Dimension:</span> {form.room_dimension || 'Not specified'}</p>

@@ -3,56 +3,49 @@ import axios from 'axios';
 import InspectorSidebar from '../components/InspectorSidebar';
 import LocationManagement from '../components/LocationManagement';
 import AssignedJobs from '../components/AssignedJobs';
-import DynamicInspectionForm from './DynamicInspectionForm'; // Using new dynamic form
-// Note: Using existing ReportList from finance-portal for reports
+import DynamicInspectionForm from './DynamicInspectionForm'; // Use dynamic form for all cases
+import InspectorReports from '../components/InspectorReports';
 
 const InspectorDashboard = () => {
   const [activeSection, setActiveSection] = useState('location');
   const [inspector, setInspector] = useState(null);
   const [message, setMessage] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch inspector profile
   const fetchInspector = async () => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        console.error('No auth token found');
-        // Set fallback inspector data with ID
-        setInspector({ 
-          _id: 'fallback-inspector-id', 
-          name: 'Inspector', 
-          username: 'inspector',
-          email: 'inspector@example.com'
-        });
+        console.error('No auth token found - redirecting to login');
+        handleLogout(); // This will redirect to login
         return;
       }
 
       const response = await axios.get('http://localhost:4000/api/user/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      // Validate user role
+      if (response.data.role !== 'inspector') {
+        console.error('Access denied: User is not an inspector');
+        alert('Access denied. This dashboard is for inspectors only.');
+        handleLogout();
+        return;
+      }
+      
       setInspector(response.data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching inspector profile:', error);
       if (error.response?.status === 401) {
-        console.error('Authentication failed - token might be expired');
-        // Clear invalid token
-        localStorage.removeItem('authToken');
-        // Set fallback inspector data with ID for development
-        setInspector({ 
-          _id: 'fallback-inspector-id', 
-          name: 'Inspector', 
-          username: 'inspector',
-          email: 'inspector@example.com'
-        });
+        console.error('Authentication failed - token expired or invalid');
+        handleLogout(); // Clear token and redirect to login
       } else {
-        // Set fallback inspector data with ID
-        setInspector({ 
-          _id: 'fallback-inspector-id', 
-          name: 'Inspector', 
-          username: 'inspector',
-          email: 'inspector@example.com'
-        });
+        console.error('Failed to fetch inspector profile:', error.message);
+        // For other errors, still redirect to login for security
+        handleLogout();
       }
     }
   };
@@ -63,6 +56,7 @@ const InspectorDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
     window.location.href = '/login';
   };
 
@@ -73,6 +67,13 @@ const InspectorDashboard = () => {
     setMessage(`📝 Collecting data for: ${assignment.inspectionRequest?.clientName || 'Assignment'}`);
   };
 
+  // Handle navigation back to standalone form management
+  const handleBackToForms = () => {
+    setSelectedAssignment(null);
+    setActiveSection('inspection');
+    setMessage('');
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'location':
@@ -80,34 +81,22 @@ const InspectorDashboard = () => {
       case 'assignments':
         return <AssignedJobs inspector={inspector} onCollectData={handleCollectData} />;
       case 'inspection':
+        // Always use DynamicInspectionForm, but pass selectedAssignment (can be null for standalone)
         return <DynamicInspectionForm selectedAssignment={selectedAssignment} />;
       case 'reports':
-        return (
-          <div className="space-y-6">
-            <div className="border-b border-brown-primary-300 pb-4">
-              <h2 className="text-2xl font-bold text-brown-primary flex items-center space-x-2">
-                <span>📄</span>
-                <span>Inspection Reports</span>
-              </h2>
-              <p className="text-brown-secondary mt-1">View your inspection reports</p>
-            </div>
-            <div className="bg-cream-light rounded-lg p-4 border border-brown-primary-300">
-              <p className="text-brown-primary-300">
-                <strong>Note:</strong> Reports functionality will be integrated with existing report system.
-                Your completed inspection forms will automatically generate reports.
-              </p>
-            </div>
-          </div>
-        );
+        return <InspectorReports />;
       default:
         return <LocationManagement inspector={inspector} setMessage={setMessage} />;
     }
   };
 
-  if (!inspector) {
+  if (loading || !inspector) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-cream-primary">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary mx-auto mb-4"></div>
+          <p className="text-brown-primary">Loading Inspector Dashboard...</p>
+        </div>
       </div>
     );
   }

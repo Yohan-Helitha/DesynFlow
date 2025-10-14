@@ -22,7 +22,7 @@ body {
   position: relative;
 }
 
-.supplier-dashboard::before {
+/* .supplier-dashboard::before {
   content: "";
   position: fixed;
   top: 0;
@@ -34,7 +34,7 @@ body {
     radial-gradient(circle at 70% 80%, rgba(103, 70, 54, 0.04) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
-}
+} */
 
 /* ===== Sidebar ===== */
 .sidebar {

@@ -5,7 +5,9 @@ import AuthInspectionReport from '../model/report.model.js';
 import {
   getReports,
   reviewReport,
-  getReportsByInspector
+  getReportsByInspector,
+  getMyReports,
+  deleteMyReport
 } from '../controller/reportController.js';
 
 const router = express.Router();
@@ -17,6 +19,9 @@ router.get(
   roleMiddleware(['project manager', 'admin']),
   getReports
 );
+
+// Inspector: Get own reports
+router.get('/my-reports', authMiddleware, roleMiddleware(['inspector']), getMyReports);
 
 // Get specific report by ID (for project managers)
 router.get(
@@ -43,6 +48,9 @@ router.get(
     }
   }
 );
+
+// Inspector: Delete own report
+router.delete('/:reportId', authMiddleware, roleMiddleware(['inspector']), deleteMyReport);
 
 // Review report (for project managers)
 router.patch(

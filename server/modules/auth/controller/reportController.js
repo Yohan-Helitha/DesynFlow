@@ -1,3 +1,27 @@
+// Inspector: Get own reports (for dashboard)
+export const getMyReports = async (req, res) => {
+  try {
+    const inspectorId = req.user._id;
+    const reports = await AuthAuthInspectionReport.find({ inspectorId })
+      .sort({ createdAt: -1 });
+    res.status(200).json(reports);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch reports', error: error.message });
+  }
+};
+
+// Inspector: Delete own report
+export const deleteMyReport = async (req, res) => {
+  try {
+    const inspectorId = req.user._id;
+    const report = await AuthAuthInspectionReport.findOne({ _id: req.params.reportId, inspectorId });
+    if (!report) return res.status(404).json({ message: 'Report not found' });
+    await report.remove();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete report', error: error.message });
+  }
+};
 import AuthAuthInspectionReport from '../model/report.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
 import User from '../model/user.model.js';
