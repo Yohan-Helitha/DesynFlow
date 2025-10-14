@@ -318,35 +318,7 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
             </div>
           )}
 
-          {/* Warehouse Action Information */}
-          {claim.warehouseAction && (
-            <div className="bg-[#F7EED3] p-4 rounded-lg">
-              <h4 className="font-semibold text-[#674636] mb-3 flex items-center">
-                <Truck size={18} className="mr-2" />
-                Shipping Information
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <span className="text-sm text-[#AAB396]">Replacement Shipped</span>
-                  <p className="font-medium">
-                    {claim.warehouseAction.shippedReplacement ? (
-                      <span className="text-[#AAB396] font-semibold">Yes</span>
-                    ) : (
-                      <span className="text-[#674636] font-semibold">No</span>
-                    )}
-                  </p>
-                </div>
-                {claim.warehouseAction.shippedAt && (
-                  <div>
-                    <span className="text-sm text-[#AAB396]">Shipped Date</span>
-                    <p className="font-medium">
-                      {new Date(claim.warehouseAction.shippedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Warehouse Action Information removed per request */}
 
           {/* Additional Details */}
           {(claim.notes || claim.additionalDetails) && (
@@ -355,6 +327,24 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
               <p className="text-[#674636] text-sm leading-relaxed">
                 {claim.notes || claim.additionalDetails || 'No additional notes available.'}
               </p>
+            </div>
+          )}
+
+          {/* Proof Attachment, moved near the bottom */}
+          {claim.proofUrl && (
+            <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
+              <h4 className="font-semibold text-[#674636] mb-3">Attached Proof</h4>
+              <div className="flex items-center gap-3">
+                <a
+                  href={claim.proofUrl.startsWith('http') ? claim.proofUrl : `/${claim.proofUrl.replace(/^\/?/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 rounded-md border border-[#AAB396] bg-[#F7EED3] text-xs font-mono text-[#674636] hover:bg-[#674636] hover:text-[#FFF8E8]"
+                >
+                  Open Proof
+                </a>
+                <span className="text-xs text-[#AAB396] break-all">{claim.proofUrl}</span>
+              </div>
             </div>
           )}
         </div>

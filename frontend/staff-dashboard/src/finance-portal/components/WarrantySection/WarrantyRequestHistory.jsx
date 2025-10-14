@@ -73,10 +73,9 @@ export const WarrantyRequestHistory = () => {
 	const columns = [
 		{ key: '_id', label: 'Claim ID' },
 		{ key: 'warrantyId', label: 'Warranty ID', render: r => (typeof r.warrantyId === 'object' ? r.warrantyId?._id || '' : r.warrantyId || '') },
-		{ key: 'clientId', label: 'Client ID', render: r => (typeof r.clientId === 'object' ? r.clientId?._id || '' : r.clientId || '') },
+		{ key: 'clientName', label: 'Client name', render: r => (typeof r.clientId === 'object' ? (r.clientId?.username || r.clientId?.email || '') : (r.clientName || '')) },
 		{ key: 'issueDescription', label: 'Issue' },
 		{ key: 'status', label: 'Status', render: r => statusBadge(r.status) },
-		{ key: 'financeReviewerId', label: 'Reviewer', render: r => (typeof r.financeReviewerId === 'object' ? r.financeReviewerId?._id || '' : r.financeReviewerId || '') },
 		{ key: 'warehouseAction', label: 'Shipped', render: r => r.warehouseAction?.shippedReplacement ? 'Yes' : 'No' },
 		{ key: 'warehouseActionDate', label: 'Shipped At', render: r => r.warehouseAction?.shippedAt ? new Date(r.warehouseAction.shippedAt).toLocaleDateString() : '' },
 		{ key: 'updatedAt', label: 'Resolved', render: r => r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : '' },

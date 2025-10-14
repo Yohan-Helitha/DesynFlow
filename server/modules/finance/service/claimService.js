@@ -1,11 +1,13 @@
 import WarrantyClaim from '../model/warrenty_claim.js';
 
-export const createClaim = async ({ warrantyId, clientId, description, attachments }) => {
+export const createClaim = async ({ warrantyId, clientId, description, attachments, proofUrl }) => {
   const claim = new WarrantyClaim({
     warrantyId,
     clientId,
     issueDescription: description,
+    // attachments may exist in older payloads; schema may not define it explicitly
     attachments,
+    proofUrl,
     status: 'Submitted',
   });
   await claim.save();
@@ -17,10 +19,10 @@ export const getClaims = async (filter) => {
   if (filter.status) query.status = new RegExp(filter.status, 'i');
   if (filter.clientId) query.clientId = filter.clientId;
   if (filter.projectId) query.projectId = filter.projectId;
-  return WarrantyClaim.find(query);
+  return WarrantyClaim.find(query).populate('clientId', 'username email');
 };
 
-export const getClaimById = async (id) => WarrantyClaim.findById(id);
+export const getClaimById = async (id) => WarrantyClaim.findById(id).populate('clientId', 'username email');
 
 export const approveClaim = async (id) => {
   return WarrantyClaim.findByIdAndUpdate(id, { status: 'Approved' }, { new: true });
@@ -32,10 +34,12 @@ export const rejectClaim = async (id) => {
 
 // Get claims that are in a terminal/resolved state (Approved, Rejected, Replaced)
 export const getResolvedClaims = async () => {
-  return WarrantyClaim.find({ status: { $in: ['Approved', 'Rejected', 'Replaced'] } });
+  return WarrantyClaim.find({ status: { $in: ['Approved', 'Rejected', 'Replaced'] } })
+    .populate('clientId', 'username email');
 };
 
 // Get claims that are still pending (Submitted, UnderReview)
 export const getPendingClaims = async () => {
-  return WarrantyClaim.find({ status: { $in: ['Submitted', 'UnderReview'] } });
+  return WarrantyClaim.find({ status: { $in: ['Submitted', 'UnderReview'] } })
+    .populate('clientId', 'username email');
 };

@@ -29,7 +29,7 @@ export const getWarranties = async (filter) => {
   // Populate related data and calculate days remaining/expired
   const warranties = await Warranty.find(query)
     .populate('projectId', 'projectName')
-    .populate('clientId', 'name email')
+    .populate('clientId', 'username email')
     .populate('itemId', 'materialName category type')
     .sort({ createdAt: -1 });
 
@@ -73,7 +73,8 @@ export const getWarranties = async (filter) => {
       projectId: warranty.projectId?._id || warranty.projectId || 'N/A', // Add this line
       // Format populated data for frontend
       projectName: warranty.projectId?.projectName || 'N/A',
-      clientName: warranty.clientId?.name || warranty.clientId?.email || 'N/A', 
+  clientName: warranty.clientId?.username || warranty.clientId?.email || 'N/A',
+  clientEmail: warranty.clientId?.email || 'N/A',
       materialName: warranty.itemId?.materialName || 'N/A',
       materialType: warranty.itemId?.type || 'N/A',
       materialCategory: warranty.itemId?.category || 'N/A',

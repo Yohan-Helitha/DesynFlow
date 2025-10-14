@@ -185,32 +185,7 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
             </div>
           )}
 
-          {/* Review Information */}
-          {(claim.status === 'Approved' || claim.status === 'Rejected') && (
-            <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
-              <h4 className="font-semibold text-[#674636] mb-3">Review Details</h4>
-              <div className="space-y-3">
-                {reviewer && (
-                  <div>
-                    <span className="text-sm text-[#AAB396]">Reviewed By</span>
-                    <p className="font-medium">{reviewer.name || reviewer._id || 'N/A'}</p>
-                  </div>
-                )}
-                {claim.reviewComments && (
-                  <div>
-                    <span className="text-sm text-[#AAB396]">Review Comments</span>
-                    <p className="font-medium">{claim.reviewComments}</p>
-                  </div>
-                )}
-                {claim.reviewDate && (
-                  <div>
-                    <span className="text-sm text-[#AAB396]">Review Date</span>
-                    <p className="font-medium">{new Date(claim.reviewDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Review Information removed per request */}
 
           {/* Warehouse Action Information */}
           {claim.warehouseAction && (
@@ -249,6 +224,24 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
               <p className="text-[#674636] text-sm leading-relaxed">
                 {claim.notes || claim.additionalDetails || 'No additional notes available.'}
               </p>
+            </div>
+          )}
+
+          {/* Attached Proof */}
+          {claim.proofUrl && (
+            <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
+              <h4 className="font-semibold text-[#674636] mb-3">Attached Proof</h4>
+              <div className="flex items-center gap-3">
+                <a
+                  href={claim.proofUrl.startsWith('http') ? claim.proofUrl : `/${claim.proofUrl.replace(/^\/?/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 rounded-md border border-[#AAB396] bg-[#F7EED3] text-xs font-mono text-[#674636] hover:bg-[#674636] hover:text-[#FFF8E8]"
+                >
+                  Open Proof
+                </a>
+                <span className="text-xs text-[#AAB396] break-all">{claim.proofUrl}</span>
+              </div>
             </div>
           )}
         </div>

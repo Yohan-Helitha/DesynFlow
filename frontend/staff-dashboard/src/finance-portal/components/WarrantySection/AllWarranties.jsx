@@ -110,6 +110,7 @@ export const AllWarranties = () => {
         warranty._id,
         warranty.projectName,
         warranty.clientName,
+        warranty.clientEmail,
         warranty.clientId,
         warranty.itemId,
         warranty.materialName,
@@ -273,7 +274,6 @@ export const AllWarranties = () => {
                   { key: '_id', label: 'Warranty ID' },
                   { key: 'projectName', label: 'Project' },
                   { key: 'clientName', label: 'Client' },
-                  { key: 'clientId', label: 'Client ID' },
                   { key: 'materialType', label: 'Type' },
                   { key: 'itemId', label: 'Item ID' },
                   { key: 'startDate', label: 'Start Date' },
@@ -310,9 +310,6 @@ export const AllWarranties = () => {
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.clientName || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    {warranty.clientId || 'N/A'}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.materialType || warranty.materialCategory || 'N/A'}
@@ -374,7 +371,7 @@ export const AllWarranties = () => {
               {paginatedWarranties.length === 0 && (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={9}
                     className="px-6 py-4 text-center text-[#AAB396]"
                   >
                     No {showActiveOnly ? 'active' : 'expired'} warranties found

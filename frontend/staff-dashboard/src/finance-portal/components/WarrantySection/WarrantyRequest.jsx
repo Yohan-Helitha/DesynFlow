@@ -43,10 +43,11 @@ export const WarrantyRequest = () => {
 		}
 	};
 
-	const handleView = (claim) => {
-		setSelectedClaim(claim);
-		setShowViewModal(true);
-	};
+		const handleView = (claim) => {
+			// Always open the action modal as requested
+			setSelectedClaim(claim);
+			setShowViewModal(true);
+		};
 
 	const filtered = claims
 		.filter(c => {
@@ -73,7 +74,7 @@ export const WarrantyRequest = () => {
 	const columns = [
 		{ key: '_id', label: 'Claim ID' },
 		{ key: 'warrantyId', label: 'Warranty ID', render: r => (typeof r.warrantyId === 'object' ? r.warrantyId?._id || '' : r.warrantyId || '') },
-		{ key: 'clientId', label: 'Client ID', render: r => (typeof r.clientId === 'object' ? r.clientId?._id || '' : r.clientId || '') },
+		{ key: 'clientName', label: 'Client name', render: r => (typeof r.clientId === 'object' ? (r.clientId?.username || r.clientId?.email || '') : (r.clientName || '')) },
 		{ key: 'issueDescription', label: 'Issue' },
 		{ key: 'status', label: 'Status', render: r => statusBadge(r.status) },
 		{ key: 'createdAt', label: 'Created', render: r => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '' },
@@ -157,14 +158,14 @@ export const WarrantyRequest = () => {
 											{col.render ? col.render(row) : (row[col.key] ?? '')}
 										</td>
 									))}
-									<td className="px-4 py-3 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
-										<button 
-											onClick={() => handleView(row)}
-											className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors text-xs font-mono"
-										>
-											<Wrench size={16} className="inline mr-1" /> Action
-										</button>
-									</td>
+																											<td className="px-4 py-3 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
+																												<button 
+																													onClick={() => handleView(row)}
+																													className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors text-xs font-mono"
+																												>
+																													<Wrench size={16} className="inline mr-1" /> Action
+																												</button>
+																											</td>
 								</tr>
 							))}
 						</tbody>
