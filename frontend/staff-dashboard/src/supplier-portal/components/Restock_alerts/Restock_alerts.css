@@ -386,7 +386,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 400px;
+  padding: 40px;
   background: #FFF8E8;
 }
 

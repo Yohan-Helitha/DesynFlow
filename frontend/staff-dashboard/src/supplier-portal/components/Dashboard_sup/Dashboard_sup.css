@@ -17,8 +17,8 @@ body {
 /* ===== Supplier Dashboard Layout ===== */
 .supplier-dashboard {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow: visible;
   position: relative;
 }
 
@@ -293,7 +293,7 @@ body {
   margin-left: 0;
   padding: 30px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
+  overflow-y: visible;
   width: 100%;
   position: relative;
 }
@@ -474,7 +474,7 @@ body {
 
 .panel-content {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: visible;
   padding: 0;
 }
 
