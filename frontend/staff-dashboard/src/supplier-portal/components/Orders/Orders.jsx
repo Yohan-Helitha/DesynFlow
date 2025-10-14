@@ -146,169 +146,193 @@ function Orders() {
   }
 
   return (
-    <div className="orders-container">
-        <div className="page-header">
+    <div className="orders-page">
+      <div className="orders-container">
+        {/* Modern Header */}
+        <div className="orders-header">
           <div className="header-content">
-            <h2><FaClipboardList className="header-icon" /> Purchase Orders Management</h2>
-            <p className="header-subtitle">Manage and track all your purchase orders</p>
-          </div>
-          <div className="header-actions">
-            <button className="btn-primary">
-              <Link to="/procurement-officer/order_form">
-                <FaPlus className="icon" />
-                New Order
+            <div className="title-section">
+              <h1 className="page-title">
+                <FaClipboardList className="title-icon" />
+                Purchase Orders
+              </h1>
+              <p className="page-description">Manage and track your purchase orders</p>
+            </div>
+            <div className="header-controls">
+              <div className="search-box">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search orders..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Link to="/procurement-officer/order_form" className="create-order-btn">
+                <FaPlus className="btn-icon" />
+                Create Order
               </Link>
-            </button>
+            </div>
           </div>
         </div>
 
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search by supplier, material, or order ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-      <div className="table-container">
-        <table className="orders-table" id="ordersTable">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Supplier</th>
-              <th>Materials</th>
-              <th>Quantity</th>
-              <th>Unit</th>
-              <th>Unit Price</th>
-              <th>Total Amount</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredOrders.length > 0 ? (
-              filteredOrders.map((order, idx) => (
-                <tr key={order._id || idx}>
-                  <td>
-                    <span className="order-id">#{order._id?.slice(-8) || `ORD${idx + 1000}`}</span>
-                  </td>
-                  <td>
-                    <div className="supplier-info">
-                      <span className="company-name">{order.supplierId?.companyName || order.supplierId || "Unknown Supplier"}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="materials-list">
-                      {order.items?.map((item, i) => (
-                        <span key={i} className="material-item">
-                          {item.materialId?.materialName || item.materialName || item.materialId || "Unknown"}
-                          {i < order.items.length - 1 && ", "}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="quantity-list">
-                      {order.items?.map((item, i) => (
-                        <div key={i} className="qty-item">{item.qty || item.quantity}</div>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="unit-list">
-                      {order.items?.map((item, i) => (
-                        <div key={i} className="unit-item" title={`Debug: ${JSON.stringify(item)}`}>
-                          {item.unit || 'N/A'}
+        {/* Orders Table Section */}
+        <div className="table-section">
+          <div className="table-wrapper">
+            <div className="table-container">
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    <th className="col-order-id">Order ID</th>
+                    <th className="col-supplier">Supplier</th>
+                    <th className="col-materials">Materials</th>
+                    <th className="col-quantity">Quantity</th>
+                    <th className="col-unit">Unit</th>
+                    <th className="col-price">Unit Price</th>
+                    <th className="col-total">Total Amount</th>
+                    <th className="col-status">Status</th>
+                    <th className="col-actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrders.length > 0 ? (
+                    filteredOrders.map((order, idx) => (
+                      <tr key={order._id || idx} className="table-row">
+                        <td className="col-order-id">
+                          <div className="order-id-wrapper">
+                            <span className="order-id">#{order._id?.slice(-8) || `ORD${idx + 1000}`}</span>
+                          </div>
+                        </td>
+                        <td className="col-supplier">
+                          <div className="supplier-info">
+                            <span className="supplier-name">{order.supplierId?.companyName || order.supplierId || "Unknown Supplier"}</span>
+                          </div>
+                        </td>
+                        <td className="col-materials">
+                          <div className="materials-wrapper">
+                            {order.items?.map((item, i) => (
+                              <span key={i} className="material-tag">
+                                {item.materialId?.materialName || item.materialName || item.materialId || "Unknown"}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="col-quantity">
+                          <div className="quantity-wrapper">
+                            {order.items?.map((item, i) => (
+                              <div key={i} className="quantity-item">{item.qty || item.quantity}</div>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="col-unit">
+                          <div className="unit-wrapper">
+                            {order.items?.map((item, i) => (
+                              <div key={i} className="unit-item">{item.unit || 'N/A'}</div>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="col-price">
+                          <div className="price-wrapper">
+                            {order.items?.map((item, i) => (
+                              <div key={i} className="price-item">{formatLKR(item.unitPrice || item.pricePerUnit)}</div>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="col-total">
+                          <div className="total-wrapper">
+                            <span className="total-amount">
+                              {formatLKR(order.items?.reduce((total, item) => 
+                                total + ((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity) || 0), 0
+                              ) || 0)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="col-status">
+                          <div className="status-wrapper">
+                            <span className={`status-badge status-${order.status?.toLowerCase() || 'pending'}`}>
+                              <span className="status-text">
+                                {order.status === "Approved" ? "Approved" :
+                                 order.status === "Preparing" ? "Preparing" :
+                                 order.status === "Dispatched" ? "Dispatched" :
+                                 order.status === "Received" ? "Completed" :
+                                 order.status === "Rejected" ? "Rejected" :
+                                 order.status || "Pending"}
+                              </span>
+                            </span>
+                          </div>
+                        </td>
+                        <td className="col-actions">
+                          <div className="actions-wrapper">
+                            {order.status === 'Dispatched' && (
+                              <button
+                                className="action-btn btn-receive"
+                                onClick={() => markAsReceived(order._id)}
+                                title="Mark as Received"
+                              >
+                                <FaCheckCircle className="btn-icon" />
+                                <span>Mark Received</span>
+                              </button>
+                            )}
+                            
+                            {order.status === 'Received' && (
+                              <div className="action-group">
+                                <button
+                                  className="action-btn btn-pdf"
+                                  onClick={() => generateOrderReceiptPDF(order)}
+                                  title="Generate PDF Receipt"
+                                >
+                                  <FaFileAlt className="btn-icon" />
+                                  <span>PDF</span>
+                                </button>
+                                <button
+                                  className="action-btn btn-rate"
+                                  onClick={() => {
+                                    const url = `/procurement-officer/rate_supplier?supplierId=${order.supplierId?._id || order.supplierId}&orderId=${order._id}&viewOnly=false`;
+                                    window.location.href = url;
+                                  }}
+                                  title="Rate Supplier"
+                                >
+                                  <FaStar className="btn-icon" />
+                                  <span>Rate</span>
+                                </button>
+                              </div>
+                            )}
+                            
+                            {(order.status === 'Preparing' || order.status === 'Approved') && (
+                              <span className="status-indicator">
+                                <FaHourglassHalf className="status-icon" />
+                                <span>{order.status === 'Preparing' ? 'In Progress' : 'Waiting'}</span>
+                              </span>
+                            )}
+                            
+                            {(!order.status || order.status === 'Pending') && (
+                              <span className="status-indicator">
+                                <FaRegClock className="status-icon" />
+                                <span>Pending</span>
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="9" className="empty-row">
+                        <div className="empty-state">
+                          <FaClipboardList className="empty-icon" />
+                          <div className="empty-content">
+                            <h3>No orders found</h3>
+                            <p>Try adjusting your search criteria or create a new order</p>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="price-list">
-                      {order.items?.map((item, i) => (
-                        <div key={i} className="price-item">{formatLKR(item.unitPrice || item.pricePerUnit)}</div>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    <span className="total-amount">
-                      {formatLKR(order.items?.reduce((total, item) => 
-                        total + ((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity) || 0), 0
-                      ) || 0)}
-                    </span>
-                  </td>
-                  <td>
-               <span className={`status-badge ${order.status?.toLowerCase() || 'pending'}`}>
-               {order.status === "Approved" ? <><FaCheckCircle /> Approved</> :
-                order.status === "Preparing" ? <><FaHourglassHalf /> Preparing</> :
-                order.status === "Dispatched" ? <><FaBox /> Dispatched</> :
-                order.status === "Received" ? <><FaCheckCircle /> Received</> :
-                order.status === "Rejected" ? <><FaTimesCircle /> Rejected</> :
-                order.status || <><FaRegClock /> Sent</>}
-              </span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      {order.status === 'Dispatched' && (
-                        <button
-                          className="action-btn received"
-                          onClick={() => markAsReceived(order._id)}
-                        >
-                          <FaBox /> Mark Received
-                        </button>
-                      )}
-                      
-                      {order.status === 'Received' && (
-                        <>
-                          <button
-                            className="action-btn pdf-btn"
-                            onClick={() => generateOrderReceiptPDF(order)}
-                            title="Generate PDF Receipt"
-                          >
-                            <FaFileAlt /> Generate PDF
-                          </button>
-                          <button
-                            className="action-btn rate-btn"
-                            onClick={() => {
-                              const url = `/procurement-officer/rate_supplier?supplierId=${order.supplierId?._id || order.supplierId}&orderId=${order._id}&viewOnly=false`;
-                              window.location.href = url;
-                            }}
-                            title="Rate this supplier"
-                          >
-                            <FaStar /> Rate Supplier
-                          </button>
-                        </>
-                      )}
-                      
-                      {(order.status === 'Preparing' || order.status === 'Approved') && (
-                        <button className="action-btn disabled" disabled>
-                          {order.status === 'Preparing' ? <><FaHourglassHalf /> Being Prepared</> : <><FaRegClock /> Waiting Supplier</>}
-                        </button>
-                      )}
-                      
-                      {(!order.status || order.status === 'Pending') && (
-                        <button className="action-btn disabled" disabled>
-                          <FaRegClock /> Pending
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="9" className="no-data">
-                    <div className="empty-state">
-                    <FaClipboardList className="empty-icon" />
-                    <p>No orders found</p>
-                    <small>Try adjusting your search criteria</small>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
