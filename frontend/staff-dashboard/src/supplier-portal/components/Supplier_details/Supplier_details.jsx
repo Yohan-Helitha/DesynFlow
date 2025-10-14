@@ -94,7 +94,8 @@ function Supplier_details() {
     <>
       <div className="page-with-sidebar">
         <Sidebar />
-        <div className="suppliers-container">
+        <div className="supplier-details-page">
+          <div className="suppliers-container">
           <div className="page-header">
             <div className="header-content">
               <h2>{userRole === "supplier" ? "My Supplier Profile" : "Interior Design Suppliers"}</h2>
@@ -104,6 +105,7 @@ function Supplier_details() {
                   : "Manage your supplier network and partnerships"
                 }
               </p>
+            </div>
             </div>
           </div>
 
