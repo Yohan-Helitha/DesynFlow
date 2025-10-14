@@ -65,12 +65,12 @@ import auditLogRoute from "./modules/warehouse-manager/routes/auditLogRoute.js";
 import thresholdAlertRoute from "./modules/warehouse-manager/routes/thresholdAlertRoute.js";
 
 //finane routes
+
 import projectRoute from './modules/finance/routes/projectRoutes.js';
 import expensesRoute from './modules/finance/routes/expensesRoutes.js';
 import inspectionEstimationRoute from './modules/finance/routes/inspectionEstimationRoutes.js';
 import projectEstimationRoute from './modules/finance/routes/projectEstimationRoutes.js';
 import paymentRoute from './modules/finance/routes/paymentRoutes.js';
-
 import quotationRoute from './modules/finance/routes/quotationRoutes.js';
 import purchaseOrderRoute from './modules/finance/routes/purchaseOrderRoutes.js';
 import warrantyRoute from './modules/finance/routes/warrantyRoutes.js';
@@ -78,6 +78,7 @@ import claimRoute from './modules/finance/routes/claimRoutes.js';
 import notificationRoute from './modules/finance/routes/notificationRoutes.js';
 import materialRoute from './modules/finance/routes/materialRoutes.js';
 import financeSummaryRoute from './modules/finance/routes/financeSummaryRoutes.js';
+import inProgressExpensesRoutes from './modules/finance/routes/inProgressExpensesRoutes.js';
 
 const app = express();
 
@@ -140,6 +141,7 @@ app.use("/api/warehouse/audit_log", auditLogRoute);
 app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
 
 //finance module routes
+
 app.use('/api/expenses', expensesRoute);
 app.use('/api/inspection-estimation', inspectionEstimationRoute);
 app.use('/api/project-estimation', projectEstimationRoute);
@@ -151,6 +153,7 @@ app.use('/api/claims', claimRoute);
 app.use('/api/notifications', notificationRoute);
 app.use('/api/materials', materialRoute);
 app.use('/api/finance-summary', financeSummaryRoute);
+app.use('/api/finance', inProgressExpensesRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
