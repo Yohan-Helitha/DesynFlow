@@ -302,28 +302,28 @@ export const AllWarranties = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedWarranties.map((warranty) => (
                 <tr key={warranty._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty._id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.projectName || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.clientName || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.clientId || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.materialType || warranty.materialCategory || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.itemId || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.startDate || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.endDate || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -345,10 +345,10 @@ export const AllWarranties = () => {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
                       onClick={() => handleView(warranty)}
-                      className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md mr-2 border border-[#AAB396]"
+                      className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md mr-2 border border-[#AAB396] text-xs font-mono"
                     >
                       <Eye size={16} className="inline mr-1" />
                       View
@@ -358,7 +358,7 @@ export const AllWarranties = () => {
                       warranty.daysRemaining <= 30 && (
                         <button
                           onClick={() => handleSendReminder(warranty._id)}
-                          className="text-[#674636] hover:text-[#AAB396] bg-[#F7EED3] px-3 py-1 rounded-md border border-[#AAB396]"
+                          className="text-[#674636] hover:text-[#AAB396] bg-[#F7EED3] px-3 py-1 rounded-md border border-[#AAB396] text-xs font-mono"
                         >
                           <Bell size={16} className="inline mr-1" />
                           Remind

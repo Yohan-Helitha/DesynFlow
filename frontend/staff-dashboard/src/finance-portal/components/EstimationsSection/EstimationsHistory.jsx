@@ -13,8 +13,8 @@ const fmt = (n) => {
 
 const getProjectLabel = (item) => {
   const p = item?.projectId;
-  if (p && typeof p === 'object') return p.projectName || p.projectId || p._id || '';
-  return p || '';
+  if (p && typeof p === 'object') return p.projectName || 'N/A';
+  return 'N/A';
 };
 
 const getSortValue = (item, field) => {
@@ -198,7 +198,7 @@ export const EstimationsHistory = () => {
                 <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                   {paginatedEstimations.map(item => (
                     <tr key={item._id || item.id} className="hover:bg-[#F7EED3]">
-                      <td className="px-3 py-2 text-xs font-mono text-[#674636]">{getProjectLabel(item)}</td>
+                      <td className="px-3 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{getProjectLabel(item)}</td>
                       <td className="px-3 py-2 text-xs text-[#674636]">v{item.version}</td>
                       <td className="px-3 py-2 text-xs">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${

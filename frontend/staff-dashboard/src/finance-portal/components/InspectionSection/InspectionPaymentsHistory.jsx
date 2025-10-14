@@ -131,8 +131,6 @@ export const InspectionPaymentsHistory = () => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Inspection Request ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Phone</th>
@@ -147,16 +145,14 @@ export const InspectionPaymentsHistory = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
                 <tr key={payment._id || payment.inspectionRequestId} className="hover:bg-[#F7EED3] transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-[#674636] font-mono text-xs">{String(payment._id || payment.inspectionRequestId || '')}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] font-mono text-xs">{String(payment.client_ID || payment.clientId || (payment.client && payment.client._id) || '-')}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.client_name || payment.clientName || (payment.client && payment.client.name) || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.email || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.phone_number || payment.phone || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{[payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(', ') || payment.siteLocation || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.propertyType || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] font-semibold">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `$${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.status || (payment.estimation && payment.estimation.status) || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer">
+                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.client_name || payment.clientName || (payment.client && payment.client.name) || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.email || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.phone_number || payment.phone || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{[payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(', ') || payment.siteLocation || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.propertyType || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] font-semibold whitespace-pre-line break-words">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `$${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.status || (payment.estimation && payment.estimation.status) || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer whitespace-pre-line break-words">
                     {payment.paymentReceiptUrl || payment.receiptUrl ? (
                       <a href={buildReceiptUrl(payment)} target="_blank" rel="noopener noreferrer" className="hover:text-[#AAB396]">
                         View Receipt

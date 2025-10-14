@@ -174,7 +174,7 @@ export const QuotationFormModal = ({
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
-          {/* Basic Information (IDs now read-only) */}
+          {/* Basic Information */}
           <div>
             <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Basic Information</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md grid grid-cols-1 md:grid-cols-3 gap-4 border border-[#AAB396]">

@@ -28,11 +28,16 @@ export const ViewInspectionEstimationModal = ({ estimation, onClose }) => {
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
+
               <div className="flex items-center">
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
-                  <span className="text-sm text-[#AAB396]">Project ID</span>
-                  <p className="font-medium">{estimation.projectId || 'N/A'}</p>
+                  <span className="text-sm text-[#AAB396]">Project</span>
+                  <p className="font-medium">
+                    {typeof estimation.projectId === 'object' && estimation.projectId?.projectName
+                      ? estimation.projectId.projectName
+                      : estimation.projectId || 'N/A'}
+                  </p>
                 </div>
               </div>
 

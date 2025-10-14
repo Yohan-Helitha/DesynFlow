@@ -11,13 +11,19 @@ export async function getAllPayments() {
 // Get payments by single status
 export async function getPaymentsByStatus(status) {
   // Pending: newest created first
-  return Payment.find({ status }).sort({ createdAt: -1 });
+  return Payment.find({ status })
+    .sort({ createdAt: -1 })
+    .populate({ path: 'projectId', select: 'projectName' })
+    .populate({ path: 'clientId', select: 'username email' });
 }
 
 // Get payments by multiple statuses
 export async function getPaymentsByStatuses(statuses) {
   // Reviewed set: latest updates first (review time reflected in updatedAt)
-  return Payment.find({ status: { $in: statuses } }).sort({ updatedAt: -1 });
+  return Payment.find({ status: { $in: statuses } })
+    .sort({ updatedAt: -1 })
+    .populate({ path: 'projectId', select: 'projectName' })
+    .populate({ path: 'clientId', select: 'username email' });
 }
 
 // Approve or reject a payment

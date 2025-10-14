@@ -241,12 +241,12 @@ export const ApprovedQuotations = () => {
                 
                 return (
                   <tr key={quotation._id} className="hover:bg-[#FFF8E8]">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{quotation._id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{projDisp}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${quotation.grandTotal?.toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{quotation.status}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : ''}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation._id}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{projDisp}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">${quotation.grandTotal?.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation.status}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : ''}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button onClick={() => handleView(quotation)} className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md flex items-center transition-colors">
                           <Eye size={16} className="inline mr-1" />View

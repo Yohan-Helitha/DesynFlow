@@ -39,7 +39,11 @@ const PaymentDetailsModal = ({ payment, onClose }) => {
             <div>
               <h4 className="text-sm font-medium text-[#674636] mb-2">Client Details</h4>
               <div className="bg-[#F7EED3] p-4 rounded-md space-y-2">
-                <p className="text-sm"><span className="font-medium">Client ID:</span> {payment.clientId}</p>
+                <p className="text-sm"><span className="font-medium">Client ID:</span> {
+                  payment.clientId && typeof payment.clientId === 'object'
+                    ? payment.clientId.username || payment.clientId.email || payment.clientId._id || '-'
+                    : payment.clientId || '-'
+                }</p>
                 {payment.clientName && (<p className="text-sm"><span className="font-medium">Client Name:</span> {payment.clientName}</p>)}
                 {payment.clientEmail && (<p className="text-sm"><span className="font-medium">Email:</span> {payment.clientEmail}</p>)}
                 {payment.clientPhone && (<p className="text-sm"><span className="font-medium">Phone:</span> {payment.clientPhone}</p>)}

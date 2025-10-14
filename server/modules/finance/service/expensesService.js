@@ -3,8 +3,10 @@ import Expense from '../model/expenses.js';
 
 // Get all expenses
 const getAllExpenses = async () => {
-    // newest first by createdAt
-    return await Expense.find().sort({ createdAt: -1 });
+    // newest first by createdAt, populate project name
+    return await Expense.find()
+        .populate('projectId', 'projectName')
+        .sort({ createdAt: -1 });
 };
 
 // Get expense by ID

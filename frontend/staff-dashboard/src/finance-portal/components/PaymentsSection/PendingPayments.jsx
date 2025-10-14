@@ -124,8 +124,8 @@ export const PendingPayments = () => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Project ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Client ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Project Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Client Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Method</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Type</th>
@@ -135,14 +135,19 @@ export const PendingPayments = () => {
             </thead>
 
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
-              {paginatedPayments.map((payment) => (
-                <tr key={payment._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 text-sm font-medium text-[#674636]">{payment.projectId}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.clientId}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">${payment.amount?.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.method}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.type}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer">
+              {paginatedPayments.map((payment) => {
+                // Project name: support both populated and fallback
+                const projectName = payment.projectId?.projectName || payment.projectName || payment.projectId || '-';
+                // Client name: support both populated and fallback
+                const clientName = payment.clientId?.username || payment.clientName || payment.clientId?.email || payment.clientId || '-';
+                return (
+                  <tr key={payment._id} className="hover:bg-[#F7EED3]">
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{projectName}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{clientName}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">${payment.amount?.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.method}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.type}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs underline cursor-pointer">
                     {payment.receiptUrl ? (
                       <a href={buildUploadsUrl(payment.receiptUrl, 'payments')} target="_blank" rel="noopener noreferrer">View Receipt</a>
                     ) : (
@@ -152,13 +157,14 @@ export const PendingPayments = () => {
                   <td className="px-6 py-4 text-right text-sm font-medium">
                     <button
                       onClick={() => handleView(payment)}
-                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white mr-2"
+                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-xs font-mono font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white mr-2"
                     >
                       Action
                     </button>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
               {paginatedPayments.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-4 text-center text-[#AAB396]">

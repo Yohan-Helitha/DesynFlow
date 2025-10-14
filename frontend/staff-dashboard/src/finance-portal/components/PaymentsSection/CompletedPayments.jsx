@@ -135,24 +135,24 @@ export const CompletedPayments = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
                 <tr key={payment._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{String(payment.projectId)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{String(payment.clientId)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${Number(payment.amount).toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.method}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] underline cursor-pointer">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.projectId?.projectName || payment.projectName || payment.projectId || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.clientId?.username || payment.clientName || payment.clientId?.email || payment.clientId || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">${Number(payment.amount).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.method}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.type}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs underline cursor-pointer">
                     {payment.receiptUrl ? (
                       <a href={buildUploadsUrl(payment.receiptUrl, 'payments')} target="_blank" rel="noopener noreferrer">View Receipt</a>
                     ) : (
                       <span className="text-[#AAB396]">No Receipt</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.status || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.status || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs">
                     <button
                       onClick={() => handleView(payment)}
-                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white flex items-center mr-2"
+                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-xs font-mono font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white flex items-center mr-2"
                     >
                       <Eye size={16} className="inline mr-1" /> View
                     </button>

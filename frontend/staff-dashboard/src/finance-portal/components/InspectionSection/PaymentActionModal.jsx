@@ -1,11 +1,37 @@
+
 import React, { useState } from 'react';
 import { buildUploadsUrl } from '../../utils/fileUrls';
+import { User, Mail, Phone, MapPin, Building } from 'lucide-react';
+
 
 export const PaymentActionModal = ({ payment, onClose }) => {
   const [enteredValue, setEnteredValue] = useState('');
   const estimatedCost = payment.estimation && payment.estimation.estimatedCost;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Client details helpers (match ViewInspectionPaymentModal)
+  const get = (...fields) => {
+    for (const f of fields) {
+      if (f === undefined) continue;
+      if (typeof f === 'function') {
+        try { const v = f(); if (v !== undefined && v !== null) return v; } catch { continue; }
+      } else if (f !== null) {
+        return f;
+      }
+    }
+    return undefined;
+  };
+  const clientName = get(payment.clientName, payment.client_name, payment.client && payment.client.name);
+  const email = get(payment.email, payment.client && payment.client.email);
+  const phone = get(payment.phone, payment.phone_number, payment.client && payment.client.phone_number);
+  const siteLocation = get(
+    payment.propertyLocation_address && payment.propertyLocation_city ? `${payment.propertyLocation_address}, ${payment.propertyLocation_city}` : undefined,
+    payment.siteLocation,
+    payment.propertyLocation_address,
+    payment.propertyLocation_city
+  );
+  const propertyType = get(payment.propertyType, payment.property_type);
 
   const handleVerify = async (actionStatus) => {
     setLoading(true);
@@ -42,9 +68,24 @@ export const PaymentActionModal = ({ payment, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-[#FFF8E8] p-6 rounded-lg shadow-lg w-full max-w-md border border-[#AAB396]">
         <h2 className="text-xl font-bold mb-4 text-[#674636]">Payment Action</h2>
+
+        {/* Client Details Section */}
+        <div className="mb-4 p-3 rounded bg-[#F7EED3] border border-[#AAB396]">
+          <div className="text-sm font-semibold text-[#674636] mb-2 flex items-center">
+            <User size={16} className="mr-2 text-[#AAB396]" /> Client Details
+          </div>
+          <div className="text-xs text-[#674636] space-y-1">
+            <div className="flex items-center"><User size={14} className="mr-1 text-[#AAB396]" />{clientName || 'N/A'}</div>
+            <div className="flex items-center"><Mail size={14} className="mr-1 text-[#AAB396]" />{email || 'N/A'}</div>
+            <div className="flex items-center"><Phone size={14} className="mr-1 text-[#AAB396]" />{phone || 'N/A'}</div>
+            <div className="flex items-center"><MapPin size={14} className="mr-1 text-[#AAB396]" />{siteLocation || 'N/A'}</div>
+            <div className="flex items-center"><Building size={14} className="mr-1 text-[#AAB396]" />{propertyType || 'N/A'}</div>
+          </div>
+        </div>
+
         <p className="text-sm text-[#674636] mb-4">
           Do you want to approve or reject the payment for{' '}
-          <span className="font-semibold">{payment.clientName}</span>?
+          <span className="font-semibold">{clientName || payment.clientName || 'N/A'}</span>?
         </p>
         {payment?.paymentReceiptUrl && (
           <div className="mb-4">

@@ -79,17 +79,34 @@ async function getProjectsWithInspections(req, res) {
   try {
     // Get all projects with inspection data, focusing on projects without estimates created
     const projects = await Project.find({ estimateCreated: false })
-      .populate({
-        path: 'inspectionId',
-        model: 'InspectionRequest',
-        select: 'clientName email phone siteLocation propertyType floors status assignedInspectorId createdAt'
-      })
+        .populate({
+          path: 'inspectionId',
+          model: 'InspectionRequest',
+          // Include both client_name and email, plus address/city for site location
+          select: 'client_name email propertyLocation_address propertyLocation_city propertyType status createdAt',
+        })
       .populate('projectManagerId', 'name email')
       .populate('clientId', 'name email')
       .sort({ createdAt: -1 });
 
-    // Filter out projects without valid inspection data
-    const validProjects = projects.filter(project => project.inspectionId);
+    // Filter out projects without valid inspection data, and enrich a human-friendly siteLocation string
+    const validProjects = projects
+      .filter(project => project.inspectionId)
+      .map(p => {
+        const i = p.inspectionId || {};
+        const address = i.propertyLocation_address || '';
+        const city = i.propertyLocation_city || '';
+        const siteLocation = address && city ? `${address}, ${city}` : (address || city || undefined);
+        // Attach derived fields without mutating mongoose docs
+        return {
+          ...(p.toObject ? p.toObject() : p),
+          inspectionId: {
+            ...(i.toObject ? i.toObject() : i),
+            client_name: i.client_name || i.email, // fallback to email if name missing
+            siteLocation // for convenience if frontend wants a single string
+          }
+        };
+      });
 
     res.json(validProjects);
   } catch (err) {

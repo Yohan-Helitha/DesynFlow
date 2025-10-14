@@ -147,12 +147,12 @@ export const ApprovedPurchaseOrders = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginated.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{po._id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.status}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${(Number(po.totalAmount)||0).toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.updatedAt ? new Date(po.updatedAt).toLocaleString() : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => openView(po._id)} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white">Open</button>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po._id}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.status}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">${(Number(po.totalAmount)||0).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.updatedAt ? new Date(po.updatedAt).toLocaleString() : '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
+                    <button onClick={() => openView(po._id)} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-xs font-mono text-[#674636] hover:bg-[#AAB396] hover:text-white">Open</button>
                   </td>
                 </tr>
               ))}

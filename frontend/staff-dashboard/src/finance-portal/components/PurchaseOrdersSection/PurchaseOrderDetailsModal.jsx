@@ -27,8 +27,11 @@ export const PurchaseOrderDetailsModal = ({ purchaseOrderId, onClose, onAction }
     return () => { ignore = true; };
   }, [purchaseOrderId]);
 
+  const canApprove = () => Boolean(po?._id) && Number(po?.totalAmount) >+ 0 && !acting;
+
   const approve = async () => {
-    if (!po?._id) return;
+    if (!canApprove()) return;
+
     setActing(true);
     try {
       const res = await fetch(`/api/purchase-orders/${po._id}/approve`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' } });
@@ -62,6 +65,7 @@ export const PurchaseOrderDetailsModal = ({ purchaseOrderId, onClose, onAction }
   const lineTotal = (qty, price) => {
     const q = Number(qty) || 0; const p = Number(price) || 0; return q * p;
   };
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -155,12 +159,20 @@ export const PurchaseOrderDetailsModal = ({ purchaseOrderId, onClose, onAction }
                 </div>
               </div>
 
+
+
               {/* Actions */}
               <div className="flex justify-end gap-2">
                 <button onClick={onClose} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#FFF8E8]">Close</button>
                 <button onClick={reject} disabled={acting} className={`px-4 py-2 rounded-md text-sm font-medium text-white ${acting ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}>Reject</button>
-                <button onClick={approve} disabled={acting} className={`px-4 py-2 rounded-md text-sm font-medium text-white ${acting ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}>Approve</button>
-              </div>
+                <button
+                  onClick={approve}
+                  disabled={!canApprove()}
+                  className={`px-4 py-2 rounded-md text-sm font-medium text-white ${!canApprove() ? 'bg-green-300' : 'bg-green-600 hover:bg-green-700'}`}
+                >
+                  Approve
+                </button>
+              </div>3
             </>
           )}
         </div>

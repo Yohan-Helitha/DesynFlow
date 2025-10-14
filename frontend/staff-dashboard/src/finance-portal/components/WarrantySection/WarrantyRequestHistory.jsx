@@ -159,14 +159,14 @@ export const WarrantyRequestHistory = () => {
 							{!loading && pageSlice.map(row => (
 								<tr key={row._id} className="hover:bg-[#F7EED3]">
 									{columns.map(col => (
-										<td key={col.key} className="px-4 py-3 whitespace-nowrap text-sm text-[#674636]">
+										<td key={col.key} className="px-4 py-3 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
 											{col.render ? col.render(row) : (row[col.key] ?? '')}
 										</td>
 									))}
-									<td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+									<td className="px-4 py-3 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
 										<button 
 											onClick={() => handleView(row)}
-											className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors"
+											className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors text-xs font-mono"
 										>
 											<Eye size={16} className="inline mr-1" /> View
 										</button>

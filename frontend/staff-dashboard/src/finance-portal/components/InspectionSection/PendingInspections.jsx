@@ -166,16 +166,7 @@ export const PendingInspections = () => {
               <thead className="bg-[#F7EED3]">
                 <tr>
                   {/* Only show Inspection ID and Client Name as sortable columns */}
-                  <th
-                    className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('id')}
-                  >
-                    <div className="flex items-center capitalize">
-                      Inspection ID
-                      <ArrowUpDown size={14} className="ml-1" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client ID</th>
+                  {/* Inspection ID and Client ID columns removed */}
                   <th
                     className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort('clientName')}
@@ -190,26 +181,20 @@ export const PendingInspections = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Site Location</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Property Type</th>
                   {/* Removed Floors column */}
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Status</th>
+                  {/* Status column removed */}
                   <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                 {paginatedInspections.map((inspection) => (
                   <tr key={inspection.id || inspection._id} className="hover:bg-[#F7EED3] transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-[#674636] font-mono text-xs">{String(inspection._id || inspection.id || inspection.inspectionRequestId || '')}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636] font-mono text-xs">{String(inspection.client_ID || inspection.clientId || '-')}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.clientName || inspection.client_name || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.email || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.phone_number || inspection.phone || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{[inspection.propertyLocation_address, inspection.propertyLocation_city].filter(Boolean).join(', ') || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636]">{inspection.propertyType || inspection.property_type || '-'}</td>
-                    {/* Removed Floors column */}
-                    <td className="px-6 py-4">
-                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                        {inspection.status}
-                      </span>
-                    </td>
+                    {/* Inspection ID and Client ID columns removed */}
+                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{inspection.clientName || inspection.client_name || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{inspection.email || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{inspection.phone_number || inspection.phone || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{([inspection.propertyLocation_address, inspection.propertyLocation_city].filter(Boolean).join(', ') || '-')}</td>
+                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{inspection.propertyType || inspection.property_type || '-'}</td>
+                    {/* Status column removed */}
                     <td className="px-6 py-4 text-right text-sm font-medium">
                       <button
                         onClick={() => handleGenerate(inspection)}

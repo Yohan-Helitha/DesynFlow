@@ -136,22 +136,22 @@ export const ActiveWarranties = () => {
             <tbody className="bg-[#F7EED3] divide-y divide-[#AAB396]">
               {paginatedWarranties.map((warranty) => (
                 <tr key={warranty.id} className="hover:bg-[#FFF8E8]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.projectName}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.clientName}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.type}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.startDate}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.endDate}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -167,10 +167,10 @@ export const ActiveWarranties = () => {
                       {warranty.daysRemaining} days
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
                       onClick={() => handleView(warranty)}
-                      className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md mr-2"
+                      className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md mr-2 text-xs font-mono"
                     >
                       <Eye size={16} className="inline mr-1" />
                       View
@@ -178,7 +178,7 @@ export const ActiveWarranties = () => {
                     {warranty.daysRemaining <= 30 && (
                       <button
                         onClick={() => handleSendReminder(warranty.id)}
-                        className="text-[#674636] hover:text-[#AAB396] bg-[#F7EED3] px-3 py-1 rounded-md"
+                        className="text-[#674636] hover:text-[#AAB396] bg-[#F7EED3] px-3 py-1 rounded-md text-xs font-mono"
                       >
                         <Bell size={16} className="inline mr-1" />
                         Remind

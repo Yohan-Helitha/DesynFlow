@@ -59,8 +59,12 @@ export const PendingEstimation = () => {
       const searchLower = searchTerm.toLowerCase();
       return (
         project.projectName?.toLowerCase().includes(searchLower) ||
-        project.inspectionId?.clientName?.toLowerCase().includes(searchLower) ||
-        project.inspectionId?.siteLocation?.toLowerCase().includes(searchLower) ||
+        (project.inspectionId?.client_name || project.inspectionId?.email || '')
+          .toLowerCase()
+          .includes(searchLower) ||
+        (project.inspectionId?.siteLocation || `${project.inspectionId?.propertyLocation_address || ''} ${project.inspectionId?.propertyLocation_city || ''}`)
+          .toLowerCase()
+          .includes(searchLower) ||
         project.status?.toLowerCase().includes(searchLower) ||
         project.inspectionId?.propertyType?.toLowerCase().includes(searchLower)
       );
@@ -206,20 +210,23 @@ export const PendingEstimation = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedProjects.map((project) => (
                 <tr key={project._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-4 py-2 text-sm font-medium text-[#674636]">
+                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {project.projectName || 'N/A'}
                   </td>
-                  <td className="px-4 py-2 text-sm text-[#674636]">
-                    {project.inspectionId?.clientName || 'N/A'}
+                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                    {project.inspectionId?.client_name || project.inspectionId?.email || 'N/A'}
                   </td>
-                  <td className="px-4 py-2 text-sm text-[#674636]">
+                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {project.inspectionId?.propertyType || 'N/A'}
                   </td>
-                  <td className="px-4 py-2 text-sm text-[#674636]">
-                    {project.inspectionId?.siteLocation || 'N/A'}
+                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                    {project.inspectionId?.siteLocation
+                      || (project.inspectionId?.propertyLocation_address || project.inspectionId?.propertyLocation_city
+                        ? `${project.inspectionId?.propertyLocation_address || ''}${project.inspectionId?.propertyLocation_city ? ', ' + project.inspectionId.propertyLocation_city : ''}`
+                        : 'N/A')}
                   </td>
                   {/* Removed Project Status and Inspection Status cells */}
-                  <td className="px-4 py-2 text-sm text-[#674636]">
+                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {new Date(project.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-2 text-right text-sm flex space-x-2">
