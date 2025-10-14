@@ -265,12 +265,7 @@ function Dashboard_sup() {
   useEffect(() => {
     fetchPendingOrders();
 
-    // Set up auto-refresh every 30 seconds for real-time data
-    const intervalId = setInterval(() => {
-      fetchPendingOrders();
-    }, 30000);
-
-    return () => clearInterval(intervalId);
+    // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
   useEffect(() => {
@@ -508,12 +503,7 @@ function Dashboard_sup() {
 
     fetchSupplierDashboardData();
 
-    // Set up auto-refresh every 30 seconds for real-time dashboard data
-    const dashboardIntervalId = setInterval(() => {
-      fetchSupplierDashboardData();
-    }, 30000);
-
-    return () => clearInterval(dashboardIntervalId);
+    // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
   const handleNoted = (id) => {

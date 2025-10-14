@@ -296,12 +296,7 @@ function Dashboard_proc() {
 
     fetchDashboardData();
 
-    // Set up auto-refresh every 30 seconds for real-time data
-    const intervalId = setInterval(() => {
-      fetchDashboardData();
-    }, 30000);
-
-    return () => clearInterval(intervalId);
+    // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
   // Check notification count from localStorage

@@ -72,9 +72,7 @@ function Orders() {
     };
     fetchOrders();
 
-    // Auto-refresh every 30 seconds to catch supplier status updates
-    const interval = setInterval(fetchOrders, 30000);
-    return () => clearInterval(interval);
+    // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
   // Handle successful order creation navigation
@@ -273,7 +271,7 @@ function Orders() {
                           <button
                             className="action-btn rate-btn"
                             onClick={() => {
-                              const url = `/Rate_supplier?supplierId=${order.supplierId?._id || order.supplierId}&orderId=${order._id}&viewOnly=false`;
+                              const url = `/procurement-officer/rate_supplier?supplierId=${order.supplierId?._id || order.supplierId}&orderId=${order._id}&viewOnly=false`;
                               window.location.href = url;
                             }}
                             title="Rate this supplier"

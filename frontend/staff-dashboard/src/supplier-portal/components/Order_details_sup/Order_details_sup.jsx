@@ -51,9 +51,7 @@ function OrderDetailsSup() {
   useEffect(() => {
     fetchOrders();
     
-    // Auto-refresh every 30 seconds to keep data current
-    const interval = setInterval(fetchOrders, 30000);
-    return () => clearInterval(interval);
+    // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
   const notifications = orders.filter((o) => o.status?.toLowerCase() === "draft");
