@@ -58,7 +58,7 @@ export const createInspectorForm = async (req, res) => {
       floors,
       recommendations,
       inspection_Date: new Date(),
-      status: 'draft' // New forms should be draft by default
+      status: 'in-progress' // New forms should be in-progress by default
     });
 
     await inspectorForm.save();
@@ -126,14 +126,20 @@ export const generateReportFromForm = async (req, res) => {
     if (form.report_generated) return res.status(400).json({ message: 'Report already generated' });
 
     const report = new AuthInspectionReport({
-      InspectionRequest_ID: form.InspectionRequest_ID,
-      inspector_ID: form.inspector_ID,
-      propertyType: form.propertyType || 'N/A',
-      propertyLocation: form.propertyLocation || 'N/A',
-      inspection_Date: new Date(),
-      rooms: 1,
-      report_content: form.inspector_notes || 'Inspection report',
-      validation_status: 'pending'
+      inspectorId: form.inspector_ID,  // Use correct field name from schema
+      generatedBy: form.inspector_ID,  // Also required by schema
+      title: `Inspection Report - ${new Date().toLocaleDateString()}`,
+      reportData: {
+        clientName: inspectionRequest?.client_name || 'N/A',
+        propertyAddress: inspectionRequest?.propertyLocation_address || 'N/A',
+        propertyType: inspectionRequest?.propertyType || 'N/A',
+        inspectionDate: new Date(),
+        findings: 'Inspection completed',
+        recommendations: form.recommendations || 'No recommendations provided',
+        inspectorNotes: 'Generated from inspection form',
+        inspectorName: req.user.username || 'Inspector'
+      },
+      status: 'completed'
     });
     await report.save();
 
@@ -218,12 +224,25 @@ export const getInspectorFormById = async (req, res) => {
 export const deleteInspectorForm = async (req, res) => {
   try {
     const { formId } = req.params;
-    const form = await InspectorForm.findById(formId);
-    if (!form) return res.status(404).json({ message: 'Form not found' });
-    await form.remove();
-    res.status(200).json({ message: 'Form deleted successfully' });
+    
+    // Use modern Mongoose delete method
+    const deletedForm = await InspectorForm.findByIdAndDelete(formId);
+    
+    if (!deletedForm) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+    
+    console.log(`Form ${formId} deleted successfully`);
+    res.status(200).json({ 
+      message: 'Form deleted successfully',
+      deletedFormId: formId 
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error deleting form:', error);
+    res.status(500).json({ 
+      message: 'Failed to delete form',
+      error: error.message 
+    });
   }
 };
 
@@ -266,14 +285,20 @@ Recommendations: ${form.recommendations || 'No recommendations provided'}
 
     // 4. Create report
     const report = new AuthInspectionReport({
-      InspectionRequest_ID: form.InspectionRequest_ID._id,
-      inspector_ID: form.inspector_ID,
-      propertyType: form.InspectionRequest_ID?.propertyType || 'N/A',
-      propertyLocation: form.InspectionRequest_ID?.propertyLocation_address || 'N/A',
-      inspection_Date: new Date(),
-      rooms: form.floors?.reduce((total, floor) => total + (floor.rooms?.length || 0), 0) || 1,
-      report_content: reportContent,
-      validation_status: 'pending'
+      inspectorId: form.inspector_ID,  // Use correct field name from schema
+      generatedBy: form.inspector_ID,  // Also required by schema
+      title: `Inspection Report - ${form.InspectionRequest_ID?.client_name || 'Client'} - ${new Date().toLocaleDateString()}`,
+      reportData: {
+        clientName: form.InspectionRequest_ID?.client_name || 'N/A',
+        propertyAddress: form.InspectionRequest_ID?.propertyLocation_address || 'N/A',
+        propertyType: form.InspectionRequest_ID?.propertyType || 'N/A',
+        inspectionDate: new Date(),
+        findings: `Inspection completed with ${form.floors?.length || 0} floors and ${form.floors?.reduce((total, floor) => total + (floor.rooms?.length || 0), 0) || 0} rooms`,
+        recommendations: form.recommendations || 'No recommendations provided',
+        inspectorNotes: reportContent,
+        inspectorName: req.user.username || 'Inspector'
+      },
+      status: 'completed'
     });
     await report.save();
 

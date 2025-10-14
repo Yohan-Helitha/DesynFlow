@@ -35,7 +35,7 @@ const inspectorFormSchema = new mongoose.Schema({
   
   status: { 
     type: String,
-    enum: ['draft', 'completed'],
+    enum: ['draft', 'in-progress', 'completed'],
     default: 'draft'
   },
   

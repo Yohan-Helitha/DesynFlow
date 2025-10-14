@@ -30,9 +30,10 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
       console.log('Extracted requestId:', requestId);
       setInspectionRequestId(requestId);
       
-      // Pre-populate floors based on inspection request
-      const numberOfFloors = request.numberOfFloors || 1;
-      const suggestedRooms = request.roomNames || ['Room 1'];
+      // Pre-populate floors - Always start with 1 floor and 1 room for simplicity
+      // Inspector can add more floors/rooms as needed using the add buttons
+      const numberOfFloors = 1; // Fixed to 1 floor by default
+      const suggestedRooms = ['Room 1']; // Fixed to 1 room by default
       
       const initialFloors = [];
       for (let floorNum = 1; floorNum <= numberOfFloors; floorNum++) {
@@ -160,11 +161,11 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
     setError('');
     setSuccess('');
     
-    // Re-initialize with assignment data
+    // Re-initialize with consistent 1 floor + 1 room default (same as initial load)
     if (selectedAssignment && selectedAssignment.inspectionRequest) {
-      const request = selectedAssignment.inspectionRequest;
-      const numberOfFloors = request.numberOfFloors || 1;
-      const suggestedRooms = request.roomNames || ['Room 1'];
+      // Always use 1 floor and 1 room for consistency
+      const numberOfFloors = 1; // Fixed to 1 floor by default
+      const suggestedRooms = ['Room 1']; // Fixed to 1 room by default
       
       const initialFloors = [];
       for (let floorNum = 1; floorNum <= numberOfFloors; floorNum++) {
@@ -492,10 +493,10 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
       console.log('Form saved:', response.data);
 
       
-      // Refresh saved forms and reset form
+      // Refresh saved forms to show the newly saved form
       console.log('Calling fetchSavedForms after save...');
       await fetchSavedForms(inspectionRequestId);
-      resetForm();
+      // Don't reset form - keep user data for easy modification
       
     } catch (err) {
       console.error('Error saving form:', err);
@@ -753,6 +754,7 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
                   <p className="text-sm text-gray-600">
                     Status: <span className={`px-2 py-1 rounded text-xs ${
                       form.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      form.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
                       form.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
