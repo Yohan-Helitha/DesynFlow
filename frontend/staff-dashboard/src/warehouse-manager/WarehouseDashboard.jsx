@@ -27,6 +27,7 @@ import Notifications from './pages/notifications.jsx';
 import ThresholdAlerts from './pages/thresholdAlerts.jsx';
 import WarrantyClaims from './pages/warrantyClaims.jsx';
 import { NotificationsProvider } from './context/notificationContext.jsx';
+import UpdateWarrantyClaimForm from './forms/updateWarrantyClaimsForm.jsx'; 
 
 const WarehouseDashboard = () => {
   return (
@@ -59,6 +60,7 @@ const WarehouseDashboard = () => {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/threshold-alerts" element={<ThresholdAlerts />} />
           <Route path="/warranty-claims" element={<WarrantyClaims />} />
+          <Route path="/reorder-request/update/:id" element={<UpdateWarrantyClaimForm />} />
         </Routes>
       </NotificationsProvider>
     </div>

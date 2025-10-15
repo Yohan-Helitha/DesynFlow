@@ -39,22 +39,6 @@ const WarrantyClaims = () => {
     getClaims();
   }, []);
 
-  // Delete handler
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this warranty claim?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      await deleteWarrantyClaim(id);
-      await getClaims();
-      alert("Warranty claim deleted successfully!");
-    } catch (err) {
-      console.error("Failed to delete warranty claim:", err);
-      alert("Failed to delete warranty claim.");
-    }
-  };
 
   // Filtering logic
   const filteredClaims = claims.filter((claim) => {
@@ -127,12 +111,7 @@ const WarrantyClaims = () => {
       <div className="m-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold mt-6 mb-10">Warranty Claims</h1>
-          <button
-            className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
-            onClick={() => navigate("/warehouse-manager/warranty-claims/add")}
-          >
-            + Add Warranty Claim
-          </button>
+         
         </div>
 
         {/* Chart */}
@@ -251,10 +230,6 @@ const WarrantyClaims = () => {
                           onClick={() =>
                             navigate(`/warehouse-manager/warranty-claims/update/${claim._id}`)
                           }
-                        />
-                        <Trash2
-                          className="w-5 h-5 text-[#674636] hover:text-[#A67C52] cursor-pointer"
-                          onClick={() => handleDelete(claim._id)}
                         />
                       </div>
                     </td>
