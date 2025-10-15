@@ -190,13 +190,9 @@ export default function AssignTeams() {
         startDate: form.startDate,
         dueDate: form.dueDate,
         inspectionReportPath,
-        inspectionReportOriginalName
+        inspectionReportOriginalName,
+        assignedTeamId: form.teamId || null // Always include assignedTeamId, null if no team selected
       };
-
-      // Only add assignedTeamId if a team is selected
-      if (form.teamId) {
-        projectData.assignedTeamId = form.teamId;
-      }
 
       if (editProjectId) {
         // Update existing project
