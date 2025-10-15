@@ -172,7 +172,7 @@ const TransferRequest = () => {
               height={80} 
               tick={{ fontSize: 12 }}
             />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} domain={[0, 'dataMax + 2']}/>
             <Tooltip />
             <Legend />
             <Bar dataKey="sent" fill="#AAB396" name="Sent" barSize={30} />

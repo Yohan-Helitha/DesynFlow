@@ -146,7 +146,7 @@ const ManuProducts = () => {
             <BarChart data={chartArray}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="monthYear" />
-              <YAxis />
+              <YAxis domain={[0, 'dataMax + 2']} />
               <Tooltip />
               <Legend />
               <Bar dataKey="count" fill="#674636" barSize={30} /> 
@@ -271,9 +271,9 @@ const ManuProducts = () => {
                 filteredProducts.map((product) => (
                     <tr 
                     key={product._id}
-                    className={product.currentLevel < product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"}
+                    className={product.currentLevel <= product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"}
                     >
-                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel < product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-0  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>
+                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel <= product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-0  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>
                         <div className="flex items-center justify-center gap-8">
                             <div className="group relative cursor-pointer" onClick={() => navigate(`/update-product/${product._id}`)}>
                             <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
@@ -299,8 +299,8 @@ const ManuProducts = () => {
 
                         </div>
                     </td>
-                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel < product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-32 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{product.materialId}</td>
-                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel < product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-64  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{product.materialName}</td>
+                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel <= product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-32 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{product.materialId}</td>
+                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel <= product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-64  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{product.materialName}</td>
                     <td className="border border-gray-300 px-4 py-2">{product.category}</td>
                     <td className="border border-gray-300 px-4 py-2">{product.type}</td>
                     <td className="border border-gray-300 px-4 py-2">{product.unit}</td>

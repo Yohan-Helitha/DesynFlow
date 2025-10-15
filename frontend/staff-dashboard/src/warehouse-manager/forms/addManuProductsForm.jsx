@@ -81,7 +81,7 @@ const AddManuProductForm = ({ loggedInUserId }) => {
           type: selectedProduct.type,
           unit: selectedProduct.unit,
           warrantyPeriod: selectedProduct.warrantyPeriod,
-          inventoryName: selectedProduct.inventoryName,
+          inventoryName: '',
           restockLevel: '',
           currentLevel: '',
           reorderLevel: ''
@@ -97,6 +97,27 @@ const AddManuProductForm = ({ loggedInUserId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({}); // reset errors
+
+    if (!formData.inventoryName || !formData.materialName) {
+      setErrors({
+        inventoryName: "Inventory location and product name are required"
+      });
+      return;
+    }
+
+    // Duplicate check: same inventoryName & materialName
+    const duplicate = existingProducts.find(
+      (p) =>
+        p.inventoryName === formData.inventoryName &&
+        p.materialName.trim().toLowerCase() === formData.materialName.trim().toLowerCase()
+    );
+
+    if (duplicate) {
+      setErrors({
+        inventoryName: "This product already exists in the selected inventory"
+      });
+      return;
+    }
 
     const now = new Date();
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June','July', 'August', 'September', 'October', 'November', 'December'];
@@ -164,11 +185,11 @@ const AddManuProductForm = ({ loggedInUserId }) => {
                   className={inputClass('materialId')}
                 >
                   <option value="">-- Select Material ID --</option>
-                  {existingProducts.map(p => (
-                    <option key={p.materialId} value={p.materialId}>
-                      {p.materialId} - {p.materialName}
-                    </option>
-                  ))}
+                    {[...new Map(existingProducts.map(p => [p.materialId, p])).values()].map(p => (
+                      <option key={p.materialId} value={p.materialId}>
+                        {p.materialId} - {p.materialName}
+                      </option>
+                    ))}
                 </select>
               </div>
             ) : (

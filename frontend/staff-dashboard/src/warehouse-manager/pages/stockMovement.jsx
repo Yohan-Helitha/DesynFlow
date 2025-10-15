@@ -156,7 +156,7 @@ const StockMovement = () => {
           <BarChart barCategoryGap="5%"  data={chartArray}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="inventory" angle={-30} textAnchor="end" interval={0} height={80} tick={{ fontSize: 12 }}/>
-            <YAxis />
+            <YAxis domain={[0, 'dataMax + 2']} />
             <Tooltip />
             <Legend />
             <Bar dataKey="sent" fill="#AAB396" name="Sent" barSize={30} />
