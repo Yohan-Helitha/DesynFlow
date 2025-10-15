@@ -93,12 +93,7 @@ function Orders() {
   // Handle successful order creation navigation
   useEffect(() => {
     if (location.state?.newOrderCreated) {
-      // Show success message
-      setTimeout(() => {
-        const orderData = location.state.orderData;
-        const orderId = orderData?._id?.slice(-8) || 'New Order';
-        alert(`Order #${orderId} has been created successfully!`);
-      }, 500);
+      // Success message removed - order list will be refreshed to show the new order
       
       // Refresh orders to include the new order
       const fetchOrders = async () => {

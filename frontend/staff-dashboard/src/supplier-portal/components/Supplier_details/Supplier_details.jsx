@@ -80,10 +80,7 @@ function Supplier_details() {
     // Handle new supplier added
     if (location.state?.newSupplierAdded) {
       loadSuppliers();
-      // Show success message
-      setTimeout(() => {
-        alert(`Supplier "${location.state.supplierName}" has been added successfully!`);
-      }, 500);
+      // Success message removed - supplier list will be refreshed to show the new supplier
     }
   }, [location.state?.justRated, location.state?.newSupplierAdded]);
 
