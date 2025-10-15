@@ -1,5 +1,6 @@
 import Task from '../model/task.model.js';
 import Team from '../model/team.model.js';
+import { updateProjectProgressService } from './project.service.js';
 
 // Create a new task
 export const createTaskService = async (taskData) => {
@@ -28,12 +29,27 @@ export const updateTaskStatusService = async (taskId, status, progressPercentage
   const update = { status };
   if (progressPercentage !== undefined) update.progressPercentage = progressPercentage;
   if (status === 'Done') update.completedAt = new Date();
-  return await Task.findByIdAndUpdate(taskId, update, { new: true });
+  
+  const updatedTask = await Task.findByIdAndUpdate(taskId, update, { new: true });
+  
+  // Update project progress when task status changes
+  if (updatedTask && updatedTask.projectId) {
+    await updateProjectProgressService(updatedTask.projectId);
+  }
+  
+  return updatedTask;
 };
 
 // Update a task
 export const updateTaskService = async (taskId, updateData) => {
-  return await Task.findByIdAndUpdate(taskId, updateData, { new: true });
+  const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, { new: true });
+  
+  // Update project progress if status was changed
+  if (updatedTask && updatedTask.projectId && updateData.status) {
+    await updateProjectProgressService(updatedTask.projectId);
+  }
+  
+  return updatedTask;
 };
 
 // Delete a task

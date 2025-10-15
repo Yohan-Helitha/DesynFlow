@@ -21,6 +21,31 @@ export default function CreateMeetingForm({
   const isEdit = !!editMeeting;
   const showLinkField = form.channel === 'Zoom' || form.channel === 'Teams';
 
+  // Function to validate meeting links
+  const validateMeetingLink = (channel, link) => {
+    if (!showLinkField || !link) return true; // No validation needed if no link required
+    
+    try {
+      const url = new URL(link);
+      const hostname = url.hostname.toLowerCase();
+      
+      if (channel === 'Zoom') {
+        // Zoom meeting URLs should be exactly zoom.us/zoom.com or proper subdomains
+        return hostname === 'zoom.us' || hostname === 'zoom.com' ||
+               hostname.endsWith('.zoom.us') || hostname.endsWith('.zoom.com');
+      } else if (channel === 'Teams') {
+        // Teams meeting URLs should be exactly teams.microsoft.com or proper subdomains
+        return hostname === 'teams.microsoft.com' || hostname === 'teams.live.com' ||
+               hostname.endsWith('.teams.microsoft.com') || hostname.endsWith('.teams.live.com');
+      }
+      
+      return false;
+    } catch (error) {
+      // Invalid URL format
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -33,6 +58,16 @@ export default function CreateMeetingForm({
 
     if (showLinkField && !form.link) {
       setError('Meeting link is required for Zoom and Teams meetings');
+      return;
+    }
+
+    // Validate meeting link format
+    if (showLinkField && form.link && !validateMeetingLink(form.channel, form.link)) {
+      if (form.channel === 'Zoom') {
+        setError('Please enter a valid Zoom meeting link (should contain zoom.us or zoom.com)');
+      } else if (form.channel === 'Teams') {
+        setError('Please enter a valid Microsoft Teams meeting link (should contain teams.microsoft.com)');
+      }
       return;
     }
 
@@ -159,7 +194,11 @@ export default function CreateMeetingForm({
                 type="url"
                 value={form.link}
                 onChange={(e) => setForm({ ...form, link: e.target.value })}
-                placeholder="https://zoom.us/j/... or https://teams.microsoft.com/..."
+                placeholder={
+                  form.channel === 'Zoom' 
+                    ? "https://zoom.us/j/... or https://zoom.com/..." 
+                    : "https://teams.microsoft.com/..."
+                }
                 className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
                 required
               />

@@ -38,6 +38,18 @@ export default function LeaderDashboard() {
   const [showMeetingForm, setShowMeetingForm] = useState(false);
   const [editMeeting, setEditMeeting] = useState(null);
 
+  // Function to calculate project progress based on completed tasks
+  const calculateProjectProgress = (projectTasks) => {
+    if (!projectTasks || projectTasks.length === 0) return 0;
+    
+    const totalWeight = projectTasks.reduce((sum, task) => sum + (task.weight || 0), 0);
+    const completedWeight = projectTasks
+      .filter(task => task.status === 'Done')
+      .reduce((sum, task) => sum + (task.weight || 0), 0);
+    
+    return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
+  };
+
   // Check if user is logged in and has team leader role
   if (!leaderData || !leaderId) {
     return (
@@ -51,8 +63,8 @@ export default function LeaderDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // 1. Get all teams
-        const teamRes = await fetch(`http://localhost:4000/api/teams`);
+        // 1. Get all teams with populated member data
+        const teamRes = await fetch(`http://localhost:4000/api/teams/populated`);
         const teamData = await teamRes.json();
         const teamObj = Array.isArray(teamData)
           ? teamData.find(t => t.leaderId === leaderId || t.leaderId._id === leaderId)
@@ -169,18 +181,32 @@ export default function LeaderDashboard() {
       </div>
 
       {/* 🔹 Timeline & Progress */}
-      {projects.map(project => (
-        <div key={project._id + '-timeline'} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold text-brown-primary mb-2">Timeline</h3>
-            <MilestoneList milestones={project.timeline} tasks={tasks} projectId={project._id} />
+      {projects.map(project => {
+        // Filter tasks for this specific project
+        const projectTasks = tasks.filter(task => task.projectId === project._id || task.projectId._id === project._id);
+        const calculatedProgress = calculateProjectProgress(projectTasks);
+        const totalWeight = projectTasks.reduce((sum, task) => sum + (task.weight || 0), 0);
+        const completedWeight = projectTasks
+          .filter(task => task.status === 'Done')
+          .reduce((sum, task) => sum + (task.weight || 0), 0);
+        
+        return (
+          <div key={project._id + '-timeline'} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-lg font-semibold text-brown-primary mb-2">Timeline</h3>
+              <MilestoneList milestones={project.timeline} tasks={projectTasks} projectId={project._id} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-brown-primary mb-2">Progress</h3>
+              <ProgressBar 
+                progress={calculatedProgress} 
+                completedWeight={completedWeight}
+                totalWeight={totalWeight}
+              />
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-brown-primary mb-2">Progress</h3>
-            <ProgressBar progress={project.progress} />
-          </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* 🔹 Documents */}
       {projects.map(project => (

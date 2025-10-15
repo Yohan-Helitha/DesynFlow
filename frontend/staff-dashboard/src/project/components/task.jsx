@@ -66,15 +66,36 @@ const TaskBoard = () => {
 
   const fetchTeamMembers = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/team-members/${leaderId}`);
+      // Get team data using populated endpoint
+      const response = await fetch(`http://localhost:4000/api/teams/populated`);
       if (response.ok) {
-        const data = await response.json();
-        setTeamMembers(Array.isArray(data.members) ? data.members : []);
+        const teamsData = await response.json();
         
-        // Fetch user names for all team members
-        await fetchUserNames(data.members || []);
+        // Find the team where the current user is the leader
+        const userTeam = teamsData.find(team => {
+          const teamLeaderId = team.leaderId?._id || team.leaderId;
+          return teamLeaderId === leaderId;
+        });
+        
+        if (userTeam && userTeam.members) {
+          setTeamMembers(userTeam.members);
+          
+          // Extract user names directly from the populated data
+          const names = {};
+          userTeam.members.forEach(member => {
+            if (member.userId && member.userId._id) {
+              const userId = member.userId._id;
+              const username = member.userId.username || member.userId.email || 'Unknown User';
+              names[userId] = username;
+            }
+          });
+          setUserNames(names);
+        } else {
+          console.log('No team found for leader ID:', leaderId);
+          setTeamMembers([]);
+        }
       } else {
-        console.log('No team members found or API endpoint not available');
+        console.log('Failed to fetch teams data');
         setTeamMembers([]);
       }
     } catch (error) {
@@ -85,12 +106,8 @@ const TaskBoard = () => {
 
   const fetchUserNames = async (members) => {
     try {
-      // Fetch teams data to get populated user information
-      const response = await fetch('http://localhost:4000/api/teams', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
+      // Fetch teams data with populated user information
+      const response = await fetch('http://localhost:4000/api/teams/populated');
       
       if (!response.ok) {
         throw new Error('Failed to fetch teams data');
@@ -101,11 +118,15 @@ const TaskBoard = () => {
       
       // Extract user data from all teams
       teamsData.forEach(team => {
-        team.members.forEach(teamMember => {
-          const userId = teamMember.userId._id;
-          const username = teamMember.userId.username;
-          names[userId] = username;
-        });
+        if (team.members && Array.isArray(team.members)) {
+          team.members.forEach(teamMember => {
+            if (teamMember.userId && teamMember.userId._id) {
+              const userId = teamMember.userId._id;
+              const username = teamMember.userId.username || teamMember.userId.email || 'Unknown User';
+              names[userId] = username;
+            }
+          });
+        }
       });
       
       // Set the user names
@@ -126,8 +147,8 @@ const TaskBoard = () => {
     console.log('fetchProject called, leaderId:', leaderId);
     
     try {
-      // Get team data first
-      const teamRes = await fetch(`http://localhost:4000/api/teams`);
+      // Get team data first using populated endpoint
+      const teamRes = await fetch(`http://localhost:4000/api/teams/populated`);
       const teamData = await teamRes.json();
       console.log('All teams:', teamData);
       
@@ -727,7 +748,10 @@ const TaskBoard = () => {
                 {formErrors.assignedTo && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.assignedTo}</p>
                 )}
-                {newTask.assignedTo && teamMembers.find(m => m.userId === newTask.assignedTo)?.availability === 'Busy' && (
+                {newTask.assignedTo && teamMembers.find(m => {
+                  const userId = typeof m.userId === 'object' ? m.userId._id : m.userId;
+                  return userId === newTask.assignedTo;
+                })?.availability === 'Busy' && (
                   <p className="text-amber-600 text-xs mt-1"><FaExclamationTriangle className="inline mr-1" /> This team member is currently busy</p>
                 )}
               </div>

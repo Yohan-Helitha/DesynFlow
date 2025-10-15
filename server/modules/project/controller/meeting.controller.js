@@ -1,5 +1,30 @@
 import Meeting from '../model/meeting.model.js';
 
+// Function to validate meeting links
+const validateMeetingLink = (channel, link) => {
+    if (!link) return false;
+    
+    try {
+        const url = new URL(link);
+        const hostname = url.hostname.toLowerCase();
+        
+        if (channel === 'Zoom') {
+            // Zoom meeting URLs should be exactly zoom.us/zoom.com or proper subdomains
+            return hostname === 'zoom.us' || hostname === 'zoom.com' ||
+                   hostname.endsWith('.zoom.us') || hostname.endsWith('.zoom.com');
+        } else if (channel === 'Teams') {
+            // Teams meeting URLs should be exactly teams.microsoft.com or proper subdomains
+            return hostname === 'teams.microsoft.com' || hostname === 'teams.live.com' ||
+                   hostname.endsWith('.teams.microsoft.com') || hostname.endsWith('.teams.live.com');
+        }
+        
+        return false;
+    } catch (error) {
+        // Invalid URL format
+        return false;
+    }
+};
+
 // Create a new meeting
 export const createMeeting = async (req, res) => {
     try {
@@ -17,6 +42,18 @@ export const createMeeting = async (req, res) => {
             return res.status(400).json({ 
                 message: 'Meeting link is required for Zoom and Teams meetings' 
             });
+        }
+
+        // Validate meeting link format for Zoom/Teams
+        if (channel === 'Zoom' || channel === 'Teams') {
+            const isValidLink = validateMeetingLink(channel, link);
+            if (!isValidLink) {
+                return res.status(400).json({ 
+                    message: channel === 'Zoom' 
+                        ? 'Invalid Zoom meeting link. Please provide a valid zoom.us or zoom.com URL'
+                        : 'Invalid Teams meeting link. Please provide a valid teams.microsoft.com URL'
+                });
+            }
         }
 
         const meetingData = {
@@ -93,6 +130,18 @@ export const updateMeeting = async (req, res) => {
             return res.status(400).json({ 
                 message: 'Meeting link is required for Zoom and Teams meetings' 
             });
+        }
+
+        // Validate meeting link format for Zoom/Teams
+        if (channel === 'Zoom' || channel === 'Teams') {
+            const isValidLink = validateMeetingLink(channel, link);
+            if (!isValidLink) {
+                return res.status(400).json({ 
+                    message: channel === 'Zoom' 
+                        ? 'Invalid Zoom meeting link. Please provide a valid zoom.us or zoom.com URL'
+                        : 'Invalid Teams meeting link. Please provide a valid teams.microsoft.com URL'
+                });
+            }
         }
 
         // Add or remove link based on channel
