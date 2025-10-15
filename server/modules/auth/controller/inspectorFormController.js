@@ -4,6 +4,9 @@ import AuthInspectionReport from '../model/report.model.js';
 import PMNotification from '../model/notification.model.js';
 import User from '../model/user.model.js';
 import webSocketService from '../../../services/webSocketService.js';
+import PDFKit from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
 
 // Create new inspector form entry
 export const createInspectorForm = async (req, res) => {
@@ -133,15 +136,26 @@ export const generateReportFromForm = async (req, res) => {
         clientName: inspectionRequest?.client_name || 'N/A',
         propertyAddress: inspectionRequest?.propertyLocation_address || 'N/A',
         propertyType: inspectionRequest?.propertyType || 'N/A',
-        inspectionDate: new Date(),
+        inspectionDate: form.updatedAt || form.createdAt, // Use form saved date
         findings: 'Inspection completed',
         recommendations: form.recommendations || 'No recommendations provided',
         inspectorNotes: 'Generated from inspection form',
         inspectorName: req.user.username || 'Inspector'
       },
-      status: 'completed'
+      status: 'completed',
+      submittedAt: new Date() // When the report was submitted
     });
     await report.save();
+
+    // Generate PDF file for the report
+    try {
+      const pdfPath = await generatePDFFile(report, form);
+      report.pdfPath = pdfPath;
+      await report.save();
+    } catch (pdfError) {
+      console.error('Error generating PDF:', pdfError);
+      // Continue with the process even if PDF generation fails
+    }
 
     form.report_generated = true;
     await form.save();
@@ -292,15 +306,26 @@ Recommendations: ${form.recommendations || 'No recommendations provided'}
         clientName: form.InspectionRequest_ID?.client_name || 'N/A',
         propertyAddress: form.InspectionRequest_ID?.propertyLocation_address || 'N/A',
         propertyType: form.InspectionRequest_ID?.propertyType || 'N/A',
-        inspectionDate: new Date(),
+        inspectionDate: form.updatedAt || form.createdAt, // Use form saved date
         findings: `Inspection completed with ${form.floors?.length || 0} floors and ${form.floors?.reduce((total, floor) => total + (floor.rooms?.length || 0), 0) || 0} rooms`,
         recommendations: form.recommendations || 'No recommendations provided',
         inspectorNotes: reportContent,
         inspectorName: req.user.username || 'Inspector'
       },
-      status: 'completed'
+      status: 'completed',
+      submittedAt: new Date() // When the report was submitted
     });
     await report.save();
+
+    // 4.5. Generate PDF file for the report
+    try {
+      const pdfPath = await generatePDFFile(report, form);
+      report.pdfPath = pdfPath;
+      await report.save();
+    } catch (pdfError) {
+      console.error('Error generating PDF:', pdfError);
+      // Continue with the process even if PDF generation fails
+    }
 
     // 5. Mark form as report generated
     form.report_generated = true;
@@ -348,5 +373,260 @@ Recommendations: ${form.recommendations || 'No recommendations provided'}
   } catch (error) {
     console.error('Error in submitAndGenerateReport:', error);
     res.status(500).json({ message: 'Failed to submit form and generate report', error: error.message });
+  }
+};
+
+// Helper function to generate PDF file
+const generatePDFFile = async (report, form) => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Create reports directory if it doesn't exist
+      const reportsDir = path.join(process.cwd(), 'public', 'reports');
+      if (!fs.existsSync(reportsDir)) {
+        fs.mkdirSync(reportsDir, { recursive: true });
+      }
+
+      // Generate unique filename
+      const filename = `report_${report._id}_${Date.now()}.pdf`;
+      const filePath = path.join(reportsDir, filename);
+      const relativePath = `/reports/${filename}`;
+
+      // Create PDF document - COMPACT APPROACH
+      const doc = new PDFKit({
+        size: 'A4',
+        margins: {
+          top: 50,
+          bottom: 50, // Smaller margin to allow more content per page
+          left: 50,
+          right: 50
+        },
+        autoFirstPage: true
+      });
+      const stream = fs.createWriteStream(filePath);
+      doc.pipe(stream);
+
+      // Colors
+      const primaryColor = '#8B4513';
+      const secondaryColor = '#A0522D';
+      const lightGray = '#F5F5DC';
+      
+      // Professional Header
+      doc.rect(0, 0, doc.page.width, 100).fill(primaryColor);
+      
+      doc.fillColor('white')
+         .fontSize(32)
+         .font('Helvetica-Bold')
+         .text('DESYNFLOW', 60, 25);
+      
+      doc.fontSize(14)
+         .font('Helvetica')
+         .text('Professional Property Inspection Services', 60, 65);
+
+      const rightStart = doc.page.width - 220;
+      doc.fillColor('white')
+         .fontSize(10)
+         .font('Helvetica')
+         .text('123 Business Avenue, Colombo 03', rightStart, 25)
+         .text('Tel: +94 11 234 5678', rightStart, 40)
+         .text('Email: info@desynflow.lk', rightStart, 55);
+
+      // Report Title
+      doc.fillColor(primaryColor)
+         .fontSize(26)
+         .font('Helvetica-Bold')
+         .text('INSPECTION REPORT', 60, 130);
+
+      doc.moveTo(60, 165)
+         .lineTo(doc.page.width - 60, 165)
+         .strokeColor(primaryColor)
+         .lineWidth(2)
+         .stroke();
+
+      let currentY = 190;
+
+      // Report Information Section
+      currentY = addSection(doc, 'REPORT INFORMATION', currentY, primaryColor);
+      currentY = addInfoRow(doc, 'Report ID:', report._id.toString().slice(-8).toUpperCase(), currentY);
+      currentY = addInfoRow(doc, 'Report Title:', report.title || 'Inspection Report', currentY);
+      currentY = addInfoRow(doc, 'Status:', (report.status || 'completed').toUpperCase(), currentY);
+      currentY = addInfoRow(doc, 'Generated Date:', report.submittedAt ? new Date(report.submittedAt).toLocaleDateString('en-US', { 
+        weekday: 'long',
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }) : 'Date not recorded', currentY);
+      currentY += 15; // Reduced spacing
+
+      // Client & Property Section
+      if (report.reportData) {
+        currentY = addSection(doc, 'CLIENT & PROPERTY INFORMATION', currentY, primaryColor);
+        currentY = addInfoRow(doc, 'Client Name:', report.reportData.clientName || 'Not specified', currentY);
+        currentY = addInfoRow(doc, 'Property Address:', report.reportData.propertyAddress || 'Not specified', currentY);
+        currentY = addInfoRow(doc, 'Property Type:', (report.reportData.propertyType || 'Not specified').toUpperCase(), currentY);
+        currentY = addInfoRow(doc, 'Inspection Date:', report.reportData.inspectionDate ? 
+          new Date(report.reportData.inspectionDate).toLocaleDateString('en-US', { 
+            weekday: 'long',
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }) : 'Date not recorded', currentY);
+        currentY += 15; // Reduced spacing
+
+        // Inspector Information
+        currentY = addSection(doc, 'INSPECTOR INFORMATION', currentY, primaryColor);
+        currentY = addInfoRow(doc, 'Inspector Name:', report.reportData.inspectorName || 'Not specified', currentY);
+        currentY = addInfoRow(doc, 'Inspection Company:', 'DesynFlow Property Services', currentY);
+        currentY += 15; // Reduced spacing
+
+        // Room Details
+        if (form && form.floors && form.floors.length > 0) {
+          currentY = addSection(doc, 'PROPERTY LAYOUT & ROOM DETAILS', currentY, primaryColor);
+          
+          form.floors.forEach((floor, floorIndex) => {
+            doc.fillColor(secondaryColor)
+               .fontSize(13)
+               .font('Helvetica-Bold')
+               .text(`Floor ${floor.floor_number || (floorIndex + 1)}:`, 60, currentY);
+            currentY += 25;
+
+            if (floor.rooms && floor.rooms.length > 0) {
+              floor.rooms.forEach((room, roomIndex) => {
+                const roomName = room.room_name || `Room ${roomIndex + 1}`;
+                const dimensions = room.dimensions || {};
+                const length = dimensions.length || 'N/A';
+                const width = dimensions.width || 'N/A';
+                const height = dimensions.height || 'N/A';
+                const unit = dimensions.unit || 'feet';
+                
+                doc.rect(80, currentY, doc.page.width - 160, 30)
+                   .fillAndStroke('#FFFFFF', primaryColor)
+                   .lineWidth(1);
+                
+                doc.fillColor('#333333')
+                   .fontSize(11)
+                   .font('Helvetica-Bold')
+                   .text(`${roomName}:`, 90, currentY + 8);
+                
+                doc.font('Helvetica')
+                   .text(`${length} × ${width} × ${height} ${unit}`, 200, currentY + 8);
+                
+                currentY += 35;
+              });
+            } else {
+              doc.fillColor('#666666')
+                 .fontSize(10)
+                 .font('Helvetica-Oblique')
+                 .text('No room details available for this floor', 80, currentY);
+              currentY += 20;
+            }
+            currentY += 10;
+          });
+          currentY += 15; // Reduced spacing
+        }
+
+        // Dynamic text sections
+        const textOptions = { width: doc.page.width - 140, align: 'left' };
+
+        // Findings
+        currentY = addSection(doc, 'INSPECTION SUMMARY', currentY, primaryColor);
+        const findingsText = report.reportData.findings || 'Inspection completed with detailed room measurements';
+        currentY = addTextBox(doc, findingsText, currentY, lightGray, primaryColor, textOptions, 11);
+
+        // Recommendations  
+        currentY = addSection(doc, 'RECOMMENDATIONS', currentY, primaryColor);
+        const recommendationsText = report.reportData.recommendations || 'No specific recommendations - property ready for project planning';
+        currentY = addTextBox(doc, recommendationsText, currentY, lightGray, primaryColor, textOptions, 11);
+
+        // Detailed Notes
+        if (report.reportData.inspectorNotes) {
+          currentY = addSection(doc, 'DETAILED INSPECTION NOTES', currentY, primaryColor);
+          currentY = addTextBox(doc, report.reportData.inspectorNotes, currentY, '#FFFFFF', primaryColor, textOptions, 10);
+        }
+      }
+
+      // Add footer on the final page only
+      const footerY = doc.page.height - 70;
+      
+      // Add footer background
+      doc.rect(0, footerY, doc.page.width, 70).fill(primaryColor);
+      
+      // Add footer text
+      doc.fillColor('white')
+         .fontSize(9)
+         .font('Helvetica')
+         .text('This report is confidential and prepared exclusively for the named client.', 60, footerY + 10);
+      
+      doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })}`, 60, footerY + 25);
+      
+      doc.text('DesynFlow Property Services | Professional Inspection Solutions', 60, footerY + 40);
+
+      // Finalize PDF
+      doc.end();
+
+      stream.on('finish', () => {
+        resolve(relativePath);
+      });
+
+      stream.on('error', (error) => {
+        reject(error);
+      });
+
+    } catch (error) {
+      reject(error);
+    }
+  });
+
+  // Helper function to add section headers
+  function addSection(doc, title, yPos, color) {
+    doc.fillColor(color)
+       .fontSize(14)
+       .font('Helvetica-Bold')
+       .text(title, 60, yPos);
+    
+    doc.moveTo(60, yPos + 18)
+       .lineTo(300, yPos + 18)
+       .strokeColor(color)
+       .lineWidth(1)
+       .stroke();
+    
+    return yPos + 35;
+  }
+
+  // Helper function to add information rows
+  function addInfoRow(doc, label, value, yPos) {
+    doc.fillColor('#333333')
+       .fontSize(11)
+       .font('Helvetica-Bold')
+       .text(label, 60, yPos);
+    
+    doc.font('Helvetica')
+       .text(value, 200, yPos, {
+         width: doc.page.width - 260,
+         align: 'left'
+       });
+    
+    return yPos + 18; // Reduced from 20 to 18
+  }
+
+  // Helper function to add text boxes
+  function addTextBox(doc, text, yPos, fillColor, borderColor, textOptions, fontSize) {
+    doc.fontSize(fontSize).font('Helvetica');
+    const textHeight = doc.heightOfString(text, textOptions);
+    const boxHeight = Math.max(textHeight + 20, 40);
+    
+    doc.rect(60, yPos, doc.page.width - 120, boxHeight)
+       .fillAndStroke(fillColor, borderColor)
+       .lineWidth(1);
+    
+    doc.fillColor('#333333')
+       .text(text, 70, yPos + 10, textOptions);
+    
+    return yPos + boxHeight + 15; // Reduced from 20 to 15
   }
 };

@@ -11,7 +11,7 @@ const InspectorReports = () => {
     const fetchReports = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const res = await axios.get('http://localhost:4000/api/auth/reports/my-reports', {
+        const res = await axios.get('http://localhost:4000/api/auth-reports/my-reports', {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         setReports(res.data);
@@ -26,10 +26,17 @@ const InspectorReports = () => {
   }, []);
 
   const handleDownload = (report) => {
-    if (report.fileUrl) {
-      window.open(report.fileUrl, '_blank');
+    if (report.pdfPath) {
+      // Simple download of existing PDF file
+      const link = document.createElement('a');
+      link.href = `http://localhost:4000${report.pdfPath}`;
+      link.download = `Inspection_Report_${report.reportData?.clientName || 'Report'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } else {
-      alert('Report file not available');
+      alert('PDF file not available. Please try generating the report again.');
     }
   };
 
@@ -37,7 +44,7 @@ const InspectorReports = () => {
     if (!window.confirm('Are you sure you want to delete this report?')) return;
     try {
       const token = localStorage.getItem('authToken');
-      await axios.delete(`http://localhost:4000/api/auth/reports/${reportId}`, {
+      await axios.delete(`http://localhost:4000/api/auth-reports/${reportId}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       setReports(reports.filter(r => r._id !== reportId));
@@ -74,12 +81,15 @@ const InspectorReports = () => {
           <p className="text-brown-primary-300">No reports found. Complete inspection forms to generate reports.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden border border-brown-primary-300">
+        <div className="bg-white rounded-lg shadow border border-brown-primary-300 overflow-x-auto">
           <table className="min-w-full divide-y divide-brown-primary-200">
             <thead className="bg-brown-primary text-white">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Inspection Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Report Submitted Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Client
@@ -96,7 +106,10 @@ const InspectorReports = () => {
               {reports.map(report => (
                 <tr key={report._id} className="hover:bg-cream-light">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-brown-primary">
-                    {report.inspectionDate ? new Date(report.inspectionDate).toLocaleDateString() : 'N/A'}
+                    {report.reportData?.inspectionDate ? new Date(report.reportData.inspectionDate).toLocaleDateString('en-US') : 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-brown-primary">
+                    {report.submittedAt ? new Date(report.submittedAt).toLocaleDateString('en-US') : (report.generatedAt ? new Date(report.generatedAt).toLocaleDateString('en-US') : new Date().toLocaleDateString('en-US'))}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-brown-primary">
                     {report.clientName || report.reportData?.clientName || 'Unknown Client'}
@@ -110,25 +123,21 @@ const InspectorReports = () => {
                       {report.status || 'completed'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button 
-                      onClick={() => setSelectedReport(report)}
-                      className="bg-brown-primary text-white px-3 py-1 rounded hover:bg-brown-secondary transition-colors"
-                    >
-                      View
-                    </button>
-                    <button 
-                      onClick={() => handleDownload(report)}
-                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors"
-                    >
-                      Download
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(report._id)}
-                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => setSelectedReport(report)}
+                        className="bg-brown-primary text-white px-3 py-1 text-sm rounded hover:bg-brown-secondary transition-colors"
+                      >
+                        View
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(report._id)}
+                        className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -139,48 +148,88 @@ const InspectorReports = () => {
 
       {selectedReport && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl max-h-96 overflow-y-auto m-4 border border-brown-primary-300">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-brown-primary">Report Details</h3>
+          <div className="bg-cream-light rounded-lg p-8 max-w-4xl max-h-96 overflow-y-auto m-4 border-2 border-brown-primary shadow-2xl">
+            <div className="flex justify-between items-center mb-6 border-b border-brown-primary pb-4">
+              <h3 className="text-2xl font-bold text-brown-primary">📄 Inspection Report</h3>
               <button 
                 onClick={() => setSelectedReport(null)}
-                className="text-brown-primary hover:text-brown-secondary text-2xl"
+                className="text-brown-primary hover:text-brown-secondary text-3xl font-bold"
               >
                 ×
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <strong>Title:</strong> {selectedReport.title || 'Inspection Report'}
+            
+            <div className="space-y-6">
+              {/* Report Header */}
+              <div className="bg-white rounded-lg p-4 border border-brown-primary-300">
+                <h4 className="text-lg font-semibold text-brown-primary mb-3">Report Information</h4>
+                <div className="space-y-4">
+                  <div>
+                    <span className="font-medium text-brown-secondary">Report Title:</span>
+                    <p className="text-brown-primary">{selectedReport.title || 'Inspection Report'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-brown-secondary">Report Status:</span>
+                    <p className="text-brown-primary capitalize">{selectedReport.status || 'completed'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-brown-secondary">Report Submitted Date:</span>
+                    <p className="text-brown-primary">
+                      {selectedReport.submittedAt 
+                        ? new Date(selectedReport.submittedAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long', 
+                            day: 'numeric'
+                          })
+                        : (selectedReport.generatedAt 
+                            ? new Date(selectedReport.generatedAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long', 
+                                day: 'numeric'
+                              })
+                            : 'Date not recorded'
+                          )
+                      }
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <strong>Client:</strong> {selectedReport.clientName || selectedReport.reportData?.clientName || 'Unknown'}
-              </div>
-              <div>
-                <strong>Date:</strong> {selectedReport.inspectionDate ? new Date(selectedReport.inspectionDate).toLocaleDateString() : 'N/A'}
-              </div>
-              <div>
-                <strong>Status:</strong> {selectedReport.status || 'completed'}
-              </div>
-              {selectedReport.reportData && (
-                <div>
-                  <strong>Report Data:</strong>
-                  <pre className="bg-gray-100 p-3 rounded mt-2 text-sm overflow-x-auto">
-                    {JSON.stringify(selectedReport.reportData, null, 2)}
-                  </pre>
+
+              {/* PDF Viewer */}
+              {selectedReport.pdfPath ? (
+                <div className="bg-white rounded-lg p-4 border border-brown-primary-300">
+                  <h4 className="text-lg font-semibold text-brown-primary mb-3">Inspection Report PDF</h4>
+                  <div className="border border-brown-primary-300 rounded">
+                    <iframe
+                      src={`http://localhost:4000${selectedReport.pdfPath}`}
+                      width="100%"
+                      height="500px"
+                      title="Inspection Report PDF"
+                      className="rounded"
+                    >
+                      <p>Your browser does not support PDFs. <a href={`http://localhost:4000${selectedReport.pdfPath}`} target="_blank" rel="noopener noreferrer">Download the PDF</a> instead.</p>
+                    </iframe>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg p-4 border border-brown-primary-300">
+                  <h4 className="text-lg font-semibold text-brown-primary mb-3">Report Status</h4>
+                  <p className="text-brown-secondary">PDF is being generated. Please refresh the page in a moment.</p>
                 </div>
               )}
             </div>
-            <div className="mt-6 flex space-x-3">
+
+            <div className="mt-8 flex space-x-3 border-t border-brown-primary pt-4">
               <button 
                 onClick={() => handleDownload(selectedReport)}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+                className="bg-brown-primary text-white px-6 py-2 rounded hover:bg-brown-secondary transition-colors font-medium"
+                disabled={!selectedReport.pdfPath}
               >
-                Download Report
+                📥 Download Report
               </button>
               <button 
                 onClick={() => setSelectedReport(null)}
-                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
+                className="bg-brown-secondary text-white px-6 py-2 rounded hover:bg-brown-primary transition-colors font-medium"
               >
                 Close
               </button>

@@ -45,6 +45,11 @@ const reportSchema = new mongoose.Schema({
     default: Date.now
   },
   
+  submittedAt: {
+    type: Date,
+    default: Date.now
+  },
+  
   generatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
