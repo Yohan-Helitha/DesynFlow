@@ -91,13 +91,30 @@ export default function DashboardOverview() {
   const [loadingTeams, setLoadingTeams] = useState(true);
 
   useEffect(() => {
-  fetch('/api/teams')
-      .then(res => res.json())
+    fetch('http://localhost:4000/api/teams/populated')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
+        console.log('Teams data received:', data);
         setTeams(data);
         setLoadingTeams(false);
       })
-      .catch(() => setLoadingTeams(false));
+      .catch((err) => {
+        console.error('Error fetching teams:', err);
+        setLoadingTeams(false);
+        // Fallback to regular teams endpoint
+        fetch('http://localhost:4000/api/teams')
+          .then(res => res.json())
+          .then(data => {
+            console.log('Fallback teams data:', data);
+            setTeams(data);
+          })
+          .catch(() => setTeams([]));
+      });
   }, []);
 
   return (
@@ -122,22 +139,25 @@ export default function DashboardOverview() {
         {/* Team Performance Section */}
         <div className="bg-cream-light rounded-lg p-6 shadow-sm border border-green-primary">
           <h3 className="text-lg font-semibold text-brown-primary mb-4">Team Performance</h3>
-          <p className="text-sm text-green-primary mb-4">Performance metrics for top team members</p>
           
           <div className="space-y-4">
             {loadingTeams ? (
               <div className="text-green-primary">Loading teams...</div>
             ) : (
               teams.slice(0, 4).map(team => 
-                team.members.slice(0, 1).map(member => (
-                  <div key={member.userId} className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-brown-primary text-cream-primary rounded-full flex items-center justify-center font-semibold text-lg">
-                      {member.role?.charAt(0) || 'M'}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-brown-primary">{member.role || 'Team Member'}</div>
-                      <div className="text-sm text-green-primary">{team.teamName}</div>
-                    </div>
+                team.members.slice(0, 1).map(member => {
+                  const userName = member.userId?.username || member.name || 'Team Member';
+                  const userInitial = userName.charAt(0).toUpperCase();
+                  
+                  return (
+                    <div key={member.userId?._id || member.userId} className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-brown-primary text-cream-primary rounded-full flex items-center justify-center font-semibold text-lg">
+                        {userInitial}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-brown-primary">{userName}</div>
+                        <div className="text-sm text-green-primary">{team.teamName}</div>
+                      </div>
                     <div className="flex items-center gap-2">
                       <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
@@ -149,7 +169,8 @@ export default function DashboardOverview() {
                     </div>
                     <div className="text-sm text-green-primary">{Math.floor(Math.random() * 5) + 3} projects</div>
                   </div>
-                ))
+                  );
+                })
               )
             )}
           </div>

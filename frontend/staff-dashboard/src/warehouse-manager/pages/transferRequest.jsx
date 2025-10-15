@@ -155,7 +155,7 @@ const TransferRequest = () => {
           <h1 className="text-2xl font-bold mt-6 mb-10">Transfer Requests</h1>
           <button
             className="bg-amber-900 hover:bg-bamber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
-            onClick={() => navigate("/add-transfer-request")}
+            onClick={() => navigate("/warehouse-manager/transfer-request/add")}
           >
             + Add Transfer Request
           </button>
@@ -300,7 +300,7 @@ const TransferRequest = () => {
                       <div className="flex items-center justify-center gap-6">
                         <div
                           className="group relative cursor-pointer"
-                          onClick={() => navigate(`/update-transfer-request/${request._id}`)}
+                          onClick={() => navigate(`/warehouse-manager/transfer-request/update/${request._id}`)}
                         >
                           <Edit2 className="w-5 h-5  text-[#674636] hover:text-[#A67C52]" />
                           

@@ -183,7 +183,7 @@ const AddRawMaterialsForm = ({ loggedInUserId }) => {
     try {
       await addRawMaterial(payload);
       alert('Material added successfully!');
-      navigate('/raw-materials');
+      navigate('/warehouse-manager/raw-materials');
     } catch (err) {
       if (err.errors) {
         setErrors(err.errors);
@@ -428,7 +428,7 @@ const AddRawMaterialsForm = ({ loggedInUserId }) => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/raw-materials")}
+                onClick={() => navigate("/warehouse-manager/raw-materials")}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Cancel

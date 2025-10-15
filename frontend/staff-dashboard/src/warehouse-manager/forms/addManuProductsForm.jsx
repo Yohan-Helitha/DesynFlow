@@ -134,7 +134,7 @@ const AddManuProductForm = ({ loggedInUserId }) => {
     try {
       await addManuProduct(payload);
       alert('Product added successfully!');
-      navigate('/manu-products');
+      navigate('/warehouse-manager/manufactured-products');
     } catch (err) {
       if (err.errors) {
         setErrors(err.errors);
@@ -397,7 +397,7 @@ const AddManuProductForm = ({ loggedInUserId }) => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/manu-products")}
+                onClick={() => navigate("/warehouse-manager/manufactured-products")}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Cancel

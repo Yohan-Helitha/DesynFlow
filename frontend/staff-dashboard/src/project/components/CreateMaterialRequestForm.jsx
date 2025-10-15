@@ -196,7 +196,7 @@ export default function CreateMaterialRequestForm({
                   type="button"
                   onClick={() => removeItem(index)}
                   disabled={form.items.length === 1}
-                  className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="px-3 py-2 bg-red-brown text-white rounded hover:bg-dark-brown disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Remove
                 </button>
@@ -205,7 +205,7 @@ export default function CreateMaterialRequestForm({
             <button
               type="button"
               onClick={addItem}
-              className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              className="mt-2 px-4 py-2 bg-soft-green text-white rounded hover:bg-green-primary"
             >
               Add Item
             </button>
