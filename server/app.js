@@ -63,6 +63,7 @@ import sReorderRequestsRoute from "./modules/warehouse-manager/routes/sReorderRe
 import disposalMaterialsRoute from "./modules/warehouse-manager/routes/disposalMaterialsRoute.js";
 import auditLogRoute from "./modules/warehouse-manager/routes/auditLogRoute.js";
 import thresholdAlertRoute from "./modules/warehouse-manager/routes/thresholdAlertRoute.js";
+import warrantyClaimsRoute from "./modules/warehouse-manager/routes/warrantyClaimsRoute.js";
 
 //finane routes
 import projectRoute from './modules/finance/routes/projectRoutes.js';
@@ -138,6 +139,7 @@ app.use("/api/warehouse/s_reorder_requests", sReorderRequestsRoute);
 app.use("/api/warehouse/disposal_materials", disposalMaterialsRoute);
 app.use("/api/warehouse/audit_log", auditLogRoute);
 app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
+app.use("/api/warehouse/warranty_claims", warrantyClaimsRoute);
 
 //finance module routes
 app.use('/api/expenses', expensesRoute);
