@@ -6,6 +6,12 @@ import { updateProjectProgressService } from './project.service.js';
 export const createTaskService = async (taskData) => {
   const newTask = new Task(taskData);
   await newTask.save();
+  
+  // Update project progress and status when a new task is created
+  if (newTask.projectId) {
+    await updateProjectProgressService(newTask.projectId);
+  }
+  
   return newTask;
 };
 

@@ -18,7 +18,11 @@ export default function ProjectOverviewCard({ project }) {
               project.status === 'Active'
                 ? 'bg-brown-primary text-white'
                 : project.status === 'In Progress'
-                ? 'bg-brown-primary-300 text-white'
+                ? 'bg-blue-500 text-white'
+                : project.status === 'Completed'
+                ? 'bg-purple-500 text-white'
+                : project.status === 'On Hold'
+                ? 'bg-yellow-500 text-white'
                 : 'bg-gray-100 text-gray-700'
             }`}
           >

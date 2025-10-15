@@ -45,9 +45,17 @@ export default function ProjectOverview({ projectId, onBack }) {
           {project.projectName}
         </h2>
         <div className="grid md:grid-cols-2 gap-6 text-gray-700">
-          <p><span className="font-semibold">Client:</span> {project.clientId}</p>
-          <p><span className="font-semibold">Due Date:</span> {project.dueDate || 'Not specified'}</p>
-          <p><span className="font-semibold">Assigned Team:</span> {project.assignedTeamId?.teamName}</p>
+          <p><span className="font-semibold">Client:</span> {
+            typeof project.clientId === 'object' && project.clientId?.email 
+              ? project.clientId.email 
+              : typeof project.clientId === 'object' && project.clientId?.username
+              ? project.clientId.username
+              : typeof project.clientId === 'string' 
+              ? project.clientId 
+              : "N/A"
+          }</p>
+          <p><span className="font-semibold">Due Date:</span> {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'Not specified'}</p>
+          <p><span className="font-semibold">Assigned Team:</span> {project.assignedTeamId?.teamName || "No Team Assigned"}</p>
           <div className="flex items-center gap-3">
             <span
               className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -55,6 +63,8 @@ export default function ProjectOverview({ projectId, onBack }) {
                   ? "bg-green-100 text-green-700"
                   : project.status === "In Progress"
                   ? "bg-blue-100 text-blue-700"
+                  : project.status === "Completed"
+                  ? "bg-purple-100 text-purple-700"
                   : project.status === "On Hold"
                   ? "bg-yellow-100 text-yellow-700"
                   : "bg-gray-200 text-gray-600"
@@ -62,15 +72,19 @@ export default function ProjectOverview({ projectId, onBack }) {
             >
               {project.status}
             </span>
-            {project.status === "In Progress" && (
+            {(project.status === "In Progress" || project.status === "Completed") && (
               <div className="flex items-center gap-2 w-full">
                 <div className="w-32 bg-gray-200 rounded-full h-2.5">
                   <div
-                    className="bg-brown-primary h-2.5 rounded-full"
-                    style={{ width: `${project.progress}%` }}
+                    className={`h-2.5 rounded-full ${
+                      project.status === "Completed" 
+                        ? "bg-purple-500" 
+                        : "bg-brown-primary"
+                    }`}
+                    style={{ width: `${project.progress || 0}%` }}
                   ></div>
                 </div>
-                <span className="text-xs text-gray-600">{project.progress}%</span>
+                <span className="text-xs text-gray-600">{project.progress || 0}%</span>
               </div>
             )}
           </div>
@@ -88,26 +102,36 @@ export default function ProjectOverview({ projectId, onBack }) {
             <div>
               <p className="font-semibold text-brown-primary">Team Members</p>
               <ul className="text-sm text-gray-700 list-disc pl-5">
-                {project.assignedTeamId?.members?.map((m, i) => (
-                  <li key={i}>
-                    {m.role}{" "}
-                    <span className="text-xs text-gray-500">
-                      ({m.availability} - {m.workload}% load)
-                    </span>
-                  </li>
-                )) || <li className="text-gray-500">No team members found.</li>}
+                {project.assignedTeamId?.members && Array.isArray(project.assignedTeamId.members) ? (
+                  project.assignedTeamId.members.map((m, i) => (
+                    <li key={i}>
+                      {typeof m === 'object' ? (
+                        <>
+                          {m.name || m.username || `Member ${i + 1}`} - {m.role || 'No role specified'}
+                          <span className="text-xs text-gray-500">
+                            {m.availability && m.workload ? ` (${m.availability} - ${m.workload}% load)` : ''}
+                          </span>
+                        </>
+                      ) : (
+                        `${m}`
+                      )}
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-500">No team members found.</li>
+                )}
               </ul>
             </div>
             <div>
               <p className="font-semibold text-brown-primary">Quick Stats</p>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <div className="bg-blue-50 rounded-lg p-3 text-center shadow-sm">
-                  Active Tasks:{" "}
-                  <span className="font-bold">{project.quickStats?.activeTasks ?? 0}</span>
+                  <div className="text-xs text-gray-600">Active Tasks</div>
+                  <div className="font-bold text-blue-700">{project.quickStats?.activeTasks ?? 0}</div>
                 </div>
                 <div className="bg-green-50 rounded-lg p-3 text-center shadow-sm">
-                  Attendance:{" "}
-                  <span className="font-bold">{project.quickStats?.attendance ?? 0}</span>
+                  <div className="text-xs text-gray-600">Attendance</div>
+                  <div className="font-bold text-green-700">{project.quickStats?.attendance ?? 0}</div>
                 </div>
               </div>
             </div>
