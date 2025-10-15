@@ -330,6 +330,10 @@ export const PendingQuotations = () => {
           projectId={selectedQuotation.projectId}
           estimateVersion={selectedQuotation.version}
           materials={materials}
+          estimatedLaborCost={selectedQuotation.laborCost || 0}
+          estimatedMaterialCost={selectedQuotation.materialCost || 0}
+          estimatedServiceCost={selectedQuotation.serviceCost || 0}
+          estimatedContingencyCost={selectedQuotation.contingencyCost || 0}
         />
       )}
     </div>

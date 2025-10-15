@@ -72,10 +72,13 @@ export const WarrantyRequest = () => {
 	const pageSlice = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
 	const columns = [
-		{ key: '_id', label: 'Claim ID' },
-		{ key: 'warrantyId', label: 'Warranty ID', render: r => (typeof r.warrantyId === 'object' ? r.warrantyId?._id || '' : r.warrantyId || '') },
 		{ key: 'clientName', label: 'Client name', render: r => (typeof r.clientId === 'object' ? (r.clientId?.username || r.clientId?.email || '') : (r.clientName || '')) },
 		{ key: 'issueDescription', label: 'Issue' },
+		{ key: 'proofUrl', label: 'Proof', render: r => r.proofUrl ? (
+			<a href={r.proofUrl} target="_blank" rel="noopener noreferrer" className="text-[#674636] hover:text-[#AAB396] underline">
+				View
+			</a>
+		) : <span className="text-[#AAB396]">No proof</span> },
 		{ key: 'status', label: 'Status', render: r => statusBadge(r.status) },
 		{ key: 'createdAt', label: 'Created', render: r => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '' },
 	];

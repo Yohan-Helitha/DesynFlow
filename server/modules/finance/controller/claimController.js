@@ -3,8 +3,18 @@ import * as claimService from '../service/claimService.js';
 // POST /api/claims
 export const createClaim = async (req, res) => {
   try {
-    const { warrantyId, clientId, description, attachments, proofUrl } = req.body;
-    const claim = await claimService.createClaim({ warrantyId, clientId, description, attachments, proofUrl });
+    const { warrantyId, clientId, description, attachments } = req.body;
+    
+    // Get proof URL from uploaded file (if any)
+    const proofUrl = req.file ? `/uploads/warranty-proofs/${req.file.filename}` : null;
+    
+    const claim = await claimService.createClaim({ 
+      warrantyId, 
+      clientId, 
+      description, 
+      attachments, 
+      proofUrl 
+    });
     res.status(201).json(claim);
   } catch (err) {
     res.status(500).json({ error: err.message });

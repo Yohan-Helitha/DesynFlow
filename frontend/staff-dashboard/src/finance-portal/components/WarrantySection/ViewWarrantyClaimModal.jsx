@@ -227,23 +227,37 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
             </div>
           )}
 
-          {/* Attached Proof */}
-          {claim.proofUrl && (
-            <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
-              <h4 className="font-semibold text-[#674636] mb-3">Attached Proof</h4>
-              <div className="flex items-center gap-3">
-                <a
-                  href={claim.proofUrl.startsWith('http') ? claim.proofUrl : `/${claim.proofUrl.replace(/^\/?/, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1 rounded-md border border-[#AAB396] bg-[#F7EED3] text-xs font-mono text-[#674636] hover:bg-[#674636] hover:text-[#FFF8E8]"
-                >
-                  Open Proof
-                </a>
-                <span className="text-xs text-[#AAB396] break-all">{claim.proofUrl}</span>
+          {/* Proof Attachment - Always show container */}
+          <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
+            <h4 className="font-semibold text-[#674636] mb-3 flex items-center">
+              <FileText size={18} className="mr-2" />
+              Attached Proof
+            </h4>
+            {claim.proofUrl ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <a
+                    href={claim.proofUrl.startsWith('http') ? claim.proofUrl : `/${claim.proofUrl.replace(/^\/?/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-md border border-[#AAB396] bg-[#F7EED3] text-sm font-medium text-[#674636] hover:bg-[#674636] hover:text-[#FFF8E8] transition-colors flex items-center"
+                  >
+                    <FileText size={16} className="mr-2" />
+                    Open Proof Document
+                  </a>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-xs text-[#AAB396] mr-2">File Path:</span>
+                  <span className="text-xs text-[#674636] font-mono break-all">{claim.proofUrl}</span>
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center p-3 bg-[#F7EED3] rounded-md border border-[#AAB396]">
+                <AlertCircle size={16} className="mr-2 text-[#AAB396]" />
+                <span className="text-sm text-[#AAB396]">No proof document attached to this claim</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}

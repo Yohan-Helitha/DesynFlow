@@ -14,6 +14,10 @@ export const QuotationFormModal = ({
   estimateVersion: incomingEstimateVersion = '',
   version: incomingQuotationVersion = '',
   createdBy: incomingCreatedBy = null,
+  estimatedLaborCost = 0,
+  estimatedMaterialCost = 0,
+  estimatedServiceCost = 0,
+  estimatedContingencyCost = 0,
 }) => {
   const [formData, setFormData] = useState({
     projectId: incomingProjectId,
@@ -69,12 +73,37 @@ export const QuotationFormModal = ({
     formData.materialItems.reduce((sum, i) => sum + (i.total || 0), 0) +
     formData.serviceItems.reduce((sum, i) => sum + (i.cost || 0), 0)
 
+  // Individual cost calculations
+  const computeLaborCost = () => formData.laborItems.reduce((sum, i) => sum + (i.total || 0), 0)
+  const computeMaterialCost = () => formData.materialItems.reduce((sum, i) => sum + (i.total || 0), 0)
+  const computeServiceCost = () => formData.serviceItems.reduce((sum, i) => sum + (i.cost || 0), 0)
+  const computeContingencyCost = () => formData.contingencyItems.reduce((sum, i) => sum + (i.amount || 0), 0)
+
   const computeTotals = () => {
     const subtotal = computeSubtotal()
-    const totalContingency = formData.contingencyItems.reduce((sum, i) => sum + (i.amount || 0), 0)
+    const totalContingency = computeContingencyCost()
     const totalTax = formData.taxes.reduce((sum, i) => sum + (i.amount || 0), 0)
     const grandTotal = subtotal + totalContingency + totalTax
     return { subtotal, totalContingency, totalTax, grandTotal }
+  }
+
+  // Get margin status by comparing actual cost to estimated cost
+  // Returns 'danger' if >20% over estimate, 'warning' if >10% over, 'normal' otherwise
+  const getMarginStatus = (actualCost, estimatedCost) => {
+    if (estimatedCost === 0) return 'normal' // No baseline to compare
+    const percentageOver = ((actualCost - estimatedCost) / estimatedCost) * 100
+    if (percentageOver > 20) return 'danger'  // More than 20% over estimate
+    if (percentageOver > 10) return 'warning' // More than 10% over estimate
+    return 'normal'
+  }
+
+  // Get status color classes
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'danger': return 'text-red-600 bg-red-50 border-red-300'
+      case 'warning': return 'text-yellow-700 bg-yellow-50 border-yellow-300'
+      default: return 'text-[#674636] bg-[#F7EED3] border-[#AAB396]'
+    }
   }
 
   // UI state
@@ -230,7 +259,14 @@ export const QuotationFormModal = ({
 
           {/* Labor Items */}
           <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Labor Cost</h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold text-[#AAB396]">Labor Cost</h4>
+              <div className={`px-3 py-1 rounded-md border text-xs font-semibold ${getStatusColor(getMarginStatus(computeLaborCost(), estimatedLaborCost))}`}>
+                LKR {computeLaborCost().toLocaleString()}
+                {getMarginStatus(computeLaborCost(), estimatedLaborCost) === 'danger' && ' ⚠️ High'}
+                {getMarginStatus(computeLaborCost(), estimatedLaborCost) === 'warning' && ' ⚡ Caution'}
+              </div>
+            </div>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.laborItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
@@ -309,7 +345,14 @@ export const QuotationFormModal = ({
 
           {/* Material Items */}
           <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Material Cost</h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold text-[#AAB396]">Material Cost</h4>
+              <div className={`px-3 py-1 rounded-md border text-xs font-semibold ${getStatusColor(getMarginStatus(computeMaterialCost(), estimatedMaterialCost))}`}>
+                LKR {computeMaterialCost().toLocaleString()}
+                {getMarginStatus(computeMaterialCost(), estimatedMaterialCost) === 'danger' && ' ⚠️ High'}
+                {getMarginStatus(computeMaterialCost(), estimatedMaterialCost) === 'warning' && ' ⚡ Caution'}
+              </div>
+            </div>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.materialItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
@@ -413,7 +456,14 @@ export const QuotationFormModal = ({
 
           {/* Service Items */}
           <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Service Cost</h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold text-[#AAB396]">Service Cost</h4>
+              <div className={`px-3 py-1 rounded-md border text-xs font-semibold ${getStatusColor(getMarginStatus(computeServiceCost(), estimatedServiceCost))}`}>
+                LKR {computeServiceCost().toLocaleString()}
+                {getMarginStatus(computeServiceCost(), estimatedServiceCost) === 'danger' && ' ⚠️ High'}
+                {getMarginStatus(computeServiceCost(), estimatedServiceCost) === 'warning' && ' ⚡ Caution'}
+              </div>
+            </div>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.serviceItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
@@ -468,7 +518,14 @@ export const QuotationFormModal = ({
 
           {/* Contingency Items */}
           <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Contingency Cost</h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold text-[#AAB396]">Contingency Cost</h4>
+              <div className={`px-3 py-1 rounded-md border text-xs font-semibold ${getStatusColor(getMarginStatus(computeContingencyCost(), estimatedContingencyCost))}`}>
+                LKR {computeContingencyCost().toLocaleString()}
+                {getMarginStatus(computeContingencyCost(), estimatedContingencyCost) === 'danger' && ' ⚠️ High'}
+                {getMarginStatus(computeContingencyCost(), estimatedContingencyCost) === 'warning' && ' ⚡ Caution'}
+              </div>
+            </div>
             <div className="bg-[#F7EED3] p-4 rounded-md space-y-2 border border-[#AAB396]">
               {formData.contingencyItems.map((item, idx) => (
                 <div key={idx} className="flex flex-wrap md:flex-nowrap gap-2 items-end">
