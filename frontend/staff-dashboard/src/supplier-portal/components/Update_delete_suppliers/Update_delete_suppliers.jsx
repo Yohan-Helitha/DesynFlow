@@ -33,7 +33,13 @@ function Update_delete_suppliers() {
   const fetchSuppliers = async () => {
     try {
       const res = await axios.get(API_BASE);
-      setSuppliers(res.data);
+      // Sort suppliers by creation date - newest first
+      const sortedSuppliers = res.data.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+        return dateB - dateA; // Newest first
+      });
+      setSuppliers(sortedSuppliers);
     } catch (err) {
       console.error("Error fetching suppliers", err);
     }

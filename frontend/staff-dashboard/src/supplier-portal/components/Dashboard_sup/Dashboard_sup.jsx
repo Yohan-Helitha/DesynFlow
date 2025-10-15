@@ -275,7 +275,14 @@ function Dashboard_sup() {
       try {
         // Fetch all suppliers data instead of specific supplier
         const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
-        const suppliers = await suppliersResponse.json();
+        const suppliersData = await suppliersResponse.json();
+        
+        // Sort suppliers by creation date - newest first
+        const suppliers = suppliersData.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
         
         if (!suppliers || suppliers.length === 0) {
           setLoading(false);

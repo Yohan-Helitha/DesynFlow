@@ -16,7 +16,15 @@ function OrderForm({ onOrderCreated }) {
   useEffect(() => {
     fetch("http://localhost:4000/api/suppliers")
       .then(res => res.json())
-      .then(data => setSuppliers(data))
+      .then(data => {
+        // Sort suppliers by creation date - newest first
+        const sortedSuppliers = data.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
+        setSuppliers(sortedSuppliers);
+      })
       .catch(() => setSuppliers([]));
   }, []);
 

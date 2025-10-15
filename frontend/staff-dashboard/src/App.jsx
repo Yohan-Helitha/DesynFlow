@@ -27,6 +27,7 @@ import OrderDetailsSup from './supplier-portal/components/Order_details_sup/Orde
 import SampleOrderList from './supplier-portal/components/Sample_order_list/Sample_order_list';
 import SampleOrderDetails from './supplier-portal/components/Sample_order_details/Sample_order_details';
 import RateSupplier from './supplier-portal/components/Rate_supplier/Rate_supplier';
+import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
             <Route path="/finance-manager/*" element={<FinanceDashboard />} />
           </Routes>
         </main>
+        <ScrollToTop />
       </div>
     </Router>
   )

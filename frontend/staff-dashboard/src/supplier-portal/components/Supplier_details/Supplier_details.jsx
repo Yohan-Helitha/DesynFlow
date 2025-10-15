@@ -45,7 +45,15 @@ function Supplier_details() {
       // For procurement officers, load all suppliers
       axios
         .get("http://localhost:4000/api/suppliers")
-        .then((res) => setSuppliers(res.data))
+        .then((res) => {
+          // Sort suppliers by creation date - newest first
+          const sortedSuppliers = res.data.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+            return dateB - dateA; // Newest first
+          });
+          setSuppliers(sortedSuppliers);
+        })
         .catch((err) => console.error("Error fetching suppliers:", err));
     }
   };
@@ -86,10 +94,45 @@ function Supplier_details() {
     }
   }, [suppliers, location.state]);
 
-  // Search filter
-  const filteredSuppliers = suppliers.filter((s) =>
-    s.companyName.toLowerCase().includes(search.toLowerCase())
-  );
+  // Search filter and sort - searches across all columns and sorts by creation date (newest first)
+  const filteredSuppliers = suppliers.filter((s) => {
+    const searchTerm = search.toLowerCase();
+    
+    // Search in basic fields
+    const basicFieldsMatch = 
+      (s.companyName || "").toLowerCase().includes(searchTerm) ||
+      (s.contactName || "").toLowerCase().includes(searchTerm) ||
+      (s.email || "").toLowerCase().includes(searchTerm) ||
+      (s.phone || "").toLowerCase().includes(searchTerm);
+    
+    // Search in materials array (name and price)
+    const materialsMatch = s.materials && s.materials.some(material =>
+      (material.name || "").toLowerCase().includes(searchTerm) ||
+      (material.pricePerUnit || "").toString().toLowerCase().includes(searchTerm)
+    );
+    
+    // Search in material types array
+    const materialTypesMatch = s.materialTypes && s.materialTypes.some(type =>
+      type.toLowerCase().includes(searchTerm)
+    );
+    
+    // Search in delivery regions array
+    const regionsMatch = s.deliveryRegions && s.deliveryRegions.some(region =>
+      region.toLowerCase().includes(searchTerm)
+    );
+    
+    // Search in rating
+    const ratingMatch = s.rating && s.rating.toString().includes(searchTerm);
+    
+    return basicFieldsMatch || materialsMatch || materialTypesMatch || regionsMatch || ratingMatch;
+  }).sort((a, b) => {
+    // Sort by creation date/time - newest first
+    // If createdAt exists, use it; otherwise use _id as MongoDB ObjectId contains timestamp
+    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+    
+    return dateB - dateA; // Newest first (descending order)
+  });
 
   // Helper to format amounts in LKR consistently
   const formatLKR = (amount) => {
@@ -103,12 +146,6 @@ function Supplier_details() {
           <div className="page-header">
             <div className="header-content">
               <h2>{userRole === "supplier" ? "My Supplier Profile" : "Interior Design Suppliers"}</h2>
-              <p className="header-subtitle">
-                {userRole === "supplier" 
-                  ? "Manage your company profile and materials catalog"
-                  : "Manage your supplier network and partnerships"
-                }
-              </p>
             </div>
           </div>
 

@@ -76,7 +76,7 @@ body::before {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
-  border: 2px solid #8B4513;
+  border: 2px solid #674636;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -84,21 +84,21 @@ body::before {
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  background: #D2691E;
-  color: #8B4513;
-  box-shadow: 0 2px 6px rgba(139, 69, 19, 0.2);
+  background: #674636;
+  color: #FFF8E8;
+  box-shadow: 0 2px 6px rgba(103, 70, 54, 0.2);
 }
 
 .btn-primary:hover {
-  background: #CD853F;
-  color: #654321;
-  border-color: #654321;
-  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+  background: #5a3d2e;
+  color: #FFF8E8;
+  border-color: #5a3d2e;
+  box-shadow: 0 4px 12px rgba(103, 70, 54, 0.3);
   transform: translateY(-2px);
 }
 
 .btn-primary a {
-  color: #8B4513;
+  color: #FFF8E8;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -106,7 +106,7 @@ body::before {
 }
 
 .btn-primary:hover a {
-  color: #654321;
+  color: #FFF8E8;
 }
 
 .icon {
@@ -190,7 +190,6 @@ body::before {
   overflow-x: auto;
   overflow-y: visible;
   animation: tableSlideUp 0.8s ease-out 0.4s both;
-  padding: 0 4px;
 }
 
 @keyframes tableSlideUp {
@@ -299,6 +298,9 @@ tbody tr:last-child td:last-child {
 
 /* ===== Action Buttons ===== */
 .info-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   background: #FFF8E8;
   color: #1B1A55;
   border: 1px solid #535C91;
