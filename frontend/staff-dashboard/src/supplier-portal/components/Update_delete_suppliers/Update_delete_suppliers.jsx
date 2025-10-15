@@ -183,7 +183,7 @@ function Update_delete_suppliers() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <Link to="/procurement-officer/supplier-registration" className="create-supplier-btn">
+                <Link to="/procurement-officer/add_suppliers" className="create-supplier-btn">
                   <FaPlus className="btn-icon" />
                   Add Supplier
                 </Link>
