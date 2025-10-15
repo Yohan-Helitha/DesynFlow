@@ -515,8 +515,10 @@ body {
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .stat-card {
@@ -551,6 +553,10 @@ body {
 
 .stat-card.budget::before {
   background: linear-gradient(90deg, #FF9800 0%, #F57C00 100%);
+}
+
+.stat-card.samples::before {
+  background: linear-gradient(90deg, #9C27B0 0%, #7B1FA2 100%);
 }
 
 .stat-card:hover {

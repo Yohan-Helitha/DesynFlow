@@ -29,3 +29,13 @@ export const getSamples = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+// Get all samples (for procurement officer view)
+export const getAllSamples = async (req, res) => {
+  try {
+    const samples = await SampleService.getAllSamples();
+    res.status(200).json(samples);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};

@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "./Sample_order.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 
 function Sample_order() {
   const [suppliers, setSuppliers] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     supplierId: "",
     materialId: "",
-    requestedBy: "64f3a9e1b2c3d4567890", // Example officer ID, replace dynamically if needed
+    requestedBy: "670e8b4e1234567890abcdef", // Default procurement officer ID
     reviewNote: ""
   });
 
@@ -29,61 +31,88 @@ function Sample_order() {
       .catch((err) => console.error("Error fetching suppliers:", err));
   }, []);
 
-  // Fetch materials from MaterialCatalog or use supplier's materials
+  // Fetch materials available from the selected supplier
   useEffect(() => {
     if (formData.supplierId) {
-      // First try to fetch from MaterialCatalog
+      console.log('Fetching materials for supplier:', formData.supplierId);
+      
+      // First try to fetch from MaterialCatalog (materials with pricing from specific supplier)
       fetch(`http://localhost:4000/api/materials?supplierId=${formData.supplierId}`)
         .then(res => res.json())
         .then(data => {
+          console.log('MaterialCatalog response:', data);
+          
           if (data && data.length > 0) {
             // Transform MaterialCatalog data
             const materialsWithPricing = data.map(item => ({
               _id: item.materialId?._id || item.materialId,
-              name: item.materialId?.materialName || `Material-${item._id}`,
-              pricePerUnit: item.pricePerUnit || 0
+              name: item.materialId?.materialName || item.materialName || `Material-${item._id}`,
+              pricePerUnit: item.pricePerUnit || 0,
+              unit: item.materialId?.unit || item.unit || 'unit'
             }));
             setMaterials(materialsWithPricing);
+            console.log('Set materials from catalog:', materialsWithPricing);
           } else {
-            // Fallback to supplier's materials or materialTypes
+            // Fallback to supplier's direct materials list
+            console.log('No catalog materials found, using supplier data');
             const supplier = suppliers.find(s => s._id === formData.supplierId);
+            
             if (supplier?.materials && supplier.materials.length > 0) {
               const supplierMaterials = supplier.materials.map((mat, idx) => ({
-                _id: `temp-${idx}`,
-                name: mat.name,
-                pricePerUnit: mat.pricePerUnit || 0
+                _id: mat._id || `temp-${idx}`,
+                name: mat.name || mat.materialName || `Material ${idx + 1}`,
+                pricePerUnit: mat.pricePerUnit || mat.price || 0,
+                unit: mat.unit || 'unit'
               }));
               setMaterials(supplierMaterials);
-            } else {
-              setMaterials(supplier?.materialTypes?.map((type, idx) => ({
+              console.log('Set materials from supplier.materials:', supplierMaterials);
+            } else if (supplier?.materialTypes && supplier.materialTypes.length > 0) {
+              // Legacy support for materialTypes array
+              const legacyMaterials = supplier.materialTypes.map((type, idx) => ({
                 _id: `legacy-${idx}`, 
                 name: type, 
-                pricePerUnit: 0
-              })) || []);
+                pricePerUnit: 0,
+                unit: 'unit'
+              }));
+              setMaterials(legacyMaterials);
+              console.log('Set materials from supplier.materialTypes:', legacyMaterials);
+            } else {
+              setMaterials([]);
+              console.log('No materials found for this supplier');
             }
           }
         })
         .catch(err => {
-          console.error("Error fetching materials:", err);
-          // Fallback to supplier data
+          console.error("Error fetching materials from API:", err);
+          
+          // Fallback to supplier data on API error
           const supplier = suppliers.find(s => s._id === formData.supplierId);
           if (supplier?.materials && supplier.materials.length > 0) {
             const supplierMaterials = supplier.materials.map((mat, idx) => ({
-              _id: `temp-${idx}`,
-              name: mat.name,
-              pricePerUnit: mat.pricePerUnit || 0
+              _id: mat._id || `temp-${idx}`,
+              name: mat.name || mat.materialName || `Material ${idx + 1}`,
+              pricePerUnit: mat.pricePerUnit || mat.price || 0,
+              unit: mat.unit || 'unit'
             }));
             setMaterials(supplierMaterials);
-          } else {
-            setMaterials(supplier?.materialTypes?.map((type, idx) => ({
+            console.log('Fallback: Set materials from supplier.materials:', supplierMaterials);
+          } else if (supplier?.materialTypes && supplier.materialTypes.length > 0) {
+            const legacyMaterials = supplier.materialTypes.map((type, idx) => ({
               _id: `legacy-${idx}`, 
               name: type, 
-              pricePerUnit: 0
-            })) || []);
+              pricePerUnit: 0,
+              unit: 'unit'
+            }));
+            setMaterials(legacyMaterials);
+            console.log('Fallback: Set materials from supplier.materialTypes:', legacyMaterials);
+          } else {
+            setMaterials([]);
+            console.log('Fallback: No materials found for this supplier');
           }
         });
     } else {
       setMaterials([]);
+      console.log('No supplier selected, cleared materials');
     }
   }, [formData.supplierId, suppliers]);
 
@@ -93,6 +122,8 @@ function Sample_order() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    
     // Only send ObjectIds for materialId, supplierId, requestedBy
     const payload = {
       supplierId: formData.supplierId,
@@ -100,28 +131,44 @@ function Sample_order() {
       requestedBy: formData.requestedBy,
       reviewNote: formData.reviewNote
     };
-          console.log('Submitting sample order payload:', payload);
-          fetch("http://localhost:4000/api/samples/upload", {
+    
+    console.log('Submitting sample order payload:', payload);
+    
+    fetch("http://localhost:4000/api/samples/upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to request sample");
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(`Failed to request sample: ${errorData.error || res.statusText}`);
+        }
         return res.json();
       })
-      .then(() => {
-  console.log('Sample request sent successfully!');
+      .then((response) => {
+        console.log('Sample request sent successfully!', response);
+        
+        // Show success message
+        alert('Sample request submitted successfully! The request has been sent to the supplier and is now visible in the system.');
+        
+        // Reset form
         setFormData({
           supplierId: "",
           materialId: "",
           requestedBy: "64f3a9e1b2c3d4567890",
           reviewNote: ""
         });
+        
+        // Navigate to sample order list to show the submitted request
+        navigate('/procurement-officer/sample_order_list');
       })
       .catch((err) => {
-        console.error(err);
-  console.error('Error sending request');
+        console.error('Error sending request:', err);
+        alert('Error submitting sample request. Please try again.');
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
   };
 
@@ -152,24 +199,39 @@ function Sample_order() {
 
         {/* Material Selection */}
         <div className="form-group">
-          <label>Material</label>
-          {formData.supplierId && materials.length === 0 ? (
-            <div className="no-materials-message">
-              No materials found for this supplier.
+          <label>Material Available from This Supplier</label>
+          {!formData.supplierId ? (
+            <div className="info-message">
+              Please select a supplier first to see available materials.
             </div>
-          ) : null}
+          ) : materials.length === 0 ? (
+            <div className="no-materials-message">
+              No materials found for this supplier. The supplier may not have uploaded their material catalog yet.
+            </div>
+          ) : (
+            <div className="materials-info">
+              Found {materials.length} material(s) from this supplier
+            </div>
+          )}
           <select
             name="materialId"
             value={formData.materialId}
             onChange={handleChange}
             required
             className="material-select"
-            disabled={materials.length === 0}
+            disabled={!formData.supplierId || materials.length === 0}
           >
-            <option value="">-- Select Material --</option>
+            <option value="">
+              {!formData.supplierId 
+                ? "-- Select Supplier First --" 
+                : materials.length === 0 
+                ? "-- No Materials Available --" 
+                : "-- Select Material --"}
+            </option>
             {materials.map((mat, idx) => (
               <option key={idx} value={mat._id || mat.name}>
-                {mat.name} {mat.pricePerUnit > 0 ? `- $${mat.pricePerUnit.toFixed(2)}/unit` : ''}
+                {mat.name} 
+                {mat.pricePerUnit > 0 ? ` - LKR ${mat.pricePerUnit.toFixed(2)}/${mat.unit || 'unit'}` : ' - Price not specified'}
               </option>
             ))}
           </select>
@@ -188,8 +250,12 @@ function Sample_order() {
 
         {/* Submit Button */}
         <div className="form-actions">
-          <button type="submit" className="submit-btn">
-            ➕ Request Sample
+          <button 
+            type="submit" 
+            className="submit-btn"
+            disabled={submitting || !formData.supplierId || !formData.materialId}
+          >
+            {submitting ? "⏳ Submitting..." : "➕ Request Sample"}
           </button>
         </div>
       </form>

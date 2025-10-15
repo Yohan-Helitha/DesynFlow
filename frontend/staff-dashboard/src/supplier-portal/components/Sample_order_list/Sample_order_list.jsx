@@ -9,6 +9,11 @@ function Sample_order_list() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const navigate = useNavigate();
+  
+  // Check if user is coming from procurement officer dashboard or supplier dashboard
+  // Based on the current URL path or referrer
+  const isProcurementView = window.location.pathname.includes('procurement-officer') && 
+                            !window.location.pathname.includes('dashboard_sup');
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
     // Toggle body class for sidebar state
@@ -22,8 +27,8 @@ function Sample_order_list() {
     };
   }, []);
 
-  useEffect(() => {
-    // Fetch all sample orders (could filter by supplier/user if needed)
+  const fetchSamples = () => {
+    setLoading(true);
     fetch("http://localhost:4000/api/samples/all")
       .then(res => res.json())
       .then(data => {
@@ -34,6 +39,10 @@ function Sample_order_list() {
         setSamples([]);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchSamples();
   }, []);
 
   return (
@@ -53,33 +62,62 @@ function Sample_order_list() {
           <div className="toggle-buttons">
             <div 
               onClick={() => navigate('/procurement-officer')}
-              className="toggle-btn"
+              className={`toggle-btn ${isProcurementView ? 'active' : ''}`}
               title="Procurement Officer Dashboard"
             >
               <FaUserTie />
               <span>Procurement Officer</span>
             </div>
-            <div className="toggle-btn active" title="Supplier Dashboard">
+            <div 
+              onClick={() => navigate('/procurement-officer/dashboard_sup')}
+              className={`toggle-btn ${!isProcurementView ? 'active' : ''}`}
+              title="Supplier Dashboard"
+            >
               <FaTruck />
               <span>Supplier Portal</span>
             </div>
           </div>
         </div>
 
-        <ul className="sidebar-nav">
-          <li>
-            <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
-          </li>
-          <li>
-            <Link to="/procurement-officer/order_details_sup">My Orders</Link>
-          </li>
-          <li className="active">
-            <Link to="/procurement-officer/sample_order_list">Sample Orders</Link>
-          </li>
-          <li>
-            <span className="profile-settings-disabled">Profile Settings</span>
-          </li>
-        </ul>
+        {isProcurementView ? (
+          // Procurement Officer Navigation
+          <ul className="sidebar-nav">
+            <li>
+              <Link to="/procurement-officer">Dashboard</Link>
+            </li>
+            <li>
+              <Link to="/procurement-officer/supplier_details">Suppliers</Link>
+            </li>
+            <li>
+              <Link to="/procurement-officer/orders">Orders</Link>
+            </li>
+            <li>
+              <Link to="/procurement-officer/restock_alerts">Restock Alerts</Link>
+            </li>
+            <li>
+              <Link to="/procurement-officer/budget_approval">Budget Approval</Link>
+            </li>
+            <li className="active">
+              <Link to="/procurement-officer/sample_order_list">Sample Requests</Link>
+            </li>
+          </ul>
+        ) : (
+          // Supplier Navigation
+          <ul className="sidebar-nav">
+            <li>
+              <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
+            </li>
+            <li>
+              <Link to="/procurement-officer/order_details_sup">My Orders</Link>
+            </li>
+            <li className="active">
+              <Link to="/procurement-officer/sample_order_list">Sample Orders</Link>
+            </li>
+            <li>
+              <span className="profile-settings-disabled">Profile Settings</span>
+            </li>
+          </ul>
+        )}
       </aside>
 
       {/* Hamburger */}
@@ -93,7 +131,19 @@ function Sample_order_list() {
 
       {/* Main Content */}
       <div className="sample-order-list-page">
-        <h2><FaBox className="header-icon" /> Sample Order Requests</h2>
+        <div className="page-header">
+          <h2><FaBox className="header-icon" /> Sample Order Requests</h2>
+          <div className="header-actions">
+            <button onClick={fetchSamples} className="refresh-btn" title="Refresh list">
+              🔄 Refresh
+            </button>
+            {isProcurementView && (
+              <Link to="/procurement-officer/sample_order" className="request-new-btn">
+                + Request New Sample
+              </Link>
+            )}
+          </div>
+        </div>
       {loading ? (
         <p>Loading...</p>
       ) : samples.length === 0 ? (
@@ -113,9 +163,9 @@ function Sample_order_list() {
           <tbody>
             {samples.map((s, idx) => (
                 <tr key={s._id || idx}>
-                  <td>{s.supplierId?.companyName || s.supplierId || "Unknown"}</td>
-                  <td>{s.materialId?.name || s.materialId || "Unknown"}</td>
-                  <td>{s.requestedBy?.name || s.requestedBy || "Unknown"}</td>
+                  <td>{s.supplierId?.companyName || s.supplierId?.name || "Unknown"}</td>
+                  <td>{s.materialId?.materialName || s.materialId?.name || "Unknown"}</td>
+                  <td>{s.requestedBy?.name || s.requestedBy?.email || "Unknown"}</td>
                   <td>{s.status}</td>
                   <td>{s.reviewNote || "-"}</td>
                   <td>{new Date(s.createdAt).toLocaleString()}</td>

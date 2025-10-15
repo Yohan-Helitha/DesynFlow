@@ -297,15 +297,10 @@ function Dashboard_sup() {
           return;
         }
 
-        // Fetch all samples from all suppliers
-        const allSamplesPromises = suppliers.map(supplier => 
-          fetch(`http://localhost:4000/api/samples/${supplier._id}`)
-            .then(res => res.json())
-            .catch(() => [])
-        );
-        const allSamplesResults = await Promise.all(allSamplesPromises);
-        const allSamples = allSamplesResults.flat().filter(sample => sample && sample._id);
-        setRequests(allSamples);
+        // Fetch all sample requests
+        const samplesResponse = await fetch("http://localhost:4000/api/samples/all");
+        const allSamples = await samplesResponse.json();
+        setRequests(Array.isArray(allSamples) ? allSamples : []);
 
         // Fetch all orders from all suppliers
         const ordersResponse = await fetch("http://localhost:4000/api/purchase-orders");
@@ -699,8 +694,6 @@ function Dashboard_sup() {
         </div>
 
 
-
-
         {/* Sample Requests */}
         <section className="sample-requests">
           <h2>Sample Order Requests</h2>
@@ -715,8 +708,8 @@ function Dashboard_sup() {
                     <span className={`request-status ${req.status}`}>{req.status}</span>
                   </div>
                   <div className="request-info">
-                    <p><strong>Material ID:</strong> {req.materialId}</p>
-                    <p><strong>Requested By:</strong> {req.requestedBy}</p>
+                    <p><strong>Material:</strong> {req.materialId?.materialName || req.materialId?.name || "Unknown Material"}</p>
+                    <p><strong>Requested By:</strong> {req.requestedBy?.name || req.requestedBy?.email || "Unknown User"}</p>
                     {req.reviewNote && (
                       <p><strong>Note:</strong> {req.reviewNote}</p>
                     )}

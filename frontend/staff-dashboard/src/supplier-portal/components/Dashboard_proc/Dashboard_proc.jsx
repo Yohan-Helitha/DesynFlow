@@ -395,6 +395,21 @@ function Dashboard_proc() {
               </div>
               <Link to="/procurement-officer/budget_approval" className="stat-action">Review Budgets</Link>
             </div>
+
+            <div className="stat-card samples">
+              <div className="stat-header">
+                <h3>Sample Materials</h3>
+                <span className="stat-icon"><FaExchangeAlt /></span>
+              </div>
+              <div className="stat-content">
+                <div className="stat-main">Request</div>
+                <div className="stat-details">
+                  <span className="info">Get samples from suppliers</span>
+                  <span className="info">Evaluate materials quality</span>
+                </div>
+              </div>
+              <Link to="/procurement-officer/sample_order" className="stat-action">Request Samples</Link>
+            </div>
           </div>
         </div>
 

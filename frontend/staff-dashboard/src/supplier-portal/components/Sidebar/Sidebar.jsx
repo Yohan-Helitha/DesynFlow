@@ -77,6 +77,9 @@ function Sidebar() {
           <li>
             <Link to="/procurement-officer/budget_approval">Budget Approval</Link>
           </li>
+          <li>
+            <Link to="/procurement-officer/sample_order_list">Sample Requests</Link>
+          </li>
         </ul>
       </aside>
 
