@@ -80,6 +80,7 @@ import materialRoute from './modules/finance/routes/materialRoutes.js';
 import financeSummaryRoute from './modules/finance/routes/financeSummaryRoutes.js';
 import inProgressExpensesRoutes from './modules/finance/routes/inProgressExpensesRoutes.js';
 import financeNotificationRoutes from './modules/finance/routes/financeNotificationRoutes.js';
+import monthlyReportRoutes from './modules/finance/routes/monthlyReportRoutes.js';
 
 const app = express();
 
@@ -156,6 +157,7 @@ app.use('/api/materials', materialRoute);
 app.use('/api/finance-summary', financeSummaryRoute);
 app.use('/api/finance', inProgressExpensesRoutes);
 app.use('/api/finance-notifications', financeNotificationRoutes);
+app.use('/api/monthly-reports', monthlyReportRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

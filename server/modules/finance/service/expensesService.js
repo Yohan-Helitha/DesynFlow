@@ -27,12 +27,26 @@ export {
 
 // Create a new expense
 export const createExpense = async ({ projectId, description, category, amount, proof }) => {
+    // Validate and convert projectId to ObjectId
+    let validProjectId = undefined;
+    if (projectId && projectId !== '' && projectId !== 'undefined' && projectId !== 'null') {
+        try {
+            validProjectId = new mongoose.Types.ObjectId(projectId);
+        } catch (error) {
+            console.error('Invalid projectId format:', projectId, error);
+            throw new Error('Invalid project ID format');
+        }
+    }
+    
     const data = {
-        projectId: projectId ? new mongoose.Types.ObjectId(projectId) : undefined,
+        projectId: validProjectId,
         description,
         category,
         amount: Number(amount),
         proof: proof || null,
     };
+    
+    console.log('Creating expense with data:', data); // Debug log
+    
     return await Expense.create(data);
 };

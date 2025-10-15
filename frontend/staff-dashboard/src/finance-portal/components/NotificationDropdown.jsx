@@ -12,7 +12,10 @@ export const NotificationDropdown = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/finance-notifications?limit=20');
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/finance-notifications?limit=20', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
@@ -27,7 +30,10 @@ export const NotificationDropdown = () => {
   // Fetch unread count
   const fetchUnreadCount = async () => {
     try {
-      const res = await fetch('/api/finance-notifications/unread-count');
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/finance-notifications/unread-count', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setUnreadCount(data.count);
@@ -40,8 +46,10 @@ export const NotificationDropdown = () => {
   // Mark as read
   const markAsRead = async (notificationId) => {
     try {
+      const token = localStorage.getItem('authToken');
       const res = await fetch(`/api/finance-notifications/${notificationId}/read`, {
-        method: 'PATCH'
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         setNotifications(prev =>
@@ -57,8 +65,10 @@ export const NotificationDropdown = () => {
   // Mark all as read
   const markAllAsRead = async () => {
     try {
+      const token = localStorage.getItem('authToken');
       const res = await fetch('/api/finance-notifications/mark-all-read', {
-        method: 'PATCH'
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -72,8 +82,10 @@ export const NotificationDropdown = () => {
   // Delete notification
   const deleteNotification = async (notificationId) => {
     try {
+      const token = localStorage.getItem('authToken');
       const res = await fetch(`/api/finance-notifications/${notificationId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         setNotifications(prev => prev.filter(n => n._id !== notificationId));

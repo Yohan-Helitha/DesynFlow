@@ -585,10 +585,10 @@ export const QuotationFormModal = ({
             <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Summary</h4>
             <div className="bg-[#F7EED3] p-4 rounded-md border border-[#AAB396]">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div className="flex flex-col"><span className="text-[#AAB396]">Subtotal</span><span className="font-semibold text-[#674636]">${subtotal.toLocaleString()}</span></div>
-                <div className="flex flex-col"><span className="text-[#AAB396]">Contingency</span><span className="font-semibold text-[#674636]">${totalContingency.toLocaleString()}</span></div>
-                <div className="flex flex-col"><span className="text-[#AAB396]">Tax</span><span className="font-semibold text-[#674636]">${totalTax.toLocaleString()}</span></div>
-                <div className="flex flex-col"><span className="text-[#AAB396]">Grand Total</span><span className="font-bold text-[#674636]">${grandTotal.toLocaleString()}</span></div>
+                <div className="flex flex-col"><span className="text-[#AAB396]">Subtotal</span><span className="font-semibold text-[#674636]">LKR {subtotal.toLocaleString()}</span></div>
+                <div className="flex flex-col"><span className="text-[#AAB396]">Contingency</span><span className="font-semibold text-[#674636]">LKR {totalContingency.toLocaleString()}</span></div>
+                <div className="flex flex-col"><span className="text-[#AAB396]">Tax</span><span className="font-semibold text-[#674636]">LKR {totalTax.toLocaleString()}</span></div>
+                <div className="flex flex-col"><span className="text-[#AAB396]">Grand Total</span><span className="font-bold text-[#674636]">LKR {grandTotal.toLocaleString()}</span></div>
               </div>
             </div>
           </div>

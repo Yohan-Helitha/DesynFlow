@@ -94,7 +94,7 @@ export const ViewHistoryModal = ({ historyData }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{[req?.propertyLocation_address, req?.propertyLocation_city].filter(Boolean).join(', ') || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.propertyType || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item?.distanceKm ?? item?.distance ?? '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-semibold">{typeof item?.estimatedCost === 'number' ? `$${item.estimatedCost.toLocaleString()}` : '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-semibold">{typeof item?.estimatedCost === 'number' ? `LKR ${item.estimatedCost.toLocaleString()}` : '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item?.createdAt ? new Date(item.createdAt).toLocaleDateString() : (req?.createdAt ? new Date(req.createdAt).toLocaleDateString() : (item?.createdDate || item?.date || '-'))}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button

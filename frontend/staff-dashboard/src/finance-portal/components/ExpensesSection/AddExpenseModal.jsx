@@ -21,6 +21,13 @@ export const AddExpenseModal = ({ onClose, onCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Validate that projectId is selected
+    if (!formData.projectId || formData.projectId === '') {
+      alert('Please select a project')
+      return
+    }
+    
     const data = new FormData()
     data.append('projectId', formData.projectId)
     data.append('description', formData.description)
@@ -28,13 +35,22 @@ export const AddExpenseModal = ({ onClose, onCreated }) => {
     data.append('amount', formData.amount)
     if (formData.proof) data.append('proof', formData.proof)
 
+    console.log('Submitting expense with projectId:', formData.projectId) // Debug log
+
     try {
       const res = await fetch('/api/expenses', { method: 'POST', body: data })
       const json = await res.json().catch(() => ({}))
+      console.log('Response from server:', json) // Debug log
       const created = json?.expense || json
       if (res.ok && created) {
         onCreated && onCreated(created)
+      } else {
+        console.error('Failed to create expense:', json)
+        alert('Failed to create expense. Please try again.')
       }
+    } catch (error) {
+      console.error('Error creating expense:', error)
+      alert('An error occurred. Please try again.')
     } finally {
       onClose()
     }
@@ -45,12 +61,17 @@ export const AddExpenseModal = ({ onClose, onCreated }) => {
   const [projects, setProjects] = useState([])
 
   useEffect(() => {
-    // Fetch projects from backend
+    // Fetch only "In Progress" projects from backend
     fetch('/api/projects')
       .then((res) => res.ok ? res.json() : [])
       .then((data) => {
-        if (Array.isArray(data)) setProjects(data)
-        else setProjects([])
+        if (Array.isArray(data)) {
+          // Filter for only "In Progress" projects
+          const inProgressProjects = data.filter(p => p.status === 'In Progress')
+          setProjects(inProgressProjects)
+        } else {
+          setProjects([])
+        }
       })
       .catch(() => setProjects([]))
   }, [])
@@ -77,25 +98,26 @@ export const AddExpenseModal = ({ onClose, onCreated }) => {
               <div>
                 <div className="mb-4">
                   <label htmlFor="projectId" className="block text-sm font-medium text-[#674636] mb-1">Project *</label>
-                  <input
-                    type="text"
+                  <select
                     id="projectId"
                     name="projectId"
-                    list="projectId-options"
                     value={formData.projectId}
                     onChange={handleChange}
-                    placeholder="Type or select a project ID"
                     className="w-full border border-[#AAB396] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#AAB396] focus:border-transparent bg-white"
                     required
-                  />
-                  <datalist id="projectId-options">
+                  >
+                    <option value="">Select an In Progress project</option>
                     {projects.map((project) => {
-                      const id = project.projectId || project._id;
+                      // Use _id as the value (this is what Expense model expects)
+                      const id = project._id;
+                      const name = project.projectName || `Project ${id}`;
                       return (
-                        <option key={id} value={id} />
+                        <option key={id} value={id}>
+                          {name}
+                        </option>
                       );
                     })}
-                  </datalist>
+                  </select>
                 </div>
                 <div className="mb-4">
                   <label htmlFor="description" className="block text-sm font-medium text-[#674636] mb-1">Description *</label>

@@ -11,6 +11,7 @@ import {
   ChevronDown,
   LogOut,
   Settings,
+  BarChart3,
 } from 'lucide-react';
 
 export const Sidebar = ({ onNavigate, currentSection }) => {
@@ -23,6 +24,7 @@ export const Sidebar = ({ onNavigate, currentSection }) => {
     { name: 'Purchase Orders', icon: <ShoppingCart size={18} />, section: 'purchaseOrders' },
     { name: 'Expenses', icon: <DollarSign size={18} />, section: 'expenses' },
     { name: 'Warranty', icon: <Shield size={18} />, section: 'warranty' },
+    { name: 'Reports', icon: <BarChart3 size={18} />, section: 'reports' },
   ];
 
   const handleNavItemClick = (section) => {

@@ -64,7 +64,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                 <div>
                   <span className="text-sm text-[#AAB396]">Estimated Cost</span>
                   <p className="font-medium text-lg">
-                    ${inspection.estimatedCost ? inspection.estimatedCost.toLocaleString() : 'N/A'}
+                    LKR {inspection.estimatedCost ? inspection.estimatedCost.toLocaleString() : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -169,19 +169,19 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                 {inspection.laborCost && (
                   <div className="flex justify-between">
                     <span className="text-[#AAB396]">Labor Cost:</span>
-                    <span className="font-medium">${inspection.laborCost.toLocaleString()}</span>
+                    <span className="font-medium">LKR {inspection.laborCost.toLocaleString()}</span>
                   </div>
                 )}
                 {inspection.materialCost && (
                   <div className="flex justify-between">
                     <span className="text-[#AAB396]">Material Cost:</span>
-                    <span className="font-medium">${inspection.materialCost.toLocaleString()}</span>
+                    <span className="font-medium">LKR {inspection.materialCost.toLocaleString()}</span>
                   </div>
                 )}
                 {inspection.serviceCost && (
                   <div className="flex justify-between">
                     <span className="text-[#AAB396]">Service Cost:</span>
-                    <span className="font-medium">${inspection.serviceCost.toLocaleString()}</span>
+                    <span className="font-medium">LKR {inspection.serviceCost.toLocaleString()}</span>
                   </div>
                 )}
               </div>

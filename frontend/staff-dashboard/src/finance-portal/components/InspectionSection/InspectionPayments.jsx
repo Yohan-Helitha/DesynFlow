@@ -159,7 +159,7 @@ export const InspectionPayments = () => {
                   <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.phone_number || payment.phone || '-'}</td>
                   <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{[payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(', ') || payment.siteLocation || '-'}</td>
                   <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.propertyType || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] font-semibold whitespace-pre-line break-words">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `$${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
+                  <td className="px-6 py-4 text-sm text-[#674636] font-semibold whitespace-pre-line break-words">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `LKR ${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
                   <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer whitespace-pre-line break-words">
                     {payment.paymentReceiptUrl || payment.receiptUrl ? (
                       <a href={buildReceiptUrl(payment)} target="_blank" rel="noopener noreferrer" className="hover:text-[#AAB396]">

@@ -13,7 +13,7 @@ import { ViewExpenseModal } from './ViewExpenseModal'
 import { AddExpenseModal } from './AddExpenseModal'
 
 
-export const ExpensesList = () => {
+export const ExpensesList = ({ onExpenseChange }) => {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,20 +26,21 @@ export const ExpensesList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const fetchExpenses = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/expenses');
+      const data = await res.json();
+      setExpenses(data);
+    } catch (err) {
+      setError(err.message || 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchExpenses = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('/api/expenses');
-        const data = await res.json();
-        setExpenses(data);
-      } catch (err) {
-        setError(err.message || 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchExpenses();
   }, []);
 
@@ -50,18 +51,15 @@ export const ExpensesList = () => {
 
   const handleAddExpense = () => setShowAddModal(true)
 
-  const handleCreated = (created) => {
-    // Normalize createdAt to Date for sorting
-    const normalize = (e) => ({
-      ...e,
-      createdAt: e.createdAt || new Date().toISOString(),
-    })
-    setExpenses((prev) => {
-      const next = [normalize(created), ...prev]
-      return next
-    })
+  const handleCreated = async (created) => {
+    // Refetch all expenses to get the populated project data
+    await fetchExpenses();
     // Ensure newest shows first page
-    setCurrentPage(1)
+    setCurrentPage(1);
+    // Notify parent component that expenses have changed (to refresh chart)
+    if (onExpenseChange) {
+      onExpenseChange();
+    }
   }
 
   const handleUpdated = (updated) => {

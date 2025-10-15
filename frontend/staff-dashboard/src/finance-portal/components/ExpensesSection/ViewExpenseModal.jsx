@@ -39,6 +39,7 @@ export const ViewExpenseModal = ({ expense, onClose }) => {
 
         {/* Body */}
         <div className="p-6">
+          {/* Expense Information and Submission Details*/}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Expense Information */}
             <div>
@@ -67,31 +68,34 @@ export const ViewExpenseModal = ({ expense, onClose }) => {
                   {!proofUrl ? <span className="text-gray-400">No Receipt</span> : <span className="text-[#674636]">Attached</span>}
                 </div>
               </div>
-
-              {openUrl && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-[#674636] mb-2">Preview</h4>
-                  <div className="bg-[#F7EED3] p-3 rounded-md">
-                    {proofExt && ['jpg','jpeg','png','gif','webp'].includes(proofExt) ? (
-                      <img src={openUrl} alt="Receipt" className="max-h-96 rounded" />
-                    ) : proofExt === 'pdf' ? (
-                      <iframe src={openUrl} title="Receipt PDF" className="w-full h-96 bg-white rounded" />
-                    ) : (
-                      <a href={openUrl} target="_blank" rel="noopener noreferrer" className="text-[#674636] underline hover:text-black">Open Receipt</a>
-                    )}
-                  </div>
-                </div>
-              )}
-              {expense.notes && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-[#674636] mb-2">Notes</h4>
-                  <div className="bg-[#F7EED3] p-4 rounded-md">
-                    <p className="text-sm text-[#674636]">{expense.notes}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
+
+          {/* Notes - Full Width */}
+          {expense.notes && (
+            <div className="mb-6">
+              <h4 className="text-sm font-medium text-[#674636] mb-2">Notes</h4>
+              <div className="bg-[#F7EED3] p-4 rounded-md">
+                <p className="text-sm text-[#674636]">{expense.notes}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Preview - Full Width at Bottom */}
+          {openUrl && (
+            <div className="mb-6">
+              <h4 className="text-sm font-medium text-[#674636] mb-2">Receipt Preview</h4>
+              <div className="bg-[#F7EED3] p-3 rounded-md">
+                {proofExt && ['jpg','jpeg','png','gif','webp'].includes(proofExt) ? (
+                  <img src={openUrl} alt="Receipt" className="w-full max-h-[500px] object-contain rounded" />
+                ) : proofExt === 'pdf' ? (
+                  <iframe src={openUrl} title="Receipt PDF" className="w-full h-[500px] bg-white rounded" />
+                ) : (
+                  <a href={openUrl} target="_blank" rel="noopener noreferrer" className="text-[#674636] underline hover:text-black">Open Receipt</a>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Modal Actions */}
           <div className="flex justify-end space-x-3">

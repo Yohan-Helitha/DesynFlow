@@ -27,7 +27,7 @@ const CustomTooltip = ({ active, payload, label }) => {
       <div className="bg-[#FFF8E8] p-4 border border-[#AAB396] shadow-md rounded">
         <p className="font-medium text-[#674636]">{`${label} 2020`}</p>
         <p className="text-sm text-[#AAB396]">
-          ${payload[0].value?.toLocaleString()}
+          LKR {payload[0].value?.toLocaleString()}
         </p>
       </div>
     );

@@ -28,7 +28,7 @@ export const ViewPaymentModal = ({ payment, onClose }) => {
                   <span className="font-medium">Payment ID:</span> {payment._id || payment.id}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Amount:</span> ${payment.amount?.toLocaleString()}
+                  <span className="font-medium">Amount:</span> LKR {payment.amount?.toLocaleString()}
                 </p>
                 <p className="text-sm">
                   <span className="font-medium">Method:</span> {payment.method}
@@ -163,7 +163,9 @@ export const ViewPaymentModal = ({ payment, onClose }) => {
              {!isVerified && (
                <>
                  <button
-                   className="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 flex items-center"
+                   className="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+                   disabled={!payment.receiptUrl}
+                   title={!payment.receiptUrl ? "Cannot verify payment without receipt upload" : ""}
                    onClick={async () => {
                      await fetch(`/api/payments/${payment._id || payment.id}/status`, {
                        method: 'PATCH',

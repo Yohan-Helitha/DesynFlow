@@ -231,7 +231,7 @@ export async function generateQuotationPdf(quotation) {
 
 function toMoney(n) {
   const num = Number(n) || 0;
-  return `$${num.toFixed(2)}`;
+  return `LKR ${num.toFixed(2)}`;
 }
 
 export default { generateQuotationPdf };

@@ -199,9 +199,6 @@ export const PendingQuotations = () => {
             <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
-                  <div className="flex items-center">Estimation ID<ArrowUpDown size={14} className="ml-1" /></div>
-                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>
                   <div className="flex items-center">Project Name<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
@@ -232,28 +229,25 @@ export const PendingQuotations = () => {
               {paginatedQuotations.map((quotation) => (
                 <tr key={quotation._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    {quotation._id}
-                  </td>
-                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {getProjectDisplay(quotation)}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {quotation.version}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    ${quotation.laborCost?.toLocaleString()}
+                    LKR {quotation.laborCost?.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    ${quotation.materialCost?.toLocaleString()}
+                    LKR {quotation.materialCost?.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    ${quotation.serviceCost?.toLocaleString()}
+                    LKR {quotation.serviceCost?.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    ${quotation.contingencyCost?.toLocaleString()}
+                    LKR {quotation.contingencyCost?.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    ${quotation.total ? quotation.total.toLocaleString() : '0'}
+                    LKR {quotation.total ? quotation.total.toLocaleString() : '0'}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
@@ -267,7 +261,7 @@ export const PendingQuotations = () => {
               ))}
               {paginatedQuotations.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-[#AAB396]">No quotations found</td>
+                  <td colSpan={8} className="px-6 py-4 text-center text-[#AAB396]">No quotations found</td>
                 </tr>
               )}
             </tbody>

@@ -217,9 +217,6 @@ export const ApprovedQuotations = () => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
-                  <div className="flex items-center">Quotation ID<ArrowUpDown size={14} className="ml-1" /></div>
-                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>
                   <div className="flex items-center">Project Name<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
@@ -241,9 +238,8 @@ export const ApprovedQuotations = () => {
                 
                 return (
                   <tr key={quotation._id} className="hover:bg-[#F7EED3]">
-                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation._id}</td>
                     <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{projDisp}</td>
-                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">${quotation.grandTotal?.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {quotation.grandTotal?.toLocaleString()}</td>
                     <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation.status}</td>
                     <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : ''}</td>
                     <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
@@ -283,7 +279,7 @@ export const ApprovedQuotations = () => {
               {paginatedQuotations.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="px-6 py-4 text-center text-[#AAB396]"
                   >
                     No approved quotations found

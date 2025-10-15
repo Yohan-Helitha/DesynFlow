@@ -144,7 +144,7 @@ export const PendingPayments = () => {
                   <tr key={payment._id} className="hover:bg-[#F7EED3]">
                     <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{projectName}</td>
                     <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{clientName}</td>
-                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">${payment.amount?.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {payment.amount?.toLocaleString()}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.method}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.type}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs underline cursor-pointer">

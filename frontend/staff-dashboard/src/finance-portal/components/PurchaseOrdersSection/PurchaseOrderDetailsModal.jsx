@@ -144,14 +144,14 @@ export const PurchaseOrderDetailsModal = ({ purchaseOrderId, onClose, onAction }
                               <td className="px-4 py-2 text-sm text-[#674636]">{mat?.materialName || it.materialName || String(it.materialId || '')}</td>
                               <td className="px-4 py-2 text-sm text-[#674636]">{mat?.unit || '-'}</td>
                               <td className="px-4 py-2 text-sm text-[#674636] text-right">{it.qty}</td>
-                              <td className="px-4 py-2 text-sm text-[#674636] text-right">${(Number(it.unitPrice)||0).toLocaleString()}</td>
-                              <td className="px-4 py-2 text-sm text-[#674636] text-right">${lineTotal(it.qty, it.unitPrice).toLocaleString()}</td>
+                              <td className="px-4 py-2 text-sm text-[#674636] text-right">LKR {(Number(it.unitPrice)||0).toLocaleString()}</td>
+                              <td className="px-4 py-2 text-sm text-[#674636] text-right">LKR {lineTotal(it.qty, it.unitPrice).toLocaleString()}</td>
                             </tr>
                           );
                         })}
                         <tr className="bg-[#F7EED3]">
                           <td colSpan={4} className="px-4 py-2 text-sm font-medium text-right text-[#674636]">Total Amount:</td>
-                          <td className="px-4 py-2 text-sm font-medium text-right text-[#674636]">${(Number(po.totalAmount)||0).toLocaleString()}</td>
+                          <td className="px-4 py-2 text-sm font-medium text-right text-[#674636]">LKR {(Number(po.totalAmount)||0).toLocaleString()}</td>
                         </tr>
                       </tbody>
                     </table>

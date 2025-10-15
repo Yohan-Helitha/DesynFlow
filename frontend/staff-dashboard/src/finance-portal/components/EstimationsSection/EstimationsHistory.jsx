@@ -125,11 +125,41 @@ export const EstimationsHistory = () => {
       return 0;
     });
 
-  const totalPages = Math.ceil(filteredEstimations.length / itemsPerPage);
-  const paginatedEstimations = filteredEstimations.slice(
+  // Group estimations by project
+  const groupedEstimations = filteredEstimations.reduce((acc, est) => {
+    const projectId = est.projectId?._id || est.projectId?.id || est.projectId;
+    if (!acc[projectId]) {
+      acc[projectId] = [];
+    }
+    acc[projectId].push(est);
+    return acc;
+  }, {});
+
+  // Sort versions within each project (descending by version)
+  Object.keys(groupedEstimations).forEach(projectId => {
+    groupedEstimations[projectId].sort((a, b) => (b.version || 0) - (a.version || 0));
+  });
+
+  // Flatten back to array for pagination, keeping grouped order
+  const flattenedEstimations = [];
+  Object.values(groupedEstimations).forEach(projectEstimations => {
+    flattenedEstimations.push(...projectEstimations);
+  });
+
+  const totalPages = Math.ceil(flattenedEstimations.length / itemsPerPage);
+  const paginatedEstimations = flattenedEstimations.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Helper to check if this is the latest version for its project
+  const isLatestVersion = (item) => {
+    const projectId = item.projectId?._id || item.projectId?.id || item.projectId;
+    const projectEstimations = groupedEstimations[projectId] || [];
+    if (projectEstimations.length === 0) return true;
+    const latestVersion = Math.max(...projectEstimations.map(e => e.version || 0));
+    return item.version === latestVersion;
+  };
 
   return (
     <div className="p-0 m-0">
@@ -196,53 +226,84 @@ export const EstimationsHistory = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
-                  {paginatedEstimations.map(item => (
-                    <tr key={item._id || item.id} className="hover:bg-[#F7EED3]">
-                      <td className="px-3 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{getProjectLabel(item)}</td>
-                      <td className="px-3 py-2 text-xs text-[#674636]">v{item.version}</td>
-                      <td className="px-3 py-2 text-xs">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          item.status === 'Approved' ? 'bg-green-100 text-green-800' :
-                          item.status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>{item.status}</span>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.laborCost)}</td>
-                      <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.materialCost)}</td>
-                      <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.serviceCost)}</td>
-                      <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.contingencyCost)}</td>
-                      <td className="px-3 py-2 text-xs font-semibold text-[#674636]">{fmt(item.total)}</td>
-                      <td className="px-3 py-2 text-xs text-[#674636]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</td>
-                      <td className="px-3 py-2 text-xs text-[#674636]">{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : ''}</td>
-                      <td className="px-3 py-2 text-right text-xs space-x-1">
-                        <button
-                          onClick={() => { setSelectedEstimation(item); setShowDetailsModal(true); }}
-                          className="text-[#674636] hover:text-[#FFF8E8] bg-[#AAB396] hover:bg-[#674636] px-2 py-1 rounded-md"
-                        >View</button>
-                        {(() => {
-                          const isGenerateDisabled = item.status === 'Approved';
-                          return (
-                            <button
-                              disabled={isGenerateDisabled}
-                              title={isGenerateDisabled ? 'Already approved' : 'Generate from this estimate'}
-                              onClick={() => {
-                                if (isGenerateDisabled) return;
-                                setSelectedEstimation(item);
-                                setShowEstimateToEstimate(true);
-                              }}
-                              className={`px-2 py-1 rounded-md text-[#674636] bg-[#F7EED3] ${
-                                isGenerateDisabled
-                                  ? 'opacity-50 cursor-not-allowed'
-                                  : 'hover:text-[#FFF8E8] hover:bg-[#AAB396]'
-                              }`}
-                            >
-                              Generate
-                            </button>
-                          );
-                        })()}
-                      </td>
-                    </tr>
-                  ))}
+                  {paginatedEstimations.map((item, index) => {
+                    const isLatest = isLatestVersion(item);
+                    const projectId = item.projectId?._id || item.projectId?.id || item.projectId;
+                    const prevItem = index > 0 ? paginatedEstimations[index - 1] : null;
+                    const prevProjectId = prevItem ? (prevItem.projectId?._id || prevItem.projectId?.id || prevItem.projectId) : null;
+                    const isNewProject = !prevProjectId || projectId !== prevProjectId;
+
+                    return (
+                      <tr 
+                        key={item._id || item.id} 
+                        className={`hover:bg-[#F7EED3] ${isNewProject ? 'border-t-2 border-[#674636]' : ''}`}
+                      >
+                        <td className="px-3 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                          {isNewProject && (
+                            <span className="font-semibold">{getProjectLabel(item)}</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-[#674636]">
+                          <span className={`${isLatest ? 'font-bold text-green-700' : ''}`}>
+                            v{item.version}
+                            {isLatest && <span className="ml-1 text-[10px] bg-green-100 px-1 rounded">Latest</span>}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-xs">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                            item.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                            item.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>{item.status}</span>
+                        </td>
+                        <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.laborCost)}</td>
+                        <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.materialCost)}</td>
+                        <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.serviceCost)}</td>
+                        <td className="px-3 py-2 text-xs text-[#674636]">{fmt(item.contingencyCost)}</td>
+                        <td className="px-3 py-2 text-xs font-semibold text-[#674636]">{fmt(item.total)}</td>
+                        <td className="px-3 py-2 text-xs text-[#674636]">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</td>
+                        <td className="px-3 py-2 text-xs text-[#674636]">{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : ''}</td>
+                        <td className="px-3 py-2 text-right text-xs space-x-1">
+                          <button
+                            onClick={() => { setSelectedEstimation(item); setShowDetailsModal(true); }}
+                            className="text-[#674636] hover:text-[#FFF8E8] bg-[#AAB396] hover:bg-[#674636] px-2 py-1 rounded-md"
+                          >View</button>
+                          {(() => {
+                            // Disable Generate button if:
+                            // 1. This is NOT the latest version for this project
+                            // 2. Status is 'Approved' (already finalized)
+                            const isGenerateDisabled = !isLatest || item.status === 'Approved';
+                            
+                            let tooltipText = 'Generate new version from this estimate';
+                            if (!isLatest) {
+                              tooltipText = 'Only the latest version can be used to generate new estimations';
+                            } else if (item.status === 'Approved') {
+                              tooltipText = 'Cannot generate from approved estimations';
+                            }
+                            
+                            return (
+                              <button
+                                disabled={isGenerateDisabled}
+                                title={tooltipText}
+                                onClick={() => {
+                                  if (isGenerateDisabled) return;
+                                  setSelectedEstimation(item);
+                                  setShowEstimateToEstimate(true);
+                                }}
+                                className={`px-2 py-1 rounded-md text-[#674636] bg-[#F7EED3] ${
+                                  isGenerateDisabled
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : 'hover:text-[#FFF8E8] hover:bg-[#AAB396]'
+                                }`}
+                              >
+                                Generate
+                              </button>
+                            );
+                          })()}
+                        </td>
+                      </tr>
+                    );
+                  })}
                   {paginatedEstimations.length === 0 && (
                     <tr>
                       <td colSpan={12} className="px-4 py-2 text-center text-[#674636] text-sm">
@@ -255,11 +316,11 @@ export const EstimationsHistory = () => {
             </div>
 
             {/* Pagination */}
-            {filteredEstimations.length > 0 && (
+            {flattenedEstimations.length > 0 && (
               <div className="px-4 py-2 flex items-center justify-between border-t border-[#AAB396] bg-[#F7EED3]">
                 <div className="text-sm text-[#674636]">
                   Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                  {Math.min(currentPage * itemsPerPage, filteredEstimations.length)} of {filteredEstimations.length} entries
+                  {Math.min(currentPage * itemsPerPage, flattenedEstimations.length)} of {flattenedEstimations.length} entries
                 </div>
                 <div className="flex space-x-2">
                   <button

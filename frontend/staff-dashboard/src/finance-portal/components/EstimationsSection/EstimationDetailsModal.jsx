@@ -24,14 +24,14 @@ export const EstimationDetailsModal = ({ estimation, onClose }) => {
           <div>
             <span className="font-medium">Cost Breakdown:</span>
             <ul className="ml-4 mt-1 space-y-1">
-              <li>Labor Cost: ${estimation.laborCost?.toLocaleString() ?? '-'}</li>
-              <li>Material Cost: ${estimation.materialCost?.toLocaleString() ?? '-'}</li>
-              <li>Service Cost: ${estimation.serviceCost?.toLocaleString() ?? '-'}</li>
-              <li>Contingency Cost: ${estimation.contingencyCost?.toLocaleString() ?? '-'}</li>
+              <li>Labor Cost: LKR {estimation.laborCost?.toLocaleString() ?? '-'}</li>
+              <li>Material Cost: LKR {estimation.materialCost?.toLocaleString() ?? '-'}</li>
+              <li>Service Cost: LKR {estimation.serviceCost?.toLocaleString() ?? '-'}</li>
+              <li>Contingency Cost: LKR {estimation.contingencyCost?.toLocaleString() ?? '-'}</li>
             </ul>
           </div>
           <div>
-            <span className="font-medium">Total Cost:</span> ${estimation.total?.toLocaleString() ?? '-'}
+            <span className="font-medium">Total Cost:</span> LKR {estimation.total?.toLocaleString() ?? '-'}
           </div>
         </div>
 

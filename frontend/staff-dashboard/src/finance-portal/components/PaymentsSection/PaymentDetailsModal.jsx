@@ -25,7 +25,7 @@ const PaymentDetailsModal = ({ payment, onClose }) => {
               <h4 className="text-sm font-medium text-[#674636] mb-2">Payment Information</h4>
               <div className="bg-[#F7EED3] p-4 rounded-md space-y-2">
                 <p className="text-sm"><span className="font-medium">Payment ID:</span> {payment._id || payment.id}</p>
-                <p className="text-sm"><span className="font-medium">Amount:</span> ${payment.amount?.toLocaleString()}</p>
+                <p className="text-sm"><span className="font-medium">Amount:</span> LKR {payment.amount?.toLocaleString()}</p>
                 <p className="text-sm"><span className="font-medium">Method:</span> {payment.method}</p>
                 <p className="text-sm"><span className="font-medium">Type:</span> {payment.type}</p>
                 <p className="text-sm"><span className="font-medium">Status:</span> <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isVerified ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'}`}>{payment.status}</span></p>

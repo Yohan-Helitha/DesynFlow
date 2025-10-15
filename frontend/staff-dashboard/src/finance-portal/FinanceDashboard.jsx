@@ -9,6 +9,7 @@ import { PaymentsSection } from './components/PaymentsSection/PaymentsSection';
 import { PurchaseOrdersSection } from './components/PurchaseOrdersSection/PurchaseOrdersSection';
 import { ExpensesSection } from './components/ExpensesSection/ExpensesSection';
 import { WarrantySection } from './components/WarrantySection/WarrantySection';
+import { ReportsSection } from './components/ReportsSection/ReportsSection';
 
 function FinanceDashboard() {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ function FinanceDashboard() {
           <Route path="purchaseOrders" element={<PurchaseOrdersSection />} />
           <Route path="expenses" element={<ExpensesSection />} />
           <Route path="warranty" element={<WarrantySection />} />
+          <Route path="reports" element={<ReportsSection />} />
         </Routes>
       </div>
     </div>

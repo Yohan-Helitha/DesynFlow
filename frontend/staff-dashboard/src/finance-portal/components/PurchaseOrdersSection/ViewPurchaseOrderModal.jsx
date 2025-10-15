@@ -95,10 +95,10 @@ export const ViewPurchaseOrderModal = ({ purchaseOrder, onClose }) => {
                       <td className="px-4 py-2 text-sm text-[#674636]">{item.name}</td>
                       <td className="px-4 py-2 text-sm text-[#674636] text-right">{item.quantity}</td>
                       <td className="px-4 py-2 text-sm text-[#674636] text-right">
-                        ${item.unitPrice.toLocaleString()}
+                        LKR {item.unitPrice.toLocaleString()}
                       </td>
                       <td className="px-4 py-2 text-sm text-[#674636] text-right">
-                        ${item.total.toLocaleString()}
+                        LKR {item.total.toLocaleString()}
                       </td>
                     </tr>
                   ))}
@@ -107,7 +107,7 @@ export const ViewPurchaseOrderModal = ({ purchaseOrder, onClose }) => {
                       Total Amount:
                     </td>
                     <td className="px-4 py-2 text-sm font-medium text-right text-[#674636]">
-                      ${purchaseOrder.totalAmount.toLocaleString()}
+                      LKR {purchaseOrder.totalAmount.toLocaleString()}
                     </td>
                   </tr>
                 </tbody>

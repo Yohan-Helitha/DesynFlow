@@ -152,7 +152,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                 <div>
                   <span className="text-sm text-[#AAB396]">Estimated Cost</span>
                   <p className="font-medium text-lg">
-                    {estimatedCost !== undefined && estimatedCost !== null ? `$${Number(estimatedCost).toLocaleString()}` : 'N/A'}
+                    {estimatedCost !== undefined && estimatedCost !== null ? `LKR ${Number(estimatedCost).toLocaleString()}` : 'N/A'}
                   </p>
                 </div>
               </div>
