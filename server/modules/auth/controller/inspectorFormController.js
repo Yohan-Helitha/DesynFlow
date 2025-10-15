@@ -293,6 +293,8 @@ ${form.floors?.map(floor => `
 Floor ${floor.floor_number}:
 ${floor.rooms?.map(room => `  - ${room.room_name}: ${room.dimensions?.length || 0} x ${room.dimensions?.width || 0} x ${room.dimensions?.height || 0} ${room.dimensions?.unit || 'feet'}`).join('\n') || '  No rooms data'}
 `).join('\n') || 'No floor data available'}
+
+Recommendations: ${form.recommendations || 'No recommendations provided'}
     `.trim();
 
     // 4. Create report
@@ -389,13 +391,23 @@ const generatePDFFile = async (report, form) => {
       const filePath = path.join(reportsDir, filename);
       const relativePath = `/reports/${filename}`;
 
-      // Create PDF document - SIMPLE AND WORKING
-      const doc = new PDFKit({ size: 'A4', margin: 50 });
+      // Create PDF document - COMPACT APPROACH
+      const doc = new PDFKit({
+        size: 'A4',
+        margins: {
+          top: 50,
+          bottom: 50, // Smaller margin to allow more content per page
+          left: 50,
+          right: 50
+        },
+        autoFirstPage: true
+      });
       const stream = fs.createWriteStream(filePath);
       doc.pipe(stream);
 
-      // Professional colors
+      // Colors
       const primaryColor = '#8B4513';
+      const secondaryColor = '#A0522D';
       const lightGray = '#F5F5DC';
       
       // Professional Header
@@ -410,7 +422,6 @@ const generatePDFFile = async (report, form) => {
          .font('Helvetica')
          .text('Professional Property Inspection Services', 60, 65);
 
-      // Company Details (Right side)
       const rightStart = doc.page.width - 220;
       doc.fillColor('white')
          .fontSize(10)
@@ -431,102 +442,52 @@ const generatePDFFile = async (report, form) => {
          .lineWidth(2)
          .stroke();
 
-      let y = 190;
+      let currentY = 190;
 
-      // Report Information
-      doc.fillColor(primaryColor)
-         .fontSize(14)
-         .font('Helvetica-Bold')
-         .text('REPORT INFORMATION', 60, y);
-      
-      doc.moveTo(60, y + 18)
-         .lineTo(300, y + 18)
-         .strokeColor(primaryColor)
-         .lineWidth(1)
-         .stroke();
-      
-      y += 35;
+      // Report Information Section
+      currentY = addSection(doc, 'REPORT INFORMATION', currentY, primaryColor);
+      currentY = addInfoRow(doc, 'Report ID:', report._id.toString().slice(-8).toUpperCase(), currentY);
+      currentY = addInfoRow(doc, 'Report Title:', report.title || 'Inspection Report', currentY);
+      currentY = addInfoRow(doc, 'Status:', (report.status || 'completed').toUpperCase(), currentY);
+      currentY = addInfoRow(doc, 'Generated Date:', report.submittedAt ? new Date(report.submittedAt).toLocaleDateString('en-US', { 
+        weekday: 'long',
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }) : 'Date not recorded', currentY);
+      currentY += 15; // Reduced spacing
 
-      doc.fillColor('#333333')
-         .fontSize(11)
-         .font('Helvetica-Bold')
-         .text('Report ID:', 60, y);
-      doc.font('Helvetica')
-         .text(report._id.toString().slice(-8).toUpperCase(), 200, y);
-      y += 18;
-
-      doc.font('Helvetica-Bold')
-         .text('Status:', 60, y);
-      doc.font('Helvetica')
-         .text((report.status || 'completed').toUpperCase(), 200, y);
-      y += 18;
-
-      doc.font('Helvetica-Bold')
-         .text('Generated Date:', 60, y);
-      doc.font('Helvetica')
-         .text(new Date().toLocaleDateString('en-US', { 
-           year: 'numeric', 
-           month: 'long', 
-           day: 'numeric' 
-         }), 200, y);
-      y += 30;
-
-      // Client & Property Information
+      // Client & Property Section
       if (report.reportData) {
-        doc.fillColor(primaryColor)
-           .fontSize(14)
-           .font('Helvetica-Bold')
-           .text('CLIENT & PROPERTY INFORMATION', 60, y);
-        
-        doc.moveTo(60, y + 18)
-           .lineTo(350, y + 18)
-           .strokeColor(primaryColor)
-           .lineWidth(1)
-           .stroke();
-        
-        y += 35;
+        currentY = addSection(doc, 'CLIENT & PROPERTY INFORMATION', currentY, primaryColor);
+        currentY = addInfoRow(doc, 'Client Name:', report.reportData.clientName || 'Not specified', currentY);
+        currentY = addInfoRow(doc, 'Property Address:', report.reportData.propertyAddress || 'Not specified', currentY);
+        currentY = addInfoRow(doc, 'Property Type:', (report.reportData.propertyType || 'Not specified').toUpperCase(), currentY);
+        currentY = addInfoRow(doc, 'Inspection Date:', report.reportData.inspectionDate ? 
+          new Date(report.reportData.inspectionDate).toLocaleDateString('en-US', { 
+            weekday: 'long',
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }) : 'Date not recorded', currentY);
+        currentY += 15; // Reduced spacing
 
-        doc.fillColor('#333333')
-           .fontSize(11)
-           .font('Helvetica-Bold')
-           .text('Client Name:', 60, y);
-        doc.font('Helvetica')
-           .text(report.reportData.clientName || 'Not specified', 200, y);
-        y += 18;
-
-        doc.font('Helvetica-Bold')
-           .text('Property Address:', 60, y);
-        doc.font('Helvetica')
-           .text(report.reportData.propertyAddress || 'Not specified', 200, y, { width: 300 });
-        y += 18;
-
-        doc.font('Helvetica-Bold')
-           .text('Property Type:', 60, y);
-        doc.font('Helvetica')
-           .text((report.reportData.propertyType || 'Not specified').toUpperCase(), 200, y);
-        y += 30;
+        // Inspector Information
+        currentY = addSection(doc, 'INSPECTOR INFORMATION', currentY, primaryColor);
+        currentY = addInfoRow(doc, 'Inspector Name:', report.reportData.inspectorName || 'Not specified', currentY);
+        currentY = addInfoRow(doc, 'Inspection Company:', 'DesynFlow Property Services', currentY);
+        currentY += 15; // Reduced spacing
 
         // Room Details
         if (form && form.floors && form.floors.length > 0) {
-          doc.fillColor(primaryColor)
-             .fontSize(14)
-             .font('Helvetica-Bold')
-             .text('PROPERTY LAYOUT & ROOM DETAILS', 60, y);
+          currentY = addSection(doc, 'PROPERTY LAYOUT & ROOM DETAILS', currentY, primaryColor);
           
-          doc.moveTo(60, y + 18)
-             .lineTo(350, y + 18)
-             .strokeColor(primaryColor)
-             .lineWidth(1)
-             .stroke();
-          
-          y += 35;
-
           form.floors.forEach((floor, floorIndex) => {
-            doc.fillColor('#A0522D')
+            doc.fillColor(secondaryColor)
                .fontSize(13)
                .font('Helvetica-Bold')
-               .text(`Floor ${floor.floor_number || (floorIndex + 1)}:`, 60, y);
-            y += 20;
+               .text(`Floor ${floor.floor_number || (floorIndex + 1)}:`, 60, currentY);
+            currentY += 25;
 
             if (floor.rooms && floor.rooms.length > 0) {
               floor.rooms.forEach((room, roomIndex) => {
@@ -537,201 +498,63 @@ const generatePDFFile = async (report, form) => {
                 const height = dimensions.height || 'N/A';
                 const unit = dimensions.unit || 'feet';
                 
-                doc.rect(80, y, doc.page.width - 160, 25)
+                doc.rect(80, currentY, doc.page.width - 160, 30)
                    .fillAndStroke('#FFFFFF', primaryColor)
                    .lineWidth(1);
                 
                 doc.fillColor('#333333')
-                   .fontSize(10)
+                   .fontSize(11)
                    .font('Helvetica-Bold')
-                   .text(`${roomName}:`, 90, y + 6);
+                   .text(`${roomName}:`, 90, currentY + 8);
                 
                 doc.font('Helvetica')
-                   .text(`${length} × ${width} × ${height} ${unit}`, 200, y + 6);
+                   .text(`${length} × ${width} × ${height} ${unit}`, 200, currentY + 8);
                 
-                y += 30;
+                currentY += 35;
               });
+            } else {
+              doc.fillColor('#666666')
+                 .fontSize(10)
+                 .font('Helvetica-Oblique')
+                 .text('No room details available for this floor', 80, currentY);
+              currentY += 20;
             }
-            y += 10;
+            currentY += 10;
           });
-          y += 20;
+          currentY += 15; // Reduced spacing
         }
 
-        // Summary
-        doc.fillColor(primaryColor)
-           .fontSize(14)
-           .font('Helvetica-Bold')
-           .text('INSPECTION SUMMARY', 60, y);
-        
-        doc.moveTo(60, y + 18)
-           .lineTo(300, y + 18)
-           .strokeColor(primaryColor)
-           .lineWidth(1)
-           .stroke();
-        
-        y += 35;
+        // Dynamic text sections
+        const textOptions = { width: doc.page.width - 140, align: 'left' };
 
+        // Findings
+        currentY = addSection(doc, 'INSPECTION SUMMARY', currentY, primaryColor);
         const findingsText = report.reportData.findings || 'Inspection completed with detailed room measurements';
-        
-        doc.rect(60, y, doc.page.width - 120, 45)
-           .fillAndStroke(lightGray, primaryColor)
-           .lineWidth(1);
-        
-        doc.fillColor('#333333')
-           .fontSize(10)
-           .font('Helvetica')
-           .text(findingsText, 70, y + 10, {
-             width: doc.page.width - 140,
-             align: 'left'
-           });
-        
-        y += 60;
+        currentY = addTextBox(doc, findingsText, currentY, lightGray, primaryColor, textOptions, 11);
 
-        // Recommendations - DYNAMIC BOX SIZE
-        doc.fillColor(primaryColor)
-           .fontSize(14)
-           .font('Helvetica-Bold')
-           .text('RECOMMENDATIONS', 60, y);
-        
-        doc.moveTo(60, y + 18)
-           .lineTo(300, y + 18)
-           .strokeColor(primaryColor)
-           .lineWidth(1)
-           .stroke();
-        
-        y += 35;
-
+        // Recommendations  
+        currentY = addSection(doc, 'RECOMMENDATIONS', currentY, primaryColor);
         const recommendationsText = report.reportData.recommendations || 'No specific recommendations - property ready for project planning';
-        
-        // Calculate dynamic height for recommendations
-        const recTextWidth = doc.page.width - 140;
-        doc.fontSize(10).font('Helvetica');
-        const recTextHeight = doc.heightOfString(recommendationsText, {
-          width: recTextWidth,
-          fontSize: 10
-        });
-        const recDynamicHeight = Math.max(recTextHeight + 20, 45);
-        
-        // Check if recommendations box fits on current page
-        if (y + recDynamicHeight > doc.page.height - 150) {
-          doc.addPage();
-          y = 50;
-          
-          // Re-add the section header on new page
-          doc.fillColor(primaryColor)
-             .fontSize(14)
-             .font('Helvetica-Bold')
-             .text('RECOMMENDATIONS', 60, y);
-          
-          doc.moveTo(60, y + 18)
-             .lineTo(300, y + 18)
-             .strokeColor(primaryColor)
-             .lineWidth(1)
-             .stroke();
-          
-          y += 35;
-        }
-        
-        doc.rect(60, y, doc.page.width - 120, recDynamicHeight)
-           .fillAndStroke(lightGray, primaryColor)
-           .lineWidth(1);
-        
-        doc.fillColor('#333333')
-           .fontSize(10)
-           .font('Helvetica')
-           .text(recommendationsText, 70, y + 10, {
-             width: recTextWidth,
-             align: 'left',
-             lineGap: 2
-           });
-        
-        y += recDynamicHeight + 20;
+        currentY = addTextBox(doc, recommendationsText, currentY, lightGray, primaryColor, textOptions, 11);
 
-        // Detailed Notes (if available) - PROPERLY DYNAMIC BOX
+        // Detailed Notes
         if (report.reportData.inspectorNotes) {
-          // Check if we need a new page for the notes section
-          if (y > doc.page.height - 200) {
-            doc.addPage();
-            y = 50; // Reset y position for new page
-          }
-
-          doc.fillColor(primaryColor)
-             .fontSize(14)
-             .font('Helvetica-Bold')
-             .text('DETAILED INSPECTION NOTES', 60, y);
-          
-          doc.moveTo(60, y + 18)
-             .lineTo(350, y + 18)
-             .strokeColor(primaryColor)
-             .lineWidth(1)
-             .stroke();
-          
-          y += 35;
-
-          // Calculate dynamic height based on text content with proper wrapping
-          const notesText = report.reportData.inspectorNotes;
-          const textWidth = doc.page.width - 140; // Box inner width
-          const fontSize = 10;
-          
-          // Set the font for accurate measurement
-          doc.fontSize(fontSize).font('Helvetica');
-          
-          // Calculate the actual height needed for the text with wrapping
-          const textHeight = doc.heightOfString(notesText, {
-            width: textWidth,
-            fontSize: fontSize
-          });
-          
-          // Add padding and ensure minimum height
-          const dynamicHeight = Math.max(textHeight + 30, 60);
-
-          // Check if the box will fit on current page
-          if (y + dynamicHeight > doc.page.height - 100) {
-            doc.addPage();
-            y = 50;
-            
-            // Re-add the section header on new page
-            doc.fillColor(primaryColor)
-               .fontSize(14)
-               .font('Helvetica-Bold')
-               .text('DETAILED INSPECTION NOTES', 60, y);
-            
-            doc.moveTo(60, y + 18)
-               .lineTo(350, y + 18)
-               .strokeColor(primaryColor)
-               .lineWidth(1)
-               .stroke();
-            
-            y += 35;
-          }
-
-          // Draw the dynamic box
-          doc.rect(60, y, doc.page.width - 120, dynamicHeight)
-             .fillAndStroke('#FFFFFF', primaryColor)
-             .lineWidth(1);
-          
-          // Add the text inside the box with proper formatting
-          doc.fillColor('#333333')
-             .fontSize(fontSize)
-             .font('Helvetica')
-             .text(notesText, 70, y + 15, {
-               width: textWidth,
-               align: 'left',
-               lineGap: 2
-             });
-          
-          y += dynamicHeight + 20;
+          currentY = addSection(doc, 'DETAILED INSPECTION NOTES', currentY, primaryColor);
+          currentY = addTextBox(doc, report.reportData.inspectorNotes, currentY, '#FFFFFF', primaryColor, textOptions, 10);
         }
       }
 
-      // Professional Footer - Always at bottom of document
-      const footerY = doc.page.height - 80;
-      doc.rect(0, footerY, doc.page.width, 80).fill(primaryColor);
+      // Add footer on the final page only
+      const footerY = doc.page.height - 70;
       
+      // Add footer background
+      doc.rect(0, footerY, doc.page.width, 70).fill(primaryColor);
+      
+      // Add footer text
       doc.fillColor('white')
-         .fontSize(10)
+         .fontSize(9)
          .font('Helvetica')
-         .text('This report is confidential and prepared exclusively for the named client.', 60, footerY + 15);
+         .text('This report is confidential and prepared exclusively for the named client.', 60, footerY + 10);
       
       doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { 
         year: 'numeric', 
@@ -739,10 +562,11 @@ const generatePDFFile = async (report, form) => {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-      })}`, 60, footerY + 30);
+      })}`, 60, footerY + 25);
       
-      doc.text('DesynFlow Property Services | Professional Inspection Solutions', 60, footerY + 45);
+      doc.text('DesynFlow Property Services | Professional Inspection Solutions', 60, footerY + 40);
 
+      // Finalize PDF
       doc.end();
 
       stream.on('finish', () => {
@@ -757,4 +581,52 @@ const generatePDFFile = async (report, form) => {
       reject(error);
     }
   });
+
+  // Helper function to add section headers
+  function addSection(doc, title, yPos, color) {
+    doc.fillColor(color)
+       .fontSize(14)
+       .font('Helvetica-Bold')
+       .text(title, 60, yPos);
+    
+    doc.moveTo(60, yPos + 18)
+       .lineTo(300, yPos + 18)
+       .strokeColor(color)
+       .lineWidth(1)
+       .stroke();
+    
+    return yPos + 35;
+  }
+
+  // Helper function to add information rows
+  function addInfoRow(doc, label, value, yPos) {
+    doc.fillColor('#333333')
+       .fontSize(11)
+       .font('Helvetica-Bold')
+       .text(label, 60, yPos);
+    
+    doc.font('Helvetica')
+       .text(value, 200, yPos, {
+         width: doc.page.width - 260,
+         align: 'left'
+       });
+    
+    return yPos + 18; // Reduced from 20 to 18
+  }
+
+  // Helper function to add text boxes
+  function addTextBox(doc, text, yPos, fillColor, borderColor, textOptions, fontSize) {
+    doc.fontSize(fontSize).font('Helvetica');
+    const textHeight = doc.heightOfString(text, textOptions);
+    const boxHeight = Math.max(textHeight + 20, 40);
+    
+    doc.rect(60, yPos, doc.page.width - 120, boxHeight)
+       .fillAndStroke(fillColor, borderColor)
+       .lineWidth(1);
+    
+    doc.fillColor('#333333')
+       .text(text, 70, yPos + 10, textOptions);
+    
+    return yPos + boxHeight + 15; // Reduced from 20 to 15
+  }
 };
