@@ -34,7 +34,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                 <ClipboardCheck size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Inspection Request ID</span>
-                  <p className="font-medium font-mono text-xs">{inspection.inspectionRequestId || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{inspection.inspectionRequestId || req.inspectionRequestId || 'N/A'}</p>
                 </div>
               </div>
 
@@ -42,7 +42,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                 <User size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Client ID</span>
-                  <p className="font-medium font-mono text-xs">{req.clientId || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{req.client_ID || req.clientId || 'N/A'}</p>
                 </div>
               </div>
 
@@ -52,7 +52,8 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                   <span className="text-sm text-[#AAB396]">Created Date</span>
                   <p className="font-medium">
                     {inspection.createdAt ? new Date(inspection.createdAt).toLocaleDateString() : 
-                     (inspection.createdDate || inspection.date || 'N/A')}
+                     (req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 
+                     (inspection.createdDate || inspection.date || 'N/A'))}
                   </p>
                 </div>
               </div>
@@ -64,7 +65,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                 <div>
                   <span className="text-sm text-[#AAB396]">Estimated Cost</span>
                   <p className="font-medium text-lg">
-                    LKR {inspection.estimatedCost ? inspection.estimatedCost.toLocaleString() : 'N/A'}
+                    {typeof inspection.estimatedCost === 'number' ? `LKR ${inspection.estimatedCost.toLocaleString()}` : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -105,7 +106,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
               <div className="space-y-3">
                 <div>
                   <span className="text-sm text-[#AAB396]">Client Name</span>
-                  <p className="font-medium">{req.clientName || 'N/A'}</p>
+                  <p className="font-medium">{req.client_name || req.clientName || 'N/A'}</p>
                 </div>
                 
                 <div className="flex items-center">
@@ -122,7 +123,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                   <Phone size={16} className="mr-2 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Phone</span>
-                    <p className="font-medium">{req.phone || 'N/A'}</p>
+                    <p className="font-medium">{req.phone_number || req.phone || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -141,7 +142,9 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                   <MapPin size={16} className="mr-2 mt-1 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Site Location</span>
-                    <p className="font-medium">{req.siteLocation || 'N/A'}</p>
+                    <p className="font-medium">
+                      {[req.propertyLocation_address, req.propertyLocation_city].filter(Boolean).join(', ') || req.siteLocation || 'N/A'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -189,11 +192,11 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
           )}
 
           {/* Additional Details */}
-          {(inspection.notes || inspection.description || req.description) && (
+          {(inspection.notes || inspection.description || req.description || req.notes) && (
             <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
               <h4 className="font-semibold text-[#674636] mb-2">Additional Notes</h4>
               <p className="text-[#674636] text-sm leading-relaxed">
-                {inspection.notes || inspection.description || req.description || 'No additional notes available.'}
+                {inspection.notes || inspection.description || req.description || req.notes || 'No additional notes available.'}
               </p>
             </div>
           )}

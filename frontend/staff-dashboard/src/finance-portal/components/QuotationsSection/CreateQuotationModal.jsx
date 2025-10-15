@@ -363,8 +363,8 @@ export const QuotationFormModal = ({
                     <input
                       id={`material-qty-${idx}`}
                       type="number"
-                      placeholder="Qty"
-                      value={item.quantity}
+                      placeholder="0"
+                      value={item.quantity || 0}
                       min={0}
                       aria-label="Material Quantity"
                       onChange={e => {
@@ -382,8 +382,8 @@ export const QuotationFormModal = ({
                     <input
                       id={`material-unitPrice-${idx}`}
                       type="number"
-                      placeholder="Unit Price"
-                      value={item.unitPrice}
+                      placeholder="0"
+                      value={item.unitPrice || 0}
                       min={0}
                       aria-label="Material Unit Price"
                       readOnly
@@ -392,7 +392,9 @@ export const QuotationFormModal = ({
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[11px] text-[#AAB396]">Line Total</span>
-                    <span className="text-sm text-[#674636] px-2">{(item.quantity || 0) * (item.unitPrice || 0)}</span>
+                    <span className="text-sm text-[#674636] font-semibold px-2">
+                      {typeof item.total === 'number' ? item.total.toLocaleString() : '0'}
+                    </span>
                   </div>
                   <button type="button" onClick={() => removeItem('materialItems', idx)} className="p-1 hover:bg-red-100 rounded self-center">
                     <Trash size={16} className="text-red-500" />

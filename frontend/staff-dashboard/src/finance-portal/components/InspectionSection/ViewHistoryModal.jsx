@@ -68,13 +68,8 @@ export const ViewHistoryModal = ({ historyData }) => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Inspection Request ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Phone</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Site Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Property Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Distance (km)</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Estimated Cost</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Created Date</th>
@@ -86,17 +81,12 @@ export const ViewHistoryModal = ({ historyData }) => {
                 const req = item?.inspectionRequest || {};
                 return (
                   <tr key={index} className="hover:bg-[#F7EED3] transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">{String(item?.inspectionRequestId ?? '') || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">{String(req?.client_ID ?? '') || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.client_name || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.email || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.phone_number || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{[req?.propertyLocation_address, req?.propertyLocation_city].filter(Boolean).join(', ') || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{req?.propertyType || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item?.distanceKm ?? item?.distance ?? '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-semibold">{typeof item?.estimatedCost === 'number' ? `LKR ${item.estimatedCost.toLocaleString()}` : '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{item?.createdAt ? new Date(item.createdAt).toLocaleDateString() : (req?.createdAt ? new Date(req.createdAt).toLocaleDateString() : (item?.createdDate || item?.date || '-'))}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-mono text-[#674636] max-w-xs">{req?.client_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-mono text-[#674636] max-w-xs">{[req?.propertyLocation_address, req?.propertyLocation_city].filter(Boolean).join(', ') || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-mono text-[#674636] max-w-xs">{item?.distanceKm ?? item?.distance ?? '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-mono text-[#674636] font-semibold max-w-xs">{typeof item?.estimatedCost === 'number' ? `LKR ${item.estimatedCost.toLocaleString()}` : '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-mono text-[#674636] max-w-xs">{item?.createdAt ? new Date(item.createdAt).toLocaleDateString() : (req?.createdAt ? new Date(req.createdAt).toLocaleDateString() : (item?.createdDate || item?.date || '-'))}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-mono font-medium">
                       <button
                         onClick={() => setShowModal(true) || setSelectedInspection(item)}
                         className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md transition-colors flex items-center justify-center"
@@ -110,7 +100,7 @@ export const ViewHistoryModal = ({ historyData }) => {
               })}
               {pageSlice.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-6 py-8 text-center text-[#AAB396]">
+                  <td colSpan={6} className="px-6 py-8 text-center text-[#AAB396]">
                     No inspection estimation history available
                   </td>
                 </tr>

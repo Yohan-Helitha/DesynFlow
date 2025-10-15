@@ -189,13 +189,13 @@ export const PendingInspections = () => {
                 {paginatedInspections.map((inspection) => (
                   <tr key={inspection.id || inspection._id} className="hover:bg-[#F7EED3] transition-colors">
                     {/* Inspection ID and Client ID columns removed */}
-                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{inspection.clientName || inspection.client_name || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{inspection.email || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{inspection.phone_number || inspection.phone || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{([inspection.propertyLocation_address, inspection.propertyLocation_city].filter(Boolean).join(', ') || '-')}</td>
-                    <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{inspection.propertyType || inspection.property_type || '-'}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{inspection.clientName || inspection.client_name || '-'}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{inspection.email || '-'}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{inspection.phone_number || inspection.phone || '-'}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{([inspection.propertyLocation_address, inspection.propertyLocation_city].filter(Boolean).join(', ') || '-')}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{inspection.propertyType || inspection.property_type || '-'}</td>
                     {/* Status column removed */}
-                    <td className="px-6 py-4 text-right text-sm font-medium">
+                    <td className="px-6 py-4 text-right text-xs font-mono font-medium">
                       <button
                         onClick={() => handleGenerate(inspection)}
                         className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md transition-colors"

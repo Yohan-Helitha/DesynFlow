@@ -154,13 +154,13 @@ export const InspectionPayments = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
                 <tr key={payment._id || payment.inspectionRequestId} className="hover:bg-[#F7EED3] transition-colors">
-                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.clientName || payment.client_name || (payment.client && payment.client.name) || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.email || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.phone_number || payment.phone || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{[payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(', ') || payment.siteLocation || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] whitespace-pre-line break-words">{payment.propertyType || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] font-semibold whitespace-pre-line break-words">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `LKR ${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer whitespace-pre-line break-words">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.clientName || payment.client_name || (payment.client && payment.client.name) || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.email || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.phone_number || payment.phone || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{[payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(', ') || payment.siteLocation || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.propertyType || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] font-semibold whitespace-pre-line break-words max-w-xs">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `LKR ${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] underline cursor-pointer whitespace-pre-line break-words max-w-xs">
                     {payment.paymentReceiptUrl || payment.receiptUrl ? (
                       <a href={buildReceiptUrl(payment)} target="_blank" rel="noopener noreferrer" className="hover:text-[#AAB396]">
                         View Receipt
@@ -169,7 +169,7 @@ export const InspectionPayments = () => {
                       <span className="text-[#AAB396] no-underline">No Receipt</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-right text-xs font-mono font-medium">
                     <button
                       onClick={() => handleAction(payment)}
                       className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md transition-colors"
