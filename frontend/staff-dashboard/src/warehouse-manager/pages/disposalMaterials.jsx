@@ -136,7 +136,7 @@ const DisposalMaterials = () => {
           <h1 className="text-2xl font-bold mt-6 mb-10">Disposal Materials</h1>
           <button
             className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
-            onClick={() => navigate("/add-disposal-material")}
+            onClick={() => navigate("/warehouse-manager/disposal-materials/add")}
           >
             + Add Disposal
           </button>
