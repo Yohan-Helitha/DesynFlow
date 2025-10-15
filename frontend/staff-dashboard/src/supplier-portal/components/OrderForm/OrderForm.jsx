@@ -28,15 +28,37 @@ function OrderForm({ onOrderCreated }) {
       .catch(() => setSuppliers([]));
   }, []);
 
-  // Handle preselected supplier from navigation state
+  // Handle preselected supplier from navigation state or sessionStorage
   useEffect(() => {
+    let supplierData = null;
+    
+    // First try navigation state
     if (location.state?.preselectedSupplier) {
-      const preselectedSupplier = location.state.preselectedSupplier;
+      supplierData = {
+        preselectedSupplier: location.state.preselectedSupplier,
+        supplierLocked: location.state.supplierLocked || false
+      };
+    } else {
+      // Fallback to sessionStorage
+      try {
+        const stored = sessionStorage.getItem('preselectedSupplier');
+        if (stored) {
+          supplierData = JSON.parse(stored);
+          // Clear sessionStorage after use
+          sessionStorage.removeItem('preselectedSupplier');
+        }
+      } catch (error) {
+        console.error('Error reading sessionStorage:', error);
+      }
+    }
+    
+    if (supplierData?.preselectedSupplier) {
+      console.log('Setting preselected supplier:', supplierData.preselectedSupplier);
       setFormData(prev => ({
         ...prev,
-        supplierId: preselectedSupplier._id
+        supplierId: supplierData.preselectedSupplier._id
       }));
-      setSupplierLocked(location.state.supplierLocked || false);
+      setSupplierLocked(supplierData.supplierLocked || false);
     }
   }, [location.state]);
 

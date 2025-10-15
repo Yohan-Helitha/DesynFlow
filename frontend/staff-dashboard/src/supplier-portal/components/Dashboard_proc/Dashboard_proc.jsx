@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard_proc.css";
 import { Link, useNavigate } from "react-router-dom";
 import NotificationsProc from "../Notifications_proc/Notifications_proc";
-import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser, FaTruck, FaExchangeAlt } from 'react-icons/fa';
+import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser, FaTruck, FaExchangeAlt, FaShoppingCart } from 'react-icons/fa';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -459,6 +459,20 @@ function Dashboard_proc() {
                         <div className="completed-orders">({supplier.completedOrders} completed)</div>
                       )}
                     </div>
+                    <Link 
+                      to="/procurement-officer/order_form"
+                      className="info-btn"
+                      onClick={() => {
+                        // Store supplier data for the OrderForm to pick up
+                        sessionStorage.setItem('preselectedSupplier', JSON.stringify({
+                          preselectedSupplier: supplier,
+                          supplierLocked: true
+                        }));
+                      }}
+                      title={`Place order with ${supplier.name || supplier.companyName}`}
+                    >
+                      <FaShoppingCart /> Order
+                    </Link>
                   </div>
                 ))
               )}
@@ -539,7 +553,6 @@ function Dashboard_proc() {
             </div>
           </div>
         </div>
-
 
       </main>
 
