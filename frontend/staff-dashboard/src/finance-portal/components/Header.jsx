@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Search, Bell, ChevronDown } from 'lucide-react';
-// import { NotificationsPanel } from './NotificationsPanel';
+import { Search, ChevronDown } from 'lucide-react';
+import { NotificationDropdown } from './NotificationDropdown';
 
 export const Header = ({ title }) => {
-  const [showNotifications, setShowNotifications] = useState(false);
-
   return (
     <div className="flex justify-between items-center py-6">
       <h1 className="text-2xl font-semibold">{title}</h1>
@@ -24,20 +22,7 @@ export const Header = ({ title }) => {
         </div>
 
         {/* Notifications */}
-        <div className="relative">
-          <button
-            className="relative p-2 rounded-full hover:bg-gray-100"
-            onClick={() => setShowNotifications(!showNotifications)}
-          >
-            <Bell size={20} className="text-gray-600" />
-            <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center text-xs text-white">
-              5
-            </span>
-          </button>
-          {/* {showNotifications && (
-            <NotificationsPanel onClose={() => setShowNotifications(false)} />
-          )} */}
-        </div>
+        <NotificationDropdown />
 
         {/* User */}
         <div className="flex items-center ml-4">
