@@ -29,14 +29,21 @@ function Orders() {
         status: 'Received'
       });
       
-      // Update local state
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
+      // Update local state and maintain sorting order
+      setOrders(prevOrders => {
+        const updatedOrders = prevOrders.map(order => 
           order._id === orderId 
             ? { ...order, status: 'Received' }
             : order
-        )
-      );
+        );
+        
+        // Re-sort to maintain newest-first order
+        return updatedOrders.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
+      });
     } catch (error) {
       console.error('Error marking order as received:', error);
   console.error('Failed to mark order as received. Please try again.');
@@ -62,7 +69,15 @@ function Orders() {
           console.log("First order items:", data[0].items);
           console.log("Sample item:", data[0].items?.[0]);
         }
-        setOrders(data);
+        
+        // Sort orders by creation date - newest first
+        const sortedOrders = data.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
+        
+        setOrders(sortedOrders);
       } catch (err) {
         console.error("Error fetching orders:", err);
         setError(err.message);
@@ -99,7 +114,15 @@ function Orders() {
           
           const data = await res.json();
           console.log("Orders fetched successfully:", data);
-          setOrders(data);
+          
+          // Sort orders by creation date - newest first
+          const sortedOrders = data.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+            return dateB - dateA; // Newest first
+          });
+          
+          setOrders(sortedOrders);
         } catch (err) {
           console.error("Error fetching orders:", err);
           setError(err.message);
@@ -111,7 +134,7 @@ function Orders() {
     }
   }, [location.state?.newOrderCreated]);
 
-  // Filtered orders by supplier or material
+  // Filtered and sorted orders by supplier or material - newest first
   const filteredOrders = orders.filter(order => {
     const supplierName = (order.supplierId?.companyName || order.supplierId || "").toString().toLowerCase();
     const materialList = (order.items || [])
@@ -119,6 +142,11 @@ function Orders() {
       .join(" ");
     const term = (searchTerm || "").toLowerCase();
     return supplierName.includes(term) || materialList.includes(term);
+  }).sort((a, b) => {
+    // Ensure filtered results maintain newest-first order
+    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+    return dateB - dateA; // Newest first
   });
 
   // Show loading state

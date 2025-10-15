@@ -124,6 +124,14 @@ function OrderForm({ onOrderCreated }) {
     });
   };
 
+  // remove material row
+  const removeItem = (index) => {
+    if (formData.items.length > 1) {
+      const newItems = formData.items.filter((_, i) => i !== index);
+      setFormData({ ...formData, items: newItems });
+    }
+  };
+
   // submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -224,57 +232,93 @@ function OrderForm({ onOrderCreated }) {
         {formData.items.map((item, index) => {
           return (
             <div key={index} className="order-item">
-              <select
-                name="materialId"
-                value={item.materialId || ""}
-                onChange={(e) => handleItemChange(index, e)}
-                required
-              >
-                <option value="">Select Material</option>
-                {materials.map((mat, idx) => (
-                  <option key={idx} value={mat._id || mat.name}>
-                    {mat.name} - LKR {(mat.pricePerUnit || 0).toFixed(2)}/unit
-                  </option>
-                ))}
-              </select>
-              {/* Selected material name and price are already visible in the dropdown label. */}
-              <input
-                type="number"
-                name="quantity"
-                placeholder="Quantity"
-                value={item.quantity === undefined || item.quantity === null ? "" : item.quantity}
-                onChange={(e) => handleItemChange(index, e)}
-                required
-              />
-              <select
-                name="unit"
-                value={item.unit || ""}
-                onChange={(e) => handleItemChange(index, e)}
-                required
-                title="Select unit type"
-              >
-                <option value="">Select Unit</option>
-                <option value="Kilo">Kilo</option>
-                <option value="Meters">Meters</option>
-                <option value="Liters">Liters</option>
-                <option value="pieces">pieces</option>
-              </select>
-              <input
-                type="number"
-                name="pricePerUnit"
-                placeholder="Price per Unit (LKR)"
-                value={isNaN(item.pricePerUnit) ? "" : item.pricePerUnit}
-                readOnly
-                className="readonly-input"
-              />
-              <input
-                type="number"
-                name="total"
-                placeholder="Total (LKR)"
-                value={isNaN(item.total) ? "" : item.total}
-                readOnly
-                className="readonly-input"
-              />
+              <div className="form-field">
+                <label htmlFor={`material-${index}`}>Material</label>
+                <select
+                  id={`material-${index}`}
+                  name="materialId"
+                  value={item.materialId || ""}
+                  onChange={(e) => handleItemChange(index, e)}
+                  required
+                >
+                  <option value="">Select Material</option>
+                  {materials.map((mat, idx) => (
+                    <option key={idx} value={mat._id || mat.name}>
+                      {mat.name} - LKR {(mat.pricePerUnit || 0).toFixed(2)}/unit
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor={`quantity-${index}`}>Quantity</label>
+                <input
+                  id={`quantity-${index}`}
+                  type="number"
+                  name="quantity"
+                  placeholder="Enter quantity"
+                  value={item.quantity === undefined || item.quantity === null ? "" : item.quantity}
+                  onChange={(e) => handleItemChange(index, e)}
+                  required
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor={`unit-${index}`}>Unit Type</label>
+                <select
+                  id={`unit-${index}`}
+                  name="unit"
+                  value={item.unit || ""}
+                  onChange={(e) => handleItemChange(index, e)}
+                  required
+                  title="Select unit type"
+                >
+                  <option value="">Select Unit</option>
+                  <option value="Kilo">Kilo</option>
+                  <option value="Meters">Meters</option>
+                  <option value="Liters">Liters</option>
+                  <option value="pieces">Pieces</option>
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor={`pricePerUnit-${index}`}>Price per Unit</label>
+                <input
+                  id={`pricePerUnit-${index}`}
+                  type="number"
+                  name="pricePerUnit"
+                  placeholder="LKR 0.00"
+                  value={isNaN(item.pricePerUnit) ? "" : item.pricePerUnit}
+                  readOnly
+                  className="readonly-input"
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor={`total-${index}`}>Total Amount</label>
+                <input
+                  id={`total-${index}`}
+                  type="number"
+                  name="total"
+                  placeholder="LKR 0.00"
+                  value={isNaN(item.total) ? "" : item.total}
+                  readOnly
+                  className="readonly-input"
+                />
+              </div>
+
+              {formData.items.length > 1 && (
+                <div className="form-field">
+                  <button 
+                    type="button" 
+                    onClick={() => removeItem(index)} 
+                    className="btn-remove"
+                    title="Remove this item"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}

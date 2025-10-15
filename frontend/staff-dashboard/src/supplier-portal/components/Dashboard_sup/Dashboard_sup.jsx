@@ -196,7 +196,15 @@ function Dashboard_sup() {
     try {
       const response = await axios.get("http://localhost:4000/api/purchase-orders");
       const allOrders = response.data;
-      const pending = allOrders.filter(order => order.status === "Draft");
+      
+      // Sort all orders by creation date - newest first
+      const sortedOrders = allOrders.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+        return dateB - dateA; // Newest first
+      });
+      
+      const pending = sortedOrders.filter(order => order.status === "Draft");
       setPendingOrders(pending);
     } catch (error) {
       console.error("Error fetching pending orders:", error);
@@ -301,7 +309,14 @@ function Dashboard_sup() {
 
         // Fetch all orders from all suppliers
         const ordersResponse = await fetch("http://localhost:4000/api/purchase-orders");
-        const allOrders = await ordersResponse.json();
+        const ordersData = await ordersResponse.json();
+        
+        // Sort orders by creation date - newest first
+        const allOrders = ordersData.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
 
         // Fetch all materials from all suppliers
         const materialsResponse = await fetch("http://localhost:4000/api/materials");

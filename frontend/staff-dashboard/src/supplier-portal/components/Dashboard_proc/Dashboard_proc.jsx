@@ -192,7 +192,14 @@ function Dashboard_proc() {
 
         // Fetch orders data
         const ordersResponse = await fetch("http://localhost:4000/api/dashboard/orders");
-        const orders = await ordersResponse.json();
+        const ordersData = await ordersResponse.json();
+        
+        // Sort orders by creation date - newest first
+        const orders = ordersData.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
 
         // Fetch top rated suppliers
         console.log('Fetching top suppliers...');
