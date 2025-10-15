@@ -10,6 +10,12 @@ const inspectorLocationSchema = new mongoose.Schema({
   
   inspector_latitude: { type: Number, required: true },
   inspector_longitude: { type: Number, required: true },
+  current_address: { type: String }, // Human readable address
+  region: { 
+    type: String,
+    enum: ['Colombo', 'Kandy', 'Galle', 'Negombo', 'Matara', 'Jaffna', 'Anuradhapura'],
+    required: true
+  },
   updateAt: { type: Date, default: Date.now },
   status: {
     type: String,
@@ -29,5 +35,7 @@ inspectorLocationSchema.index({
   inspector_latitude: 1, 
   inspector_longitude: 1 
 });
+inspectorLocationSchema.index({ region: 1 }); // For regional queries
+inspectorLocationSchema.index({ status: 1, region: 1 }); // For finding available inspectors by region
 
 export default mongoose.model('InspectorLocation', inspectorLocationSchema);

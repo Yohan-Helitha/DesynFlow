@@ -5,6 +5,113 @@ const LocationManagement = ({ inspector, setMessage }) => {
   const [location, setLocation] = useState(null);
   const [status, setStatus] = useState('available');
   const [updating, setUpdating] = useState(false);
+  const [fetchingAddress, setFetchingAddress] = useState(false);
+  const [currentAssignment, setCurrentAssignment] = useState(null);
+  const [loadingAssignment, setLoadingAssignment] = useState(false);
+
+  // Reverse geocoding: Convert coordinates to readable address
+  const getAddressFromCoordinates = async (lat, lng) => {
+    if (!lat || !lng) return 'Address not available';
+    
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`
+      );
+      const data = await response.json();
+      
+      if (data && data.display_name) {
+        // Extract key parts for a cleaner address
+        const address = data.address || {};
+        const parts = [];
+        
+        if (address.house_number) parts.push(address.house_number);
+        if (address.road) parts.push(address.road);
+        if (address.suburb || address.neighbourhood) parts.push(address.suburb || address.neighbourhood);
+        if (address.city || address.town) parts.push(address.city || address.town);
+        
+        return parts.length > 0 ? parts.join(', ') : data.display_name;
+      } else {
+        return 'Address not found';
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return 'Address lookup failed';
+    }
+  };
+
+  // Manually fetch address for existing coordinates
+  const fetchAddressForLocation = async () => {
+    if (!location || !location.inspector_latitude || !location.inspector_longitude) {
+      setMessage('❌ No coordinates available to fetch address.');
+      return;
+    }
+
+    setFetchingAddress(true);
+    try {
+      const address = await getAddressFromCoordinates(
+        location.inspector_latitude, 
+        location.inspector_longitude
+      );
+      
+      // Update location state with address
+      setLocation(prev => ({
+        ...prev,
+        current_address: address
+      }));
+      
+      setMessage('✅ Address fetched successfully!');
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      setMessage('❌ Failed to fetch address. Please try again.');
+    } finally {
+      setFetchingAddress(false);
+    }
+  };
+
+  // Clear old location data and force fresh GPS update
+  const clearAndUpdateLocation = async () => {
+    setLocation(null); // Clear old data
+    setMessage('🔄 Clearing old location data...');
+    await updateLocation(); // Get fresh GPS coordinates
+  };
+
+  // Fetch current assignment (property location where inspector needs to go)
+  const fetchCurrentAssignment = async () => {
+    if (!inspector || (!inspector._id && !inspector.id)) {
+      return;
+    }
+
+    setLoadingAssignment(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.log('No auth token - skipping assignment fetch');
+        return;
+      }
+
+      // Fetch assignments for this inspector
+      const response = await axios.get(
+        `http://localhost:4000/api/assignment/inspector/${inspector._id || inspector.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data && response.data.length > 0) {
+        // Get the most recent assignment that's not completed
+        const activeAssignment = response.data.find(
+          assignment => assignment.status === 'assigned' || assignment.status === 'in-progress'
+        );
+        
+        if (activeAssignment && activeAssignment.InspectionRequest_ID) {
+          setCurrentAssignment(activeAssignment);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching assignment:', error);
+      // Don't show error message for assignment fetch failures
+    } finally {
+      setLoadingAssignment(false);
+    }
+  };
 
   // Get current location data
   const fetchLocation = async () => {
@@ -16,8 +123,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        console.log('No auth token available - using fallback mode');
-        // Don't show error message in fallback mode
+        setMessage('❌ Authentication required. Please login to view location data.');
         return;
       }
       
@@ -29,18 +135,31 @@ const LocationManagement = ({ inspector, setMessage }) => {
       if (response.data) {
         setLocation(response.data);
         setStatus(response.data.status);
+        
+        // If location exists but no address, fetch address from coordinates
+        if (response.data.inspector_latitude && response.data.inspector_longitude && !response.data.current_address) {
+          console.log('Location found but no address - fetching address from coordinates');
+          const address = await getAddressFromCoordinates(
+            response.data.inspector_latitude, 
+            response.data.inspector_longitude
+          );
+          
+          // Update the location state with the fetched address
+          setLocation(prev => ({
+            ...prev,
+            current_address: address
+          }));
+        }
       }
     } catch (error) {
       console.error('Error fetching location:', error);
       if (error.response?.status === 401) {
-        console.log('Authentication failed - using fallback mode');
-        // Don't show error message in development fallback mode
+        setMessage('❌ Authentication failed. Please login again.');
       } else if (error.response?.status === 404) {
         console.log('No location data found for inspector - this is normal for new inspectors');
-        // Don't show error message for 404 - it's normal for new inspectors
+        // This is normal for new inspectors
       } else {
-        console.error('Failed to fetch location:', error.message);
-        // Don't show error message for location fetch failures in development
+        setMessage('❌ Failed to fetch location data. Please try again.');
       }
     }
   };
@@ -48,6 +167,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
   useEffect(() => {
     if (inspector && (inspector._id || inspector.id)) {
       fetchLocation();
+      fetchCurrentAssignment(); // Also fetch current assignment
     } else {
       console.log('Inspector data not ready yet, skipping location fetch');
     }
@@ -71,10 +191,16 @@ const LocationManagement = ({ inspector, setMessage }) => {
         try {
           const token = localStorage.getItem('authToken');
           if (!token) {
-            setMessage('ℹ️ In demo mode - location update simulated.');
+            setMessage('❌ Authentication required. Please login to update location.');
             setUpdating(false);
             return;
           }
+          
+          // Get address from coordinates
+          const address = await getAddressFromCoordinates(
+            position.coords.latitude, 
+            position.coords.longitude
+          );
           
           await axios.post(
             'http://localhost:4000/api/inspector-location/update',
@@ -82,12 +208,13 @@ const LocationManagement = ({ inspector, setMessage }) => {
               inspectorId: inspector._id || inspector.id,
               lat: position.coords.latitude,
               lng: position.coords.longitude,
+              address: address,
               status: status
             },
             { headers: { Authorization: `Bearer ${token}` } }
           );
           
-          setMessage('✅ Location updated successfully!');
+          setMessage('✅ Location and address updated successfully!');
           fetchLocation();
         } catch (error) {
           console.error('Error updating location:', error);
@@ -118,8 +245,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        setStatus(newStatus);
-        setMessage(`ℹ️ Demo mode - status changed to ${newStatus}`);
+        setMessage('❌ Authentication required. Please login to update status.');
         return;
       }
 
@@ -133,6 +259,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
             inspectorId: inspector._id || inspector.id,
             lat: location.inspector_latitude,
             lng: location.inspector_longitude,
+            address: location.current_address, // Include current address
             status: newStatus
           },
           { headers: { Authorization: `Bearer ${token}` } }
@@ -174,34 +301,153 @@ const LocationManagement = ({ inspector, setMessage }) => {
         <p className="text-brown-secondary">Update your location and availability status</p>
       </div>
 
-      {/* Current Location */}
+      {/* My Current GPS Location */}
       <div className="bg-cream-light rounded-lg p-6 border border-brown-primary-300">
-        <h3 className="text-lg font-semibold text-brown-primary mb-4">Current Location</h3>
+        <h3 className="text-lg font-semibold text-brown-primary mb-4">📍 My Current GPS Location</h3>
         
         {location ? (
-          <div className="mb-4">
-            <p className="text-brown-secondary">
-              📍 Latitude: <span className="font-mono">{location.inspector_latitude}</span>
-            </p>
-            <p className="text-brown-secondary">
-              📍 Longitude: <span className="font-mono">{location.inspector_longitude}</span>
-            </p>
+          <div className="mb-4 space-y-3">
+            {/* Address Display */}
+            {location.current_address ? (
+              <div className="bg-cream-primary rounded-lg p-3 border border-green-primary">
+                <p className="text-brown-primary font-medium">
+                  📮 <span className="font-semibold">Address:</span> {location.current_address}
+                </p>
+              </div>
+            ) : (
+              /* Old/Seed Location Data - Encourage GPS Update */
+              <div className="bg-orange-50 rounded-lg p-3 border border-orange-300">
+                <p className="text-orange-800 text-sm font-medium mb-1">
+                  ⚠️ Location data may be outdated
+                </p>
+                <p className="text-orange-600 text-xs mb-2">
+                  Please click "Update My Location" below to get your current GPS coordinates and address
+                </p>
+              </div>
+            )}
+            
+            {/* Coordinates Display */}
+            <div className="text-sm text-brown-secondary space-y-1">
+              <p>
+                🎯 <span className="font-medium">Coordinates:</span> 
+                <span className="font-mono ml-1">
+                  ({location.inspector_latitude}, {location.inspector_longitude})
+                </span>
+              </p>
+              {location.updateAt && (
+                <p>
+                  ⏰ <span className="font-medium">Last Updated:</span> 
+                  <span className="ml-1">
+                    {new Date(location.updateAt).toLocaleString()}
+                  </span>
+                </p>
+              )}
+            </div>
           </div>
         ) : (
-          <p className="text-brown-secondary mb-4">No location data available</p>
+          /* No Location Data */
+          <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-blue-800 font-medium mb-2">📍 No location data available</p>
+            <p className="text-blue-600 text-sm">
+              Click "Update My Location" below to share your current GPS coordinates
+            </p>
+          </div>
         )}
 
         <button
           onClick={updateLocation}
           disabled={updating}
-          className={`w-full py-3 px-4 rounded-lg font-semibold ${
+          className={`w-full py-3 px-4 rounded-lg font-semibold mb-2 ${
             updating
               ? 'bg-brown-primary-300 text-cream-primary cursor-not-allowed'
               : 'bg-green-primary text-cream-primary hover:bg-soft-green'
           }`}
         >
-          {updating ? 'Updating Location...' : '📍 Update My Location'}
+          {updating ? 'Getting GPS Location...' : '📍 Update My Location (GPS)'}
         </button>
+        
+        {/* Clear & Fresh Update Button (if old data exists) */}
+        {location && !location.current_address && (
+          <button
+            onClick={clearAndUpdateLocation}
+            disabled={updating}
+            className={`w-full py-2 px-4 rounded-lg text-sm ${
+              updating
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
+          >
+            🔄 Clear Old Data & Get Fresh GPS Location
+          </button>
+        )}
+      </div>
+
+      {/* Current Work Assignment */}
+      <div className="bg-blue-50 rounded-lg p-6 border border-blue-300">
+        <h3 className="text-lg font-semibold text-blue-800 mb-4">🎯 Current Work Assignment</h3>
+        
+        {loadingAssignment ? (
+          <div className="text-center py-4">
+            <p className="text-blue-600">⏳ Loading assignment...</p>
+          </div>
+        ) : currentAssignment && currentAssignment.InspectionRequest_ID ? (
+          <div className="space-y-3">
+            {/* Property Information */}
+            <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <h4 className="font-semibold text-blue-800 mb-2">📋 Property Details</h4>
+              
+              {currentAssignment.InspectionRequest_ID.property_full_address ? (
+                <p className="text-blue-700 mb-2">
+                  📮 <span className="font-medium">Property Address:</span><br />
+                  <span className="ml-4">{currentAssignment.InspectionRequest_ID.property_full_address}</span>
+                </p>
+              ) : (
+                <p className="text-blue-700 mb-2">
+                  📮 <span className="font-medium">Property Address:</span><br />
+                  <span className="ml-4">{currentAssignment.InspectionRequest_ID.propertyLocation_address}, {currentAssignment.InspectionRequest_ID.propertyLocation_city}</span>
+                </p>
+              )}
+              
+              <p className="text-blue-600 text-sm">
+                🏢 <span className="font-medium">Type:</span> {currentAssignment.InspectionRequest_ID.propertyType}
+              </p>
+              <p className="text-blue-600 text-sm">
+                👤 <span className="font-medium">Client:</span> {currentAssignment.InspectionRequest_ID.client_name}
+              </p>
+              
+              {currentAssignment.InspectionRequest_ID.property_latitude && currentAssignment.InspectionRequest_ID.property_longitude && (
+                <p className="text-blue-600 text-xs font-mono mt-2">
+                  🎯 Coordinates: ({currentAssignment.InspectionRequest_ID.property_latitude}, {currentAssignment.InspectionRequest_ID.property_longitude})
+                </p>
+              )}
+            </div>
+            
+            {/* Assignment Status */}
+            <div className="bg-blue-100 rounded-lg p-3 border border-blue-200">
+              <p className="text-blue-800 text-sm">
+                📌 <span className="font-medium">Assignment Status:</span> 
+                <span className={`ml-2 px-2 py-1 rounded text-xs font-semibold ${
+                  currentAssignment.status === 'assigned' 
+                    ? 'bg-yellow-200 text-yellow-800'
+                    : 'bg-green-200 text-green-800'
+                }`}>
+                  {currentAssignment.status.charAt(0).toUpperCase() + currentAssignment.status.slice(1)}
+                </span>
+              </p>
+              <p className="text-blue-600 text-xs mt-1">
+                ⏰ Assigned: {new Date(currentAssignment.assignAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* No Assignment */
+          <div className="text-center py-4">
+            <p className="text-blue-700 font-medium mb-2">✅ No active assignments</p>
+            <p className="text-blue-600 text-sm">
+              You're available for new inspection assignments
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Availability Status */}

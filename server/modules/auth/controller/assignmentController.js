@@ -10,11 +10,19 @@ export const assignInspector = async (req, res) => {
     if (!inspectionRequestId || !inspectorId) {
       return res.status(400).json({ message: 'Missing required fields.' });
     }
+    
     // Check if inspector is available
     const location = await InspectorLocation.findOne({ inspector_ID: inspectorId, status: 'available' });
     if (!location) {
       return res.status(400).json({ message: 'Inspector not available.' });
     }
+    
+    // Get property details from inspection request
+    const inspectionRequest = await InspectionRequest.findById(inspectionRequestId);
+    if (!inspectionRequest) {
+      return res.status(404).json({ message: 'Inspection request not found.' });
+    }
+    
     // Create assignment
     const assignment = new Assignment({
       InspectionRequest_ID: inspectionRequestId,
@@ -23,10 +31,43 @@ export const assignInspector = async (req, res) => {
       status: 'assigned'
     });
     await assignment.save();
-    // Update inspector status to busy
+    
+    // Update inspector status to busy AND update location to property location
     location.status = 'busy';
+    
+    // Simple logic: Move inspector location to assigned property location
+    if (inspectionRequest.property_latitude && inspectionRequest.property_longitude) {
+      location.inspector_latitude = inspectionRequest.property_latitude;
+      location.inspector_longitude = inspectionRequest.property_longitude;
+    }
+    
+    // Update address to property address
+    if (inspectionRequest.property_full_address) {
+      location.current_address = inspectionRequest.property_full_address;
+    } else {
+      location.current_address = `${inspectionRequest.propertyLocation_address}, ${inspectionRequest.propertyLocation_city}`;
+    }
+    
+    // Update region based on property city (simple region mapping)
+    if (inspectionRequest.propertyLocation_city) {
+      const cityToRegion = {
+        'Colombo': 'Colombo',
+        'Kandy': 'Kandy', 
+        'Galle': 'Galle',
+        'Negombo': 'Negombo',
+        'Matara': 'Matara',
+        'Jaffna': 'Jaffna',
+        'Anuradhapura': 'Anuradhapura'
+      };
+      
+      const newRegion = cityToRegion[inspectionRequest.propertyLocation_city] || 'Colombo';
+      location.region = newRegion;
+    }
+    
+    location.updateAt = new Date();
     await location.save();
-    res.status(201).json({ message: 'Inspector assigned.', assignment });
+    
+    res.status(201).json({ message: 'Inspector assigned and location updated to property.', assignment });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -105,7 +146,9 @@ export const updateAssignmentStatus = async (req, res) => {
       const location = await InspectorLocation.findOne({ inspector_ID: assignment.inspector_ID });
       if (location) {
         location.status = 'available';
+        location.updateAt = new Date(); // Update timestamp when becoming available
         await location.save();
+        // Note: Inspector location stays at completed property (their last work location)
       }
     }
     res.status(200).json({ message: 'Assignment status updated.', assignment });

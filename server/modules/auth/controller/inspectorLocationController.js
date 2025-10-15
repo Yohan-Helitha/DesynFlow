@@ -4,19 +4,32 @@ import User from '../model/user.model.js';
 // Update or create inspector's live location
 export const updateLocation = async (req, res) => {
   try {
-    const { inspectorId, lat, lng, status } = req.body;
+    const { inspectorId, lat, lng, status, address, region } = req.body;
     if (!inspectorId || lat === undefined || lng === undefined) {
       return res.status(400).json({ message: 'Missing required fields.' });
     }
+    
     // Upsert location
+    const updateData = {
+      inspector_latitude: lat,
+      inspector_longitude: lng,
+      updateAt: new Date(),
+      status: status || 'available'
+    };
+    
+    // Add address if provided
+    if (address) {
+      updateData.current_address = address;
+    }
+    
+    // Add region if provided
+    if (region) {
+      updateData.region = region;
+    }
+    
     const location = await InspectorLocation.findOneAndUpdate(
       { inspector_ID: inspectorId },
-      {
-        inspector_latitude: lat,
-        inspector_longitude: lng,
-        updateAt: new Date(),
-        status: status || 'available'
-      },
+      updateData,
       { new: true, upsert: true }
     );
     res.status(200).json({ message: 'Location updated.', location });
