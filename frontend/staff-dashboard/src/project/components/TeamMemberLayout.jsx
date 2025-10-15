@@ -1,0 +1,70 @@
+import React from "react";
+import { FaHome, FaTasks, FaBell } from "react-icons/fa";
+
+export default function TeamMemberLayout({ activeIndex, setActiveIndex, children }) {
+  const menuItems = [
+    { icon: FaHome, label: "Dashboard Overview", index: 0 },
+    { icon: FaTasks, label: "My Tasks", index: 1 },
+    { icon: FaBell, label: "Notifications", index: 2 }
+  ];
+
+  return (
+    <div className="flex h-screen bg-cream-light">
+      {/* Sidebar */}
+      <div className="w-64 bg-brown-primary text-cream-primary flex flex-col">
+        {/* Logo/Brand */}
+        <div className="p-6 border-b border-brown-secondary">
+          <h1 className="text-xl font-bold">Team Member</h1>
+          <p className="text-sm text-cream-secondary">DesynFlow Dashboard</p>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.index}>
+                  <button
+                    onClick={() => setActiveIndex(item.index)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      activeIndex === item.index
+                        ? "bg-brown-secondary text-cream-primary font-semibold"
+                        : "text-cream-secondary hover:bg-brown-secondary hover:text-cream-primary"
+                    }`}
+                  >
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* User Info at bottom */}
+        <div className="p-4 border-t border-brown-secondary">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-brown-secondary text-cream-primary rounded-full flex items-center justify-center font-semibold">
+              TM
+            </div>
+            <div>
+              <div className="font-semibold text-sm">Team Member</div>
+              <div className="text-xs text-cream-secondary">Active</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header will be rendered by individual components */}
+        
+        {/* Content */}
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

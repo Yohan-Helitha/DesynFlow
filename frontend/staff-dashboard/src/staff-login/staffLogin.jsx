@@ -62,6 +62,8 @@ const LoginPage = () => {
             navigate("/project-manager");
           } else if (userRole === "team leader") {
             navigate("/team-leader");
+          } else if (userRole === "team member") {
+            navigate("/team-member");
           } else if (userRole === "warehouse manager") {
             navigate("/warehouse-manager");
           } else if (userRole === "procurement officer") {
