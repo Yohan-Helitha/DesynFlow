@@ -1,4 +1,4 @@
-import WarrantyClaim from "../model/warrantyClaimsModel.js";
+import WarrantyClaim from "../../finance/model/warrenty_claim.js";
 import AuditLog from "../model/auditLogModel.js";
 
 // Get all warranty claims
