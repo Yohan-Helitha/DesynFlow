@@ -1,5 +1,6 @@
 import Task from '../model/task.model.js';
 import Team from '../model/team.model.js';
+import ProgressUpdate from '../model/progressupdate.model.js';
 import { updateProjectProgressService } from './project.service.js';
 
 // Create a new task
@@ -61,4 +62,104 @@ export const updateTaskService = async (taskId, updateData) => {
 // Delete a task
 export const deleteTaskService = async (taskId) => {
   return await Task.findByIdAndDelete(taskId);
+};
+
+// Block task with issue tracking and create progress update
+export const blockTaskWithIssueService = async (taskId, issueDescription, blockedBy) => {
+  try {
+    // Find the task first
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return { success: false, message: 'Task not found' };
+    }
+
+    // Create progress update with flagged issue
+    const progressUpdate = new ProgressUpdate({
+      projectId: task.projectId,
+      submittedBy: blockedBy,
+      summary: `Task blocked: ${task.name}`,
+      flaggedIssues: [{
+        description: issueDescription,
+        flaggedAt: new Date(),
+        resolved: false
+      }]
+    });
+
+    await progressUpdate.save();
+
+    // Update task with block details
+    const updatedTask = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        status: 'Blocked',
+        'blockDetails.isBlocked': true,
+        'blockDetails.blockedAt': new Date(),
+        'blockDetails.blockedBy': blockedBy,
+        'blockDetails.issueDescription': issueDescription,
+        'blockDetails.progressUpdateId': progressUpdate._id
+      },
+      { new: true }
+    );
+
+    // Update project progress
+    if (updatedTask.projectId) {
+      await updateProjectProgressService(updatedTask.projectId);
+    }
+
+    return {
+      success: true,
+      task: updatedTask,
+      progressUpdate: progressUpdate
+    };
+  } catch (error) {
+    console.error('Error in blockTaskWithIssueService:', error);
+    return { success: false, message: 'Error blocking task', error: error.message };
+  }
+};
+
+// Add comment to task
+export const addTaskCommentService = async (taskId, content, author) => {
+  try {
+    const updatedTask = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        $push: {
+          comments: {
+            author: author,
+            content: content,
+            createdAt: new Date()
+          }
+        }
+      },
+      { new: true }
+    );
+    
+    return updatedTask;
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    throw error;
+  }
+};
+
+// Add attachment to task
+export const addTaskAttachmentService = async (taskId, attachmentData) => {
+  try {
+    const updatedTask = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        $push: {
+          attachments: {
+            ...attachmentData,
+            uploadedAt: new Date()
+          }
+        }
+      },
+      { new: true }
+    );
+    
+    return updatedTask;
+  } catch (error) {
+    console.error('Error adding attachment:', error);
+    throw error;
+  }
 };

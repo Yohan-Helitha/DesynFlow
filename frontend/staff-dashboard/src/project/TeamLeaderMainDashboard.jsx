@@ -4,11 +4,13 @@ import LeaderDashboard from "./leaderDashboard";
 import TaskBoard from "./components/task";
 import TeamAttendance from "./components/TeamAttendance";
 import ResourceRequests from "./components/ResourceRequests";
+import FlaggedIssuesPanel from "./components/FlaggedIssuesPanel";
 import ProgressReports from "./components/ProgressReports";
 
 export default function TeamLeaderMainDashboard() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [project, setProject] = useState(null);
+  const [teamData, setTeamData] = useState(null);
   
   // Get leader ID from logged-in user
   const getLeaderId = () => {
@@ -38,6 +40,7 @@ export default function TeamLeaderMainDashboard() {
           : null;
         
         console.log('Found team for leader:', teamObj);
+        setTeamData(teamObj); // Store team data for flagged issues
 
         if (teamObj) {
           // Get projects for this team
@@ -80,6 +83,8 @@ export default function TeamLeaderMainDashboard() {
       case 3:
         return <ResourceRequests project={project} leaderId={leaderId} />;
       case 4:
+        return <FlaggedIssuesPanel teamId={teamData?._id} projectId={project?._id} />;
+      case 5:
         return <ProgressReports />;
       default:
         return <LeaderDashboard />;

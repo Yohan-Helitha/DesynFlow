@@ -90,36 +90,26 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onTaskUpdate, 
     }
 
     try {
-      // In a real implementation, you would also create a progress update entry with the issue
-      const response = await fetch(`http://localhost:4000/api/tasks/${taskData._id}`, {
-        method: 'PUT',
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const response = await fetch(`http://localhost:4000/api/tasks/${taskData._id}/block`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          status: 'Blocked',
-          progressPercentage: taskData.progressPercentage
+          issueDescription: issueDetails.description,
+          blockedBy: currentUser?.id || currentUser?._id
         })
       });
 
       if (response.ok) {
-        // TODO: Create progress update with flagged issue
-        const progressUpdateData = {
-          projectId: taskData.projectId,
-          submittedBy: JSON.parse(localStorage.getItem('user'))?.id,
-          summary: `Task blocked: ${taskData.name}`,
-          flaggedIssues: [{
-            description: issueDetails.description,
-            flaggedAt: new Date(),
-            resolved: false
-          }]
-        };
-
-        // This would create a progress update record for tracking in weekly reports
-        console.log('Progress update to be created:', progressUpdateData);
-
+        const result = await response.json();
         setTaskData({ ...taskData, status: 'Blocked' });
+        onTaskUpdate(result.task);
         setShowIssueForm(false);
         setIssueDetails({ description: '', flaggedAt: new Date() });
-        alert('Task blocked and issue logged for weekly reporting');
+        alert('Task blocked and issue logged successfully for weekly reporting');
+      } else {
+        const error = await response.json();
+        alert(`Error blocking task: ${error.message}`);
       }
     } catch (error) {
       console.error('Error blocking task:', error);
@@ -127,23 +117,79 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onTaskUpdate, 
     }
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
+    
+    for (const file of files) {
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        
+        // In a real implementation, you'd upload the file to a file storage service first
+        // For now, we'll simulate by using the filename
+        const response = await fetch(`http://localhost:4000/api/tasks/${taskData._id}/attachments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: `${Date.now()}_${file.name}`,
+            originalName: file.name,
+            uploadedBy: currentUser?.id || currentUser?._id,
+            fileSize: file.size,
+            mimeType: file.type
+          })
+        });
+
+        if (response.ok) {
+          const updatedTask = await response.json();
+          onTaskUpdate(updatedTask);
+        } else {
+          alert(`Error uploading ${file.name}`);
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        alert(`Error uploading ${file.name}`);
+      }
+    }
+    
     setUploadFiles(prev => [...prev, ...files]);
   };
 
-  const addComment = () => {
+  const addComment = async () => {
     if (!newComment.trim()) return;
     
-    const comment = {
-      id: Date.now(),
-      author: JSON.parse(localStorage.getItem('user'))?.username || 'Current User',
-      content: newComment,
-      timestamp: new Date().toISOString()
-    };
-    
-    setComments(prev => [...prev, comment]);
-    setNewComment('');
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const response = await fetch(`http://localhost:4000/api/tasks/${taskData._id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: newComment,
+          author: currentUser?.id || currentUser?._id
+        })
+      });
+
+      if (response.ok) {
+        const updatedTask = await response.json();
+        
+        // Update local comments
+        const newCommentObj = {
+          id: Date.now(),
+          author: currentUser?.username || 'Current User',
+          content: newComment,
+          timestamp: new Date().toISOString()
+        };
+        
+        setComments(prev => [...prev, newCommentObj]);
+        setNewComment('');
+        
+        // Update parent task
+        onTaskUpdate(updatedTask);
+      } else {
+        alert('Error adding comment');
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Error adding comment');
+    }
   };
 
   const getPriorityColor = (priority) => {

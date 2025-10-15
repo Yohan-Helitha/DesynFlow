@@ -7,7 +7,10 @@ import {
   updateTaskStatus,
   updateTask,
   deleteTask,
-  getTeamMembers
+  getTeamMembers,
+  blockTaskWithIssue,
+  addTaskComment,
+  addTaskAttachment
 } from '../controller/task.controller.js';
 
 const router = express.Router();
@@ -32,6 +35,15 @@ router.patch('/tasks/:id/status', updateTaskStatus);
 
 // Delete a task
 router.delete('/tasks/:id', deleteTask);
+
+// Block task with issue tracking
+router.patch('/tasks/:id/block', blockTaskWithIssue);
+
+// Add comment to task
+router.post('/tasks/:id/comments', addTaskComment);
+
+// Add attachment to task
+router.post('/tasks/:id/attachments', addTaskAttachment);
 
 // Get team members for assignment dropdown
 router.get('/team-members/:leaderId', getTeamMembers);
