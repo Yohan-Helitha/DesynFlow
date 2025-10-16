@@ -25,6 +25,7 @@ import './modules/project/model/milestone.model.js';
 import './modules/project/model/material.model.js';
 import './modules/project/model/meeting.model.js';
 import './modules/project/model/progressupdate.model.js';
+import './modules/project/model/notification.model.js';
 
 //Routes
 import projectRoutes from './modules/project/routes/project.routes.js';
@@ -42,6 +43,7 @@ import materialRequestRoutes from './modules/project/routes/materialRequest.rout
 import reportRoutes from './modules/project/routes/report.routes.js';
 import fileRoutes from './modules/project/routes/file.routes.js';
 import meetingRoutes from './modules/project/routes/meeting.routes.js';
+import notificationRoutes from './modules/project/routes/notificationRoutes.js';
 import fileServeRoutes from './routes/fileServe.js';
 import uploadRoutes from './routes/upload.routes.js';
 
@@ -119,6 +121,7 @@ app.use('/api', taskRoutes);
 app.use('/api', teamRoutes);
 app.use('/api', progressUpdateRoutes);
 app.use('/api', personalFileRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api', kpiRoutes);
 app.use('/api', viewReportRoutes);
 app.use('/api', downloadReportRoutes);

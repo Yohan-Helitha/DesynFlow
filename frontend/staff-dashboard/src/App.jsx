@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import StaffLogin from './staff-login/staffLogin'
 import CSRDashboard from './CSR-portal/pages/CSRDashboard'
 import InspectorDashboard from './inspector-portal/pages/InspectorDashboard'
@@ -44,6 +45,15 @@ function App() {
             <Route path="/finance-manager/*" element={<FinanceDashboard />} />
           </Routes>
         </main>
+        
+        {/* Sonner Toast Container */}
+        <Toaster 
+          position="top-right"
+          richColors 
+          closeButton 
+          expand={false}
+          duration={4000}
+        />
       </div>
     </Router>
   )

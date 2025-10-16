@@ -1,25 +1,14 @@
 import React, { useState } from "react";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import TeamMemberLayout from "./components/TeamMemberLayout";
 import TeamDashboardOverview from "./components/TeamDashboardOverview";
 import MyTasksTab from "./components/MyTasksTab";
+import CalendarViewTab from "./components/CalendarViewTab";
 import PersonalFilesTab from "./components/PersonalFilesTab";
+import NotificationsTab from "./components/NotificationsTab";
 
 // Placeholder components for Phase 2
-function NotificationsTab() {
-  return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold text-brown-primary mb-4">Notifications</h2>
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <p className="text-gray-600">Notifications center coming in Phase 3...</p>
-        <div className="mt-4 space-y-2">
-          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
-          <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5"></div>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Removed NotificationsTab placeholder as we now have the full implementation
 
 export default function TeamMemberDashboard() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -68,8 +57,10 @@ export default function TeamMemberDashboard() {
       case 1:
         return <MyTasksTab />;
       case 2:
-        return <PersonalFilesTab />;
+        return <CalendarViewTab />;
       case 3:
+        return <PersonalFilesTab />;
+      case 4:
         return <NotificationsTab />;
       default:
         return <TeamDashboardOverview />;
@@ -77,8 +68,10 @@ export default function TeamMemberDashboard() {
   };
 
   return (
-    <TeamMemberLayout activeIndex={activeIndex} setActiveIndex={setActiveIndex}>
-      {renderContent()}
-    </TeamMemberLayout>
+    <NotificationProvider>
+      <TeamMemberLayout activeIndex={activeIndex} setActiveIndex={setActiveIndex}>
+        {renderContent()}
+      </TeamMemberLayout>
+    </NotificationProvider>
   );
 }

@@ -1,12 +1,17 @@
 import React from "react";
-import { FaHome, FaTasks, FaBell, FaFolder } from "react-icons/fa";
+import { FaHome, FaTasks, FaBell, FaFolder, FaCalendarAlt } from "react-icons/fa";
+import { useNotifications } from "../contexts/NotificationContext";
+import { useNotifications } from "../contexts/NotificationContext";
 
 export default function TeamMemberLayout({ activeIndex, setActiveIndex, children }) {
+  const { unreadCount } = useNotifications();
+  
   const menuItems = [
     { icon: FaHome, label: "Dashboard Overview", index: 0 },
     { icon: FaTasks, label: "My Tasks", index: 1 },
-    { icon: FaFolder, label: "Personal Files", index: 2 },
-    { icon: FaBell, label: "Notifications", index: 3 }
+    { icon: FaCalendarAlt, label: "Calendar View", index: 2 },
+    { icon: FaFolder, label: "Personal Files", index: 3 },
+    { icon: FaBell, label: "Notifications", index: 4 }
   ];
 
   return (
@@ -34,7 +39,14 @@ export default function TeamMemberLayout({ activeIndex, setActiveIndex, children
                         : "text-cream-secondary hover:bg-brown-secondary hover:text-cream-primary"
                     }`}
                   >
-                    <Icon size={18} />
+                    <div className="relative">
+                      <Icon size={18} />
+                      {item.label === "Notifications" && unreadCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </div>
                     <span>{item.label}</span>
                   </button>
                 </li>
