@@ -21,10 +21,29 @@ export const addsReorderRequestsService = async (data, warehouseManagerName) => 
 
     await s_reorder_request.save();
 
+    const rawData = s_reorder_request.toObject ? s_reorder_request.toObject() : s_reorder_request;
+
+    const keyInfo = {
+        StockReorderRequestID: rawData.stockID,
+        InventoryName: rawData.inventoryName,
+        InventoryAddress: rawData.InventoryAddress,
+        InventoryContact: rawData.inventoryContact,
+        MaterialID: rawData.materialId,
+        MaterialName: rawData.materialName,
+        Quantity: rawData.quantity,
+        Type: rawData.type,
+        Unit: rawData.unit,
+        ExpectedDate: rawData.expectedDate,
+        WarehouseManagerName: rawData.warehouseManagerName,
+        Status: rawData.status,
+        CreatedAt: rawData.createdAt,
+        UpdatedAt: rawData.updatedAt
+    }
+
     await AuditLog.create({
         entity: "Stock Reorder Request",
         action: "insert",
-        keyInfo: JSON.stringify(s_reorder_request),
+        keyInfo: JSON.stringify(keyInfo),
         createdBy: warehouseManagerName || "System"
     });
 
@@ -40,10 +59,29 @@ export const updatesReorderRequestsService = async (id, data) => {
 
     if (!s_reorder_request) return null;
 
+    const rawData = s_reorder_request.toObject ? s_reorder_request.toObject() : s_reorder_request;
+
+    const keyInfo = {
+        StockReorderRequestID: rawData.stockID,
+        InventoryName: rawData.inventoryName,
+        InventoryAddress: rawData.InventoryAddress,
+        InventoryContact: rawData.inventoryContact,
+        MaterialID: rawData.materialId,
+        MaterialName: rawData.materialName,
+        Quantity: rawData.quantity,
+        Type: rawData.type,
+        Unit: rawData.unit,
+        ExpectedDate: rawData.expectedDate,
+        WarehouseManagerName: rawData.warehouseManagerName,
+        Status: rawData.status,
+        CreatedAt: rawData.createdAt,
+        UpdatedAt: rawData.updatedAt
+    }
+
     await AuditLog.create({
         entity: "Stock Reorder Request",
         action: "update",
-        keyInfo: JSON.stringify(s_reorder_request),
+        keyInfo: JSON.stringify(keyInfo),
         createdBy: data.warehouseManagerName || "System"
     });
 
@@ -55,11 +93,30 @@ export const deletesReorderRequestsService = async (id) => {
     const s_reorder_request = await sReorderRequests.findByIdAndDelete(id);
     if (!s_reorder_request) return null;
 
+    const rawData = s_reorder_request.toObject ? s_reorder_request.toObject() : s_reorder_request;
+
+    const keyInfo = {
+        StockReorderRequestID: rawData.stockID,
+        InventoryName: rawData.inventoryName,
+        InventoryAddress: rawData.InventoryAddress,
+        InventoryContact: rawData.inventoryContact,
+        MaterialID: rawData.materialId,
+        MaterialName: rawData.materialName,
+        Quantity: rawData.quantity,
+        Type: rawData.type,
+        Unit: rawData.unit,
+        ExpectedDate: rawData.expectedDate,
+        WarehouseManagerName: rawData.warehouseManagerName,
+        Status: rawData.status,
+        CreatedAt: rawData.createdAt,
+        UpdatedAt: rawData.updatedAt
+    }
+
     await AuditLog.create({
         entity: "Stock Reorder Request",
         action: "delete",
-        keyInfo: `InventoryId: ${s_reorder_request.inventoryId}, MaterialId: ${s_reorder_request.materialId}, qty: ${s_reorder_request.quantity}`,
-        createdBy: s_reorder_request.warehouseManagerName || "System"
+        keyInfo: JSON.stringify(keyInfo),
+        createdBy: warehouseManagerName || "System"
     });
 
     return s_reorder_request;

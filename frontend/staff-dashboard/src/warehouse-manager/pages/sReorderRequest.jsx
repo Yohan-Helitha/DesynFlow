@@ -122,35 +122,36 @@ const SReorderRequest = () => {
   
     };
 
-    const requestsPerMonth = filteredRequests.reduce((acc, request) => {
-      const date = request.createdAt ? new Date(request.createdAt) : null;
-      if (!date) return acc;
+    // Chart data calculation - always uses full 'requests' array (not filtered)
+    const requestsPerMonth = requests.reduce((acc, request) => {
+  const date = request.createdAt ? new Date(request.createdAt) : null;
+  if (!date) return acc;
 
-      const monthYear = date.toLocaleString("default", { month: "short", year: "numeric" }); // e.g., "Sep 2025"
+  const monthYear = date.toLocaleString("default", { month: "short", year: "numeric" });
 
-      if (!acc[monthYear]) {
-        acc[monthYear] = { total: 0, pending: 0, checked: 0 };
-      }
+  if (!acc[monthYear]) {
+    acc[monthYear] = { total: 0, pending: 0, checked: 0 };
+  }
 
-      acc[monthYear].total += 1;
+  acc[monthYear].total += 1;
 
-      if (request.status?.toLowerCase() === "pending") {
-        acc[monthYear].pending += 1;
-      } else if (request.status?.toLowerCase() === "checked") {
-        acc[monthYear].checked += 1;
-      }
+  if (request.status?.toLowerCase() === "pending") {
+    acc[monthYear].pending += 1;
+  } else if (request.status?.toLowerCase() === "checked") {
+    acc[monthYear].checked += 1;
+  }
 
-      return acc;
-    }, {});
+  return acc;
+}, {});
 
-  const chartData = Object.keys(requestsPerMonth)
-    .sort((a, b) => new Date(a) - new Date(b))
-    .map(month => ({
-      month,
-      total: requestsPerMonth[month].total,
-      pending: requestsPerMonth[month].pending,
-      checked: requestsPerMonth[month].checked
-  }));
+const chartData = Object.keys(requestsPerMonth)
+  .sort((a, b) => new Date(a) - new Date(b))
+  .map(month => ({
+    month,
+    total: requestsPerMonth[month].total,
+    pending: requestsPerMonth[month].pending,
+    checked: requestsPerMonth[month].checked
+}));
 
 
   return (
@@ -161,7 +162,7 @@ const SReorderRequest = () => {
           <h1 className="text-2xl font-bold mt-6 mb-10">Stock Reorder Requests</h1>
           <button
             className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
-            onClick={() => navigate("/warehouse-manager/reorder-request/add")}
+            onClick={() => navigate("/add-s-reorder-requests")}
           >
             + Add Reorder Request
           </button>
@@ -174,9 +175,9 @@ const SReorderRequest = () => {
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="total" name="Total Requests" stroke="#674636" strokeWidth={2} />
-            <Line type="monotone" dataKey="pending" name="Pending Requests" stroke="#AAB396" strokeWidth={2} />
-            <Line type="monotone" dataKey="checked" name="Checked Requests" stroke="#FF6F00" strokeWidth={2} />
+            <Line type="monotone" dataKey="total" name="Total Requests" stroke="#4CAF50" strokeWidth={2} />
+            <Line type="monotone" dataKey="pending" name="Pending Requests" stroke="#FFA500" strokeWidth={2} />
+            <Line type="monotone" dataKey="checked" name="Checked Requests" stroke="#2196F3" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
 
@@ -186,7 +187,7 @@ const SReorderRequest = () => {
             <input
             type="text"
             placeholder="Search..."
-            className="border border-gray-400 px-4 py-2 bg-white rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="border border-gray-400 px-4 py-2 rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -282,9 +283,9 @@ const SReorderRequest = () => {
         <div className="overflow-x-auto text-xs">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-              <tr style={{ background: "#674636", color:"#FFFFFF" }}>
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative" style={{ background: "#674636" }}>Actions</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative" style={{ background: "#674636" }}>Request ID</th>
+              <tr className="bg-gray-200">
+                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative">Actions</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative">Request ID</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Inventory Name</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Inventory Address</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Inventory Contact</th>
@@ -305,20 +306,16 @@ const SReorderRequest = () => {
                   const createdDate = request.createdAt ? new Date(request.createdAt) : null;
                   const expectedDate = request.expectedDate ? new Date(request.expectedDate) : null;
 
-                  let rowColor = "bg-[#FFF8E8]"; // default normal color
-
-                  if (
-                    request.status?.toLowerCase() === "pending" &&
-                    expectedDate
-                  ) {
+                  let rowColor = "bg-white"; // default
+                  if (expectedDate) {
                     const today = new Date();
                     const diffTime = expectedDate - today;
                     const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-                    // Highlight if expected date is within 7 days from today and not passed
                     if (diffDays >= 0 && diffDays <= 7) {
-                      rowColor = "bg-[#AAB396]"; // highlight color
+                      rowColor = "bg-red-100"; // 🔴 highlight if expected within next 7 days
                     }
+                    // else it stays white automatically
                   }
 
               
@@ -330,15 +327,15 @@ const SReorderRequest = () => {
                         <div className="flex items-center justify-center gap-6">
                           <div
                             className="group relative cursor-pointer"
-                            onClick={() => navigate(`/reorder-request/update/${request._id}`)}
+                            onClick={() => navigate(`/update-s-reorder-requests/${request._id}`)}
                           >
-                            <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
+                            <Edit2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
                           </div>
                           <div
                             className="group relative cursor-pointer"
                             onClick={() => handleDelete(request._id)}
                           >
-                            <Trash2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
+                            <Trash2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
                           </div>
                         </div>
                       </td>

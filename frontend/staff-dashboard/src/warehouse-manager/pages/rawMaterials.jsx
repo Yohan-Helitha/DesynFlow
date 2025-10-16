@@ -1,7 +1,7 @@
 import Navbar from "../component/navbar";
 import React from 'react'
 import { fetchRawMaterial, deleteRawMaterial } from "../services/FrawMaterialsService.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Edit2, Trash2,Filter,Search,Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { generatePDF } from "../utils/pdfGenerator.js";
@@ -111,16 +111,19 @@ const RawMaterials = () => {
   
     };
 
-    const chartData = materials.reduce((acc, material) => {
-      const key = `${material.month}-${material.year}`;
-      if (!acc[key]) {
-        acc[key] = { monthYear: `${material.month}/${material.year}`, count: 0 };
-      }
-      acc[key].count += 1;
-      return acc;
-    }, {});
+    const chartData = useMemo(() => {
+  return materials.reduce((acc, material) => {
+    const key = `${material.month}-${material.year}`;
+    if (!acc[key]) {
+      acc[key] = { monthYear: `${material.month}/${material.year}`, count: 0 };
+    }
+    acc[key].count += 1;
+    return acc;
+  }, {});
+}, [materials]);
 
-    const chartArray = Object.values(chartData);
+const chartArray = Object.values(chartData);
+
     
   return (
     <div>
