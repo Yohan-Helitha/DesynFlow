@@ -18,7 +18,7 @@ const CSRSidebar = ({ activeSection, onSelect, onLogout }) => {
       id: 'assign', 
       name: 'Inspector Assignment', 
       icon: '👨‍🔧', 
-      description: 'Assign inspectors to requests'
+      description: 'Search properties, view inspector locations, and assign inspectors'
     },
     { 
       id: 'status', 
