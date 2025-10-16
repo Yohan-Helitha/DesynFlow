@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import TeamMemberLayout from "./components/TeamMemberLayout";
 import TeamDashboardOverview from "./components/TeamDashboardOverview";
 import MyTasksTab from "./components/MyTasksTab";
+import PersonalFilesTab from "./components/PersonalFilesTab";
 
 // Placeholder components for Phase 2
 function NotificationsTab() {
@@ -67,6 +68,8 @@ export default function TeamMemberDashboard() {
       case 1:
         return <MyTasksTab />;
       case 2:
+        return <PersonalFilesTab />;
+      case 3:
         return <NotificationsTab />;
       default:
         return <TeamDashboardOverview />;

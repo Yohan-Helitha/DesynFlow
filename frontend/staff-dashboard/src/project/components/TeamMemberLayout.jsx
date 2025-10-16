@@ -1,11 +1,12 @@
 import React from "react";
-import { FaHome, FaTasks, FaBell } from "react-icons/fa";
+import { FaHome, FaTasks, FaBell, FaFolder } from "react-icons/fa";
 
 export default function TeamMemberLayout({ activeIndex, setActiveIndex, children }) {
   const menuItems = [
     { icon: FaHome, label: "Dashboard Overview", index: 0 },
     { icon: FaTasks, label: "My Tasks", index: 1 },
-    { icon: FaBell, label: "Notifications", index: 2 }
+    { icon: FaFolder, label: "Personal Files", index: 2 },
+    { icon: FaBell, label: "Notifications", index: 3 }
   ];
 
   return (
