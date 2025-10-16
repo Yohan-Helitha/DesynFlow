@@ -1,6 +1,5 @@
 import SubmitReports from '../model/submitReportsModel.js';
 import AuditLog from '../model/auditLogModel.js';
-import { validateReportUpdate } from '../validators/submitReportsValidator.js';
 
 // Get all reports
 export const getAllReportsService = async () => {

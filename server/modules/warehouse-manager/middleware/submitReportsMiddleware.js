@@ -1,5 +1,4 @@
 // middleware/submitReportsMiddleware.js
-import { validateSubmitReportInsert, validateSubmitReportUpdate } from "../validators/submitReportsValidator.js";
 
 export const validateSubmitReportInsertMW = (req, res, next) => {
   const errors = {};

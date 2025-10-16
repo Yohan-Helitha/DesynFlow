@@ -4,7 +4,7 @@ import {
   addReportService,
   updateReportService,
   deleteReportService
-} from '../services/FsubmitReportsService.js';
+} from '../service/submitReportsService.js';
 
 // Get all reports
 export const getAllReports = async (req, res) => {
