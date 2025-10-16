@@ -1,27 +1,36 @@
-// Get all payments
-export async function getAllPayments() {
-  return Payment.find();
-}
 import Payment from '../model/payment.js';
 import { adjustBalance, incrementIncome, decrementIncome } from './financeSummaryService.js';
 import QuotationEstimation from '../model/quotation_estimation.js';
 import mongoose from 'mongoose';
 
+// Get all payments
+export async function getAllPayments() {
+  return Payment.find();
+}
+
 // Get payments by single status
 export async function getPaymentsByStatus(status) {
-  return Payment.find({ status });
+  // Pending: newest created first
+  return Payment.find({ status })
+    .sort({ createdAt: -1 })
+    .populate({ path: 'projectId', select: 'projectName status location clientId' })
+    .populate({ path: 'clientId', select: 'username name email phone phoneNumber' });
 }
 
 // Get payments by multiple statuses
 export async function getPaymentsByStatuses(statuses) {
-  return Payment.find({ status: { $in: statuses } });
+  // Reviewed set: latest updates first (review time reflected in updatedAt)
+  return Payment.find({ status: { $in: statuses } })
+    .sort({ updatedAt: -1 })
+    .populate({ path: 'projectId', select: 'projectName status location clientId' })
+    .populate({ path: 'clientId', select: 'username name email phone phoneNumber' });
 }
 
 // Approve or reject a payment
 export async function updatePaymentStatus(paymentId, status, comment) {
   const prev = await Payment.findById(paymentId);
   if (!prev) throw new Error('Payment not found');
-  const update = { status };
+  const update = { status, updatedAt: new Date() };
   if (typeof comment !== 'undefined') update.comment = comment;
   const updated = await Payment.findByIdAndUpdate(paymentId, update, { new: true });
   // If transitioning to Approved (and wasn't already), add amount to totalIncome and totalBalance
@@ -52,22 +61,19 @@ export async function filterPayments({ projectId, clientId, fromDate, toDate }) 
 
 // Calculate outstanding balances per client/project
 export async function getOutstandingBalances({ clientId, projectId }) {
-  // Aggregate total due from quotation_estimation and total paid from payments
   const match = {};
   if (clientId) match.clientId = mongoose.Types.ObjectId(clientId);
   if (projectId) match.projectId = mongoose.Types.ObjectId(projectId);
 
-  // Get total due from quotations
   const dueAgg = await QuotationEstimation.aggregate([
     { $match: match },
-    { $group: { _id: null, totalDue: { $sum: "$total" } } }
+    { $group: { _id: null, totalDue: { $sum: '$total' } } },
   ]);
   const totalDue = dueAgg[0]?.totalDue || 0;
 
-  // Get total paid from payments
   const paidAgg = await Payment.aggregate([
     { $match: { ...match, status: 'Approved' } },
-    { $group: { _id: null, totalPaid: { $sum: "$amount" } } }
+    { $group: { _id: null, totalPaid: { $sum: '$amount' } } },
   ]);
   const totalPaid = paidAgg[0]?.totalPaid || 0;
 

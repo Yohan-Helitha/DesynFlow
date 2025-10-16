@@ -12,7 +12,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import InspectionRequestDashboard from '../inspection-request/pages/inspectionRequestDashboard';
 import InspectionRequestForm from '../inspection-request/pages/inspectionRequestForm';
 import PaymentForm from '../inspection-request/components/forms/paymentForm';
-import Profile from './components/Profile'; // ✅ Fixed path to components folder
+import Profile from './components/Profile'; //
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {

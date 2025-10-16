@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import User from '../modules/auth/model/user.model.js';
 import InspectionRequest from '../modules/auth/model/inspectionRequest.model.js';
 import Assignment from '../modules/auth/model/assignment.model.js';
+import InspectorLocation from '../modules/auth/model/inspectorLocation.model.js';
 import Team from '../modules/project/model/team.model.js';
 import Project from '../modules/project/model/project.model.js';
 import Task from '../modules/project/model/task.model.js';
@@ -533,6 +534,28 @@ const createSampleProjects = async (users) => {
       console.log(`   • ${project.projectName} - Team: ${team?.teamName || 'Unassigned'} - Status: ${project.status}`);
     });
     
+    // Clear existing data (optional - uncomment if you want to reset)
+    // await User.deleteMany({});
+    // await InspectionRequest.deleteMany({});
+    // await Assignment.deleteMany({});
+    // console.log('🗑️  Cleared existing data');
+    
+    // Check if users already exist
+    const existingUsers = await User.find({});
+    if (existingUsers.length > 0) {
+      console.log('ℹ️  Users already exist. Checking for sample data...');
+      
+      // Check if sample inspection requests exist
+      const existingRequests = await InspectionRequest.find({});
+      const existingAssignments = await Assignment.find({});
+      
+      if (existingRequests.length === 0) {
+        console.log('📝 Creating sample inspection requests and assignments...');
+        await createSampleData(existingUsers);
+      } else {
+        console.log('ℹ️  Sample data already exists. Skipping...');
+        console.log(`📊 Current counts - Users: ${existingUsers.length}, Requests: ${existingRequests.length}, Assignments: ${existingAssignments.length}`);
+      }
   } catch (error) {
     console.error('❌ Error creating sample projects:', error);
     throw error;
@@ -747,6 +770,163 @@ const seedDatabase = async () => {
   } finally {
     await mongoose.connection.close();
     console.log('\n🔒 Database connection closed');
+  }
+};
+
+// Create sample inspection requests and assignments
+const createSampleData = async (users) => {
+  try {
+    // Find specific users
+    const clientUser = users.find(u => u.email === 'john.client@gmail.com') || users.find(u => u.role === 'client');
+    const client2User = users.find(u => u.email === 'jane.client@gmail.com') || users.find(u => u.role === 'client');
+    const inspectorUser = users.find(u => u.email === 'mike.inspector@desynflow.com') || users.find(u => u.role === 'inspector');
+    
+    if (!clientUser || !inspectorUser) {
+      console.log('❌ Required users not found for sample data creation');
+      return;
+    }
+
+    // Sample inspection requests
+    const sampleRequests = [
+      {
+        client_ID: clientUser._id,
+        client_name: 'John Smith',
+        email: 'john.client@gmail.com',
+        phone_number: '+94701234567',
+        propertyLocation_address: '123 Main Street, Colombo 03',
+        propertyLocation_city: 'Colombo',
+        property_latitude: 6.9271, // Colombo 03 coordinates
+        property_longitude: 79.8612,
+        property_full_address: '123 Main Street, Colombo 03, Sri Lanka',
+        propertyType: 'residential',
+        number_of_floor: 2,
+        number_of_room: 4,
+        room_name: ['Living Room', 'Kitchen', 'Master Bedroom', 'Guest Bedroom'],
+        inspection_date: new Date('2025-10-15'),
+        status: 'pending',
+        priority: 'high',
+        estimated_duration: 180
+      },
+      {
+        client_ID: client2User?._id || clientUser._id,
+        client_name: 'Jane Doe',
+        email: 'jane.client@gmail.com',
+        phone_number: '+94709234567',
+        propertyLocation_address: '456 Park Avenue, Kandy',
+        propertyLocation_city: 'Kandy',
+        property_latitude: 7.2906, // Kandy coordinates  
+        property_longitude: 80.6337,
+        property_full_address: '456 Park Avenue, Kandy, Sri Lanka',
+        propertyType: 'apartment',
+        number_of_floor: 1,
+        number_of_room: 3,
+        room_name: ['Living Room', 'Bedroom', 'Kitchen'],
+        inspection_date: new Date('2025-10-20'),
+        status: 'pending',
+        priority: 'medium',
+        estimated_duration: 120
+      },
+      {
+        client_ID: clientUser._id,
+        client_name: 'ABC Company Ltd',
+        email: 'contact@abccompany.lk',
+        phone_number: '+94112345678',
+        propertyLocation_address: '789 Business District, Colombo 02',
+        propertyLocation_city: 'Colombo',
+        property_latitude: 6.9147, // Colombo 02 coordinates
+        property_longitude: 79.8747,
+        property_full_address: '789 Business District, Colombo 02, Sri Lanka',
+        propertyType: 'commercial',
+        number_of_floor: 3,
+        number_of_room: 8,
+        room_name: ['Reception', 'Office 1', 'Office 2', 'Conference Room', 'Kitchen', 'Storage', 'Server Room', 'Restroom'],
+        inspection_date: new Date('2025-10-25'),
+        status: 'pending',
+        priority: 'high',
+        estimated_duration: 240
+      }
+    ];
+
+    // Create inspection requests
+    const createdRequests = await InspectionRequest.insertMany(sampleRequests);
+    console.log(`✅ Created ${createdRequests.length} sample inspection requests`);
+
+    // Create assignments for mike_inspector
+    const sampleAssignments = createdRequests.map(request => ({
+      InspectionRequest_ID: request._id,
+      inspector_ID: inspectorUser._id,
+      assignAt: new Date(),
+      status: 'assigned'
+    }));
+
+    const createdAssignments = await Assignment.insertMany(sampleAssignments);
+    console.log(`✅ Created ${createdAssignments.length} assignments for ${inspectorUser.username}`);
+
+    // Create sample inspector locations for map visualization
+    console.log('\n📍 Creating sample inspector locations for map display...');
+    
+    // Sample inspector locations across Sri Lanka (for map visualization only)
+    const sampleInspectorLocations = [
+      {
+        inspector_ID: inspectorUser._id, // Mike inspector (real user)
+        inspector_latitude: 6.9271,
+        inspector_longitude: 79.8612,
+        current_address: 'Colombo 03, Main Street',
+        region: 'Colombo',
+        status: 'available'
+      },
+      // Additional dummy locations for map visualization (no real user accounts)
+      {
+        inspector_ID: new mongoose.Types.ObjectId(), // Dummy ID for visualization
+        inspector_latitude: 7.2906,
+        inspector_longitude: 80.6337,
+        current_address: 'Kandy Center, Temple Street',
+        region: 'Kandy',
+        status: 'available'
+      },
+      {
+        inspector_ID: new mongoose.Types.ObjectId(), // Dummy ID for visualization
+        inspector_latitude: 6.0535,
+        inspector_longitude: 80.2210,
+        current_address: 'Galle Fort, Main Gate',
+        region: 'Galle',
+        status: 'busy'
+      },
+      {
+        inspector_ID: new mongoose.Types.ObjectId(), // Dummy ID for visualization
+        inspector_latitude: 7.1644,
+        inspector_longitude: 79.9344,
+        current_address: 'Negombo Beach Road',
+        region: 'Negombo',
+        status: 'available'
+      },
+      {
+        inspector_ID: new mongoose.Types.ObjectId(), // Dummy ID for visualization
+        inspector_latitude: 5.9549,
+        inspector_longitude: 80.5550,
+        current_address: 'Matara Town Center',
+        region: 'Matara',
+        status: 'available'
+      }
+    ];
+
+    // Check if inspector locations already exist
+    const existingLocations = await InspectorLocation.find({});
+    if (existingLocations.length === 0) {
+      const createdLocations = await InspectorLocation.insertMany(sampleInspectorLocations);
+      console.log(`✅ Created ${createdLocations.length} sample inspector locations for map visualization`);
+    } else {
+      console.log('ℹ️  Inspector locations already exist. Skipping location seeding...');
+    }
+
+    // Display created sample data
+    console.log('\n📋 Sample Data Created:');
+    createdRequests.forEach((request, index) => {
+      console.log(`   • Request ${index + 1}: ${request.client_name} - ${request.propertyLocation_address}`);
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating sample data:', error);
   }
 };
 

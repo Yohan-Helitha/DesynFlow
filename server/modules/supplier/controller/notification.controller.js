@@ -1,10 +1,28 @@
-// notification.route.js
-import express from 'express';
-import { sendNotification, getNotifications } from '../controller/notification.controller.js';
+import SupplierRequestNotification from '../model/supplierRequestNotification.model.js';
 
-const router = express.Router();
+// Get all notifications
+export const getNotifications = async (req, res) => {
+  try {
+    const notifications = await SupplierRequestNotification.find()
+      .populate('supplierId', 'companyName name')
+      .populate('materialId', 'materialName name')
+      .sort({ createdAt: -1 })
+      .limit(50);
+    
+    res.status(200).json(notifications);
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ message: 'Failed to fetch notifications', error: error.message });
+  }
+};
 
-router.post('/', sendNotification);
-router.get('/', getNotifications);
-
-export default router;
+// Send a notification (create new notification)
+export const sendNotification = async (req, res) => {
+  try {
+    const notification = await SupplierRequestNotification.create(req.body);
+    res.status(201).json(notification);
+  } catch (error) {
+    console.error('Error sending notification:', error);
+    res.status(500).json({ message: 'Failed to send notification', error: error.message });
+  }
+};

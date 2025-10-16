@@ -40,14 +40,21 @@ export const ApprovedPurchaseOrders = () => {
       projectName: po.projectId?.projectName || '-',
       requestedBy: po.requestedBy?.name || po.requestedBy?.email || '-',
       requestedDate: po.createdAt ? new Date(po.createdAt).toLocaleDateString() : '-',
-      approvedBy: '-', // approver not populated; available via financeApproval.approverId if populated
+      approvedBy: '-', 
       approvedDate: po.financeApproval?.approvedAt ? new Date(po.financeApproval.approvedAt).toLocaleDateString() : '-',
-      vendor: po.supplierId?.name || '-',
+      vendor: po.supplierId?.companyName || po.supplierId?.contactName || po.supplierId?.name || '-',
+      supplierInfo: po.supplierId && typeof po.supplierId === 'object' ? {
+        companyName: po.supplierId.companyName || '-',
+        contactName: po.supplierId.contactName || '-',
+        name: po.supplierId.name || '-',
+        email: po.supplierId.email || '-',
+        phone: po.supplierId.phone || po.supplierId.phoneNumber || '-',
+      } : null,
       totalAmount: Number(po.totalAmount) || 0,
-      deliveryDate: '-', // not tracked in schema
-      deliveryStatus: '-', // not tracked in schema
+      deliveryDate: '-', 
+      deliveryStatus: '-', 
       status: po.status,
-      priority: '-', // not tracked in schema
+      priority: '-',
       items: (po.items || []).map((it, idx) => ({
         id: it._id || idx + 1,
         name: (it.materialId && typeof it.materialId === 'object' ? it.materialId.materialName : (it.materialName || String(it.materialId || ''))) || '-',
@@ -79,6 +86,7 @@ export const ApprovedPurchaseOrders = () => {
     .filter((po) => {
       const q = searchTerm.toLowerCase()
       return (
+        (po.name && String(po.name).toLowerCase().includes(q)) ||
         (po._id && String(po._id).toLowerCase().includes(q)) ||
         (po.status && String(po.status).toLowerCase().includes(q))
       )
@@ -129,7 +137,7 @@ export const ApprovedPurchaseOrders = () => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                {[{ key: '_id', label: 'PO ID' }, { key: 'status', label: 'Status' }, { key: 'totalAmount', label: 'Total Amount' }, { key: 'updatedAt', label: 'Updated At' }].map(({ key, label }) => (
+                {[{ key: 'name', label: 'Order Name' }, { key: 'status', label: 'Status' }, { key: 'totalAmount', label: 'Total Amount' }, { key: 'updatedAt', label: 'Updated At' }].map(({ key, label }) => (
                   <th
                     key={key}
                     className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
@@ -147,12 +155,12 @@ export const ApprovedPurchaseOrders = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginated.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{po._id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.status}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${(Number(po.totalAmount)||0).toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{po.updatedAt ? new Date(po.updatedAt).toLocaleString() : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => openView(po._id)} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white">Open</button>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.name || po._id}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.status}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {(Number(po.totalAmount)||0).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.updatedAt ? new Date(po.updatedAt).toLocaleString() : '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
+                    <button onClick={() => openView(po._id)} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-xs font-mono text-[#674636] hover:bg-[#AAB396] hover:text-white">Open</button>
                   </td>
                 </tr>
               ))}

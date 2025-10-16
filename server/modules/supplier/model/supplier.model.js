@@ -8,6 +8,7 @@ const MaterialPricingSchema = new Schema({
 }, { _id: false });
 
 const SupplierSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: 'User' }, // Link to User account
   companyName: { type: String },
   contactName: { type: String },
   email: { type: String },

@@ -12,7 +12,7 @@ const Profile = () => {
 
   // Simple navigation handler
   const handleCreateInspectionRequest = () => {
-    navigate("/inspection-request/new"); // Fixed: Navigate to form page, not dashboard
+    navigate("/inspection-request/new");
   };
 
   // Fetch user profile
@@ -34,9 +34,7 @@ const Profile = () => {
       const token = localStorage.getItem("authToken");
       const res = await axios.get(
         "http://localhost:4000/api/inspection/my-requests",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setInspectionRequests(res.data);
     } catch (err) {
@@ -77,7 +75,7 @@ const Profile = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar (separate file) */}
+      {/* Sidebar */}
       <Sidebar
         activeSection={activeSection}
         onSelect={setActiveSection}
@@ -87,15 +85,23 @@ const Profile = () => {
       {/* Main Content */}
       <div className="flex-1 p-6 overflow-y-auto">
         {message && (
-          <div className="mb-4 p-3 rounded bg-blue-100 text-blue-700">
+          <div
+            className={`mb-4 p-3 rounded ${
+              message.includes("✅")
+                ? "bg-teal-100 text-teal-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
             {message}
           </div>
         )}
 
-        {/* Recent Activities */}
+        {/* Dashboard */}
         {activeSection === "dashboard" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Recent Activities</h2>
+            <h2 className="text-2xl font-bold mb-4 text-[#1E3A8A]">
+              Recent Activities
+            </h2>
             <div className="grid grid-cols-2 gap-4">
               {[
                 "Inspection Request",
@@ -106,9 +112,12 @@ const Profile = () => {
                 "3D Planning",
                 "Material Finalized",
               ].map((activity, index) => (
-                <div key={index} className="bg-white shadow-md p-4 rounded">
-                  <h3 className="font-semibold">{activity}</h3>
-                  <p className="text-sm text-gray-500">Progress details...</p>
+                <div
+                  key={index}
+                  className="bg-[#F3F4F6] shadow-md p-4 rounded border border-gray-200"
+                >
+                  <h3 className="font-semibold text-[#1E3A8A]">{activity}</h3>
+                  <p className="text-sm text-gray-600">Progress details...</p>
                 </div>
               ))}
             </div>
@@ -119,10 +128,12 @@ const Profile = () => {
         {activeSection === "inspection" && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Inspection Requests</h2>
-              <button 
+              <h2 className="text-2xl font-bold text-[#1E3A8A]">
+                Inspection Requests
+              </h2>
+              <button
                 onClick={handleCreateInspectionRequest}
-                className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+                className="bg-[#0D9488] text-white px-4 py-2 rounded hover:bg-[#0B766F]"
               >
                 + Create Inspection Request
               </button>
@@ -130,9 +141,16 @@ const Profile = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {inspectionRequests.length > 0 ? (
                 inspectionRequests.map((req, idx) => (
-                  <div key={idx} className="bg-white shadow-md p-4 rounded">
-                    <h3 className="font-semibold">Request #{req._id}</h3>
-                    <p className="text-sm text-gray-600">Status: {req.status}</p>
+                  <div
+                    key={idx}
+                    className="bg-[#F3F4F6] shadow-md p-4 rounded border border-gray-200"
+                  >
+                    <h3 className="font-semibold text-[#1E3A8A]">
+                      Request #{req._id}
+                    </h3>
+                    <p className="text-sm text-gray-700">
+                      Status: {req.status}
+                    </p>
                     <p className="text-sm text-gray-500">
                       Date: {new Date(req.createdAt).toLocaleDateString()}
                     </p>
@@ -148,8 +166,10 @@ const Profile = () => {
         {/* Profile Section */}
         {activeSection === "profile" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Profile Information</h2>
-            <div className="space-y-3 bg-white shadow-md rounded p-6">
+            <h2 className="text-2xl font-bold mb-4 text-[#1E3A8A]">
+              Profile Information
+            </h2>
+            <div className="space-y-3 bg-white shadow-md rounded p-6 border border-gray-200">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Full Name
@@ -179,9 +199,7 @@ const Profile = () => {
                 <input
                   type="text"
                   value={user.phone || ""}
-                  onChange={(e) =>
-                    setUser({ ...user, phone: e.target.value })
-                  }
+                  onChange={(e) => setUser({ ...user, phone: e.target.value })}
                   className="w-full border p-2 rounded"
                 />
               </div>
@@ -200,7 +218,7 @@ const Profile = () => {
               </div>
               <button
                 onClick={handleSaveChanges}
-                className="mt-3 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                className="mt-3 bg-[#1E3A8A] text-white py-2 px-4 rounded hover:bg-[#162F6A]"
               >
                 Save Changes
               </button>
@@ -211,7 +229,9 @@ const Profile = () => {
         {/* Project Section */}
         {activeSection === "project" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Project Section</h2>
+            <h2 className="text-2xl font-bold mb-4 text-[#1E3A8A]">
+              Project Section
+            </h2>
             <p className="text-gray-600">Project details will go here.</p>
           </div>
         )}
@@ -219,7 +239,9 @@ const Profile = () => {
         {/* Warranty Section */}
         {activeSection === "warranty" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Warranty Section</h2>
+            <h2 className="text-2xl font-bold mb-4 text-[#1E3A8A]">
+              Warranty Section
+            </h2>
             <p className="text-gray-600">Warranty details will go here.</p>
           </div>
         )}

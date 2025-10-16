@@ -2,24 +2,51 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import InspectorSidebar from '../components/InspectorSidebar';
 import LocationManagement from '../components/LocationManagement';
-import InspectionForm from './InspectionForm'; // Using existing InspectionForm
-// Note: Using existing ReportList from finance-portal for reports
+import AssignedJobs from '../components/AssignedJobs';
+import DynamicInspectionForm from './DynamicInspectionForm'; // Use dynamic form for all cases
+import InspectorReports from '../components/InspectorReports';
 
 const InspectorDashboard = () => {
   const [activeSection, setActiveSection] = useState('location');
   const [inspector, setInspector] = useState(null);
   const [message, setMessage] = useState('');
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch inspector profile
   const fetchInspector = async () => {
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error('No auth token found - redirecting to login');
+        handleLogout(); // This will redirect to login
+        return;
+      }
+
       const response = await axios.get('http://localhost:4000/api/user/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      // Validate user role
+      if (response.data.role !== 'inspector') {
+        console.error('Access denied: User is not an inspector');
+        alert('Access denied. This dashboard is for inspectors only.');
+        handleLogout();
+        return;
+      }
+      
       setInspector(response.data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching inspector profile:', error);
+      if (error.response?.status === 401) {
+        console.error('Authentication failed - token expired or invalid');
+        handleLogout(); // Clear token and redirect to login
+      } else {
+        console.error('Failed to fetch inspector profile:', error.message);
+        // For other errors, still redirect to login for security
+        handleLogout();
+      }
     }
   };
 
@@ -29,48 +56,53 @@ const InspectorDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
     window.location.href = '/login';
+  };
+
+  // Handle "Collect Data" button click from assignments
+  const handleCollectData = (assignment) => {
+    setSelectedAssignment(assignment);
+    setActiveSection('inspection');
+    setMessage(`📝 Collecting data for: ${assignment.inspectionRequest?.clientName || 'Assignment'}`);
+  };
+
+  // Handle navigation back to standalone form management
+  const handleBackToForms = () => {
+    setSelectedAssignment(null);
+    setActiveSection('inspection');
+    setMessage('');
   };
 
   const renderContent = () => {
     switch (activeSection) {
       case 'location':
         return <LocationManagement inspector={inspector} setMessage={setMessage} />;
+      case 'assignments':
+        return <AssignedJobs inspector={inspector} onCollectData={handleCollectData} />;
       case 'inspection':
-        return <InspectionForm />;
+        // Always use DynamicInspectionForm, but pass selectedAssignment (can be null for standalone)
+        return <DynamicInspectionForm selectedAssignment={selectedAssignment} />;
       case 'reports':
-        return (
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-4">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-2">
-                <span>📄</span>
-                <span>Inspection Reports</span>
-              </h2>
-              <p className="text-gray-600 mt-1">View your inspection reports</p>
-            </div>
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <p className="text-blue-700">
-                <strong>Note:</strong> Reports functionality will be integrated with existing report system.
-                Your completed inspection forms will automatically generate reports.
-              </p>
-            </div>
-          </div>
-        );
+        return <InspectorReports />;
       default:
         return <LocationManagement inspector={inspector} setMessage={setMessage} />;
     }
   };
 
-  if (!inspector) {
+  if (loading || !inspector) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-cream-primary">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary mx-auto mb-4"></div>
+          <p className="text-brown-primary">Loading Inspector Dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-cream-primary">
       {/* Sidebar */}
       <InspectorSidebar
         activeSection={activeSection}
@@ -83,19 +115,19 @@ const InspectorDashboard = () => {
       <div className="flex-1 p-6 overflow-y-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Inspector Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {inspector.name}</p>
+          <h1 className="text-3xl font-bold text-brown-primary">Inspector Dashboard</h1>
+          <p className="text-brown-secondary">Welcome back, {inspector.name}</p>
         </div>
 
         {/* Messages */}
         {message && (
-          <div className="mb-6 p-4 rounded-lg bg-blue-100 text-blue-700 border border-blue-300">
+          <div className="mb-6 p-4 rounded-lg bg-green-primary text-cream-primary border border-soft-green">
             {message}
           </div>
         )}
 
         {/* Dynamic Content */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-cream-primary rounded-lg shadow-lg p-6 border border-brown-primary-300">
           {renderContent()}
         </div>
       </div>

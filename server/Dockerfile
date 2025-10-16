@@ -49,19 +49,23 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Configure npm for more robust installs
+# Configure npm for more robust installs and install nodemon globally
 RUN npm config set registry https://registry.npmjs.org/ \
  && npm config set fetch-retries 5 \
  && npm config set fetch-retry-factor 10 \
  && npm config set fetch-retry-mintimeout 20000 \
  && npm config set strict-ssl true \
- && npm cache clean --force
+ && npm cache clean --force \
+ && npm install -g nodemon
 
 # Install dependencies (use npm ci if package-lock.json exists, otherwise npm install)
 RUN if [ -f package-lock.json ]; then npm ci --include=dev --unsafe-perm; else npm install --include=dev --unsafe-perm; fi
 
 # Copy source code
 COPY . .
+
+# Set the PORT environment variable explicitly
+ENV PORT=4000
 
 # Expose the port your app runs on
 EXPOSE 4000

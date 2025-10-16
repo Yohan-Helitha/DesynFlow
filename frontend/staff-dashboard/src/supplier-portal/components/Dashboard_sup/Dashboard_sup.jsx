@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard_sup.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +15,7 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar } from 'react-icons/fa';
+import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar, FaUserTie, FaTruck } from 'react-icons/fa';
 
 ChartJS.register(
   CategoryScale,
@@ -159,18 +159,27 @@ const generateSupplierChartData = (orders, materials, earnings) => {
 function Dashboard_sup() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [requests, setRequests] = useState([]);
+  const navigate = useNavigate();
   const [hiddenRequests, setHiddenRequests] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const [pendingOrders, setPendingOrders] = useState([]);
   const [processingId, setProcessingId] = useState(null);
   const [supplierData, setSupplierData] = useState({
     profile: { name: "", email: "", rating: 0, totalOrders: 0 },
-    orders: { active: 0, completed: 0, pending: 0 },
+    orders: { active: 0, completed: 0, pending: 0, rejected: 0 },
     materials: [],
-    performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0 },
+    materialsStats: { totalMaterials: 0, materialCategories: 0, lowStockCount: 0, topDemandMaterial: 'N/A' },
+    performance: { 
+      onTimeDelivery: 0, 
+      qualityScore: 0, 
+      responseTime: 0, 
+      totalOrders: 0, 
+      successRate: 0, 
+      customerSatisfaction: 0 
+    },
     recentOrders: [],
     notifications: [],
-    earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0 },
+    earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0, pendingEarnings: 0, growthRate: 0 },
     chartData: {
       monthlyEarnings: { labels: [], datasets: [] },
       orderFulfillment: { labels: [], datasets: [] },
@@ -179,15 +188,35 @@ function Dashboard_sup() {
     }
   });
   const [loading, setLoading] = useState(true);
+  const [processingSampleId, setProcessingSampleId] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedSampleId, setSelectedSampleId] = useState(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  // Store supplierUserId in localStorage on component mount
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user.id && user.role === "supplier") {
+      localStorage.setItem("supplierUserId", user.id);
+    }
+  }, []);
 
   // Fetch pending approval orders
   const fetchPendingOrders = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/purchase-orders");
+      const response = await axios.get("http://localhost:4000/api/purchase-orders");
       const allOrders = response.data;
-      const pending = allOrders.filter(order => order.status === "Draft");
+      
+      // Sort all orders by creation date - newest first
+      const sortedOrders = allOrders.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+        return dateB - dateA; // Newest first
+      });
+      
+      const pending = sortedOrders.filter(order => order.status === "Draft");
       setPendingOrders(pending);
     } catch (error) {
       console.error("Error fetching pending orders:", error);
@@ -199,7 +228,7 @@ function Dashboard_sup() {
   const handleApprove = async (id) => {
     try {
       setProcessingId(id);
-      await axios.put(`http://localhost:3000/api/purchase-orders/${id}`, { status: "Approved" });
+      await axios.put(`http://localhost:4000/api/purchase-orders/${id}`, { status: "Approved" });
       
       // Add notification to localStorage
       const orderToApprove = pendingOrders.find(o => o._id === id);
@@ -228,7 +257,7 @@ function Dashboard_sup() {
   const handleReject = async (id) => {
     try {
       setProcessingId(id);
-      await axios.put(`http://localhost:3000/api/purchase-orders/${id}`, { status: "Rejected" });
+      await axios.put(`http://localhost:4000/api/purchase-orders/${id}`, { status: "Rejected" });
       
       // Add notification to localStorage
       const orderToReject = pendingOrders.find(o => o._id === id);
@@ -253,79 +282,169 @@ function Dashboard_sup() {
     }
   };
 
+  // Handle sample order approval
+  const handleSampleApprove = async (sampleId) => {
+    try {
+      setProcessingSampleId(sampleId);
+      await axios.patch(`http://localhost:4000/api/samples/${sampleId}/review`, { 
+        status: "Approved",
+        reviewNote: "Sample approved by supplier"
+      });
+      
+      // Add notification to localStorage
+      const sampleToApprove = requests.find(r => r._id === sampleId);
+      if (sampleToApprove) {
+        const notification = {
+          id: Date.now(),
+          type: "success",
+          message: `Sample request for ${sampleToApprove.materialId?.materialName || 'material'} has been approved!`
+        };
+        const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+        notifs.push(notification);
+        localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
+      }
+      
+      // Refresh requests
+      fetchSupplierDashboardData();
+    } catch (error) {
+      console.error("Error approving sample:", error);
+    } finally {
+      setProcessingSampleId(null);
+    }
+  };
+
+  // Handle sample order rejection with reason
+  const handleSampleReject = (sampleId) => {
+    setSelectedSampleId(sampleId);
+    setShowRejectModal(true);
+  };
+
+  const confirmSampleReject = async () => {
+    if (!rejectReason.trim()) {
+      alert('Please provide a reason for rejection');
+      return;
+    }
+
+    try {
+      setProcessingSampleId(selectedSampleId);
+      await axios.patch(`http://localhost:4000/api/samples/${selectedSampleId}/review`, { 
+        status: "Rejected",
+        reviewNote: rejectReason
+      });
+      
+      // Add notification to localStorage
+      const sampleToReject = requests.find(r => r._id === selectedSampleId);
+      if (sampleToReject) {
+        const notification = {
+          id: Date.now(),
+          type: "warning",
+          message: `Sample request for ${sampleToReject.materialId?.materialName || 'material'} has been rejected.`
+        };
+        const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+        notifs.push(notification);
+        localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
+      }
+      
+      // Reset state and refresh
+      setShowRejectModal(false);
+      setRejectReason('');
+      setSelectedSampleId(null);
+      fetchSupplierDashboardData();
+    } catch (error) {
+      console.error("Error rejecting sample:", error);
+    } finally {
+      setProcessingSampleId(null);
+    }
+  };
+
   useEffect(() => {
     fetchPendingOrders();
 
-    // Set up auto-refresh every 30 seconds for real-time data
-    const intervalId = setInterval(() => {
-      fetchPendingOrders();
-    }, 30000);
-
-    return () => clearInterval(intervalId);
+    // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
   useEffect(() => {
     const fetchSupplierDashboardData = async () => {
       setLoading(true);
-      // Get supplier ID from authentication/session or use a dynamic method
-      let supplierId = localStorage.getItem('currentSupplierId') || 
-                      sessionStorage.getItem('supplierId') || 
-                      new URLSearchParams(window.location.search).get('supplierId');
 
-      // If no supplier ID is found, try to get the first available supplier for demo purposes
-      if (!supplierId) {
-        try {
-          const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
-          const suppliers = await suppliersResponse.json();
-          if (suppliers && suppliers.length > 0) {
-            supplierId = suppliers[0]._id;
-            localStorage.setItem('currentSupplierId', supplierId);
-          } else {
-            setLoading(false);
-            return;
-          }
-        } catch (error) {
-          console.error('Error fetching suppliers:', error);
+      try {
+        // Fetch all suppliers data instead of specific supplier
+        const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
+        const suppliersData = await suppliersResponse.json();
+        
+        // Sort suppliers by creation date - newest first
+        const suppliers = suppliersData.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
+        
+        if (!suppliers || suppliers.length === 0) {
           setLoading(false);
           return;
         }
-      }
 
-      try {
-        const samplesResponse = await fetch(`http://localhost:3000/api/samples/${supplierId}`);
-        const samplesData = await samplesResponse.json();
+        // Fetch all sample requests
+        const samplesResponse = await fetch("http://localhost:4000/api/samples/all");
+        const allSamples = await samplesResponse.json();
+        setRequests(Array.isArray(allSamples) ? allSamples : []);
 
-        if (Array.isArray(samplesData)) setRequests(samplesData);
-        else if (samplesData && Array.isArray(samplesData.samples)) setRequests(samplesData.samples);
-        else setRequests([]);
+        // Fetch all orders from all suppliers
+        const ordersResponse = await fetch("http://localhost:4000/api/purchase-orders");
+        const ordersData = await ordersResponse.json();
+        
+        // Sort orders by creation date - newest first
+        const allOrders = ordersData.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
 
-        const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
-        const suppliers = await suppliersResponse.json();
-        const currentSupplier = suppliers.find(s => s._id === supplierId);
-        if (!currentSupplier) { setLoading(false); return; }
-
-        const ordersResponse = await fetch("http://localhost:3000/api/purchase-orders");
-        const allOrders = await ordersResponse.json();
-        const supplierOrders = allOrders.filter(order => 
-          order.supplierId === supplierId || order.supplier?.toString() === supplierId
-        );
-
-        const materialsResponse = await fetch(`http://localhost:3000/api/materials?supplierId=${supplierId}`);
+        // Fetch all materials from all suppliers
+        const materialsResponse = await fetch("http://localhost:4000/api/materials");
         const materials = await materialsResponse.json();
 
-        let supplierRatings = [];
+        // Fetch all supplier ratings
+        let allSupplierRatings = [];
         try {
-          const ratingsResponse = await fetch(`http://localhost:3000/api/supplier-ratings/${supplierId}`);
-          if (ratingsResponse.ok) supplierRatings = await ratingsResponse.json();
+          const ratingsPromises = suppliers.map(supplier => 
+            fetch(`http://localhost:4000/api/supplier-ratings/${supplier._id}`)
+              .then(res => res.ok ? res.json() : [])
+              .catch(() => [])
+          );
+          const ratingsResults = await Promise.all(ratingsPromises);
+          allSupplierRatings = ratingsResults.flat();
         } catch (err) { console.log('Ratings not available:', err); }
 
+        // Aggregate order statistics from all suppliers with more comprehensive status mapping
         const orderStats = {
-          active: supplierOrders.filter(o => o.status === 'active' || o.status === 'processing').length,
-          completed: supplierOrders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
-          pending: supplierOrders.filter(o => o.status === 'pending').length
+          active: allOrders.filter(o => 
+            o.status === 'active' || 
+            o.status === 'processing' || 
+            o.status === 'In Progress' || 
+            o.status === 'SentToSupplier' ||
+            o.status === 'InProgress'
+          ).length,
+          completed: allOrders.filter(o => 
+            o.status === 'completed' || 
+            o.status === 'delivered' || 
+            o.status === 'Delivered' ||
+            o.status === 'Closed'
+          ).length,
+          pending: allOrders.filter(o => 
+            o.status === 'pending' || 
+            o.status === 'Draft' ||
+            o.status === 'PendingFinanceApproval' ||
+            o.status === 'Approved'
+          ).length,
+          rejected: allOrders.filter(o => 
+            o.status === 'rejected' || 
+            o.status === 'Rejected' ||
+            o.status === 'cancelled'
+          ).length
         };
 
-        const completedOrders = supplierOrders.filter(o => o.status === 'completed');
+        const completedOrders = allOrders.filter(o => o.status === 'completed');
         const avgResponseTime = completedOrders.length > 0 ? 
           completedOrders.reduce((sum, order) => {
             const created = new Date(order.createdAt);
@@ -334,14 +453,33 @@ function Dashboard_sup() {
             return sum + (diffHours > 0 ? diffHours : 12);
           }, 0) / completedOrders.length : 12;
 
-        const latestAverageRating = supplierRatings.length > 0 ? 
-          supplierRatings.reduce((sum, rating) => sum + (rating.weightedScore || 0), 0) / supplierRatings.length : (currentSupplier?.rating || 0);
+        // Calculate average rating across all suppliers
+        const totalSupplierRating = suppliers.reduce((sum, supplier) => sum + (supplier.rating || 0), 0);
+        const avgSupplierRating = suppliers.length > 0 ? totalSupplierRating / suppliers.length : 0;
+        
+        const latestAverageRating = allSupplierRatings.length > 0 ? 
+          allSupplierRatings.reduce((sum, rating) => sum + (rating.weightedScore || 0), 0) / allSupplierRatings.length : avgSupplierRating;
+
+        // Enhanced performance calculations with real-time metrics
+        const onTimeOrders = completedOrders.filter(o => {
+          if (o.deliveredOnTime === true) return true;
+          if (o.deliveredOnTime === false) return false;
+          // Fallback: compare delivery date with expected date
+          const deliveryDate = new Date(o.deliveredDate || o.completedDate || o.updatedAt);
+          const expectedDate = new Date(o.expectedDelivery || o.dueDate || deliveryDate);
+          return deliveryDate <= expectedDate;
+        });
 
         const performance = {
           onTimeDelivery: completedOrders.length > 0 ? 
-            Math.round((completedOrders.filter(o => o.deliveredOnTime !== false).length / completedOrders.length) * 100) : 0,
-          qualityScore: Math.round(latestAverageRating * 20),
-          responseTime: Math.round(avgResponseTime)
+            Math.round((onTimeOrders.length / completedOrders.length) * 100) : 95,
+          qualityScore: latestAverageRating > 0 ? Math.round(latestAverageRating * 20) : 
+            Math.round(avgSupplierRating * 20) || 85,
+          responseTime: Math.round(avgResponseTime),
+          totalOrders: allOrders.length,
+          successRate: allOrders.length > 0 ? 
+            Math.round(((orderStats.completed + orderStats.active) / allOrders.length) * 100) : 0,
+          customerSatisfaction: Math.round((latestAverageRating || avgSupplierRating || 4.2) * 20)
         };
 
         const now = new Date();
@@ -349,23 +487,56 @@ function Dashboard_sup() {
         const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-        const thisMonthOrders = supplierOrders.filter(o => {
+        // Calculate earnings from all suppliers with enhanced tracking
+        const thisMonthOrders = allOrders.filter(o => {
           const orderDate = new Date(o.createdAt);
-          return orderDate >= thisMonthStart && (o.status === 'completed' || o.status === 'approved');
+          return orderDate >= thisMonthStart && (
+            o.status === 'completed' || 
+            o.status === 'Delivered' || 
+            o.status === 'approved' ||
+            o.status === 'Closed'
+          );
         });
 
-        const lastMonthOrders = supplierOrders.filter(o => {
+        const lastMonthOrders = allOrders.filter(o => {
           const orderDate = new Date(o.createdAt);
-          return orderDate >= lastMonthStart && orderDate <= lastMonthEnd && (o.status === 'completed' || o.status === 'approved');
+          return orderDate >= lastMonthStart && orderDate <= lastMonthEnd && (
+            o.status === 'completed' || 
+            o.status === 'Delivered' || 
+            o.status === 'approved' ||
+            o.status === 'Closed'
+          );
         });
+
+        // Calculate pending earnings from approved but not yet completed orders
+        const pendingEarnings = allOrders.filter(o => 
+          o.status === 'approved' || 
+          o.status === 'processing' || 
+          o.status === 'InProgress'
+        ).reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0);
 
         const earnings = {
-          thisMonth: thisMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0),
-          lastMonth: lastMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0),
-          totalEarnings: supplierOrders.filter(o => o.status === 'completed' || o.status === 'approved').reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0)
+          thisMonth: thisMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || parseFloat(o.amount) || 0), 0),
+          lastMonth: lastMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || parseFloat(o.amount) || 0), 0),
+          totalEarnings: allOrders.filter(o => 
+            o.status === 'completed' || 
+            o.status === 'Delivered' || 
+            o.status === 'approved' ||
+            o.status === 'Closed'
+          ).reduce((sum, o) => sum + (parseFloat(o.totalAmount) || parseFloat(o.amount) || 0), 0),
+          pendingEarnings,
+          growthRate: 0 // Will be calculated below
         };
 
-        const recentOrders = supplierOrders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5).map(order => ({
+        // Calculate growth rate
+        if (earnings.lastMonth > 0) {
+          earnings.growthRate = ((earnings.thisMonth - earnings.lastMonth) / earnings.lastMonth * 100);
+        } else if (earnings.thisMonth > 0) {
+          earnings.growthRate = 100; // 100% growth if starting from 0
+        }
+
+        // Get recent orders from all suppliers
+        const recentOrders = allOrders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5).map(order => ({
           id: order._id,
           date: order.createdAt,
           status: order.status,
@@ -373,20 +544,45 @@ function Dashboard_sup() {
           items: order.items?.length || 1
         }));
 
-        const chartData = generateSupplierChartData(supplierOrders, materials, earnings);
+        // Enhanced materials analytics
+        const allMaterials = Array.isArray(materials) ? materials : [];
+        const uniqueMaterialTypes = [...new Set(allMaterials.map(m => m.category || m.materialType || 'General'))];
+        const lowStockMaterials = allMaterials.filter(m => (m.currentStock || 0) < (m.minThreshold || 10));
+        
+        // Calculate material demand based on recent orders
+        const materialDemand = {};
+        allOrders.forEach(order => {
+          if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+              const materialName = item.materialId?.materialName || item.materialType || item.name;
+              if (materialName) {
+                materialDemand[materialName] = (materialDemand[materialName] || 0) + (item.quantity || 1);
+              }
+            });
+          }
+        });
+
+        const chartData = generateSupplierChartData(allOrders, allMaterials, earnings);
 
         setSupplierData({
           profile: {
-            name: currentSupplier.companyName || currentSupplier.name || 'Unnamed Supplier',
-            email: currentSupplier.email || currentSupplier.contactEmail || 'No email provided',
-            rating: parseFloat(latestAverageRating),
-            totalOrders: supplierOrders.length
+            name: `All Suppliers (${suppliers.length})`,
+            email: `${suppliers.length} Active Suppliers`,
+            rating: parseFloat(latestAverageRating) || avgSupplierRating || 4.2,
+            totalOrders: allOrders.length
           },
           orders: orderStats,
-          materials: Array.isArray(materials) ? materials.slice(0,8) : [],
+          materials: allMaterials.slice(0,8),
+          materialsStats: {
+            totalMaterials: allMaterials.length,
+            materialCategories: uniqueMaterialTypes.length,
+            lowStockCount: lowStockMaterials.length,
+            topDemandMaterial: Object.keys(materialDemand).length > 0 ? 
+              Object.keys(materialDemand).reduce((a, b) => materialDemand[a] > materialDemand[b] ? a : b) : 'N/A'
+          },
           performance,
           recentOrders,
-          notifications: (Array.isArray(samplesData) ? samplesData : (samplesData?.samples || [])).slice(0,3),
+          notifications: allSamples.slice(0,3),
           earnings,
           chartData
         });
@@ -397,11 +593,12 @@ function Dashboard_sup() {
         setSupplierData(prevData => ({
           ...prevData,
           profile: { name: "Data Loading Error", email: "", rating: 0, totalOrders: 0 },
-          orders: { active: 0, completed: 0, pending: 0 },
+          orders: { active: 0, completed: 0, pending: 0, rejected: 0 },
           materials: [],
-          performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0 },
+          materialsStats: { totalMaterials: 0, materialCategories: 0, lowStockCount: 0, topDemandMaterial: 'N/A' },
+          performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0, totalOrders: 0, successRate: 0, customerSatisfaction: 0 },
           recentOrders: [],
-          earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0 },
+          earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0, pendingEarnings: 0, growthRate: 0 },
         }));
       } finally {
         setLoading(false);
@@ -410,12 +607,7 @@ function Dashboard_sup() {
 
     fetchSupplierDashboardData();
 
-    // Set up auto-refresh every 30 seconds for real-time dashboard data
-    const dashboardIntervalId = setInterval(() => {
-      fetchSupplierDashboardData();
-    }, 30000);
-
-    return () => clearInterval(dashboardIntervalId);
+    // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
   const handleNoted = (id) => {
@@ -434,14 +626,45 @@ function Dashboard_sup() {
         <div className="sidebar-header">
           <h2>Supplier Panel</h2>
           <button className="close-btn" onClick={toggleSidebar}>
-            ×
+            <FaTimes />
           </button>
         </div>
+
+        {/* Dashboard Toggle Section */}
+        <div className="dashboard-toggle">
+          <h3>View Mode</h3>
+          <div className="toggle-buttons">
+            <div 
+              onClick={() => navigate('/procurement-officer')}
+              className="toggle-btn"
+              title="Procurement Officer Dashboard"
+            >
+              <FaUserTie />
+              <span>Procurement View</span>
+            </div>
+            <div 
+              className="toggle-btn active"
+              title="Supplier Dashboard View"
+            >
+              <FaTruck />
+              <span>Supplier View</span>
+            </div>
+          </div>
+        </div>
+
         <ul className="nav">
-          <li>Overview</li>
-          <li><Link to="/Order_details_sup">Orders</Link></li>
-          <li><Link to="/Sample_order_list">Samples</Link></li>
-          <li>Profile</li>
+          <li>
+            <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
+          </li>
+          <li>
+            <Link to="/procurement-officer/order_details_sup">My Orders</Link>
+          </li>
+          <li>
+            <Link to="/procurement-officer/sample_order_list_sup">Sample Orders</Link>
+          </li>
+          <li>
+            <span className="profile-settings-disabled">Profile Settings</span>
+          </li>
         </ul>
       </aside>
 
@@ -483,258 +706,80 @@ function Dashboard_sup() {
           </div>
         </div>
 
+        {/* Floating Dashboard Toggle Button */}
+        <div className="floating-toggle-btn" onClick={() => navigate('/procurement-officer')}>
+          <FaUserTie className="toggle-icon" />
+          <span>Switch to Procurement View</span>
+        </div>
+
         {/* Supplier Stats Overview */}
         <div className="supplier-stats">
           <div className="stats-grid">
             <div className="stat-card orders-card">
               <div className="stat-header">
-                <h3>Orders</h3>
-                <span className="stat-icon">📦</span>
+                <h3>Total Orders</h3>
                 <span className="stat-icon"><FaBox /></span>
               </div>
-              <div className="stat-main">{loading ? "..." : supplierData.orders.active + supplierData.orders.completed + supplierData.orders.pending}</div>
+              <div className="stat-main">
+                {loading ? "..." : (supplierData.orders.active + supplierData.orders.completed + supplierData.orders.pending + supplierData.orders.rejected)}
+              </div>
               <div className="stat-breakdown">
                 <span className="active">Active: {supplierData.orders.active}</span>
                 <span className="completed">Completed: {supplierData.orders.completed}</span>
                 <span className="pending">Pending: {supplierData.orders.pending}</span>
+                <span className="rejected">Rejected: {supplierData.orders.rejected}</span>
               </div>
             </div>
 
             <div className="stat-card earnings-card">
               <div className="stat-header">
-                <h3>This Month</h3>
-                <span className="stat-icon">💰</span>
+                <h3>Monthly Revenue</h3>
                 <span className="stat-icon"><FaMoneyBillWave /></span>
               </div>
-              <div className="stat-main">LKR {loading ? "..." : (supplierData.earnings.thisMonth / 1000).toFixed(0)}K</div>
+              <div className="stat-main">
+                LKR {loading ? "..." : (supplierData.earnings.thisMonth / 1000).toFixed(0)}K
+              </div>
               <div className="stat-breakdown">
                 <span className="growth">
-                  {supplierData.earnings.thisMonth > supplierData.earnings.lastMonth ? "📈" : "📉"} 
-                  vs Last Month
+                  {supplierData.earnings.growthRate >= 0 ? "📈" : "📉"} 
+                  {Math.abs(supplierData.earnings.growthRate).toFixed(1)}% vs Last Month
+                </span>
+                <span className="pending">
+                  Pending: LKR {(supplierData.earnings.pendingEarnings / 1000).toFixed(0)}K
                 </span>
               </div>
             </div>
 
             <div className="stat-card performance-card">
               <div className="stat-header">
-                <h3>Performance</h3>
-                <span className="stat-icon">⚡</span>
+                <h3>Performance Score</h3>
+                <span className="stat-icon"><FaChartLine /></span>
               </div>
               <div className="stat-main">{loading ? "..." : supplierData.performance.onTimeDelivery}%</div>
               <div className="stat-breakdown">
                 <span className="quality">Quality: {supplierData.performance.qualityScore}%</span>
-                <span className="response">Response: {supplierData.performance.responseTime}h</span>
+                <span className="response">Response: {supplierData.performance.responseTime}h avg</span>
+                <span className="success">Success Rate: {supplierData.performance.successRate}%</span>
               </div>
             </div>
 
             <div className="stat-card materials-card">
               <div className="stat-header">
-                <h3>Materials</h3>
-                <span className="stat-icon">🏗️</span>
-                <span className="stat-icon"><FaBox /></span>
+                <h3>Material Catalog</h3>
+                <span className="stat-icon"><FaTruck /></span>
               </div>
-              <div className="stat-main">{loading ? "..." : supplierData.materials.length}</div>
+              <div className="stat-main">
+                {loading ? "..." : supplierData.materialsStats.totalMaterials}
+              </div>
               <div className="stat-breakdown">
-                <span className="available">Available catalog items</span>
+                <span className="categories">Categories: {supplierData.materialsStats.materialCategories}</span>
+                <span className="low-stock">Low Stock: {supplierData.materialsStats.lowStockCount}</span>
+                <span className="top-demand">Top: {supplierData.materialsStats.topDemandMaterial}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Analytics Charts */}
-        <div className="analytics-section">
-          <h2>Business Analytics</h2>
-          <div className="charts-grid">
-            {/* Monthly Earnings Trend */}
-            <div className="chart-container">
-              <h3>Monthly Earnings Trend</h3>
-              <div className="chart-wrapper">
-                <Line
-                  data={supplierData.chartData.monthlyEarnings}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { display: false },
-                      title: { display: false }
-                    },
-                    scales: {
-                      y: { 
-                        beginAtZero: true,
-                        ticks: {
-                          callback: function(value) {
-                            return 'LKR ' + (value / 1000).toFixed(0) + 'K';
-                          }
-                        }
-                      }
-                    }
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Order Fulfillment Status */}
-            <div className="chart-container">
-              <h3>Order Fulfillment Status</h3>
-              <div className="chart-wrapper">
-                <Doughnut
-                  data={supplierData.chartData.orderFulfillment}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { position: 'bottom' }
-                    }
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Material Performance */}
-            <div className="chart-container">
-              <h3>Top Material Orders</h3>
-              <div className="chart-wrapper">
-                <Bar
-                  data={supplierData.chartData.materialPerformance}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { display: false }
-                    },
-                    scales: {
-                      y: { beginAtZero: true }
-                    }
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Performance Metrics Trend */}
-            <div className="chart-container">
-              <h3>Performance Metrics</h3>
-              <div className="chart-wrapper">
-                <Line
-                  data={supplierData.chartData.performanceTrend}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { position: 'bottom' }
-                    },
-                    scales: {
-                      y: { beginAtZero: true, max: 100 }
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Dashboard Content Grid */}
-        <div className="dashboard-content">
-          {/* Recent Orders */}
-          <div className="recent-orders">
-            <h3>Recent Orders</h3>
-            <div className="orders-list">
-              {loading ? (
-                <div className="loading">Loading orders...</div>
-              ) : supplierData.recentOrders.length === 0 ? (
-                <div className="no-orders">No recent orders</div>
-              ) : (
-                supplierData.recentOrders.map((order) => (
-                  <div key={order.id} className="order-item">
-                    <div className="order-info">
-                      <div className="order-id">#{order.id?.slice(-6)}</div>
-                      <div className="order-date">
-                        {new Date(order.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <div className="order-details">
-                      <div className="order-items">{order.items} items</div>
-                      <div className="order-amount">${order.amount?.toFixed(2)}</div>
-                    </div>
-                    <div className={`order-status ${order.status}`}>
-                      {order.status}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <Link to="/Order_details_sup" className="view-all-orders">View All Orders →</Link>
-          </div>
-
-          {/* Materials Catalog */}
-          <div className="materials-catalog">
-            <h3>Your Materials</h3>
-            <div className="materials-grid">
-              {loading ? (
-                <div className="loading">Loading materials...</div>
-              ) : supplierData.materials.length === 0 ? (
-                <div className="no-materials">No materials in catalog</div>
-              ) : (
-                supplierData.materials.map((material, index) => (
-                  <div key={material._id || index} className="material-item">
-                    <div className="material-name">{material.materialName || material.name}</div>
-                    <div className="material-price">${material.pricePerUnit?.toFixed(2) || 'N/A'}</div>
-                    <div className="material-category">{material.category || 'General'}</div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Sample Requests */}
-        <section className="sample-requests">
-          <h2>Sample Order Requests</h2>
-          {visibleRequests.length === 0 ? (
-            <p className="empty">No new sample requests 🎉</p>
-          ) : (
-            <div className="requests-grid">
-              {visibleRequests.map((req) => (
-                <div key={req._id} className="request-card">
-                  <div className="request-header">
-                    <span className="request-type">Sample Request</span>
-                    <span className={`request-status ${req.status}`}>{req.status}</span>
-                  </div>
-                  <div className="request-info">
-                    <p><strong>Material ID:</strong> {req.materialId}</p>
-                    <p><strong>Requested By:</strong> {req.requestedBy}</p>
-                    {req.reviewNote && (
-                      <p><strong>Note:</strong> {req.reviewNote}</p>
-                    )}
-                  </div>
-                  <div className="request-actions">
-                    <button className="btn-noted" onClick={() => handleNoted(req._id)}>
-                      Mark as Noted
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Quick Actions */}
-        <div className="quick-actions">
-          <h3>Quick Actions</h3>
-          <div className="actions-grid">
-            <Link to="/Sample_order_list" className="action-card">
-              <div className="action-icon">📋</div>
-              <div className="action-icon"><FaClipboardList /></div>
-              <div className="action-title">Sample Orders</div>
-              <div className="action-desc">Manage sample requests</div>
-            </Link>
-            <Link to="/Order_details_sup" className="action-card">
-              <div className="action-icon">📦</div>
-              <div className="action-icon"><FaBox /></div>
-              <div className="action-title">Order Status</div>
-              <div className="action-desc">Track order progress</div>
-            </Link>
-          </div>
-        </div>
       </main>
 
       {/* Pending Approval Results Panel */}
@@ -810,6 +855,73 @@ function Dashboard_sup() {
           )}
         </div>
       </div>
+
+      {/* Sample Rejection Modal */}
+      {showRejectModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Reject Sample Request</h3>
+              <button 
+                className="modal-close"
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason('');
+                  setSelectedSampleId(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <label htmlFor="rejectReason">Reason for rejection:</label>
+              <select 
+                id="rejectReason"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                className="reject-reason-select"
+              >
+                <option value="">Select a reason...</option>
+                <option value="Material not available">Material not available</option>
+                <option value="Quality specifications cannot be met">Quality specifications cannot be met</option>
+                <option value="Insufficient sample quantity">Insufficient sample quantity</option>
+                <option value="Delivery timeline too tight">Delivery timeline too tight</option>
+                <option value="Cost considerations">Cost considerations</option>
+                <option value="Technical specifications unclear">Technical specifications unclear</option>
+                <option value="Currently at capacity">Currently at capacity</option>
+                <option value="Other">Other</option>
+              </select>
+              {rejectReason === 'Other' && (
+                <textarea 
+                  placeholder="Please specify the reason..."
+                  value={rejectReason === 'Other' ? '' : rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  className="custom-reason-textarea"
+                />
+              )}
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="btn-cancel"
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason('');
+                  setSelectedSampleId(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn-confirm-reject"
+                onClick={confirmSampleReject}
+                disabled={!rejectReason.trim() || processingSampleId}
+              >
+                {processingSampleId ? "Processing..." : "Confirm Rejection"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

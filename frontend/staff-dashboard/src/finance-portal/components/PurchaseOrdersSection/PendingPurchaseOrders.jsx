@@ -24,7 +24,7 @@ export const PendingPurchaseOrders = () => {
 
   const fetchApprovals = () => {
     setLoading(true);
-    // Fetch purchase orders directly by status or finance approval status
+    // Fetch purchase orders
     fetch('/api/purchase-orders?status=PendingFinanceApproval')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch pending purchase orders');
@@ -69,6 +69,7 @@ export const PendingPurchaseOrders = () => {
   const filteredPOs = pendingPurchaseOrders
     .filter(
       (po) =>
+        (po.name && po.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (po._id && po._id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
         (po.projectId && po.projectId.toString().toLowerCase().includes(searchTerm.toLowerCase()))
     )
@@ -121,7 +122,7 @@ export const PendingPurchaseOrders = () => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">PO ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Order Name</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Action</th>
               </tr>
@@ -129,12 +130,12 @@ export const PendingPurchaseOrders = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPOs.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{po._id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-[#674636]">${(Number(po.totalAmount)||0).toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.name || po._id}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {(Number(po.totalAmount)||0).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
                       onClick={() => handleView(po)}
-                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white"
+                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-xs font-mono text-[#674636] hover:bg-[#AAB396] hover:text-white"
                     >
                       Open
                     </button>

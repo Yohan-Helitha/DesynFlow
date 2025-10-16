@@ -22,7 +22,7 @@ export const ViewEstimationModal = ({ estimation, onClose, onCreate }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-[#FFF8E8] p-6 rounded-lg shadow-md w-full max-w-lg max-h-[90vh] overflow-y-auto border border-[#AAB396]">
+      <div className="bg-[#FFF8E8] p-6 rounded-lg shadow-md w-full max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden border border-[#AAB396]">
         <h2 className="text-xl font-semibold mb-4 text-[#674636]">Estimation Details</h2>
 
         {/* Project Info */}
@@ -35,7 +35,7 @@ export const ViewEstimationModal = ({ estimation, onClose, onCreate }) => {
         {/* Cost Breakdown */}
         <div className="mb-4">
           <h3 className="font-semibold mb-2 text-[#674636]">Cost Breakdown</h3>
-          <table className="w-full text-sm border border-[#AAB396]">
+          <table className="w-full text-sm border border-[#AAB396] border-collapse">
             <thead>
               <tr className="bg-[#F7EED3]">
                 <th className="border border-[#AAB396] px-2 py-1 text-left text-[#674636]">Item</th>
@@ -50,7 +50,10 @@ export const ViewEstimationModal = ({ estimation, onClose, onCreate }) => {
                     type="number"
                     value={materialCost}
                     onChange={(e) => setMaterialCost(e.target.value)}
-                    className="w-full border border-[#AAB396] px-1 py-0.5 rounded bg-[#FFF8E8] text-[#674636]"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    className="w-full h-8 border border-[#AAB396] px-2 rounded bg-white text-[#674636] text-right focus:outline-none focus:ring-2 focus:ring-[#AAB396] focus:border-transparent"
                   />
                 </td>
               </tr>
@@ -61,7 +64,10 @@ export const ViewEstimationModal = ({ estimation, onClose, onCreate }) => {
                     type="number"
                     value={laborCost}
                     onChange={(e) => setLaborCost(e.target.value)}
-                    className="w-full border border-[#AAB396] px-1 py-0.5 rounded bg-[#FFF8E8] text-[#674636]"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    className="w-full h-8 border border-[#AAB396] px-2 rounded bg-white text-[#674636] text-right focus:outline-none focus:ring-2 focus:ring-[#AAB396] focus:border-transparent"
                   />
                 </td>
               </tr>
@@ -72,7 +78,10 @@ export const ViewEstimationModal = ({ estimation, onClose, onCreate }) => {
                     type="number"
                     value={serviceCost}
                     onChange={(e) => setServiceCost(e.target.value)}
-                    className="w-full border border-[#AAB396] px-1 py-0.5 rounded bg-[#FFF8E8] text-[#674636]"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    className="w-full h-8 border border-[#AAB396] px-2 rounded bg-white text-[#674636] text-right focus:outline-none focus:ring-2 focus:ring-[#AAB396] focus:border-transparent"
                   />
                 </td>
               </tr>
@@ -83,7 +92,10 @@ export const ViewEstimationModal = ({ estimation, onClose, onCreate }) => {
                     type="number"
                     value={contingencyCost}
                     onChange={(e) => setContingencyCost(e.target.value)}
-                    className="w-full border border-[#AAB396] px-1 py-0.5 rounded bg-[#FFF8E8] text-[#674636]"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    className="w-full h-8 border border-[#AAB396] px-2 rounded bg-white text-[#674636] text-right focus:outline-none focus:ring-2 focus:ring-[#AAB396] focus:border-transparent"
                   />
                 </td>
               </tr>

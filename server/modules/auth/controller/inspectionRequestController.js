@@ -111,6 +111,17 @@ export const getClientInspectionRequests = async (req, res) => {
 	}
 };
 
+// Get all inspection requests for CSR
+export const getAllInspectionRequests = async (req, res) => {
+	try {
+		const requests = await InspectionRequest.find({})
+			.sort({ createdAt: -1 });
+		res.status(200).json(requests);
+	} catch (error) {
+		res.status(500).json({ message: 'Failed to fetch inspection requests', error: error.message });
+	}
+};
+
 // Update status of an inspection request (admin/CSR only)
 export const updateInspectionRequestStatus = async (req, res) => {
 	try {

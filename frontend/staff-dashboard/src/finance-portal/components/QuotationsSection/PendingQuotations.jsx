@@ -46,10 +46,8 @@ export const PendingQuotations = () => {
     async function fetchQuotations() {
       setLoading(true);
       try {
-        // Pull approved estimations
         const data = await safeFetchJson(API_URL);
         const list = Array.isArray(data) ? data : [];
-        // Filter: show only estimations with no quotation yet
         const pendingOnly = list.filter(e => !e.quotationCreated && !e.lastQuotationId);
         setQuotations(pendingOnly);
       } catch (err) {
@@ -62,7 +60,6 @@ export const PendingQuotations = () => {
   }, []);
 
   const handleView = (estimation) => {
-    // Ensure we pass the correct project ID to the modal
     const processedEstimation = {
       ...estimation,
       projectId: getProjectId(estimation)
@@ -74,12 +71,12 @@ export const PendingQuotations = () => {
   const handleCreated = async (createdQuotation) => {
     console.log('[PendingQuotations] Quotation created, refreshing list...', createdQuotation);
     
-    // Remove the estimation from the pending list immediately for better UX
+   
     setQuotations(prev => prev.filter(q => q._id !== (selectedQuotation?._id)));
     setShowCreateModal(false);
     setSelectedQuotation(null);
     
-    // Optionally refresh the entire list to ensure consistency
+   
     try {
       const data = await safeFetchJson(API_URL);
       const list = Array.isArray(data) ? data : [];
@@ -100,7 +97,7 @@ export const PendingQuotations = () => {
     }
 	};
 
-  // Helper function to get project display name
+  // get project display name
   const getProjectDisplay = (quotation) => {
     if (quotation.projectId && typeof quotation.projectId === 'object') {
       return quotation.projectId.projectName || quotation.projectId._id;
@@ -108,7 +105,7 @@ export const PendingQuotations = () => {
     return quotation.projectId || '';
   };
 
-  // Helper function to get project ID for sorting/filtering
+  // get project ID for sorting/filtering
   const getProjectId = (quotation) => {
     if (quotation.projectId && typeof quotation.projectId === 'object') {
       return quotation.projectId._id;
@@ -134,7 +131,7 @@ export const PendingQuotations = () => {
       let aVal = a[sortField];
       let bVal = b[sortField];
       
-      // Handle project sorting specially
+  
       if (sortField === 'projectId') {
         aVal = getProjectDisplay(a).toLowerCase();
         bVal = getProjectDisplay(b).toLowerCase();
@@ -182,7 +179,7 @@ export const PendingQuotations = () => {
         </div>
       </div>
 
-      {/* Loading and Error States */}
+      {/* Loading and Error*/}
       {loading && (
         <div className="text-center py-8 text-[#AAB396]">
           Loading approved estimations...
@@ -202,9 +199,6 @@ export const PendingQuotations = () => {
             <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
-                  <div className="flex items-center">Estimation ID<ArrowUpDown size={14} className="ml-1" /></div>
-                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>
                   <div className="flex items-center">Project Name<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
@@ -234,34 +228,31 @@ export const PendingQuotations = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedQuotations.map((quotation) => (
                 <tr key={quotation._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">
-                    {quotation._id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {getProjectDisplay(quotation)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {quotation.version}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    ${quotation.laborCost?.toLocaleString()}
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                    LKR {quotation.laborCost?.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    ${quotation.materialCost?.toLocaleString()}
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                    LKR {quotation.materialCost?.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    ${quotation.serviceCost?.toLocaleString()}
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                    LKR {quotation.serviceCost?.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    ${quotation.contingencyCost?.toLocaleString()}
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                    LKR {quotation.contingencyCost?.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
-                    ${quotation.total ? quotation.total.toLocaleString() : '0'}
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                    LKR {quotation.total ? quotation.total.toLocaleString() : '0'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
                       onClick={() => handleView(quotation)}
-                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white"
+                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-xs font-mono text-[#674636] hover:bg-[#AAB396] hover:text-white"
                     >
                       Generate
                     </button>
@@ -270,7 +261,7 @@ export const PendingQuotations = () => {
               ))}
               {paginatedQuotations.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-[#AAB396]">No quotations found</td>
+                  <td colSpan={8} className="px-6 py-4 text-center text-[#AAB396]">No quotations found</td>
                 </tr>
               )}
             </tbody>
@@ -339,6 +330,10 @@ export const PendingQuotations = () => {
           projectId={selectedQuotation.projectId}
           estimateVersion={selectedQuotation.version}
           materials={materials}
+          estimatedLaborCost={selectedQuotation.laborCost || 0}
+          estimatedMaterialCost={selectedQuotation.materialCost || 0}
+          estimatedServiceCost={selectedQuotation.serviceCost || 0}
+          estimatedContingencyCost={selectedQuotation.contingencyCost || 0}
         />
       )}
     </div>

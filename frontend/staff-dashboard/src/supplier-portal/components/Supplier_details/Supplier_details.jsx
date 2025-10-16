@@ -5,10 +5,8 @@ import axios from "axios";
 import "./Supplier_details.css";
 import { FaPlus, FaEye, FaFileAlt, FaTimes, FaBox } from 'react-icons/fa';
 import { Link } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
 import { generateSupplierProfilePDF } from "../../utils/pdfGenerator";
 
-// Removed unused legacy URL & fetchHandler
 
 function Supplier_details() {
   const [suppliers, setSuppliers] = useState([]);
@@ -37,7 +35,7 @@ function Supplier_details() {
     if (userRole === "supplier" && currentSupplierId) {
       // For suppliers, load only their own data
       axios
-        .get(`http://localhost:3000/api/suppliers/${currentSupplierId}`)
+        .get(`http://localhost:4000/api/suppliers/${currentSupplierId}`)
         .then((res) => {
           setSuppliers([res.data]); // Array with single supplier
           setSelectedSupplier(res.data); // Auto-select their own profile
@@ -46,8 +44,16 @@ function Supplier_details() {
     } else {
       // For procurement officers, load all suppliers
       axios
-        .get("http://localhost:3000/api/suppliers")
-        .then((res) => setSuppliers(res.data))
+        .get("http://localhost:4000/api/suppliers")
+        .then((res) => {
+          // Sort suppliers by creation date - newest first
+          const sortedSuppliers = res.data.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+            return dateB - dateA; // Newest first
+          });
+          setSuppliers(sortedSuppliers);
+        })
         .catch((err) => console.error("Error fetching suppliers:", err));
     }
   };
@@ -70,7 +76,13 @@ function Supplier_details() {
       });
       loadSuppliers();
     }
-  }, [location.state?.justRated]);
+    
+    // Handle new supplier added
+    if (location.state?.newSupplierAdded) {
+      loadSuppliers();
+      // Success message removed - supplier list will be refreshed to show the new supplier
+    }
+  }, [location.state?.justRated, location.state?.newSupplierAdded]);
 
   // After suppliers fetched, ensure latest rating from navigation state is applied if still present
   useEffect(() => {
@@ -79,10 +91,45 @@ function Supplier_details() {
     }
   }, [suppliers, location.state]);
 
-  // Search filter
-  const filteredSuppliers = suppliers.filter((s) =>
-    s.companyName.toLowerCase().includes(search.toLowerCase())
-  );
+  // Search filter and sort - searches across all columns and sorts by creation date (newest first)
+  const filteredSuppliers = suppliers.filter((s) => {
+    const searchTerm = search.toLowerCase();
+    
+    // Search in basic fields
+    const basicFieldsMatch = 
+      (s.companyName || "").toLowerCase().includes(searchTerm) ||
+      (s.contactName || "").toLowerCase().includes(searchTerm) ||
+      (s.email || "").toLowerCase().includes(searchTerm) ||
+      (s.phone || "").toLowerCase().includes(searchTerm);
+    
+    // Search in materials array (name and price)
+    const materialsMatch = s.materials && s.materials.some(material =>
+      (material.name || "").toLowerCase().includes(searchTerm) ||
+      (material.pricePerUnit || "").toString().toLowerCase().includes(searchTerm)
+    );
+    
+    // Search in material types array
+    const materialTypesMatch = s.materialTypes && s.materialTypes.some(type =>
+      type.toLowerCase().includes(searchTerm)
+    );
+    
+    // Search in delivery regions array
+    const regionsMatch = s.deliveryRegions && s.deliveryRegions.some(region =>
+      region.toLowerCase().includes(searchTerm)
+    );
+    
+    // Search in rating
+    const ratingMatch = s.rating && s.rating.toString().includes(searchTerm);
+    
+    return basicFieldsMatch || materialsMatch || materialTypesMatch || regionsMatch || ratingMatch;
+  }).sort((a, b) => {
+    // Sort by creation date/time - newest first
+    // If createdAt exists, use it; otherwise use _id as MongoDB ObjectId contains timestamp
+    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+    
+    return dateB - dateA; // Newest first (descending order)
+  });
 
   // Helper to format amounts in LKR consistently
   const formatLKR = (amount) => {
@@ -92,22 +139,12 @@ function Supplier_details() {
 
   return (
     <>
-      <div className="page-with-sidebar">
-        <Sidebar />
-        <div className="supplier-details-page">
-          <div className="suppliers-container">
-          <div className="page-header">
-            <div className="header-content">
-              <h2>{userRole === "supplier" ? "My Supplier Profile" : "Interior Design Suppliers"}</h2>
-              <p className="header-subtitle">
-                {userRole === "supplier" 
-                  ? "Manage your company profile and materials catalog"
-                  : "Manage your supplier network and partnerships"
-                }
-              </p>
-            </div>
-            </div>
+      <div className="suppliers-container">
+        <div className="page-header">
+          <div className="header-content">
+            <h2>{userRole === "supplier" ? "My Supplier Profile" : "Interior Design Suppliers"}</h2>
           </div>
+        </div>
 
         {userRole === "procurement" && (
           <div className="top-controls">
@@ -119,7 +156,7 @@ function Supplier_details() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Link to="/Add_suppliers" className="btn-primary add-supplier-link">
+            <Link to="/procurement-officer/add_suppliers" className="btn-primary add-supplier-link">
               <FaPlus className="icon" />
               Add Supplier
             </Link>
@@ -154,21 +191,12 @@ function Supplier_details() {
                 <div className="materials-cell">
                   {s.materials && s.materials.length > 0 ? (
                     s.materials.map((material, idx) => (
-                      <div key={idx} className="material-item" style={{ 
-                        fontSize: "12px", 
-                        marginBottom: "2px",
-                        padding: "2px 6px",
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: "3px",
-                        display: "inline-block",
-                        marginRight: "4px",
-                        marginBottom: "4px"
-                      }}>
+                      <div key={idx} className="material-item material-item-inline">
                         <strong>{material.name}</strong>: {formatLKR(material.pricePerUnit)}/unit
                       </div>
                     ))
                   ) : (
-                    <span style={{ color: "#999" }}>
+                    <span className="no-materials-text">
                       {s.materialTypes?.join(", ") || "No materials"}
                     </span>
                   )}
@@ -192,9 +220,8 @@ function Supplier_details() {
 
       <div className="action-buttons">
         <button className="update-delete-supplier-btn">
-          <Link to="/Update_delete_suppliers">Manage Suppliers</Link>
+          <Link to="/procurement-officer/update_delete_suppliers">Manage Suppliers</Link>
         </button>
-      </div>
       </div>
     </div>
     
@@ -222,24 +249,18 @@ function Supplier_details() {
             </p>
             <div>
               <b>Materials & Pricing:</b>
-              <div style={{ marginTop: "8px" }}>
+              <div className="materials-container">
                 {selectedSupplier.materials && selectedSupplier.materials.length > 0 ? (
                   selectedSupplier.materials.map((material, idx) => (
-                    <div key={idx} style={{ 
-                      padding: "8px 12px", 
-                      margin: "4px 0", 
-                      backgroundColor: "#f8f9fa", 
-                      borderLeft: "4px solid #674636",
-                      borderRadius: "4px"
-                    }}>
-                      <strong style={{ color: "#674636" }}>{material.name}</strong>
-                      <span style={{ float: "right", color: "#28a745", fontWeight: "bold" }}>
+                    <div key={idx} className="material-detail-item">
+                      <strong className="material-name">{material.name}</strong>
+                      <span className="material-price">
                         {formatLKR(material.pricePerUnit)}/unit
                       </span>
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: "#666", fontStyle: "italic" }}>
+                  <div className="no-materials-modal">
                     {selectedSupplier.materialTypes?.join(", ") || "No materials listed"}
                   </div>
                 )}
@@ -263,7 +284,7 @@ function Supplier_details() {
             <button 
               className="place-order-btn"
               onClick={() => {
-                navigate('/OrderForm', {
+                navigate('/procurement-officer/order_form', {
                   state: {
                     preselectedSupplier: selectedSupplier,
                     supplierLocked: true

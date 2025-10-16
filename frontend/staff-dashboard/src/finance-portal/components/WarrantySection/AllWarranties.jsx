@@ -11,7 +11,6 @@ import {
   ToggleLeft,
   ToggleRight,
   Loader2,
-  RotateCcw,
 } from 'lucide-react';
 import { ViewWarrantyModal } from './ViewWarrantyModal';
 import { AddWarrantyModal } from './AddWarrantyModal';
@@ -28,7 +27,6 @@ export const AllWarranties = () => {
   const [allWarranties, setAllWarranties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch warranties from backend
   useEffect(() => {
@@ -37,9 +35,8 @@ export const AllWarranties = () => {
 
   const fetchWarranties = async () => {
     try {
-      if (!refreshing) setLoading(true);
+      setLoading(true);
       setError(null);
-      setRefreshing(true);
       const response = await fetch('/api/warranties/all');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -51,7 +48,6 @@ export const AllWarranties = () => {
       setError('Failed to load warranties. Please try again.');
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -110,6 +106,7 @@ export const AllWarranties = () => {
         warranty._id,
         warranty.projectName,
         warranty.clientName,
+        warranty.clientEmail,
         warranty.clientId,
         warranty.itemId,
         warranty.materialName,
@@ -138,7 +135,7 @@ export const AllWarranties = () => {
     });
 
   // Pagination
-  const itemsPerPage = 4;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredWarranties.length / itemsPerPage);
   const paginatedWarranties = filteredWarranties.slice(
     (currentPage - 1) * itemsPerPage,
@@ -231,17 +228,6 @@ export const AllWarranties = () => {
             </button>
           </div>
 
-          {/* Refresh */}
-          <button
-            onClick={fetchWarranties}
-            disabled={refreshing}
-            className={`px-3 py-2 rounded-md text-sm font-medium flex items-center border border-[#AAB396] ${refreshing ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#F7EED3]'}`}
-            title="Refresh warranties"
-          >
-            <RotateCcw size={16} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-            {refreshing ? 'Refreshing' : 'Refresh'}
-          </button>
-
           {/* Add Warranty Button - only show for active warranties */}
           {showActiveOnly && (
             <button
@@ -273,7 +259,6 @@ export const AllWarranties = () => {
                   { key: '_id', label: 'Warranty ID' },
                   { key: 'projectName', label: 'Project' },
                   { key: 'clientName', label: 'Client' },
-                  { key: 'clientId', label: 'Client ID' },
                   { key: 'materialType', label: 'Type' },
                   { key: 'itemId', label: 'Item ID' },
                   { key: 'startDate', label: 'Start Date' },
@@ -299,31 +284,28 @@ export const AllWarranties = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-[#F7EED3] divide-y divide-[#AAB396]">
+            <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedWarranties.map((warranty) => (
-                <tr key={warranty._id} className="hover:bg-[#FFF8E8]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">
+                <tr key={warranty._id} className="hover:bg-[#F7EED3]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty._id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.projectName || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.clientName || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">
-                    {warranty.clientId || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.materialType || warranty.materialCategory || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] font-mono text-xs">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.itemId || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.startDate || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {warranty.endDate || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -345,10 +327,10 @@ export const AllWarranties = () => {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
                       onClick={() => handleView(warranty)}
-                      className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md mr-2 border border-[#AAB396]"
+                      className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md mr-2 border border-[#AAB396] text-xs font-mono"
                     >
                       <Eye size={16} className="inline mr-1" />
                       View
@@ -358,7 +340,7 @@ export const AllWarranties = () => {
                       warranty.daysRemaining <= 30 && (
                         <button
                           onClick={() => handleSendReminder(warranty._id)}
-                          className="text-[#674636] hover:text-[#AAB396] bg-[#F7EED3] px-3 py-1 rounded-md border border-[#AAB396]"
+                          className="text-[#674636] hover:text-[#AAB396] bg-[#F7EED3] px-3 py-1 rounded-md border border-[#AAB396] text-xs font-mono"
                         >
                           <Bell size={16} className="inline mr-1" />
                           Remind
@@ -374,7 +356,7 @@ export const AllWarranties = () => {
               {paginatedWarranties.length === 0 && (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={9}
                     className="px-6 py-4 text-center text-[#AAB396]"
                   >
                     No {showActiveOnly ? 'active' : 'expired'} warranties found
@@ -442,12 +424,22 @@ export const AllWarranties = () => {
       {showViewModal && (
         <ViewWarrantyModal
           warranty={selectedWarranty}
-          onClose={() => setShowViewModal(false)}
+          onClose={() => {
+            setShowViewModal(false);
+            fetchWarranties(); // Refresh data when modal closes
+          }}
         />
       )}
 
       {/* Add Warranty Modal */}
-      {showAddModal && <AddWarrantyModal onClose={() => setShowAddModal(false)} />}
+      {showAddModal && (
+        <AddWarrantyModal
+          onClose={() => {
+            setShowAddModal(false);
+            fetchWarranties(); // Refresh data when modal closes
+          }}
+        />
+      )}
     </div>
   );
 };

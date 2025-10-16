@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 import PurchaseOrderItemSchema from "./purchaseOrderItem.model.js";
 
 const PurchaseOrderSchema = new Schema({
+  name: { type: String, required: true, trim: true },
   requestOrigin: { type: String, enum: ['ReorderAlert', 'Manual', 'ProjectMR'] },
   projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
   supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier' },

@@ -18,19 +18,29 @@ const CSRSidebar = ({ activeSection, onSelect, onLogout }) => {
       id: 'assign', 
       name: 'Inspector Assignment', 
       icon: '👨‍🔧', 
-      description: 'Assign inspectors to requests'
+      description: 'Search properties, view inspector locations, and assign inspectors'
+    },
+    { 
+      id: 'status', 
+      name: 'Assignment Status', 
+      icon: '📊', 
+      description: 'Track assignment progress and updates'
+    },
+    { 
+      id: 'history', 
+      name: 'Assignment History', 
+      icon: '📚', 
+      description: 'View completed and declined assignments'
     }
   ];
 
   return (
-    <div className="bg-white shadow-lg h-screen w-80 flex flex-col">
+    <div className="bg-dark-brown shadow-lg h-screen w-80 flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-800 mb-1">CSR Portal</h1>
-        <p className="text-sm text-gray-600">Customer Service Representative</p>
+      <div className="p-6 border-b border-brown-secondary">
+        <h1 className="text-xl font-bold text-cream-primary mb-1">CSR Portal</h1>
+        <p className="text-sm text-cream-light">Customer Service Representative</p>
         <div className="flex items-center mt-3">
-          <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-          <span className="text-sm text-gray-600">Online</span>
         </div>
       </div>
 
@@ -43,21 +53,21 @@ const CSRSidebar = ({ activeSection, onSelect, onLogout }) => {
               onClick={() => onSelect(section.id)}
               className={`w-full text-left p-4 rounded-lg transition-all duration-200 group ${
                 activeSection === section.id
-                  ? 'bg-blue-50 border-l-4 border-blue-500 text-blue-700'
-                  : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'
+                  ? 'bg-green-secondary border-l-4 border-soft-green text-cream-primary'
+                  : 'hover:bg-brown-secondary/30 text-cream-light hover:text-cream-primary'
               }`}
             >
               <div className="flex items-start space-x-3">
                 <span className="text-2xl flex-shrink-0">{section.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm mb-1">{section.name}</div>
-                  <div className="text-xs text-gray-500 leading-relaxed">
+                  <div className="text-xs text-cream-light/80 leading-relaxed">
                     {section.description}
                   </div>
                 </div>
               </div>
               {activeSection === section.id && (
-                <div className="mt-2 w-full h-0.5 bg-blue-500 rounded"></div>
+                <div className="mt-2 w-full h-0.5 bg-soft-green rounded"></div>
               )}
             </button>
           ))}
@@ -65,12 +75,12 @@ const CSRSidebar = ({ activeSection, onSelect, onLogout }) => {
       </div>
 
       {/* Footer with Logout */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-brown-secondary">
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center space-x-2 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+          className="w-full flex items-center justify-center space-x-3 p-3 bg-warm-brown text-cream-primary rounded-lg shadow-sm hover:bg-red-brown transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-soft-green/40"
         >
-          <span className="text-lg">🚪</span>
+          {/* Label */}
           <span className="font-medium">Logout</span>
         </button>
       </div>
