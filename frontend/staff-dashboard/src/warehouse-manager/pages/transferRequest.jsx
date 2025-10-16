@@ -121,7 +121,8 @@ const TransferRequest = () => {
   
     };
 
-    const chartData = filteredRequests.reduce((acc, req) => {
+    // Chart data based on all requests, NOT filteredRequests
+    const chartData = requests.reduce((acc, req) => {
       const fromKey = req.fromLocation?.trim();
       const toKey = req.toLocation?.trim();
 
@@ -145,7 +146,6 @@ const TransferRequest = () => {
     }, {});
 
     const chartArray = Object.values(chartData);
-
 
   return (
     <div>

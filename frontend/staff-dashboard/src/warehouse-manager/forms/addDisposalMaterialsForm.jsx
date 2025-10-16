@@ -59,7 +59,7 @@ const AddDisposalMaterialsForm = ({ loggedInUserId }) => {
   setFormData(prev => ({
     ...prev,
     inventoryId: selectedId,
-    inventoryName: selectedInv.inventoryName, // ✅ set inventoryName too
+    inventoryName: selectedInv.inventoryName, // set inventoryName too
   }));
 };
 

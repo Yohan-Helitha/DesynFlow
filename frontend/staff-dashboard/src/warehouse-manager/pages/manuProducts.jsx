@@ -1,7 +1,7 @@
 import Navbar from "../component/navbar";
 import React from 'react'
 import { fetchManuProducts, deleteManuProduct } from "../services/FmanuProductsService.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Edit2, Trash2,Filter,Search,Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { generatePDF } from "../utils/pdfGenerator.js";
@@ -118,14 +118,16 @@ const ManuProducts = () => {
 
   };
 
-  const chartData = products.reduce((acc, product) => {
-    const key = `${product.month}-${product.year}`;
-    if (!acc[key]) {
-      acc[key] = { monthYear: `${product.month}/${product.year}`, count: 0 };
-    }
-    acc[key].count += 1;
-    return acc;
-  }, {});
+  const chartData = useMemo(() => {
+    return products.reduce((acc, product) => {
+      const key = `${product.month}-${product.year}`;
+      if (!acc[key]) {
+        acc[key] = { monthYear: `${product.month}/${product.year}`, count: 0 };
+      }
+      acc[key].count += 1;
+      return acc;
+    }, {});
+  }, [products]);
 
   const chartArray = Object.values(chartData);
     

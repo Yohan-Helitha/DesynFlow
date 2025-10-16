@@ -112,7 +112,7 @@ const StockMovement = () => {
   
     };
 
-    const chartData = filteredMovements.reduce((acc, m) => {
+      const chartData = movements.reduce((acc, m) => {
       const fromKey = m.fromLocation?.trim();
       const toKey = m.toLocation?.trim();
       const qty = m.quantity || 0;

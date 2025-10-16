@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 
 // Load env
 dotenv.config();
 
 // Models
+import User from '../modules/auth/model/user.model.js';
 import InvLocation from '../modules/warehouse-manager/model/invLocationsModel.js';
 import ManuProduct from '../modules/warehouse-manager/model/manuProductsModel.js';
 import RawMaterial from '../modules/warehouse-manager/model/rawMaterialsModel.js';
@@ -32,7 +34,7 @@ const seedCollection = async (Model, docs, name) => {
     console.log(`ℹ️  ${name} already present (${count}). Skipping.`);
     return { skipped: true, inserted: 0 };
   }
-
+                                                          
   try {
     await Model.create(docs);
     console.log(`  • ${name} seeded (${docs.length})`);
@@ -46,8 +48,42 @@ const seedCollection = async (Model, docs, name) => {
   }
 };
 
+// Seed warehouse manager user
+const seedWarehouseUser = async () => {
+  try {
+    // Check if warehouse manager already exists
+    const existingUser = await User.findOne({ username: 'carol_warehouse' });
+    if (existingUser) {
+      console.log('ℹ️  Warehouse manager user already exists. Skipping.');
+      return;
+    }
+
+    // Warehouse manager user data
+    const warehouseUser = {
+      username: 'carol_warehouse',
+      email: 'carol.warehouse@desynflow.com',
+      password: await bcrypt.hash('warehouse123', 8),
+      phone: '+94708901234',
+      role: 'warehouse manager',
+      isVerified: true,
+      isActive: true
+    };
+
+    // Create the user
+    await User.create(warehouseUser);
+    console.log('✅ Warehouse manager user seeded successfully');
+    
+  } catch (error) {
+    console.error('❌ Error seeding warehouse user:', error);
+    throw error;
+  }
+};
+
 const seedWarehouse = async () => {
   try {
+    // First, seed the warehouse manager user if not exists
+    await seedWarehouseUser();
+
     // 1) Inventory Locations (3)
     const invs = [
       {

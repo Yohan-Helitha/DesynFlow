@@ -1,5 +1,5 @@
 import Navbar from "../component/navbar";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Edit2, Trash2,Filter,Search,Download } from "lucide-react";
 import { fetchDisposalMaterials, deleteDisposalMaterial } from "../services/FdisposalMaterialsService.js";
@@ -112,18 +112,22 @@ const DisposalMaterials = () => {
       "July", "August", "September", "October", "November", "December"
     ];
 
-    const chartData = disposals.reduce((acc, disposal) => {
-      const date = new Date(disposal.createdAt);
-      const month = monthNames[date.getMonth()]; // get month name
-      const year = date.getFullYear();
-      const key = `${month}-${year}`;
+    const chartData = useMemo(() => {
+      if (!disposals || disposals.length === 0) return [];
+      const chartData = disposals.reduce((acc, disposal) => {
+        const date = new Date(disposal.createdAt);
+        const month = monthNames[date.getMonth()]; // get month name
+        const year = date.getFullYear();
+        const key = `${month}-${year}`;
 
-      if (!acc[key]) {
-        acc[key] = { monthYear: `${month} ${year}`, count: 0 };
-      }
-      acc[key].count += 1;
-      return acc;
-    }, {});
+        if (!acc[key]) {
+          acc[key] = { monthYear: `${month} ${year}`, count: 0 };
+        }
+        acc[key].count += 1;
+        return acc;
+      }, {});
+      return Object.values(chartData);
+    }, [disposals]);
 
     const chartArray = Object.values(chartData);
 
