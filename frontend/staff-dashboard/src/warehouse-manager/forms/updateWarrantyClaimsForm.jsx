@@ -91,7 +91,7 @@ const UpdateWarrantyClaimForm = ({ loggedInUserId }) => {
   return (
     <div>
       <Navbar />
-      <div className="m-6">
+  <div className="m-6 flex justify-center">
   <div className="border-2 border-brown-primary-300 w-full max-w-4xl p-8 shadow bg-cream-primary rounded">
           <h1 className="text-2xl font-bold mb-6">Update Warranty Claim</h1>
 

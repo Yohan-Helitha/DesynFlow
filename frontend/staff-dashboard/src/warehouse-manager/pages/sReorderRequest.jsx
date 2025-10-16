@@ -283,21 +283,21 @@ const chartData = Object.keys(requestsPerMonth)
         <div className="overflow-x-auto text-xs">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative">Actions</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative">Request ID</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Inventory Name</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Inventory Address</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Inventory Contact</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Material Name</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Material ID</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Quantity</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Type</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Unit</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Expected Date</th>
-                <th className="border border-gray-300 px-4 py-2 w-32">Warehouse Manager</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Status</th>
-                <th className="border border-gray-300 px-4 py-2 w-32">Created At</th>
+              <tr>
+                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-brown-primary text-cream-primary z-40 relative">Actions</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-brown-primary text-cream-primary z-40 relative">Request ID</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Inventory Name</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Inventory Address</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Inventory Contact</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Material Name</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Material ID</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Quantity</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Type</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Unit</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Expected Date</th>
+                <th className="border border-gray-300 px-4 py-2 w-32 bg-brown-primary text-cream-primary">Warehouse Manager</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Status</th>
+                <th className="border border-gray-300 px-4 py-2 w-32 bg-brown-primary text-cream-primary">Created At</th>
               </tr>
             </thead>
             <tbody className="align-middle text-center text-xs">

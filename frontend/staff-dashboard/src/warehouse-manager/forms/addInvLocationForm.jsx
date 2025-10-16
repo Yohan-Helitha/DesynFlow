@@ -130,7 +130,7 @@ if (country && inventoryContact) {
   return (
     <div>
       <Navbar />
-      <div className="m-6">
+  <div className="m-6 flex justify-center">
         <div className="border-2 border-gray-300 m-auto p-8 w-xl  shadow bg-[#FFF8E8]">
           <h1 className="text-2xl font-bold mb-6">Add Inventory</h1>
 
