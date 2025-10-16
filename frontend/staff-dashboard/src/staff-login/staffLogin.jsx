@@ -31,30 +31,41 @@ const LoginPage = () => {
     e.preventDefault();
     if (!validate()) return;
 
+    console.log('🔐 Starting login process...', { email, password: '***' });
+
     try {
       const response = await fetch("http://localhost:4000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      
+      console.log('📡 Response received:', { status: response.status, ok: response.ok });
+      
       const data = await response.json();
+      console.log('📄 Response data:', data);
 
       if (response.ok) {
         if (data.require2FA) {
+          console.log('🔒 2FA required, redirecting to OTP...');
           navigate(`/verify-otp?email=${email}`);
         } else {
           // Store token and user data if provided
           if (data.token) {
             localStorage.setItem("authToken", data.token);
+            console.log('🎫 Token stored successfully');
           }
           if (data.user) {
             localStorage.setItem("user", JSON.stringify(data.user));
+            console.log('👤 User data stored:', data.user);
           }
 
           // Role-based navigation
           const userRole = data.user?.role;
+          console.log('🎭 User role detected:', userRole);
           
           if (userRole === "customer service representative") {
+            console.log('🏢 Redirecting to CSR dashboard...');
             navigate("/csr-dashboard");
           } else if (userRole === "inspector") {
             navigate("/inspector-dashboard");
@@ -70,13 +81,16 @@ const LoginPage = () => {
             navigate("/finance-manager");
           } else {
             // If role doesn't match any staff role, show error
+            console.log('❌ Role not recognized:', userRole);
             setError("Access denied. This portal is for staff members only.");
           }
         }
       } else {
+        console.log('❌ Response not OK:', data);
         setError(data.message || "Login failed");
       }
     } catch (err) {
+      console.error('🚨 Login error:', err);
       setError("Server error, please try again.");
     }
   };

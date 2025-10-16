@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import InspectionRequests from '../components/InspectionRequests';
 import PaymentManagement from '../components/PaymentManagement';
 import InspectorAssignment from '../components/InspectorAssignment';
+import AssignmentStatusManager from '../components/AssignmentStatusManager';
+import AssignmentHistory from '../components/AssignmentHistory';
 import CSRSidebar from '../components/CSRSidebar';
 
 const CSRDashboard = () => {
@@ -15,6 +17,10 @@ const CSRDashboard = () => {
         return <PaymentManagement />;
       case 'assign':
         return <InspectorAssignment />;
+      case 'status':
+        return <AssignmentStatusManager />;
+      case 'history':
+        return <AssignmentHistory />;
       default:
         return <InspectionRequests />;
     }
@@ -58,6 +64,22 @@ const CSRDashboard = () => {
             <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
               <h2 className="text-2xl font-bold text-dark-brown mb-2">
                 👨‍🔧 Inspector Assignment
+              </h2>
+            </div>
+          )}
+          
+          {activeSection === 'status' && (
+            <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
+              <h2 className="text-2xl font-bold text-dark-brown mb-2">
+                📊 Assignment Status
+              </h2>
+            </div>
+          )}
+          
+          {activeSection === 'history' && (
+            <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
+              <h2 className="text-2xl font-bold text-dark-brown mb-2">
+                📚 Assignment History
               </h2>
             </div>
           )}

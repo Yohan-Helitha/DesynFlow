@@ -2,6 +2,7 @@ import Assignment from '../model/assignment.model.js';
 import InspectorLocation from '../model/inspectorLocation.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
 import User from '../model/user.model.js';
+import webSocketService from '../../../services/webSocketService.js';
 
 // Calculate distance between two coordinates using Haversine formula (for 35km validation)
 const calculateDistance = (lat1, lng1, lat2, lng2) => {
@@ -109,9 +110,43 @@ export const assignInspector = async (req, res) => {
     location.updateAt = new Date();
     await location.save();
     
+    // Send assignment details to inspector (real-time notification)
+    const assignmentDetails = {
+      assignmentId: assignment._id,
+      propertyAddress: inspectionRequest.property_full_address || 
+        `${inspectionRequest.propertyLocation_address}, ${inspectionRequest.propertyLocation_city}`,
+      propertyType: inspectionRequest.propertyType,
+      clientName: inspectionRequest.client_name,
+      clientPhone: inspectionRequest.phone_number,
+      inspectionStartDate: inspectionRequest.inspection_date,
+      inspectionEndDate: inspectionRequest.inspection_date, // Same as start for now
+      numberOfRooms: inspectionRequest.number_of_room,
+      numberOfFloors: inspectionRequest.number_of_floor,
+      roomNames: inspectionRequest.room_name,
+      assignedAt: assignment.assignAt,
+      status: 'assigned'
+    };
+    
+    // Send notification to inspector
+    const notificationSent = webSocketService.sendToUser(
+      inspectorId, 
+      'new_assignment', 
+      {
+        type: 'NEW_ASSIGNMENT',
+        title: '🔔 New Inspection Assignment',
+        message: `You have been assigned to inspect ${inspectionRequest.client_name}'s property`,
+        assignmentDetails,
+        timestamp: new Date()
+      }
+    );
+    
+    console.log(`Assignment notification sent to inspector ${inspectorId}:`, notificationSent);
+    
     res.status(201).json({ 
       message: 'Inspector assigned and location updated to property successfully.', 
       assignment,
+      assignmentDetails,
+      notificationSent,
       distanceInfo: {
         calculated: calculatedDistance ? calculatedDistance.toFixed(1) : 'N/A',
         unit: 'km',
@@ -248,9 +283,72 @@ export const updateAssignmentStatus = async (req, res) => {
       await location.save();
     }
     
+    // Send real-time notifications based on status changes
+    const populatedAssignment = await Assignment.findById(assignmentId)
+      .populate('InspectionRequest_ID')
+      .populate('inspector_ID', 'username email phone');
+    
+    if (populatedAssignment) {
+      const inspectionRequest = populatedAssignment.InspectionRequest_ID;
+      const inspector = populatedAssignment.inspector_ID;
+      
+      // Send notification to CSR when inspector accepts/declines
+      if (status === 'declined') {
+        // Notify CSR about decline
+        webSocketService.sendToRole('customer service representative', 'assignment_declined', {
+          type: 'ASSIGNMENT_DECLINED',
+          title: '❌ Assignment Declined',
+          message: `Inspector ${inspector.username} declined the assignment for ${inspectionRequest.client_name}'s property`,
+          assignmentId: assignmentId,
+          inspectorName: inspector.username,
+          clientName: inspectionRequest.client_name,
+          propertyAddress: inspectionRequest.propertyLocation_address,
+          declineReason: decline_reason,
+          timestamp: new Date()
+        });
+      } else if (status === 'in-progress') {
+        // Notify CSR when inspector accepts (starts inspection)
+        webSocketService.sendToRole('customer service representative', 'assignment_accepted', {
+          type: 'ASSIGNMENT_ACCEPTED',
+          title: '✅ Assignment Accepted',
+          message: `Inspector ${inspector.username} started inspection for ${inspectionRequest.client_name}'s property`,
+          assignmentId: assignmentId,
+          inspectorName: inspector.username,
+          clientName: inspectionRequest.client_name,
+          propertyAddress: inspectionRequest.propertyLocation_address,
+          timestamp: new Date()
+        });
+        
+        // Notify client when inspector accepts
+        webSocketService.sendToUser(inspectionRequest.client_ID, 'inspector_accepted', {
+          type: 'INSPECTOR_ACCEPTED',
+          title: '🎉 Inspector Assigned to Your Property',
+          message: `Inspector ${inspector.username} has accepted your inspection request and will begin the inspection`,
+          inspectorName: inspector.username,
+          inspectorPhone: inspector.phone,
+          propertyAddress: inspectionRequest.propertyLocation_address,
+          estimatedStartTime: inspection_start_time || new Date(),
+          timestamp: new Date()
+        });
+      } else if (status === 'completed') {
+        // Notify CSR when inspection is completed
+        webSocketService.sendToRole('customer service representative', 'assignment_completed', {
+          type: 'ASSIGNMENT_COMPLETED',
+          title: '🏁 Inspection Completed',
+          message: `Inspector ${inspector.username} completed inspection for ${inspectionRequest.client_name}'s property`,
+          assignmentId: assignmentId,
+          inspectorName: inspector.username,
+          clientName: inspectionRequest.client_name,
+          propertyAddress: inspectionRequest.propertyLocation_address,
+          completedAt: inspection_end_time || new Date(),
+          timestamp: new Date()
+        });
+      }
+    }
+    
     res.status(200).json({ 
       message: 'Assignment status updated successfully.', 
-      assignment,
+      assignment: populatedAssignment,
       inspector_status: location?.status 
     });
   } catch (err) {
