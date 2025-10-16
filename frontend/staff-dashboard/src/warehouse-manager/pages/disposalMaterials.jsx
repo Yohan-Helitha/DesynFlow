@@ -136,7 +136,7 @@ const DisposalMaterials = () => {
           <h1 className="text-2xl font-bold mt-6 mb-10">Disposal Materials</h1>
           <button
             className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
-            onClick={() => navigate("/add-disposal-material")}
+            onClick={() => navigate("/warehouse-manager/disposal-materials/add")}
           >
             + Add Disposal
           </button>
@@ -261,7 +261,7 @@ const DisposalMaterials = () => {
                       <div className="flex items-center justify-center gap-6">
                         <div
                           className="group relative cursor-pointer"
-                          onClick={() => navigate(`/update-disposal-material/${disposal._id}`)}
+                          onClick={() => navigate(`/warehouse-manager/disposal-materials/update/${disposal._id}`)}
                         >
                           <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]"  />
                           <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity">

@@ -68,16 +68,24 @@ export default function LeaderDashboard() {
         );
         setProjects(teamProjects);
 
-        // 3. Get reports and meetings for the first ongoing project (optional)
+        // 3. Get reports, meetings, and tasks for the first ongoing project (optional)
         const ongoing = teamProjects.find(p => !["Completed","Cancelled"].includes(p.status));
         if (ongoing) {
           const repRes = await fetch(`http://localhost:4000/api/reports/project/${ongoing._id}`);
           setReports(repRes.ok ? await repRes.json() : []);
 
+          // Fetch tasks for the project
+          const tasksRes = await fetch(`http://localhost:4000/api/tasks/project/${ongoing._id}`);
+          if (tasksRes.ok) {
+            const tasksData = await tasksRes.json();
+            setTasks(tasksData);
+          }
+
           await fetchMeetings(ongoing._id);
         } else {
           setReports([]);
           setMeetings([]);
+          setTasks([]);
         }
 
         setLoading(false);
@@ -165,7 +173,7 @@ export default function LeaderDashboard() {
         <div key={project._id + '-timeline'} className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <h3 className="text-lg font-semibold text-brown-primary mb-2">Timeline</h3>
-            <MilestoneList milestones={project.timeline} />
+            <MilestoneList milestones={project.timeline} tasks={tasks} projectId={project._id} />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-brown-primary mb-2">Progress</h3>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Eye, RefreshCw, Clock } from 'lucide-react';
+import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Eye, Clock } from 'lucide-react';
 import { ViewWarrantyClaimModal } from './ViewWarrantyClaimModal';
 
 // Table displaying resolved warranty claims (Approved, Rejected, Replaced statuses)
@@ -12,27 +12,27 @@ export const WarrantyRequestHistory = () => {
 	const [sortDirection, setSortDirection] = useState('desc');
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 5;
-	const [refreshKey, setRefreshKey] = useState(0);
 	const [showViewModal, setShowViewModal] = useState(false);
 	const [selectedClaim, setSelectedClaim] = useState(null);
 
 	useEffect(() => {
-		async function fetchResolvedClaims() {
-			setLoading(true);
-			setError('');
-			try {
-				const resp = await fetch('/api/claims/resolved');
-				if (!resp.ok) throw new Error('Failed to load resolved warranty claims');
-				const data = await resp.json();
-				setClaims(Array.isArray(data) ? data : []);
-			} catch (e) {
-				setError(e.message);
-			} finally {
-				setLoading(false);
-			}
-		}
 		fetchResolvedClaims();
-	}, [refreshKey]);
+	}, []);
+
+	const fetchResolvedClaims = async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const resp = await fetch('/api/claims/resolved');
+			if (!resp.ok) throw new Error('Failed to load resolved warranty claims');
+			const data = await resp.json();
+			setClaims(Array.isArray(data) ? data : []);
+		} catch (e) {
+			setError(e.message);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	const handleSort = (field) => {
 		if (sortField === field) {
@@ -71,12 +71,14 @@ export const WarrantyRequestHistory = () => {
 	const pageSlice = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
 	const columns = [
-		{ key: '_id', label: 'Claim ID' },
-		{ key: 'warrantyId', label: 'Warranty ID', render: r => (typeof r.warrantyId === 'object' ? r.warrantyId?._id || '' : r.warrantyId || '') },
-		{ key: 'clientId', label: 'Client ID', render: r => (typeof r.clientId === 'object' ? r.clientId?._id || '' : r.clientId || '') },
+		{ key: 'clientName', label: 'Client name', render: r => (typeof r.clientId === 'object' ? (r.clientId?.username || r.clientId?.email || '') : (r.clientName || '')) },
 		{ key: 'issueDescription', label: 'Issue' },
+		{ key: 'proofUrl', label: 'Proof', render: r => r.proofUrl ? (
+			<a href={r.proofUrl} target="_blank" rel="noopener noreferrer" className="text-[#674636] hover:text-[#AAB396] underline">
+				View
+			</a>
+		) : <span className="text-[#AAB396]">No proof</span> },
 		{ key: 'status', label: 'Status', render: r => statusBadge(r.status) },
-		{ key: 'financeReviewerId', label: 'Reviewer', render: r => (typeof r.financeReviewerId === 'object' ? r.financeReviewerId?._id || '' : r.financeReviewerId || '') },
 		{ key: 'warehouseAction', label: 'Shipped', render: r => r.warehouseAction?.shippedReplacement ? 'Yes' : 'No' },
 		{ key: 'warehouseActionDate', label: 'Shipped At', render: r => r.warehouseAction?.shippedAt ? new Date(r.warehouseAction.shippedAt).toLocaleDateString() : '' },
 		{ key: 'updatedAt', label: 'Resolved', render: r => r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : '' },
@@ -118,13 +120,6 @@ export const WarrantyRequestHistory = () => {
 							<Filter size={16} className="text-[#AAB396]" />
 						</button>
 					</div>
-					<button
-						onClick={() => setRefreshKey(k => k + 1)}
-						className="bg-[#674636] text-[#FFF8E8] px-3 py-2 rounded-md text-sm font-medium hover:bg-[#AAB396] flex items-center"
-						title="Refresh"
-					>
-						<RefreshCw size={16} className="mr-1" /> Refresh
-					</button>
 				</div>
 			</div>
 
@@ -159,14 +154,14 @@ export const WarrantyRequestHistory = () => {
 							{!loading && pageSlice.map(row => (
 								<tr key={row._id} className="hover:bg-[#F7EED3]">
 									{columns.map(col => (
-										<td key={col.key} className="px-4 py-3 whitespace-nowrap text-sm text-[#674636]">
+										<td key={col.key} className="px-4 py-3 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
 											{col.render ? col.render(row) : (row[col.key] ?? '')}
 										</td>
 									))}
-									<td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+									<td className="px-4 py-3 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
 										<button 
 											onClick={() => handleView(row)}
-											className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors"
+											className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors text-xs font-mono"
 										>
 											<Eye size={16} className="inline mr-1" /> View
 										</button>

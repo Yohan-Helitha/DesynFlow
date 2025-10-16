@@ -5,13 +5,66 @@ import { X, CreditCard, User, Calendar, DollarSign, MapPin, Building, Phone, Mai
 export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
   if (!payment) return null;
 
+  // Helper to get nested or variant fields
+  const get = (...fields) => {
+    for (const f of fields) {
+      if (f === undefined) continue;
+      if (typeof f === 'function') {
+        try { const v = f(); if (v !== undefined && v !== null) return v; } catch { continue; }
+      } else if (f !== null) {
+        return f;
+      }
+    }
+    return undefined;
+  };
+
+  // Compose site location from address/city if available
+  const siteLocation = get(
+    payment.propertyLocation_address && payment.propertyLocation_city ? `${payment.propertyLocation_address}, ${payment.propertyLocation_city}` : undefined,
+    payment.siteLocation,
+    payment.propertyLocation_address,
+    payment.propertyLocation_city
+  );
+
+  // Property type
+  const propertyType = get(payment.propertyType, payment.property_type);
+
+  // Client info
+  const clientName = get(payment.clientName, payment.client_name, payment.client && payment.client.name);
+  const clientId = get(payment.clientId, payment.client_ID, payment.client && payment.client._id);
+  const email = get(payment.email, payment.client && payment.client.email);
+  const phone = get(payment.phone, payment.phone_number, payment.client && payment.client.phone_number);
+
+  // Estimated cost
+  const estimatedCost = get(
+    payment.estimation && payment.estimation.estimatedCost,
+    payment.estimatedCost,
+    payment.estimation && payment.estimation.total,
+    payment.total
+  );
+
+  // Payment receipt url
+  const paymentReceiptUrl = get(payment.paymentReceiptUrl, payment.receiptUrl);
+
+  // Notes/description
+  const notes = get(payment.notes, payment.description);
+
+  // Created date
+  const createdAt = get(payment.createdAt, payment.estimation && payment.estimation.createdAt);
+
+  // Status
+  const status = get(payment.status, payment.estimation && payment.estimation.status);
+
+  // ID
+  const inspectionRequestId = get(payment.inspectionRequestId, payment._id, payment.id);
+
   const buildReceiptUrl = (payment) => {
     const raw = payment?.paymentReceiptUrl || payment?.receiptUrl;
     if (!raw) return '';
     if (/^https?:\/\//i.test(raw)) return raw;
     let normalized = String(raw).replace(/\\/g, '/');
     const lower = normalized.toLowerCase();
-    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
 
     let idx = lower.indexOf('/uploads/');
     if (idx !== -1) {
@@ -73,7 +126,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Inspection Request ID</span>
-                  <p className="font-medium font-mono text-xs">{payment.inspectionRequestId || payment._id || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{inspectionRequestId || 'N/A'}</p>
                 </div>
               </div>
 
@@ -81,14 +134,14 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                 <User size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Client ID</span>
-                  <p className="font-medium font-mono text-xs">{payment.clientId || (payment.client && payment.client._id) || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{clientId || 'N/A'}</p>
                 </div>
               </div>
 
               <div className="flex items-center">
                 <span className="text-sm text-[#AAB396] mr-2">Payment Status</span>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status || (payment.estimation && payment.estimation.status))}`}>
-                  {payment.status || (payment.estimation && payment.estimation.status) || 'Unknown'}
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+                  {status || 'Unknown'}
                 </span>
               </div>
             </div>
@@ -99,20 +152,18 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                 <div>
                   <span className="text-sm text-[#AAB396]">Estimated Cost</span>
                   <p className="font-medium text-lg">
-                    ${payment.estimation && payment.estimation.estimatedCost !== undefined 
-                      ? payment.estimation.estimatedCost.toLocaleString() 
-                      : 'N/A'}
+                    {estimatedCost !== undefined && estimatedCost !== null ? `LKR ${Number(estimatedCost).toLocaleString()}` : 'N/A'}
                   </p>
                 </div>
               </div>
 
-              {payment.createdAt && (
+              {createdAt && (
                 <div className="flex items-center">
                   <Calendar size={16} className="mr-2 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Request Date</span>
                     <p className="font-medium">
-                      {new Date(payment.createdAt).toLocaleDateString()}
+                      {new Date(createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -128,16 +179,19 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-3">
-                <div>
-                  <span className="text-sm text-[#AAB396]">Client Name</span>
-                  <p className="font-medium">{payment.clientName || (payment.client && payment.client.name) || 'N/A'}</p>
-                </div>
                 
+                <div>
+                  <div className="flex items-center">
+                    <User size={16} className="mr-2 text-[#AAB396]" />
+                    <span className="text-sm text-[#AAB396]">Client Name</span>
+                  </div>
+                  <p className="font-medium ml-7">{clientName || 'N/A'}</p>
+                </div>
                 <div className="flex items-center">
                   <Mail size={16} className="mr-2 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Email</span>
-                    <p className="font-medium">{payment.email || 'N/A'}</p>
+                    <p className="font-medium">{email || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -147,7 +201,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                   <Phone size={16} className="mr-2 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Phone</span>
-                    <p className="font-medium">{payment.phone || 'N/A'}</p>
+                    <p className="font-medium">{phone || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -166,7 +220,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                   <MapPin size={16} className="mr-2 mt-1 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Site Location</span>
-                    <p className="font-medium">{payment.siteLocation || 'N/A'}</p>
+                    <p className="font-medium">{siteLocation || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -176,7 +230,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                   <Building size={16} className="mr-2 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Property Type</span>
-                    <p className="font-medium">{payment.propertyType || 'N/A'}</p>
+                    <p className="font-medium">{propertyType || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -184,7 +238,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
           </div>
 
           {/* Payment Receipt */}
-          {(payment.paymentReceiptUrl || payment.receiptUrl) && (
+          {paymentReceiptUrl && (
             <div className="bg-[#F7EED3] p-4 rounded-lg">
               <h4 className="font-semibold text-[#674636] mb-3 flex items-center">
                 <FileText size={18} className="mr-2" />
@@ -206,7 +260,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
               {/* Inline preview */}
               <div className="mt-4">
                 {(() => {
-                  const raw = payment.paymentReceiptUrl || payment.receiptUrl;
+                  const raw = paymentReceiptUrl;
                   const url = buildUploadsUrl(raw, 'inspection_payments');
                   const isPdf = /\.pdf($|\?)/i.test(url);
                   if (isPdf) {
@@ -231,11 +285,11 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
           )}
 
           {/* Notes or Description */}
-          {(payment.notes || payment.description) && (
+          {notes && (
             <div className="bg-[#F7EED3] p-4 rounded-lg">
               <h4 className="font-semibold text-[#674636] mb-2">Additional Notes</h4>
               <p className="text-[#674636] text-sm leading-relaxed">
-                {payment.notes || payment.description}
+                {notes}
               </p>
             </div>
           )}

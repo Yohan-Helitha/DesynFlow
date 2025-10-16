@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, FileText, User, Calendar, AlertCircle, CheckCircle, XCircle, Clock, Package, Truck } from 'lucide-react';
 
 
-const WarrantyClaimActionModal = ({ claim, onClose }) => {
+const WarrantyClaimActionModal = ({ claim, onClose, onAction }) => {
   if (!claim) return null;
 
   const getStatusIcon = (status) => {
@@ -31,6 +31,73 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
   const warranty = typeof claim.warrantyId === 'object' ? claim.warrantyId : null;
   const client = typeof claim.clientId === 'object' ? claim.clientId : null;
   const reviewer = typeof claim.financeReviewerId === 'object' ? claim.financeReviewerId : null;
+
+  // Helper functions for safe data extraction
+  const getClientName = () => {
+    if (client) {
+      return client.username || client.name || client.email || 'Unknown Client';
+    }
+    return 'Unknown Client';
+  };
+
+  const getClientEmail = () => {
+    if (client) {
+      return client.email || 'No email provided';
+    }
+    return 'No email provided';
+  };
+
+  const getClientPhone = () => {
+    if (client) {
+      return client.phone || client.phoneNumber || 'Not provided';
+    }
+    return 'Not provided';
+  };
+
+  const getClientAddress = () => {
+    if (client) {
+      return client.address || 'Not provided';
+    }
+    return 'Not provided';
+  };
+
+  const getProjectName = () => {
+    if (warranty) {
+      if (warranty.projectId && typeof warranty.projectId === 'object') {
+        return warranty.projectId.projectName || warranty.projectId.name || 'Unknown Project';
+      }
+      return warranty.projectName || 'Unknown Project';
+    }
+    return 'Unknown Project';
+  };
+
+  const getMaterialType = () => {
+    if (warranty) {
+      if (warranty.itemId && typeof warranty.itemId === 'object') {
+        return warranty.itemId.type || warranty.itemId.materialType || warranty.itemId.category || 'Unknown Type';
+      }
+      return warranty.materialType || warranty.type || 'Unknown Type';
+    }
+    return 'Unknown Type';
+  };
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) return 'Not specified';
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
+  const getReviewerName = () => {
+    if (reviewer) {
+      return reviewer.username || reviewer.name || reviewer.email || 'Unknown Reviewer';
+    }
+    return 'Not reviewed yet';
+  };
 
   // Local state to fetch authoritative warranty status & period
   const [warrantyLoading, setWarrantyLoading] = useState(false);
@@ -137,7 +204,7 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Claim ID</span>
-                  <p className="font-medium font-mono text-xs">{claim._id || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{claim._id || 'Not available'}</p>
                 </div>
               </div>
 
@@ -145,15 +212,15 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Warranty ID</span>
-                  <p className="font-medium font-mono text-xs">{warranty?._id || claim.warrantyId || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{warranty?._id || claim.warrantyId || 'Not linked'}</p>
                 </div>
               </div>
 
               <div className="flex items-center">
                 <User size={16} className="mr-2 text-[#AAB396]" />
                 <div>
-                  <span className="text-sm text-[#AAB396]">Client ID</span>
-                  <p className="font-medium font-mono text-xs">{client?._id || claim.clientId || 'N/A'}</p>
+                  <span className="text-sm text-[#AAB396]">Client Name</span>
+                  <p className="font-medium">{getClientName()}</p>
                 </div>
               </div>
             </div>
@@ -171,9 +238,7 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
                 <Calendar size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Submitted Date</span>
-                  <p className="font-medium">
-                    {claim.createdAt ? new Date(claim.createdAt).toLocaleDateString() : 'N/A'}
-                  </p>
+                  <p className="font-medium">{formatDate(claim.createdAt)}</p>
                 </div>
               </div>
 
@@ -182,9 +247,7 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
                   <Calendar size={16} className="mr-2 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Last Updated</span>
-                    <p className="font-medium">
-                      {new Date(claim.updatedAt).toLocaleDateString()}
-                    </p>
+                    <p className="font-medium">{formatDate(claim.updatedAt)}</p>
                   </div>
                 </div>
               )}
@@ -213,29 +276,29 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Warranty ID</span>
-                    <p className="font-medium font-mono text-xs">{warranty?._id || (typeof claim.warrantyId === 'string' ? claim.warrantyId : 'N/A')}</p>
+                    <p className="font-medium font-mono text-xs">{warranty?._id || (typeof claim.warrantyId === 'string' ? claim.warrantyId : 'Not available')}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Project Name</span>
-                    <p className="font-medium">{warranty?.projectName || 'N/A'}</p>
+                    <p className="font-medium">{getProjectName()}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Material Type</span>
-                    <p className="font-medium">{warranty?.materialType || warranty?.type || 'N/A'}</p>
+                    <p className="font-medium">{getMaterialType()}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Warranty Start</span>
-                    <p className="font-medium">{warrantyComputed?.startDate || warranty?.startDate || (warrantyDetails?.warrantyStart ? new Date(warrantyDetails.warrantyStart).toISOString().split('T')[0] : 'N/A')}</p>
+                    <p className="font-medium">{warrantyComputed?.startDate || formatDate(warranty?.startDate || warranty?.warrantyStart || warrantyDetails?.warrantyStart)}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Warranty End</span>
-                    <p className="font-medium">{warrantyComputed?.endDate || warranty?.endDate || (warrantyDetails?.warrantyEnd ? new Date(warrantyDetails.warrantyEnd).toISOString().split('T')[0] : 'N/A')}</p>
+                    <p className="font-medium">{warrantyComputed?.endDate || formatDate(warranty?.endDate || warranty?.warrantyEnd || warrantyDetails?.warrantyEnd)}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Dynamic Status</span>
-                    <p className="font-medium">{warrantyComputed?.status || warranty?.status || 'N/A'}</p>
+                    <p className="font-medium">{warrantyComputed?.status || warranty?.status || 'Unknown'}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -270,21 +333,21 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Client Name</span>
-                    <p className="font-medium">{client.name || 'N/A'}</p>
+                    <p className="font-medium">{getClientName()}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Email</span>
-                    <p className="font-medium">{client.email || 'N/A'}</p>
+                    <p className="font-medium">{getClientEmail()}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Phone</span>
-                    <p className="font-medium">{client.phone || 'N/A'}</p>
+                    <p className="font-medium">{getClientPhone()}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Address</span>
-                    <p className="font-medium">{client.address || 'N/A'}</p>
+                    <p className="font-medium">{getClientAddress()}</p>
                   </div>
                 </div>
               </div>
@@ -296,12 +359,10 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
             <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
               <h4 className="font-semibold text-[#674636] mb-3">Review Details</h4>
               <div className="space-y-3">
-                {reviewer && (
-                  <div>
-                    <span className="text-sm text-[#AAB396]">Reviewed By</span>
-                    <p className="font-medium">{reviewer.name || reviewer._id || 'N/A'}</p>
-                  </div>
-                )}
+                <div>
+                  <span className="text-sm text-[#AAB396]">Reviewed By</span>
+                  <p className="font-medium">{getReviewerName()}</p>
+                </div>
                 {claim.reviewComments && (
                   <div>
                     <span className="text-sm text-[#AAB396]">Review Comments</span>
@@ -311,42 +372,14 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
                 {claim.reviewDate && (
                   <div>
                     <span className="text-sm text-[#AAB396]">Review Date</span>
-                    <p className="font-medium">{new Date(claim.reviewDate).toLocaleDateString()}</p>
+                    <p className="font-medium">{formatDate(claim.reviewDate)}</p>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Warehouse Action Information */}
-          {claim.warehouseAction && (
-            <div className="bg-[#F7EED3] p-4 rounded-lg">
-              <h4 className="font-semibold text-[#674636] mb-3 flex items-center">
-                <Truck size={18} className="mr-2" />
-                Shipping Information
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <span className="text-sm text-[#AAB396]">Replacement Shipped</span>
-                  <p className="font-medium">
-                    {claim.warehouseAction.shippedReplacement ? (
-                      <span className="text-[#AAB396] font-semibold">Yes</span>
-                    ) : (
-                      <span className="text-[#674636] font-semibold">No</span>
-                    )}
-                  </p>
-                </div>
-                {claim.warehouseAction.shippedAt && (
-                  <div>
-                    <span className="text-sm text-[#AAB396]">Shipped Date</span>
-                    <p className="font-medium">
-                      {new Date(claim.warehouseAction.shippedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Warehouse Action Information removed per request */}
 
           {/* Additional Details */}
           {(claim.notes || claim.additionalDetails) && (
@@ -357,6 +390,24 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
               </p>
             </div>
           )}
+
+          {/* Proof Attachment, moved near the bottom */}
+          {claim.proofUrl && (
+            <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
+              <h4 className="font-semibold text-[#674636] mb-3">Attached Proof</h4>
+              <div className="flex items-center gap-3">
+                <a
+                  href={claim.proofUrl.startsWith('http') ? claim.proofUrl : `/${claim.proofUrl.replace(/^\/?/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 rounded-md border border-[#AAB396] bg-[#F7EED3] text-xs font-mono text-[#674636] hover:bg-[#674636] hover:text-[#FFF8E8]"
+                >
+                  Open Proof
+                </a>
+                <span className="text-xs text-[#AAB396] break-all">{claim.proofUrl}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -365,7 +416,11 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
             className="px-6 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
             onClick={async () => {
               await fetch(`/api/claims/${claim._id}/approve`, { method: 'PUT' });
-              onClose();
+              if (onAction) {
+                onAction(); // Triggers refresh in parent component
+              } else {
+                onClose();
+              }
             }}
           >
             Approve
@@ -374,7 +429,11 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
             className="px-6 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
             onClick={async () => {
               await fetch(`/api/claims/${claim._id}/reject`, { method: 'PUT' });
-              onClose();
+              if (onAction) {
+                onAction(); // Triggers refresh in parent component
+              } else {
+                onClose();
+              }
             }}
           >
             Reject

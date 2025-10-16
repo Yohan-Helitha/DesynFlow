@@ -405,7 +405,7 @@ const InvLocation = () => {
           <h1 className="text-2xl font-bold mt-6 mb-10">Inventory Locations</h1>
           <button
             className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
-            onClick={() => navigate("/add-location")}
+            onClick={() => navigate("/warehouse-manager/inventory-locations/add")}
           >
             + Add Location
           </button>
@@ -544,7 +544,7 @@ const InvLocation = () => {
                       <div className="flex items-center justify-center gap-4">
                         <div
                           className="cursor-pointer"
-                          onClick={() => navigate(`/update-location/${inv._id}`)}
+                          onClick={() => navigate(`/warehouse-manager/inventory-locations/update/${inv._id}`)}
                         >
                           <Edit2 className="w-5 h-5 text-[#674636] hover:text-[#A67C52]" />
                         </div>

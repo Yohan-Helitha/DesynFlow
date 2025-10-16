@@ -103,9 +103,9 @@ export default function ReportsManagement() {
             <h3 className="text-lg font-semibold text-brown-primary mb-4">
               Inspection Reports
             </h3>
-            <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-cream-light text-brown-primary">
+                <tr className="bg-brown-primary text-white">
                   <th className="p-3">Title</th>
                   <th className="p-3">Date</th>
                   <th className="p-3">Location</th>
@@ -144,9 +144,9 @@ export default function ReportsManagement() {
             {loading ? (
               <div className="text-brown-primary p-4">Loading reports...</div>
             ) : (
-              <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-cream-light text-brown-primary">
+                  <tr className="bg-brown-primary text-white">
                     <th className="p-3">Report Type</th>
                     <th className="p-3">Project</th>
                     <th className="p-3">Period</th>

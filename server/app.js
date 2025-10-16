@@ -17,6 +17,7 @@ import supplierRatingRouter from "./modules/supplier/routes/supplierRating.route
 import materialRouter from "./modules/supplier/routes/material.routes.js";
 import sampleRouter from "./modules/supplier/routes/sample.routes.js";
 import dashboardRouter from "./modules/supplier/routes/dashboard.routes.js";
+import supplierNotificationRouter from "./modules/supplier/routes/notification.routes.js";
 
 import './modules/project/model/project.model.js';
 import './modules/project/model/task.model.js';
@@ -66,12 +67,12 @@ import auditLogRoute from "./modules/warehouse-manager/routes/auditLogRoute.js";
 import thresholdAlertRoute from "./modules/warehouse-manager/routes/thresholdAlertRoute.js";
 
 //finane routes
+
 import projectRoute from './modules/finance/routes/projectRoutes.js';
 import expensesRoute from './modules/finance/routes/expensesRoutes.js';
 import inspectionEstimationRoute from './modules/finance/routes/inspectionEstimationRoutes.js';
 import projectEstimationRoute from './modules/finance/routes/projectEstimationRoutes.js';
 import paymentRoute from './modules/finance/routes/paymentRoutes.js';
-
 import quotationRoute from './modules/finance/routes/quotationRoutes.js';
 import purchaseOrderRoute from './modules/finance/routes/purchaseOrderRoutes.js';
 import warrantyRoute from './modules/finance/routes/warrantyRoutes.js';
@@ -79,6 +80,9 @@ import claimRoute from './modules/finance/routes/claimRoutes.js';
 import notificationRoute from './modules/finance/routes/notificationRoutes.js';
 import materialRoute from './modules/finance/routes/materialRoutes.js';
 import financeSummaryRoute from './modules/finance/routes/financeSummaryRoutes.js';
+import inProgressExpensesRoutes from './modules/finance/routes/inProgressExpensesRoutes.js';
+import financeNotificationRoutes from './modules/finance/routes/financeNotificationRoutes.js';
+import monthlyReportRoutes from './modules/finance/routes/monthlyReportRoutes.js';
 
 const app = express();
 
@@ -101,6 +105,7 @@ app.use("/api/purchase-orders", purchaseOrderRouter);
 app.use("/api/materials", materialRouter);
 app.use("/api/samples", sampleRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/supplier-notifications", supplierNotificationRouter);
 
 // Mount auth routes
 app.use("/api/auth", authRouter);
@@ -142,6 +147,7 @@ app.use("/api/warehouse/audit_log", auditLogRoute);
 app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
 
 //finance module routes
+
 app.use('/api/expenses', expensesRoute);
 app.use('/api/inspection-estimation', inspectionEstimationRoute);
 app.use('/api/project-estimation', projectEstimationRoute);
@@ -153,6 +159,9 @@ app.use('/api/claims', claimRoute);
 app.use('/api/notifications', notificationRoute);
 app.use('/api/materials', materialRoute);
 app.use('/api/finance-summary', financeSummaryRoute);
+app.use('/api/finance', inProgressExpensesRoutes);
+app.use('/api/finance-notifications', financeNotificationRoutes);
+app.use('/api/monthly-reports', monthlyReportRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

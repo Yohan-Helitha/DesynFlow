@@ -34,7 +34,7 @@ const LoginPage = () => {
     console.log('🔐 Starting login process...', { email, password: '***' });
 
     try {
-      const response = await fetch("http://localhost:4000/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -58,6 +58,11 @@ const LoginPage = () => {
           if (data.user) {
             localStorage.setItem("user", JSON.stringify(data.user));
             console.log('👤 User data stored:', data.user);
+            
+            // Store supplier-specific ID if user is a supplier
+            if (data.user.role === "supplier" && data.user.id) {
+              localStorage.setItem("supplierUserId", data.user.id);
+            }
           }
 
           // Role-based navigation
@@ -79,6 +84,8 @@ const LoginPage = () => {
             navigate("/procurement-officer");
           } else if (userRole === "finance manager") {
             navigate("/finance-manager");
+          } else if (userRole === "supplier") {
+            navigate("/dashboard_sup");
           } else {
             // If role doesn't match any staff role, show error
             console.log('❌ Role not recognized:', userRole);

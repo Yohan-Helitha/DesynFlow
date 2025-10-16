@@ -1,5 +1,6 @@
 import Project from '../model/project.model.js';
 import Team from '../model/team.model.js';
+import User from '../../auth/model/user.model.js';
 
 export const createProject = async (req, res) => {
     
@@ -15,6 +16,16 @@ export const createProject = async (req, res) => {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
+        // Look up client by email if clientId is an email
+        let actualClientId = clientId;
+        if (typeof clientId === 'string' && clientId.includes('@')) {
+            const client = await User.findOne({ email: clientId, role: 'client' });
+            if (!client) {
+                return res.status(400).json({ error: 'Client not found with the provided email' });
+            }
+            actualClientId = client._id;
+        }
+
         // Team assignment and status logic
         let status = 'On Hold';
         if (assignedTeamId) {
@@ -28,7 +39,7 @@ export const createProject = async (req, res) => {
         // Create project data
         const projectData = {
             projectName,
-            clientId,
+            clientId: actualClientId,
             assignedTeamId,
             status,
             startDate: new Date(startDate),
@@ -68,7 +79,7 @@ export const getProjects = async (req, res) => {
 
     try{
 
-        const projects = await Project.find().populate('assignedTeamId milestones');
+        const projects = await Project.find().populate('assignedTeamId milestones clientId');
         res.json(projects);
 
     }catch(error){
@@ -84,7 +95,7 @@ export const getProjectById = async (req, res) => {
     try{
 
         const{ id } = req.params;
-        const project = await Project.findById(id).populate('assignedTeamId milestones');
+        const project = await Project.findById(id).populate('assignedTeamId milestones clientId');
         if(!project){
             return res.status(404).json({ message: 'Project not found' });
         }
@@ -105,6 +116,15 @@ export const updateProject = async (req, res) => {
 
         const{ id } = req.params;
         const updateData = req.body;
+
+        // Look up client by email if clientId is an email
+        if (updateData.clientId && typeof updateData.clientId === 'string' && updateData.clientId.includes('@')) {
+            const client = await User.findOne({ email: updateData.clientId, role: 'client' });
+            if (!client) {
+                return res.status(400).json({ error: 'Client not found with the provided email' });
+            }
+            updateData.clientId = client._id;
+        }
 
         if(updateData.assignedTeamId){
             updateData.status = 'Active'; //if team assigned, set status to Active

@@ -82,7 +82,7 @@ const AddDisposalMaterialsForm = ({ loggedInUserId }) => {
         createdAt: new Date().toISOString(),
       });
       alert("Disposal material added successfully!");
-      navigate("/disposal-materials");
+      navigate("/warehouse-manager/disposal-materials");
     } catch (err) {
       console.error(err);
       alert("Failed to add disposal material");
@@ -221,7 +221,7 @@ const AddDisposalMaterialsForm = ({ loggedInUserId }) => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/disposal-materials")}
+                onClick={() => navigate("/warehouse-manager/disposal-materials")}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Cancel

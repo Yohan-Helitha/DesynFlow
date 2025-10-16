@@ -81,7 +81,7 @@ const AddManuProductForm = ({ loggedInUserId }) => {
           type: selectedProduct.type,
           unit: selectedProduct.unit,
           warrantyPeriod: selectedProduct.warrantyPeriod,
-          inventoryName: selectedProduct.inventoryName,
+          inventoryName: '',
           restockLevel: '',
           currentLevel: '',
           reorderLevel: ''
@@ -98,6 +98,27 @@ const AddManuProductForm = ({ loggedInUserId }) => {
     e.preventDefault();
     setErrors({}); // reset errors
 
+    if (!formData.inventoryName || !formData.materialName) {
+      setErrors({
+        inventoryName: "Inventory location and product name are required"
+      });
+      return;
+    }
+
+    // Duplicate check: same inventoryName & materialName
+    const duplicate = existingProducts.find(
+      (p) =>
+        p.inventoryName === formData.inventoryName &&
+        p.materialName.trim().toLowerCase() === formData.materialName.trim().toLowerCase()
+    );
+
+    if (duplicate) {
+      setErrors({
+        inventoryName: "This product already exists in the selected inventory"
+      });
+      return;
+    }
+
     const now = new Date();
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June','July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -113,7 +134,7 @@ const AddManuProductForm = ({ loggedInUserId }) => {
     try {
       await addManuProduct(payload);
       alert('Product added successfully!');
-      navigate('/manu-products');
+      navigate('/warehouse-manager/manufactured-products');
     } catch (err) {
       if (err.errors) {
         setErrors(err.errors);
@@ -164,11 +185,11 @@ const AddManuProductForm = ({ loggedInUserId }) => {
                   className={inputClass('materialId')}
                 >
                   <option value="">-- Select Material ID --</option>
-                  {existingProducts.map(p => (
-                    <option key={p.materialId} value={p.materialId}>
-                      {p.materialId} - {p.materialName}
-                    </option>
-                  ))}
+                    {[...new Map(existingProducts.map(p => [p.materialId, p])).values()].map(p => (
+                      <option key={p.materialId} value={p.materialId}>
+                        {p.materialId} - {p.materialName}
+                      </option>
+                    ))}
                 </select>
               </div>
             ) : (
@@ -376,7 +397,7 @@ const AddManuProductForm = ({ loggedInUserId }) => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/manu-products")}
+                onClick={() => navigate("/warehouse-manager/manufactured-products")}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Cancel

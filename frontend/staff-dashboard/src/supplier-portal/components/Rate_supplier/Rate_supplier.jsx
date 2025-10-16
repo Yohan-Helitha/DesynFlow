@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./Rate_supplier.css";
 
 function RateSupplier() {
+  console.log('🚀 RateSupplier component initializing...');
+  
   const [suppliers, setSuppliers] = useState([]);
   const [formData, setFormData] = useState({
     supplierId: "",
@@ -10,6 +12,8 @@ function RateSupplier() {
   });
   const [userRole, setUserRole] = useState("procurement");
   const [myRatings, setMyRatings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,6 +32,7 @@ function RateSupplier() {
 
   // Detect user role
   useEffect(() => {
+    console.log('🔍 Detecting user role...');
     // If coming from Orders page with order ID, this is a procurement officer rating
     const isFromOrdersPage = urlOrderId || location.state?.orderId;
     
@@ -49,47 +54,89 @@ function RateSupplier() {
     } else {
       setUserRole("procurement");
     }
-  }, [location, urlOrderId]);
+  }, [location.pathname, location.search, urlOrderId]);
+  
+  // Emergency fallback to show form after 2 seconds
+  useEffect(() => {
+    const emergencyTimer = setTimeout(() => {
+      if (loading) {
+        console.log('⚠️ Emergency timeout: forcing form to show');
+        setLoading(false);
+      }
+    }, 2000);
+    
+    return () => clearTimeout(emergencyTimer);
+  }, [loading]);
 
-  // Resolve API base (backend actually running on 3000 by default)
-  const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:3000";
+  // Resolve API base (backend actually running on 4000 by default)
+  const API_BASE = import.meta.env?.VITE_API_BASE || import.meta.env?.REACT_APP_API_BASE || "http://localhost:4000";
 
   // Fetch data based on user role
   useEffect(() => {
+    setLoading(true);
+    setError(null);
+    
+    // Set a timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      console.log('Loading timeout reached, showing form anyway');
+      setLoading(false);
+    }, 5000);
+    
     if (userRole === "supplier") {
       // For suppliers, fetch ratings they've received
       const currentSupplierId = localStorage.getItem('currentSupplierId') || "123";
       fetch(`${API_BASE}/api/supplier-ratings/${currentSupplierId}`)
         .then(res => {
+          clearTimeout(loadingTimeout);
           if (!res.ok) throw new Error(`Ratings fetch failed ${res.status}`);
           return res.json();
         })
         .then(data => {
           setMyRatings(Array.isArray(data) ? data : []);
+          setLoading(false);
         })
         .catch(err => {
+          clearTimeout(loadingTimeout);
           console.error("Failed to fetch my ratings", err);
           setMyRatings([]);
+          setLoading(false);
+          // Don't set error for supplier ratings, just show empty state
         });
     } else {
       // For procurement officers, fetch suppliers to rate
-      fetch(`${API_BASE}/api/suppliers`)
+      Promise.race([
+        fetch(`${API_BASE}/api/suppliers`),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('API timeout')), 3000)
+        )
+      ])
         .then(res => {
+          clearTimeout(loadingTimeout);
           if (!res.ok) throw new Error(`Supplier fetch failed ${res.status}`);
           return res.json();
         })
         .then(data => {
-          setSuppliers(data);
+          setSuppliers(Array.isArray(data) ? data : []);
           // If navigated from Orders with a specific supplier, preselect and restrict
           const supplierId = location.state?.supplierId || urlSupplierId;
           if (supplierId) {
             console.log('Pre-selecting supplier:', supplierId);
             setFormData(prev => ({ ...prev, supplierId: supplierId }));
           }
+          setLoading(false);
         })
-        .catch(err => console.error("Failed to fetch suppliers", err));
+        .catch(err => {
+          clearTimeout(loadingTimeout);
+          console.error("Failed to fetch suppliers", err);
+          // Show form anyway even if suppliers API fails
+          setSuppliers([]);
+          setLoading(false);
+          // Don't block the form, user can still rate if they have supplier ID from URL
+        });
     }
-  }, [API_BASE, userRole, location.state?.supplierId]);
+
+    return () => clearTimeout(loadingTimeout);
+  }, [API_BASE, userRole, location.state?.supplierId, urlSupplierId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -155,10 +202,10 @@ function RateSupplier() {
       
       // Navigate back to Orders page after successful rating
       if (orderId) {
-        window.location.href = "/Orders";
+        window.location.href = "/procurement-officer/orders";
       } else {
         // Pass state so Supplier_details can force re-fetch
-        navigate("/Supplier_details", { state: { justRated: true, ratedSupplierId: data?.rating?.supplierId || data?.rating?.supplier || data?.supplierId, weightedScore: avg ?? ws, averageRating: avg, ts: Date.now() } });
+        navigate("/procurement-officer/supplier_details", { state: { justRated: true, ratedSupplierId: data?.rating?.supplierId || data?.rating?.supplier || data?.supplierId, weightedScore: avg ?? ws, averageRating: avg, ts: Date.now() } });
       }
     } catch (err) {
       console.error("Error submitting rating", err);
@@ -166,9 +213,20 @@ function RateSupplier() {
     }
   };
 
-  console.log('Rendering with userRole:', userRole);
+  console.log('📊 Rendering with userRole:', userRole, 'loading:', loading, 'error:', error);
 
-  return (
+  if (loading) {
+    return (
+      <div className="rate-supplier-container">
+        <div className="loading-state">
+          <p>Loading supplier data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  try {
+    return (
     <div className="rate-supplier-container">
       {userRole === "supplier" ? (
         <>
@@ -220,6 +278,13 @@ function RateSupplier() {
             {(location.state?.viewOnly || urlViewOnly) ? 'Order Rating' : 'Rate Supplier'}
           </h2>
           
+          {/* Warning for API issues */}
+          {error && (
+            <div style={{background: '#ffe6e6', padding: '10px', margin: '10px 0', color: '#d00', border: '1px solid #ffcccc', borderRadius: '4px'}}>
+              <strong>Warning:</strong> {error} Form is still available for manual entry.
+            </div>
+          )}
+          
           {(location.state?.orderId || urlOrderId) && (
             <div className="order-context">
               <p className="order-info">
@@ -235,6 +300,7 @@ function RateSupplier() {
             {/* Supplier Selection */}
             <div className="supplier-section">
               <label className="supplier-label">Supplier:</label>
+              {console.log('Suppliers data:', suppliers, 'Length:', suppliers.length)}
               <select
                 name="supplierId"
                 value={formData.supplierId}
@@ -244,12 +310,13 @@ function RateSupplier() {
                 className="supplier-select"
               >
                 {!(location.state?.supplierId || urlSupplierId) && <option value="">Select Supplier</option>}
+                {suppliers.length === 0 && <option value="">No suppliers available</option>}
                 {(location.state?.supplierId || urlSupplierId)
                   ? suppliers.filter(s => s._id === (location.state?.supplierId || urlSupplierId)).map(s => (
-                      <option key={s._id} value={s._id}>{s.companyName}</option>
+                      <option key={s._id} value={s._id}>{s.companyName || s.name || 'Unknown Supplier'}</option>
                     ))
                   : suppliers.map(s => (
-                      <option key={s._id} value={s._id}>{s.companyName}</option>
+                      <option key={s._id} value={s._id}>{s.companyName || s.name || 'Unknown Supplier'}</option>
                     ))}
               </select>
               {(location.state?.orderId || urlOrderId) && !(location.state?.viewOnly || urlViewOnly) && (
@@ -311,7 +378,7 @@ function RateSupplier() {
                   <button 
                     type="button" 
                     className="back-btn" 
-                    onClick={() => navigate('/Orders')}
+                    onClick={() => navigate('/procurement-officer/orders')}
                   >
                     Back to Orders
                   </button>
@@ -323,6 +390,23 @@ function RateSupplier() {
       )}
     </div>
   );
+  } catch (renderError) {
+    console.error('🚨 Render error in RateSupplier:', renderError);
+    return (
+      <div className="rate-supplier-container">
+        <div className="error-state">
+          <h2 className="page-title">Rate Supplier</h2>
+          <div style={{background: '#ffe6e6', padding: '20px', margin: '10px 0', color: '#d00', border: '1px solid #ffcccc', borderRadius: '4px'}}>
+            <strong>Error:</strong> There was a problem loading the form. Please refresh the page.
+            <br/>
+            <button onClick={() => window.location.reload()} style={{margin: '10px 0', padding: '8px 16px'}}>
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
 export default RateSupplier;

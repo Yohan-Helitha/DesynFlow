@@ -12,16 +12,20 @@ services:
     build: ../server
     container_name: desynflow-backend
     ports:
-      - "4000:4000"
+      - "3000:4000"
     env_file:
       - ../server/.env
+    environment:
+      - PORT=4000
     volumes:
       - ../server:/app
       - /app/node_modules
     depends_on:
       - mongo
-    command: npm run dev
+    command: sh -c "npm install --include=dev && npm run dev"
     restart: unless-stopped
+    networks:
+      - default
     
   client-portal:
     build: ../frontend/client-portal
@@ -62,3 +66,7 @@ services:
 
 volumes:
   mongo-data:
+
+networks:
+  default:
+    driver: bridge

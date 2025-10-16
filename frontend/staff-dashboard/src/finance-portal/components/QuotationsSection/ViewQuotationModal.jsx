@@ -3,7 +3,7 @@ import { X, Download } from 'lucide-react'
 
 export const ViewQuotationModal = ({ quotation, onClose }) => {
   // Helpers
-  const fmtMoney = (n) => `$${Number(n || 0).toLocaleString()}`
+  const fmtMoney = (n) => `LKR ${Number(n || 0).toLocaleString()}`
   const getProjectDisplay = (q) => {
     const p = q?.projectId
     if (!p) return ''
@@ -57,9 +57,6 @@ export const ViewQuotationModal = ({ quotation, onClose }) => {
                 <div><span className="font-medium">Estimate Version:</span> {quotation?.estimateVersion}</div>
                 <div><span className="font-medium">Quotation Version:</span> {quotation?.version}</div>
                 <div><span className="font-medium">Status:</span> {quotation?.status}</div>
-                {quotation?.createdBy && (
-                  <div><span className="font-medium">Created By:</span> {getUserDisplay(quotation.createdBy)}</div>
-                )}
                 {quotation?.updatedAt && (
                   <div><span className="font-medium">Updated:</span> {new Date(quotation.updatedAt).toLocaleString()}</div>
                 )}

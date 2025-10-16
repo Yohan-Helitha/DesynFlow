@@ -19,7 +19,7 @@ export function buildUploadsUrl(raw, fallbackFolder = '') {
   if (idx !== -1) {
     let path = normalized.slice(idx);
     if (!path.startsWith('/')) path = `/${path}`;
-    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
     return `${base}${path}`;
   }
 
@@ -28,7 +28,7 @@ export function buildUploadsUrl(raw, fallbackFolder = '') {
   if (idx !== -1) {
     let path = normalized.slice(idx);
     if (!path.startsWith('/')) path = `/${path}`;
-    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
     return `${base}${path}`;
   }
 
@@ -37,13 +37,13 @@ export function buildUploadsUrl(raw, fallbackFolder = '') {
   if (idx !== -1) {
     let path = normalized.slice(idx + 'server'.length);
     if (!path.startsWith('/')) path = `/${path}`;
-    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
     return `${base}${path}`;
   }
 
   // Fallback to /uploads/<fallbackFolder>/<filename>
   const fileName = normalized.split('/').filter(Boolean).pop();
   const folder = fallbackFolder ? `/${fallbackFolder.replace(/^\/+|\/+$/g, '')}` : '';
-  const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+  const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
   return `${base}/uploads${folder}/${fileName}`;
 }

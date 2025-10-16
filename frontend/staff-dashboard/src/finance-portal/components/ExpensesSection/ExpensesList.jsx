@@ -13,7 +13,7 @@ import { ViewExpenseModal } from './ViewExpenseModal'
 import { AddExpenseModal } from './AddExpenseModal'
 
 
-export const ExpensesList = () => {
+export const ExpensesList = ({ onExpenseChange }) => {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,25 +21,26 @@ export const ExpensesList = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState('date');
+  const [sortField, setSortField] = useState('createdAt');
   const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const fetchExpenses = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/expenses');
+      const data = await res.json();
+      setExpenses(data);
+    } catch (err) {
+      setError(err.message || 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchExpenses = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('/api/expenses');
-        const data = await res.json();
-        setExpenses(data);
-      } catch (err) {
-        setError(err.message || 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchExpenses();
   }, []);
 
@@ -49,6 +50,23 @@ export const ExpensesList = () => {
   }
 
   const handleAddExpense = () => setShowAddModal(true)
+
+  const handleCreated = async (created) => {
+    // Refetch all expenses to get the populated project data
+    await fetchExpenses();
+    // Ensure newest shows first page
+    setCurrentPage(1);
+    // Notify parent component that expenses have changed (to refresh chart)
+    if (onExpenseChange) {
+      onExpenseChange();
+    }
+  }
+
+  const handleUpdated = (updated) => {
+    setExpenses((prev) => prev.map(e => (e._id === updated._id ? { ...e, ...updated } : e)))
+    // Keep modal in sync if it's open on this expense
+    setSelectedExpense((cur) => (cur && (cur._id === updated._id) ? { ...cur, ...updated } : cur))
+  }
 
   const handleDownloadReceipt = (receiptUrl) => {
     console.log(`Downloading receipt from ${receiptUrl}`)
@@ -64,6 +82,12 @@ export const ExpensesList = () => {
     }
   }
 
+  // Compute an effective date for sorting
+  const getEffectiveDate = (e) => {
+    const val = e.createdAt || e.date || e.updatedAt
+    return val ? new Date(val).getTime() : 0
+  }
+
   // Filter and sort expenses
   const filteredExpenses = expenses
     .filter(
@@ -73,9 +97,15 @@ export const ExpensesList = () => {
           (statusFilter === 'pending' && expense.status === 'Pending')) &&
         ((expense.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
           (expense.category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (expense.projectId?.projectName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
           (expense.submittedBy || '').toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
+      if (sortField === 'date' || sortField === 'createdAt') {
+        const ad = getEffectiveDate(a)
+        const bd = getEffectiveDate(b)
+        return sortDirection === 'asc' ? ad - bd : bd - ad
+      }
       if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1
       if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1
       return 0
@@ -132,7 +162,7 @@ export const ExpensesList = () => {
             <table className="min-w-full divide-y divide-[#AAB396]">
               <thead className="bg-[#F7EED3]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Project ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Project Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Category</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Amount ($)</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Description</th>
@@ -144,20 +174,22 @@ export const ExpensesList = () => {
               <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
                 {paginatedExpenses.map((expense) => (
                   <tr key={expense._id || expense.id} className="hover:bg-[#F7EED3]">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.projectId}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.amount}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{expense.description}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                      {expense.projectId?.projectName || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{expense.category}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{expense.amount}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{expense.description}</td>
                     
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                       {expense.date
                         ? new Date(expense.date).toLocaleString()
                         : expense.createdAt
                         ? new Date(expense.createdAt).toLocaleString()
                         : '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleView(expense)} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white mr-2">
+                    <td className="px-6 py-4 text-xs font-mono whitespace-pre-line break-words max-w-xs text-right font-medium">
+                      <button onClick={() => handleView(expense)} className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-xs font-mono font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white mr-2">
                         <Eye size={16} className="inline mr-1" /> View
                       </button>
                     </td>
@@ -199,8 +231,19 @@ export const ExpensesList = () => {
       </div>
 
       {/* Modals */}
-      {showViewModal && <ViewExpenseModal expense={selectedExpense} onClose={() => setShowViewModal(false)} />}
-      {showAddModal && <AddExpenseModal onClose={() => setShowAddModal(false)} />}
+      {showViewModal && (
+        <ViewExpenseModal
+          expense={selectedExpense}
+          onClose={() => setShowViewModal(false)}
+          onUpdated={handleUpdated}
+        />
+      )}
+      {showAddModal && (
+        <AddExpenseModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={handleCreated}
+        />
+      )}
     </div>
   )
 }

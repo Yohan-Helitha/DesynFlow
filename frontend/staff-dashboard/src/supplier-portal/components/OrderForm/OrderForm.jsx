@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Sidebar from "../Sidebar/Sidebar";
 import "./OrderForm.css";
 
 function OrderForm({ onOrderCreated }) {
@@ -11,35 +10,65 @@ function OrderForm({ onOrderCreated }) {
   const [supplierLocked, setSupplierLocked] = useState(false);
   const [formData, setFormData] = useState({
     supplierId: "",
-    items: [{ materialId: "", materialName: "", quantity: "", pricePerUnit: 0, total: 0 }],
+    items: [{ materialId: "", materialName: "", quantity: "", unit: "", pricePerUnit: 0, total: 0 }],
   });
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/suppliers")
+    fetch("http://localhost:4000/api/suppliers")
       .then(res => res.json())
-      .then(data => setSuppliers(data))
+      .then(data => {
+        // Sort suppliers by creation date - newest first
+        const sortedSuppliers = data.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
+        setSuppliers(sortedSuppliers);
+      })
       .catch(() => setSuppliers([]));
   }, []);
 
-  // Handle preselected supplier from navigation state
+  // Handle preselected supplier from navigation state or sessionStorage
   useEffect(() => {
+    let supplierData = null;
+    
+    // First try navigation state
     if (location.state?.preselectedSupplier) {
-      const preselectedSupplier = location.state.preselectedSupplier;
+      supplierData = {
+        preselectedSupplier: location.state.preselectedSupplier,
+        supplierLocked: location.state.supplierLocked || false
+      };
+    } else {
+      // Fallback to sessionStorage
+      try {
+        const stored = sessionStorage.getItem('preselectedSupplier');
+        if (stored) {
+          supplierData = JSON.parse(stored);
+          // Clear sessionStorage after use
+          sessionStorage.removeItem('preselectedSupplier');
+        }
+      } catch (error) {
+        console.error('Error reading sessionStorage:', error);
+      }
+    }
+    
+    if (supplierData?.preselectedSupplier) {
+      console.log('Setting preselected supplier:', supplierData.preselectedSupplier);
       setFormData(prev => ({
         ...prev,
-        supplierId: preselectedSupplier._id
+        supplierId: supplierData.preselectedSupplier._id
       }));
-      setSupplierLocked(location.state.supplierLocked || false);
+      setSupplierLocked(supplierData.supplierLocked || false);
     }
   }, [location.state]);
 
   // Fetch materials from MaterialCatalog for selected supplier
   useEffect(() => {
     if (formData.supplierId) {
-      fetch(`http://localhost:3000/api/materials?supplierId=${formData.supplierId}`)
+      fetch(`http://localhost:4000/api/materials?supplierId=${formData.supplierId}`)
         .then(res => res.json())
         .then(data => {
-          // Transform data to include material info with pricing
+          // Transform data to include material info with pricing (unit will be selected by user)
           const materialsWithPricing = data.map(item => ({
             _id: item.materialId?._id || item.materialId,
             name: item.materialId?.materialName || `Material-${item._id}`,
@@ -88,7 +117,7 @@ function OrderForm({ onOrderCreated }) {
     const newItems = [...formData.items];
     if (name === "materialId") {
       newItems[index].materialId = value;
-      // Set pricePerUnit from materials list
+      // Set pricePerUnit from materials list, but keep unit selection independent
       const mat = materials.find(m => (m._id === value) || (m.name === value));
       // Track materialName explicitly to avoid showing/storing IDs in UI
       newItems[index].materialName = mat ? mat.name : "";
@@ -103,6 +132,8 @@ function OrderForm({ onOrderCreated }) {
       const price = mat && mat.pricePerUnit ? mat.pricePerUnit : Number(newItems[index].pricePerUnit) || 0;
       newItems[index].pricePerUnit = price;
       newItems[index].total = price * Number(value);
+    } else if (name === "unit") {
+      newItems[index].unit = value;
     }
     setFormData({ ...formData, items: newItems });
   };
@@ -111,22 +142,35 @@ function OrderForm({ onOrderCreated }) {
   const addItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { materialId: "", quantity: "", pricePerUnit: 0, total: 0 }],
+      items: [...formData.items, { materialId: "", materialName: "", quantity: "", unit: "", pricePerUnit: 0, total: 0 }],
     });
+  };
+
+  // remove material row
+  const removeItem = (index) => {
+    if (formData.items.length > 1) {
+      const newItems = formData.items.filter((_, i) => i !== index);
+      setFormData({ ...formData, items: newItems });
+    }
   };
 
   // submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Format items for backend: send materialId, qty, unitPrice
+    // Format items for backend: send materialId, qty, unit, unitPrice
+    console.log('Form data items before formatting:', formData.items);
+    
     const formattedItems = formData.items
-      .filter(item => item.materialId)
+      .filter(item => item.materialId && item.unit && item.quantity)
       .map(item => ({
         materialId: item.materialId,
         materialName: item.materialName || undefined,
         qty: Number(item.quantity),
+        unit: item.unit,
         unitPrice: Number(item.pricePerUnit)
       }));
+    
+    console.log('Sending items with units:', formattedItems);
     // Only submit if supplier is selected
     const isValidObjectId = v => /^[a-f\d]{24}$/i.test(v);
     if (!isValidObjectId(formData.supplierId)) {
@@ -134,7 +178,7 @@ function OrderForm({ onOrderCreated }) {
       return;
     }
     if (formattedItems.length === 0) {
-      console.warn('Please add at least one valid item with a material selected.');
+      console.warn('Please add at least one valid item with material, unit, and quantity selected.');
       return;
     }
     // Add dummy projectId and requestedBy to satisfy backend validation
@@ -145,7 +189,7 @@ function OrderForm({ onOrderCreated }) {
       items: formattedItems
     };
     try {
-      const res = await fetch("http://localhost:3000/api/purchase-orders", {
+      const res = await fetch("http://localhost:4000/api/purchase-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -155,11 +199,16 @@ function OrderForm({ onOrderCreated }) {
   console.log('Order created successfully!');
         setFormData({
           supplierId: "",
-          items: [{ materialId: "", materialName: "", quantity: "", pricePerUnit: 0, total: 0 }],
+          items: [{ materialId: "", materialName: "", quantity: "", unit: "", pricePerUnit: 0, total: 0 }],
         });
         if (onOrderCreated) onOrderCreated(newOrder); // notify parent to refresh
         // Navigate back to Orders list (rating now only via Received button there)
-        navigate("/Orders");
+        navigate("/procurement-officer/orders", {
+          state: {
+            newOrderCreated: true,
+            orderData: newOrder
+          }
+        });
       } else {
         const error = await res.json();
   console.error('Failed to create order: ' + (error.error || 'Unknown error'));
@@ -170,9 +219,7 @@ function OrderForm({ onOrderCreated }) {
   };
 
   return (
-    <div className="page-with-sidebar">
-      <Sidebar />
-      <div className="order-form-container">
+    <div className="order-form-container">
         <h2>Create New Order</h2>
       <form onSubmit={handleSubmit} className="order-form">
         <label>
@@ -207,44 +254,93 @@ function OrderForm({ onOrderCreated }) {
         {formData.items.map((item, index) => {
           return (
             <div key={index} className="order-item">
-              <select
-                name="materialId"
-                value={item.materialId || ""}
-                onChange={(e) => handleItemChange(index, e)}
-                required
-              >
-                <option value="">Select Material</option>
-                {materials.map((mat, idx) => (
-                  <option key={idx} value={mat._id || mat.name}>
-                    {mat.name} - LKR {(mat.pricePerUnit || 0).toFixed(2)}/unit
-                  </option>
-                ))}
-              </select>
-              {/* Selected material name and price are already visible in the dropdown label. */}
-              <input
-                type="number"
-                name="quantity"
-                placeholder="Quantity"
-                value={item.quantity === undefined || item.quantity === null ? "" : item.quantity}
-                onChange={(e) => handleItemChange(index, e)}
-                required
-              />
-              <input
-                type="number"
-                name="pricePerUnit"
-                placeholder="Price per Unit (LKR)"
-                value={isNaN(item.pricePerUnit) ? "" : item.pricePerUnit}
-                readOnly
-                className="readonly-input"
-              />
-              <input
-                type="number"
-                name="total"
-                placeholder="Total (LKR)"
-                value={isNaN(item.total) ? "" : item.total}
-                readOnly
-                className="readonly-input"
-              />
+              <div className="form-field">
+                <label htmlFor={`material-${index}`}>Material</label>
+                <select
+                  id={`material-${index}`}
+                  name="materialId"
+                  value={item.materialId || ""}
+                  onChange={(e) => handleItemChange(index, e)}
+                  required
+                >
+                  <option value="">Select Material</option>
+                  {materials.map((mat, idx) => (
+                    <option key={idx} value={mat._id || mat.name}>
+                      {mat.name} - LKR {(mat.pricePerUnit || 0).toFixed(2)}/unit
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor={`quantity-${index}`}>Quantity</label>
+                <input
+                  id={`quantity-${index}`}
+                  type="number"
+                  name="quantity"
+                  placeholder="Enter quantity"
+                  value={item.quantity === undefined || item.quantity === null ? "" : item.quantity}
+                  onChange={(e) => handleItemChange(index, e)}
+                  required
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor={`unit-${index}`}>Unit Type</label>
+                <select
+                  id={`unit-${index}`}
+                  name="unit"
+                  value={item.unit || ""}
+                  onChange={(e) => handleItemChange(index, e)}
+                  required
+                  title="Select unit type"
+                >
+                  <option value="">Select Unit</option>
+                  <option value="Kilo">Kilo</option>
+                  <option value="Meters">Meters</option>
+                  <option value="Liters">Liters</option>
+                  <option value="pieces">Pieces</option>
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor={`pricePerUnit-${index}`}>Price per Unit</label>
+                <input
+                  id={`pricePerUnit-${index}`}
+                  type="number"
+                  name="pricePerUnit"
+                  placeholder="LKR 0.00"
+                  value={isNaN(item.pricePerUnit) ? "" : item.pricePerUnit}
+                  readOnly
+                  className="readonly-input"
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor={`total-${index}`}>Total Amount</label>
+                <input
+                  id={`total-${index}`}
+                  type="number"
+                  name="total"
+                  placeholder="LKR 0.00"
+                  value={isNaN(item.total) ? "" : item.total}
+                  readOnly
+                  className="readonly-input"
+                />
+              </div>
+
+              {formData.items.length > 1 && (
+                <div className="form-field">
+                  <button 
+                    type="button" 
+                    onClick={() => removeItem(index)} 
+                    className="btn-remove"
+                    title="Remove this item"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
@@ -254,7 +350,6 @@ function OrderForm({ onOrderCreated }) {
 
         <button type="submit" className="btn-submit">Create Order</button>
       </form>
-      </div>
     </div>
   );
 }
