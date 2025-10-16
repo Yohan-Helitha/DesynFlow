@@ -31,14 +31,14 @@ export default function ReportsManagement() {
       setLoading(true);
       try {
         // Get all projects first
-        const projectsRes = await fetch('http://localhost:4000/api/projects');
+        const projectsRes = await fetch('/api/projects');
         const projects = await projectsRes.json();
         
         // Get reports for all projects
         const allReports = [];
         for (const project of projects) {
           try {
-            const reportsRes = await fetch(`http://localhost:4000/api/reports/project/${project._id}`);
+            const reportsRes = await fetch(`/api/reports/project/${project._id}`);
             if (reportsRes.ok) {
               const reports = await reportsRes.json();
               const reportsWithProject = reports.map(report => ({
@@ -180,7 +180,7 @@ export default function ReportsManagement() {
                         <td className="p-3">
                           {report.filePath && report.status === 'completed' ? (
                             <a
-                              href={`http://localhost:4000${report.filePath}`}
+                              href={`${report.filePath}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center space-x-1 text-green-primary hover:underline"

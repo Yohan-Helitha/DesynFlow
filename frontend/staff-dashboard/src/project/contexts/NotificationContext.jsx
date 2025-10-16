@@ -25,7 +25,7 @@ export const NotificationProvider = ({ children }) => {
 
   const fetchUnreadCount = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/notifications/unread-count?userId=${userId}`);
+      const response = await fetch(`/api/notifications/unread-count?userId=${userId}`);
       const result = await response.json();
       
       if (result.success) {

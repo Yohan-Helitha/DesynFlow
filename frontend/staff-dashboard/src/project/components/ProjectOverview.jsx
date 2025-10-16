@@ -12,7 +12,7 @@ export default function ProjectOverview({ projectId, onBack }) {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`http://localhost:4000/api/projects/${projectId}`);
+        const res = await fetch(`/api/projects/${projectId}`);
         if (!res.ok) throw new Error("Failed to fetch project");
         const data = await res.json();
         setProject(data);
@@ -175,7 +175,7 @@ export default function ProjectOverview({ projectId, onBack }) {
                 const filename = isObject ? attachment.filename || attachment.originalName : attachment.split('/').pop();
                 const displayName = isObject ? attachment.originalName || filename : filename?.replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
                 const fileExtension = filename?.split('.').pop()?.toUpperCase();
-                const downloadUrl = `http://localhost:4000${isObject ? attachment.path : attachment}`;
+                const downloadUrl = `${isObject ? attachment.path : attachment}`;
                 
                 return (
                   <li

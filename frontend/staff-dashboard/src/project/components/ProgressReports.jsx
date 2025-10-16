@@ -20,14 +20,14 @@ export default function ProgressReports() {
   useEffect(() => {
     async function fetchProjectsAndReports() {
       try {
-        const projRes = await fetch(`http://localhost:4000/api/projects`);
+        const projRes = await fetch(`/api/projects`);
         const projectsData = await projRes.json();
         setProjects(projectsData);
         if (projectsData.length > 0) setProject(projectsData[0]._id);
 
         // Fetch reports for first project
         if (projectsData[0]) {
-          const repRes = await fetch(`http://localhost:4000/api/reports/project/${projectsData[0]._id}`);
+          const repRes = await fetch(`/api/reports/project/${projectsData[0]._id}`);
           const repData = await repRes.json();
           setReports(repData);
         }
@@ -54,7 +54,7 @@ export default function ProgressReports() {
     if (!confirm('Are you sure you want to delete this report?')) return;
 
     try {
-      const response = await fetch(`http://localhost:4000/api/reports/${reportId}`, {
+      const response = await fetch(`/api/reports/${reportId}`, {
         method: 'DELETE',
       });
 
@@ -98,7 +98,7 @@ export default function ProgressReports() {
         includeResourceUsage
       };
 
-      const response = await fetch('http://localhost:4000/api/reports/generate', {
+      const response = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export default function ProgressReports() {
         // Add to generated files
         setGeneratedFiles([...generatedFiles, { 
           name: result.fileName, 
-          url: `http://localhost:4000${result.filePath}`,
+          url: `${result.filePath}`,
           id: result.report._id
         }]);
         
@@ -250,7 +250,7 @@ export default function ProgressReports() {
                     </span>
                     {report.filePath && report.status === 'completed' && (
                       <a 
-                        href={`http://localhost:4000${report.filePath}`} 
+                        href={`${report.filePath}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline text-xs flex items-center gap-1"

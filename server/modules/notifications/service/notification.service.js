@@ -1,13 +1,13 @@
-import Notification from '../model/notification.model.js';
+import GeneralNotification from '../model/notification.model.js';
 import User from '../../auth/model/user.model.js';
 
 class NotificationService {
   // Create a new notification
   async createNotification(notificationData) {
     try {
-      const notification = new Notification(notificationData);
-      await notification.save();
-      return await this.getNotificationById(notification._id);
+      const notification = new GeneralNotification(notificationData);
+      await GeneralNotification.save();
+      return await this.getNotificationById(GeneralNotification._id);
     } catch (error) {
       throw new Error(`Error creating notification: ${error.message}`);
     }
@@ -40,13 +40,13 @@ class NotificationService {
 
       const skip = (page - 1) * limit;
 
-      const notifications = await Notification.find(query)
+      const notifications = await GeneralNotification.find(query)
         .populate('senderId', 'firstName lastName email role')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
-      const total = await Notification.countDocuments(query);
+      const total = await GeneralNotification.countDocuments(query);
 
       return {
         notifications,
@@ -65,7 +65,7 @@ class NotificationService {
   // Get notification by ID
   async getNotificationById(notificationId) {
     try {
-      return await Notification.findById(notificationId)
+      return await GeneralNotification.findById(notificationId)
         .populate('senderId', 'firstName lastName email role')
         .populate('recipientId', 'firstName lastName email role');
     } catch (error) {
@@ -76,7 +76,7 @@ class NotificationService {
   // Mark notification as read
   async markAsRead(notificationId, userId) {
     try {
-      const notification = await Notification.findOneAndUpdate(
+      const notification = await GeneralNotification.findOneAndUpdate(
         { _id: notificationId, recipientId: userId },
         { isRead: true },
         { new: true }
@@ -95,7 +95,7 @@ class NotificationService {
   // Mark all notifications as read for a user
   async markAllAsRead(userId) {
     try {
-      const result = await Notification.updateMany(
+      const result = await GeneralNotification.updateMany(
         { recipientId: userId, isRead: false },
         { isRead: true }
       );
@@ -108,7 +108,7 @@ class NotificationService {
   // Archive notification
   async archiveNotification(notificationId, userId) {
     try {
-      const notification = await Notification.findOneAndUpdate(
+      const notification = await GeneralNotification.findOneAndUpdate(
         { _id: notificationId, recipientId: userId },
         { isArchived: true },
         { new: true }
@@ -127,7 +127,7 @@ class NotificationService {
   // Get unread count for a user
   async getUnreadCount(userId) {
     try {
-      return await Notification.countDocuments({
+      return await GeneralNotification.countDocuments({
         recipientId: userId,
         isRead: false,
         isArchived: false
@@ -275,7 +275,7 @@ class NotificationService {
   // Get grouped notifications
   async getGroupedNotifications(userId) {
     try {
-      const notifications = await Notification.find({
+      const notifications = await GeneralNotification.find({
         recipientId: userId,
         isArchived: false
       })
@@ -299,7 +299,7 @@ class NotificationService {
       thisWeek.setDate(thisWeek.getDate() - 7);
 
       notifications.forEach(notification => {
-        const notificationDate = new Date(notification.createdAt);
+        const notificationDate = new Date(GeneralNotification.createdAt);
         const notificationDay = new Date(notificationDate.getFullYear(), notificationDate.getMonth(), notificationDate.getDate());
 
         if (notificationDay.getTime() === today.getTime()) {

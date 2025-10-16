@@ -70,8 +70,8 @@ export default function CreateMaterialRequestForm({
       };
 
       const url = isEdit 
-        ? `http://localhost:4000/api/material-requests/${editRequest._id}`
-        : 'http://localhost:4000/api/material-requests';
+        ? `/api/material-requests/${editRequest._id}`
+        : '/api/material-requests';
       
       const method = isEdit ? 'PUT' : 'POST';
 

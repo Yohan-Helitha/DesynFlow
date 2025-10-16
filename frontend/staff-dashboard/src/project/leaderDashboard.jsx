@@ -64,7 +64,7 @@ export default function LeaderDashboard() {
     async function fetchData() {
       try {
         // 1. Get all teams with populated member data
-        const teamRes = await fetch(`http://localhost:4000/api/teams/populated`);
+        const teamRes = await fetch(`/api/teams/populated`);
         const teamData = await teamRes.json();
         const teamObj = Array.isArray(teamData)
           ? teamData.find(t => t.leaderId === leaderId || t.leaderId._id === leaderId)
@@ -73,7 +73,7 @@ export default function LeaderDashboard() {
         if (!teamObj) throw new Error("No team found for this leader");
 
         // 2. Get all projects for this team
-        const projRes = await fetch(`http://localhost:4000/api/projects`);
+        const projRes = await fetch(`/api/projects`);
         const projData = await projRes.json();
         const teamProjects = projData.filter(
           p => p.assignedTeamId._id === teamObj._id
@@ -83,11 +83,11 @@ export default function LeaderDashboard() {
         // 3. Get reports, meetings, and tasks for the first ongoing project (optional)
         const ongoing = teamProjects.find(p => !["Completed","Cancelled"].includes(p.status));
         if (ongoing) {
-          const repRes = await fetch(`http://localhost:4000/api/reports/project/${ongoing._id}`);
+          const repRes = await fetch(`/api/reports/project/${ongoing._id}`);
           setReports(repRes.ok ? await repRes.json() : []);
 
           // Fetch tasks for the project
-          const tasksRes = await fetch(`http://localhost:4000/api/tasks/project/${ongoing._id}`);
+          const tasksRes = await fetch(`/api/tasks/project/${ongoing._id}`);
           if (tasksRes.ok) {
             const tasksData = await tasksRes.json();
             setTasks(tasksData);
@@ -124,7 +124,7 @@ export default function LeaderDashboard() {
     if (!confirm('Are you sure you want to delete this meeting?')) return;
 
     try {
-      const response = await fetch(`http://localhost:4000/api/meetings/${meetingId}`, {
+      const response = await fetch(`/api/meetings/${meetingId}`, {
         method: 'DELETE',
       });
 
@@ -154,7 +154,7 @@ export default function LeaderDashboard() {
 
   const fetchMeetings = async (projectId) => {
     try {
-      const meetRes = await fetch(`http://localhost:4000/api/meetings/project/${projectId}`);
+      const meetRes = await fetch(`/api/meetings/project/${projectId}`);
       if (meetRes.ok) {
         const meetData = await meetRes.json();
         setMeetings(meetData);
@@ -242,7 +242,7 @@ export default function LeaderDashboard() {
                 </span>
                 {rep.filePath && rep.status === 'completed' && (
                   <a 
-                    href={`http://localhost:4000${rep.filePath}`} 
+                    href={`${rep.filePath}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline flex items-center gap-1"

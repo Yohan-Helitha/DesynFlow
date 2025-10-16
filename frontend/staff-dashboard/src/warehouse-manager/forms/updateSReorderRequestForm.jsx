@@ -399,6 +399,7 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
               >
                 <option value="Pending">Pending</option>
                 <option value="Checked">Checked</option>
+                <option value="Restocked">Restocked</option>
               </select>
             </div>
 

@@ -30,7 +30,7 @@ export default function CalendarViewTab() {
       setLoading(true);
       
       // Get user's team
-      const teamResponse = await fetch(`http://localhost:4000/api/teams`);
+      const teamResponse = await fetch(`/api/teams`);
       const teams = await teamResponse.json();
       
       const userTeam = teams.find(team => 
@@ -41,7 +41,7 @@ export default function CalendarViewTab() {
 
       if (userTeam) {
         // Get tasks for team members
-        const tasksResponse = await fetch(`http://localhost:4000/api/tasks`);
+        const tasksResponse = await fetch(`/api/tasks`);
         const allTasks = await tasksResponse.json();
         
         // Filter tasks assigned to current user
@@ -50,7 +50,7 @@ export default function CalendarViewTab() {
         );
 
         // Populate project names
-        const projectsResponse = await fetch(`http://localhost:4000/api/projects`);
+        const projectsResponse = await fetch(`/api/projects`);
         const projects = await projectsResponse.json();
         
         const tasksWithProjects = userTasks.map(task => {

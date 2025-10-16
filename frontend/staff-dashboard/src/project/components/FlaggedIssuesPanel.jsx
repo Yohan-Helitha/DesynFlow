@@ -20,7 +20,7 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
       if (filter === 'unresolved') params.append('resolved', 'false');
       if (filter === 'resolved') params.append('resolved', 'true');
 
-      const response = await fetch(`http://localhost:4000/api/flagged-issues?${params}`);
+      const response = await fetch(`/api/flagged-issues?${params}`);
       
       if (response.ok) {
         const issues = await response.json();
@@ -39,7 +39,7 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
     try {
       const currentUser = JSON.parse(localStorage.getItem('user'));
       const response = await fetch(
-        `http://localhost:4000/api/progress-updates/${issue.progressUpdateId}/issues/${issue._id}/resolve`,
+        `/api/progress-updates/${issue.progressUpdateId}/issues/${issue._id}/resolve`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },

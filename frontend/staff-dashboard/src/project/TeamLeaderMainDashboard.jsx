@@ -27,7 +27,7 @@ export default function TeamLeaderMainDashboard() {
       
       try {
         // Get team data first
-        const teamRes = await fetch(`http://localhost:4000/api/teams`);
+        const teamRes = await fetch(`/api/teams`);
         const teamData = await teamRes.json();
         console.log('All teams:', teamData);
         
@@ -44,7 +44,7 @@ export default function TeamLeaderMainDashboard() {
 
         if (teamObj) {
           // Get projects for this team
-          const projRes = await fetch(`http://localhost:4000/api/projects`);
+          const projRes = await fetch(`/api/projects`);
           const projData = await projRes.json();
           console.log('All projects:', projData);
           

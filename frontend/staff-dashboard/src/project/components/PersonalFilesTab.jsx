@@ -32,7 +32,7 @@ export default function PersonalFilesTab() {
 
   const fetchPersonalFiles = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/personal-files/${userId}`);
+      const response = await fetch(`/api/personal-files/${userId}`);
       if (response.ok) {
         const filesData = await response.json();
         setFiles(filesData);
@@ -46,7 +46,7 @@ export default function PersonalFilesTab() {
 
   const fetchFolders = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/personal-folders/${userId}`);
+      const response = await fetch(`/api/personal-folders/${userId}`);
       if (response.ok) {
         const foldersData = await response.json();
         setFolders(foldersData);
@@ -69,7 +69,7 @@ export default function PersonalFilesTab() {
       try {
         setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
 
-        const response = await fetch('http://localhost:4000/api/personal-files/upload', {
+        const response = await fetch('/api/personal-files/upload', {
           method: 'POST',
           body: formData,
         });
@@ -116,7 +116,7 @@ export default function PersonalFilesTab() {
     if (!newFolderName.trim()) return;
 
     try {
-      const response = await fetch('http://localhost:4000/api/personal-folders', {
+      const response = await fetch('/api/personal-folders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -142,7 +142,7 @@ export default function PersonalFilesTab() {
 
     try {
       const userId = user._id || user.id;
-      const response = await fetch(`http://localhost:4000/api/personal-files/${fileId}?userId=${userId}`, {
+      const response = await fetch(`/api/personal-files/${fileId}?userId=${userId}`, {
         method: 'DELETE'
       });
 
@@ -162,7 +162,7 @@ export default function PersonalFilesTab() {
   const downloadFile = async (file) => {
     try {
       const userId = user._id || user.id;
-      const response = await fetch(`http://localhost:4000/api/personal-files/${file._id}/download?userId=${userId}`);
+      const response = await fetch(`/api/personal-files/${file._id}/download?userId=${userId}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
