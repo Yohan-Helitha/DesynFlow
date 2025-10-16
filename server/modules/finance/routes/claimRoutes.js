@@ -1,9 +1,10 @@
 import express from 'express';
 import * as claimController from '../controller/claimController.js';
+import upload from '../middleware/warrantyProofUpload.js';
 
 const router = express.Router();
 
-router.post('/', claimController.createClaim);
+router.post('/', upload.single('proofFile'), claimController.createClaim);
 router.get('/', claimController.getClaims);
 // Resolved (terminal) claim statuses: Approved, Rejected, Replaced
 router.get('/resolved', claimController.getResolvedClaims);

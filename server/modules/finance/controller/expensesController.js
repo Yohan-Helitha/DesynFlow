@@ -1,5 +1,9 @@
 import * as expenseService from '../service/expensesService.js';
 import { adjustBalance } from '../service/financeSummaryService.js';
+import * as notificationService from '../service/financeNotificationService.js';
+import Project from '../../project/model/project.model.js';
+import ProjectEstimation from '../model/project_estimation.js';
+import Expense from '../model/expenses.js';
 
 // Get all expenses
 const getAllExpenses = async (req, res, next) => {
@@ -82,15 +86,105 @@ export {
 // Create expense (POST /api/expenses)
 export const createExpense = async (req, res) => {
     try {
-    const { projectId, description, category, amount } = req.body;
-    // normalize Windows backslashes to forward slashes for URL usage
-    const proof = req.file ? req.file.path.replace(/\\/g, '/') : undefined;
+        const { projectId, description, category, amount } = req.body;
+        // normalize Windows backslashes to forward slashes for URL usage
+        const proof = req.file ? req.file.path.replace(/\\/g, '/') : undefined;
         const created = await expenseService.createExpense({ projectId, description, category, amount, proof });
+        
         // Decrease totalBalance by expense amount
         const amtNum = Number(amount) || 0;
         if (amtNum > 0) {
             await adjustBalance(-amtNum);
         }
+
+        // Get project details
+        const project = await Project.findById(projectId);
+        
+        // Notify finance managers
+        await notificationService.notifyFinanceManagers({
+            eventType: 'expense_added',
+            title: 'New Expense Added',
+            message: `New ${category} expense of LKR ${amount} added for project ${project?.projectName || 'Unknown'}`,
+            relatedEntity: {
+                entityType: 'Expense',
+                entityId: created._id
+            },
+            metadata: {
+                amount: amtNum,
+                category,
+                projectName: project?.projectName,
+                description
+            },
+            priority: 'medium'
+        });
+
+        // Check if expense exceeds budget
+        if (projectId) {
+            const latestEstimation = await ProjectEstimation.findOne({ projectId })
+                .sort({ version: -1 });
+            
+            if (latestEstimation) {
+                // Get all expenses by category for this project
+                const expensesAgg = await Expense.aggregate([
+                    { $match: { projectId: created.projectId } },
+                    { $group: { _id: '$category', total: { $sum: '$amount' } } }
+                ]);
+                
+                const categoryMap = {
+                    Labor: latestEstimation.laborCost,
+                    Procurement: latestEstimation.materialCost,
+                    Transport: latestEstimation.serviceCost,
+                    Misc: latestEstimation.contingencyCost
+                };
+                
+                const budget = categoryMap[category] || 0;
+                const totalExpenses = expensesAgg.find(e => e._id === category)?.total || 0;
+                const percentage = budget > 0 ? (totalExpenses / budget) * 100 : 0;
+                
+                // Notify if exceeds 80% threshold
+                if (percentage >= 80) {
+                    await notificationService.notifyFinanceManagers({
+                        eventType: percentage >= 100 ? 'expense_exceeds_budget' : 'budget_threshold_exceeded',
+                        title: percentage >= 100 ? 'Budget Exceeded' : 'Budget Threshold Alert',
+                        message: `${category} expenses (LKR ${totalExpenses}) have reached ${percentage.toFixed(1)}% of budget (LKR ${budget}) for ${project?.projectName || 'project'}`,
+                        relatedEntity: {
+                            entityType: 'Expense',
+                            entityId: created._id
+                        },
+                        metadata: {
+                            category,
+                            totalExpenses,
+                            budget,
+                            percentage: percentage.toFixed(1),
+                            projectName: project?.projectName
+                        },
+                        priority: percentage >= 100 ? 'urgent' : 'high'
+                    });
+
+                    // Also notify project manager
+                    if (project?.projectManagerId) {
+                        await notificationService.createNotification({
+                            userId: project.projectManagerId,
+                            eventType: percentage >= 100 ? 'expense_exceeds_budget' : 'budget_threshold_exceeded',
+                            title: percentage >= 100 ? 'Budget Exceeded' : 'Budget Threshold Alert',
+                            message: `${category} expenses have reached ${percentage.toFixed(1)}% of budget for ${project.projectName}`,
+                            relatedEntity: {
+                                entityType: 'Expense',
+                                entityId: created._id
+                            },
+                            metadata: {
+                                category,
+                                totalExpenses,
+                                budget,
+                                percentage: percentage.toFixed(1)
+                            },
+                            priority: percentage >= 100 ? 'urgent' : 'high'
+                        });
+                    }
+                }
+            }
+        }
+
         return res.status(201).json({ expense: created });
     } catch (err) {
         console.error(err);

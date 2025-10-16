@@ -81,7 +81,7 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
             {[{label:'Subtotal',value:subtotal},{label:'Contingency',value:totalContingency},{label:'Tax',value:totalTax},{label:'Grand Total',value:grandTotal}].map((c, i) => (
               <div key={i} className="bg-[#F7EED3] rounded p-3 border border-[#AAB396] text-[#674636]">
                 <div className="text-xs opacity-80">{c.label}</div>
-                <div className="font-semibold">${Number(c.value || 0).toLocaleString()}</div>
+                <div className="font-semibold">LKR {Number(c.value || 0).toLocaleString()}</div>
               </div>
             ))}
           </div>

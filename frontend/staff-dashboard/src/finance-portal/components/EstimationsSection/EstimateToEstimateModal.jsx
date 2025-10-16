@@ -82,7 +82,7 @@ export const EstimateToEstimateModal = ({ estimation, onClose, onCreate }) => {
           </tbody>
         </table>
 
-        {/* Footer Buttons */}
+        {/* Footer */}
         <div className="flex justify-end mt-6 space-x-3">
           <button
             onClick={onClose}

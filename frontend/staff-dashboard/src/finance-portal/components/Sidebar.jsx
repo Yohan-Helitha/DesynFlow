@@ -11,11 +11,12 @@ import {
   ChevronDown,
   LogOut,
   Settings,
+  BarChart3,
 } from 'lucide-react';
 
 export const Sidebar = ({ onNavigate, currentSection }) => {
   const navItems = [
-    { name: 'Dashboard', icon: <LayoutDashboard size={18} />, section: 'dashboard' },
+    { name: 'Dashboard', icon: <LayoutDashboard size={18} />, section: 'reports' },
     { name: 'Inspection Management', icon: <ClipboardCheck size={18} />, section: 'inspections' },
     { name: 'Estimations', icon: <Calculator size={18} />, section: 'estimations' },
     { name: 'Quotations', icon: <FileText size={18} />, section: 'quotations' },
@@ -42,7 +43,7 @@ export const Sidebar = ({ onNavigate, currentSection }) => {
               <a
                 href="#"
                 className={`flex items-center px-6 py-3 hover:bg-[#AAB396] hover:text-[#674636] transition-colors ${
-                  currentSection === item.section ? 'bg-[#AAB396] text-[#674636]' : ''
+                  currentSection === item.section || (currentSection === 'dashboard' && item.section === 'reports') ? 'bg-[#AAB396] text-[#674636]' : ''
                 }`}
                 onClick={() => handleNavItemClick(item.section)}
               >

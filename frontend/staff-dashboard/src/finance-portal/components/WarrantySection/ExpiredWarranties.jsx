@@ -6,11 +6,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  RefreshCw,
 } from 'lucide-react';
 import { ViewWarrantyModal } from './ViewWarrantyModal';
 
-const expiredWarranties = [/* ... same mock data ... */];
+const expiredWarranties = [/* ...... */];
 
 export const ExpiredWarranties = () => {
   const [showViewModal, setShowViewModal] = useState(false);
@@ -119,19 +118,19 @@ export const ExpiredWarranties = () => {
             <tbody className="divide-y divide-[#AAB396]">
               {paginatedWarranties.map((w) => (
                 <tr key={w.id} className="hover:bg-[#FFF8E8]">
-                  <td className="px-6 py-4 text-sm font-medium text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {w.id}
                   </td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {w.projectName}
                   </td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {w.clientName}
                   </td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {w.type}
                   </td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
                     {w.endDate}
                   </td>
                   <td className="px-6 py-4">
@@ -139,10 +138,10 @@ export const ExpiredWarranties = () => {
                       {w.daysExpired} days
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
                       onClick={() => handleView(w)}
-                      className="text-[#674636] hover:bg-[#FFF8E8] border border-[#AAB396] px-3 py-1 rounded-md"
+                      className="text-[#674636] hover:bg-[#FFF8E8] border border-[#AAB396] px-3 py-1 rounded-md text-xs font-mono"
                     >
                       <Eye size={16} className="inline mr-1" />
                       View

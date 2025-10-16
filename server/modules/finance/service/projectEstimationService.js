@@ -70,7 +70,9 @@ async function getEstimatesByProject(projectId) {
 }
 
 async function getAllEstimates() {
-  return ProjectEstimation.find();
+  return ProjectEstimation.find()
+    .populate('projectId', 'projectName')
+    .sort({ createdAt: -1 });
 }
 
 async function getLatestEstimate(projectId) {

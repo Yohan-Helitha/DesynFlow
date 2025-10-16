@@ -12,8 +12,6 @@ import {
   Download,
 } from 'lucide-react'
 
-
-
 // Fetch reviewed payments from backend
 export const CompletedPayments = () => {
   const [payments, setPayments] = useState([]);
@@ -22,13 +20,13 @@ export const CompletedPayments = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState('verifiedTime');
+  const [sortField, setSortField] = useState('updatedAt'); // reviewed time
   const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
+  const fetchProcessedPayments = () => {
     setLoading(true);
-  fetch('/api/payments/processed')
+    fetch('/api/payments/processed')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch reviewed payments');
         return res.json();
@@ -41,6 +39,10 @@ export const CompletedPayments = () => {
         setError(err.message);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchProcessedPayments();
   }, []);
 
   const handleView = (payment) => {
@@ -57,19 +59,38 @@ export const CompletedPayments = () => {
     }
   };
 
+  const getDate = (p) => new Date(p.updatedAt || p.createdAt || 0).getTime();
+
   // Filter and sort payments
   const filteredPayments = payments
     .filter(
-      (payment) =>
-        (payment.projectId && payment.projectId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (payment.clientId && payment.clientId.toLowerCase().includes(searchTerm.toLowerCase()))
+      (payment) => {
+        if (!searchTerm) return true; // Show all payments when no search term
+        
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          (payment._id && payment._id.toString().toLowerCase().includes(searchLower)) ||
+          (payment.projectId && String(payment.projectId).toLowerCase().includes(searchLower)) ||
+          (payment.projectId?.projectName && payment.projectId.projectName.toLowerCase().includes(searchLower)) ||
+          (payment.clientId && String(payment.clientId).toLowerCase().includes(searchLower)) ||
+          (payment.clientId?.username && payment.clientId.username.toLowerCase().includes(searchLower)) ||
+          (payment.clientId?.email && payment.clientId.email.toLowerCase().includes(searchLower)) ||
+          (payment.method && payment.method.toLowerCase().includes(searchLower)) ||
+          (payment.type && payment.type.toLowerCase().includes(searchLower)) ||
+          (payment.status && payment.status.toLowerCase().includes(searchLower))
+        );
+      }
     )
     .sort((a, b) => {
+      if (sortField === 'updatedAt') {
+        const ad = getDate(a)
+        const bd = getDate(b)
+        return sortDirection === 'asc' ? ad - bd : bd - ad
+      }
       if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
       if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-
 
   // Pagination
   const itemsPerPage = 10;
@@ -123,32 +144,32 @@ export const CompletedPayments = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('method')}>Method <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('type')}>Type <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Receipt</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('verifiedTime')}>Verified Time <ArrowUpDown size={14} className="inline ml-1" /></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('updatedAt')}>Reviewed Time <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase cursor-pointer" onClick={() => handleSort('status')}>Status <ArrowUpDown size={14} className="inline ml-1" /></th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-[#F7EED3]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{payment.projectId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.clientId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${payment.amount.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.method}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636] underline cursor-pointer">
+                <tr key={payment._id} className="hover:bg-[#F7EED3]">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.projectId?.projectName || payment.projectName || payment.projectId || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.clientId?.username || payment.clientName || payment.clientId?.email || payment.clientId || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {Number(payment.amount).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.method}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.type}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs underline cursor-pointer">
                     {payment.receiptUrl ? (
                       <a href={buildUploadsUrl(payment.receiptUrl, 'payments')} target="_blank" rel="noopener noreferrer">View Receipt</a>
                     ) : (
                       <span className="text-[#AAB396]">No Receipt</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{payment.status || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.status || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs">
                     <button
                       onClick={() => handleView(payment)}
-                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white flex items-center mr-2"
+                      className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-xs font-mono font-medium text-[#674636] hover:bg-[#AAB396] hover:text-white flex items-center mr-2"
                     >
                       <Eye size={16} className="inline mr-1" /> View
                     </button>
@@ -193,7 +214,10 @@ export const CompletedPayments = () => {
       {showViewModal && (
         <PaymentDetailsModal
           payment={selectedPayment}
-          onClose={() => setShowViewModal(false)}
+          onClose={() => {
+            setShowViewModal(false);
+            fetchProcessedPayments();
+          }}
         />
       )}
     </div>

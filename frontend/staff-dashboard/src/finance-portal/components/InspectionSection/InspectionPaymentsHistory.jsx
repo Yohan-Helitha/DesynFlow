@@ -15,14 +15,14 @@ export const InspectionPaymentsHistory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Build a full URL to the uploaded receipt that works in dev and prod and normalizes slashes
+  // full URL to the uploaded receipt
   const buildReceiptUrl = (payment) => {
     const raw = payment?.paymentReceiptUrl || payment?.receiptUrl;
     if (!raw) return '';
     if (/^https?:\/\//i.test(raw)) return raw;
     let normalized = String(raw).replace(/\\/g, '/');
     const lower = normalized.toLowerCase();
-    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : '';
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
 
     let idx = lower.indexOf('/uploads/');
     if (idx !== -1) {
@@ -75,13 +75,13 @@ export const InspectionPaymentsHistory = () => {
 
   const sortedPayments = [...pendingPayments]
     .filter((payment) => {
-      const q = searchTerm.toLowerCase();
-      return (
-        (payment.inspectionRequestId && payment.inspectionRequestId.toLowerCase().includes(q)) ||
-        (payment.clientName && payment.clientName.toLowerCase().includes(q)) ||
-        (payment.email && payment.email.toLowerCase().includes(q)) ||
-        (payment.siteLocation && payment.siteLocation.toLowerCase().includes(q))
-      );
+      const q = (searchTerm || '').toLowerCase();
+      const idStr = String(payment._id || payment.inspectionRequestId || '').toLowerCase();
+      const nameStr = String(payment.client_name || payment.clientName || '').toLowerCase();
+      const emailStr = String(payment.email || '').toLowerCase();
+      const siteParts = [payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(' ').toLowerCase();
+      const legacySite = String(payment.siteLocation || '').toLowerCase();
+      return [idStr, nameStr, emailStr, siteParts, legacySite].some((v) => v.includes(q));
     })
     .sort((a, b) => {
       if (!a[sortField] || !b[sortField]) return 0;
@@ -131,8 +131,6 @@ export const InspectionPaymentsHistory = () => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Inspection Request ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Client Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Phone</th>
@@ -147,16 +145,14 @@ export const InspectionPaymentsHistory = () => {
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedPayments.map((payment) => (
                 <tr key={payment._id || payment.inspectionRequestId} className="hover:bg-[#F7EED3] transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-[#674636] font-mono text-xs">{payment.inspectionRequestId}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] font-mono text-xs">{payment.clientId || (payment.client && payment.client._id)}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.clientName || (payment.client && payment.client.name)}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.email}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.phone}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.siteLocation}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.propertyType}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] font-semibold">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `$${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636]">{payment.status || (payment.estimation && payment.estimation.status) || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-[#674636] underline cursor-pointer">
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.client_name || payment.clientName || (payment.client && payment.client.name) || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.email || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.phone_number || payment.phone || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{[payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(', ') || payment.siteLocation || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.propertyType || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] font-semibold whitespace-pre-line break-words max-w-xs">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `LKR ${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.status || (payment.estimation && payment.estimation.status) || '-'}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] underline cursor-pointer whitespace-pre-line break-words max-w-xs">
                     {payment.paymentReceiptUrl || payment.receiptUrl ? (
                       <a href={buildReceiptUrl(payment)} target="_blank" rel="noopener noreferrer" className="hover:text-[#AAB396]">
                         View Receipt
@@ -165,7 +161,7 @@ export const InspectionPaymentsHistory = () => {
                       <span className="text-[#AAB396] no-underline">No Receipt</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-right text-xs font-mono font-medium">
                     <button
                       onClick={() => handleView(payment)}
                       className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md transition-colors"

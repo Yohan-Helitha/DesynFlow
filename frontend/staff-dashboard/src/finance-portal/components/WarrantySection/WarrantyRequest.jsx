@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Eye, RefreshCw } from 'lucide-react';
+import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Wrench } from 'lucide-react';
 import WarrantyClaimActionModal from './WarrantyClaimActionModal';
 
 // Table displaying warranty claims (warrenty_claim model)
@@ -12,27 +12,27 @@ export const WarrantyRequest = () => {
 	const [sortDirection, setSortDirection] = useState('desc');
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 5;
-	const [refreshKey, setRefreshKey] = useState(0);
 	const [showViewModal, setShowViewModal] = useState(false);
 	const [selectedClaim, setSelectedClaim] = useState(null);
 
 	useEffect(() => {
-		async function fetchClaims() {
-			setLoading(true);
-			setError('');
-			try {
-				const resp = await fetch('/api/claims/pending');
-				if (!resp.ok) throw new Error('Failed to load pending warranty claims');
-				const data = await resp.json();
-				setClaims(Array.isArray(data) ? data : []);
-			} catch (e) {
-				setError(e.message);
-			} finally {
-				setLoading(false);
-			}
-		}
 		fetchClaims();
-	}, [refreshKey]);
+	}, []);
+
+	const fetchClaims = async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const resp = await fetch('/api/claims/pending');
+			if (!resp.ok) throw new Error('Failed to load pending warranty claims');
+			const data = await resp.json();
+			setClaims(Array.isArray(data) ? data : []);
+		} catch (e) {
+			setError(e.message);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	const handleSort = (field) => {
 		if (sortField === field) {
@@ -43,10 +43,11 @@ export const WarrantyRequest = () => {
 		}
 	};
 
-	const handleView = (claim) => {
-		setSelectedClaim(claim);
-		setShowViewModal(true);
-	};
+		const handleView = (claim) => {
+			// Always open the action modal as requested
+			setSelectedClaim(claim);
+			setShowViewModal(true);
+		};
 
 	const filtered = claims
 		.filter(c => {
@@ -71,10 +72,13 @@ export const WarrantyRequest = () => {
 	const pageSlice = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
 	const columns = [
-		{ key: '_id', label: 'Claim ID' },
-		{ key: 'warrantyId', label: 'Warranty ID', render: r => (typeof r.warrantyId === 'object' ? r.warrantyId?._id || '' : r.warrantyId || '') },
-		{ key: 'clientId', label: 'Client ID', render: r => (typeof r.clientId === 'object' ? r.clientId?._id || '' : r.clientId || '') },
+		{ key: 'clientName', label: 'Client name', render: r => (typeof r.clientId === 'object' ? (r.clientId?.username || r.clientId?.email || '') : (r.clientName || '')) },
 		{ key: 'issueDescription', label: 'Issue' },
+		{ key: 'proofUrl', label: 'Proof', render: r => r.proofUrl ? (
+			<a href={r.proofUrl} target="_blank" rel="noopener noreferrer" className="text-[#674636] hover:text-[#AAB396] underline">
+				View
+			</a>
+		) : <span className="text-[#AAB396]">No proof</span> },
 		{ key: 'status', label: 'Status', render: r => statusBadge(r.status) },
 		{ key: 'createdAt', label: 'Created', render: r => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '' },
 	];
@@ -112,13 +116,6 @@ export const WarrantyRequest = () => {
 							<Filter size={16} className="text-[#AAB396]" />
 						</button>
 					</div>
-					<button
-						onClick={() => setRefreshKey(k => k + 1)}
-						className="bg-[#674636] text-[#FFF8E8] px-3 py-2 rounded-md text-sm font-medium hover:bg-[#AAB396] flex items-center"
-						title="Refresh"
-					>
-						<RefreshCw size={16} className="mr-1" /> Refresh
-					</button>
 				</div>
 			</div>
 
@@ -153,18 +150,18 @@ export const WarrantyRequest = () => {
 							{!loading && pageSlice.map(row => (
 								<tr key={row._id} className="hover:bg-[#F7EED3]">
 									{columns.map(col => (
-										<td key={col.key} className="px-4 py-3 whitespace-nowrap text-sm text-[#674636]">
+										<td key={col.key} className="px-4 py-3 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
 											{col.render ? col.render(row) : (row[col.key] ?? '')}
 										</td>
 									))}
-									<td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-										<button 
-											onClick={() => handleView(row)}
-											className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors"
-										>
-											<Eye size={16} className="inline mr-1" /> View
-										</button>
-									</td>
+																											<td className="px-4 py-3 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
+																												<button 
+																													onClick={() => handleView(row)}
+																													className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors text-xs font-mono"
+																												>
+																													<Wrench size={16} className="inline mr-1" /> Action
+																												</button>
+																											</td>
 								</tr>
 							))}
 						</tbody>
@@ -213,7 +210,7 @@ export const WarrantyRequest = () => {
 					onClose={() => setShowViewModal(false)}
 					onAction={() => {
 						setShowViewModal(false);
-						setRefreshKey(k => k + 1);
+						fetchClaims(); // Refresh data after action
 					}}
 				/>
 			)}

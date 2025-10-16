@@ -28,11 +28,16 @@ export const ViewInspectionEstimationModal = ({ estimation, onClose }) => {
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
+
               <div className="flex items-center">
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
-                  <span className="text-sm text-[#AAB396]">Project ID</span>
-                  <p className="font-medium">{estimation.projectId || 'N/A'}</p>
+                  <span className="text-sm text-[#AAB396]">Project</span>
+                  <p className="font-medium">
+                    {typeof estimation.projectId === 'object' && estimation.projectId?.projectName
+                      ? estimation.projectId.projectName
+                      : estimation.projectId || 'N/A'}
+                  </p>
                 </div>
               </div>
 
@@ -93,25 +98,25 @@ export const ViewInspectionEstimationModal = ({ estimation, onClose }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="flex justify-between">
                 <span className="text-[#AAB396]">Labor Cost:</span>
-                <span className="font-medium">${estimation.laborCost?.toLocaleString() || '0'}</span>
+                <span className="font-medium">LKR {estimation.laborCost?.toLocaleString() || '0'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#AAB396]">Material Cost:</span>
-                <span className="font-medium">${estimation.materialCost?.toLocaleString() || '0'}</span>
+                <span className="font-medium">LKR {estimation.materialCost?.toLocaleString() || '0'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#AAB396]">Service Cost:</span>
-                <span className="font-medium">${estimation.serviceCost?.toLocaleString() || '0'}</span>
+                <span className="font-medium">LKR {estimation.serviceCost?.toLocaleString() || '0'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#AAB396]">Contingency Cost:</span>
-                <span className="font-medium">${estimation.contingencyCost?.toLocaleString() || '0'}</span>
+                <span className="font-medium">LKR {estimation.contingencyCost?.toLocaleString() || '0'}</span>
               </div>
             </div>
             <div className="border-t border-[#AAB396] mt-3 pt-3">
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total Cost:</span>
-                <span className="text-[#674636]">${estimation.total?.toLocaleString() || '0'}</span>
+                <span className="text-[#674636]">LKR {estimation.total?.toLocaleString() || '0'}</span>
               </div>
             </div>
           </div>

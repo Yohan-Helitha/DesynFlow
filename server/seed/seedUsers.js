@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import User from '../modules/auth/model/user.model.js';
 import InspectionRequest from '../modules/auth/model/inspectionRequest.model.js';
 import Assignment from '../modules/auth/model/assignment.model.js';

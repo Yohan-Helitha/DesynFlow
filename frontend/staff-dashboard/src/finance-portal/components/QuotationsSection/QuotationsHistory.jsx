@@ -209,11 +209,8 @@ export const ApprovedQuotations = () => {
       <div className="bg-[#F7EED3] shadow-sm rounded-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#AAB396]">
-            <thead className="bg-[#FFF8E8]">
+            <thead className="bg-[#F7EED3]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('_id')}>
-                  <div className="flex items-center">Quotation ID<ArrowUpDown size={14} className="ml-1" /></div>
-                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('projectId')}>
                   <div className="flex items-center">Project Name<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
@@ -229,18 +226,17 @@ export const ApprovedQuotations = () => {
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-[#F7EED3] divide-y divide-[#AAB396]">
+            <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
               {paginatedQuotations.map((quotation) => {
                 const projDisp = getProjectDisplay(quotation);
                 
                 return (
-                  <tr key={quotation._id} className="hover:bg-[#FFF8E8]">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#674636]">{quotation._id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{projDisp}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">${quotation.grandTotal?.toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{quotation.status}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#674636]">{quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : ''}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <tr key={quotation._id} className="hover:bg-[#F7EED3]">
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{projDisp}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {quotation.grandTotal?.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation.status}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : ''}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button onClick={() => handleView(quotation)} className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md flex items-center transition-colors">
                           <Eye size={16} className="inline mr-1" />View
@@ -277,7 +273,7 @@ export const ApprovedQuotations = () => {
               {paginatedQuotations.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="px-6 py-4 text-center text-[#AAB396]"
                   >
                     No approved quotations found

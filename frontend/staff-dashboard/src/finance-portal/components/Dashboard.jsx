@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Header } from './Header';
 import { SummaryCard } from './SummaryCard';
-import { IncomeChart } from './IncomeChart';
+// Chart removed per request
+// import { IncomeChart } from './IncomeChart';
 // import { BudgetUtilizationChart } from './BudgetUtilizationChart';
 import {
   Wallet,
@@ -69,8 +70,6 @@ export const Dashboard = () => {
               <DollarSign size={20} />
             </div>
           }
-          change="+1.29%"
-          changeType="positive"
           onClick={() => handleCardClick('income')}
         />
 
@@ -82,8 +81,6 @@ export const Dashboard = () => {
               <Wallet size={20} />
             </div>
           }
-          change="+2.36%"
-          changeType="positive"
           onClick={() => handleCardClick('balance')}
         />
 
@@ -132,15 +129,7 @@ export const Dashboard = () => {
         />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <div className="lg:col-span-2">
-          <IncomeChart />
-        </div>
-        {/* <div className="lg:col-span-1">
-          <BudgetUtilizationChart />
-        </div> */}
-      </div>
+      {/* Charts removed */}
 
       {/* Recent Activity */}
       <div className="mt-6">
