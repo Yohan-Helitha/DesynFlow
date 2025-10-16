@@ -231,8 +231,8 @@ export const PendingPayments = () => {
           payment={selectedPayment}
           onClose={() => {
             setShowViewModal(false);
-            fetchPendingPayments();
           }}
+          onUpdate={fetchPendingPayments}
         />
       )}
     </div>

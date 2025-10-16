@@ -3,9 +3,10 @@ import Expense from '../model/expenses.js';
 
 // Get all expenses
 const getAllExpenses = async () => {
-    // newest first by createdAt, populate project name
+    // newest first by createdAt, populate project details
     return await Expense.find()
-        .populate('projectId', 'projectName')
+        .populate('projectId', 'projectName status location clientId')
+        .populate('createdBy', 'name email username')
         .sort({ createdAt: -1 });
 };
 

@@ -31,6 +31,69 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
   const client = typeof claim.clientId === 'object' ? claim.clientId : null;
   const reviewer = typeof claim.financeReviewerId === 'object' ? claim.financeReviewerId : null;
 
+  // Helper to get client name
+  const getClientName = () => {
+    if (client) {
+      return client.username || client.name || client.email || 'Unknown Client';
+    }
+    return 'Unknown Client';
+  };
+
+  // Helper to get client email
+  const getClientEmail = () => {
+    if (client) {
+      return client.email || 'No email provided';
+    }
+    return 'No email provided';
+  };
+
+  // Helper to get project name
+  const getProjectName = () => {
+    if (warranty) {
+      if (warranty.projectName) return warranty.projectName;
+      if (typeof warranty.projectId === 'object' && warranty.projectId?.projectName) {
+        return warranty.projectId.projectName;
+      }
+    }
+    return 'Unknown Project';
+  };
+
+  // Helper to get material name
+  const getMaterialName = () => {
+    if (warranty) {
+      if (warranty.materialName) return warranty.materialName;
+      if (typeof warranty.itemId === 'object' && warranty.itemId?.materialName) {
+        return warranty.itemId.materialName;
+      }
+    }
+    return 'Unknown Material';
+  };
+
+  // Helper to get material type/category
+  const getMaterialType = () => {
+    if (warranty) {
+      if (warranty.materialType) return warranty.materialType;
+      if (warranty.type) return warranty.type;
+      if (typeof warranty.itemId === 'object') {
+        if (warranty.itemId?.type) return warranty.itemId.type;
+        if (warranty.itemId?.category) return warranty.itemId.category;
+      }
+    }
+    return 'Unknown Type';
+  };
+
+  // Helper to format dates
+  const formatDate = (dateValue) => {
+    if (!dateValue) return 'Not specified';
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      return date.toLocaleDateString();
+    } catch {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-[#FFF8E8] rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -59,7 +122,7 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Claim ID</span>
-                  <p className="font-medium font-mono text-xs">{claim._id || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{claim._id || 'Not available'}</p>
                 </div>
               </div>
 
@@ -67,15 +130,15 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Warranty ID</span>
-                  <p className="font-medium font-mono text-xs">{warranty?._id || claim.warrantyId || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{warranty?._id || (typeof claim.warrantyId === 'string' ? claim.warrantyId : 'Not linked')}</p>
                 </div>
               </div>
 
               <div className="flex items-center">
                 <User size={16} className="mr-2 text-[#AAB396]" />
                 <div>
-                  <span className="text-sm text-[#AAB396]">Client ID</span>
-                  <p className="font-medium font-mono text-xs">{client?._id || claim.clientId || 'N/A'}</p>
+                  <span className="text-sm text-[#AAB396]">Client Name</span>
+                  <p className="font-medium">{getClientName()}</p>
                 </div>
               </div>
             </div>
@@ -94,7 +157,7 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
                 <div>
                   <span className="text-sm text-[#AAB396]">Submitted Date</span>
                   <p className="font-medium">
-                    {claim.createdAt ? new Date(claim.createdAt).toLocaleDateString() : 'N/A'}
+                    {formatDate(claim.createdAt)}
                   </p>
                 </div>
               </div>
@@ -105,7 +168,7 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
                   <div>
                     <span className="text-sm text-[#AAB396]">Last Updated</span>
                     <p className="font-medium">
-                      {new Date(claim.updatedAt).toLocaleDateString()}
+                      {formatDate(claim.updatedAt)}
                     </p>
                   </div>
                 </div>
@@ -128,25 +191,35 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
           {warranty && (
             <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
               <h4 className="font-semibold text-[#674636] mb-3">Related Warranty Information</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Project Name</span>
-                    <p className="font-medium">{warranty.projectName || 'N/A'}</p>
+                    <p className="font-medium">{getProjectName()}</p>
                   </div>
                   <div>
+                    <span className="text-sm text-[#AAB396]">Material Name</span>
+                    <p className="font-medium">{getMaterialName()}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div>
                     <span className="text-sm text-[#AAB396]">Material Type</span>
-                    <p className="font-medium">{warranty.materialType || warranty.type || 'N/A'}</p>
+                    <p className="font-medium">{getMaterialType()}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-[#AAB396]">Warranty Status</span>
+                    <p className="font-medium">{warranty.status || 'Unknown'}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Warranty Start</span>
-                    <p className="font-medium">{warranty.startDate || 'N/A'}</p>
+                    <p className="font-medium">{formatDate(warranty.startDate || warranty.warrantyStart)}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Warranty End</span>
-                    <p className="font-medium">{warranty.endDate || 'N/A'}</p>
+                    <p className="font-medium">{formatDate(warranty.endDate || warranty.warrantyEnd)}</p>
                   </div>
                 </div>
               </div>
@@ -164,21 +237,21 @@ export const ViewWarrantyClaimModal = ({ claim, onClose }) => {
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Client Name</span>
-                    <p className="font-medium">{client.name || 'N/A'}</p>
+                    <p className="font-medium">{getClientName()}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Email</span>
-                    <p className="font-medium">{client.email || 'N/A'}</p>
+                    <p className="font-medium">{getClientEmail()}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div>
                     <span className="text-sm text-[#AAB396]">Phone</span>
-                    <p className="font-medium">{client.phone || 'N/A'}</p>
+                    <p className="font-medium">{client.phone || client.phoneNumber || 'Not provided'}</p>
                   </div>
                   <div>
                     <span className="text-sm text-[#AAB396]">Address</span>
-                    <p className="font-medium">{client.address || 'N/A'}</p>
+                    <p className="font-medium">{client.address || 'Not provided'}</p>
                   </div>
                 </div>
               </div>

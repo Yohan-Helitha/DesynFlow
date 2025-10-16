@@ -4,6 +4,60 @@ import { X, Download, Bell, Shield, User, Calendar, FileText, MapPin } from 'luc
 export const ViewWarrantyModal = ({ warranty, onClose }) => {
   const isActive = warranty.status === 'Active';
 
+  // Helper functions for safe data extraction
+  const getClientName = () => {
+    if (warranty.clientId && typeof warranty.clientId === 'object') {
+      return warranty.clientId.username || warranty.clientId.name || warranty.clientId.email || 'Unknown Client';
+    }
+    return warranty.clientName || 'Unknown Client';
+  };
+
+  const getClientEmail = () => {
+    if (warranty.clientId && typeof warranty.clientId === 'object') {
+      return warranty.clientId.email || 'No email provided';
+    }
+    return warranty.clientEmail || 'No email provided';
+  };
+
+  const getClientPhone = () => {
+    if (warranty.clientId && typeof warranty.clientId === 'object') {
+      return warranty.clientId.phone || warranty.clientId.phoneNumber || 'Not provided';
+    }
+    return warranty.clientPhone || 'Not provided';
+  };
+
+  const getProjectName = () => {
+    if (warranty.projectId && typeof warranty.projectId === 'object') {
+      return warranty.projectId.projectName || warranty.projectId.name || 'Unknown Project';
+    }
+    return warranty.projectName || 'Unknown Project';
+  };
+
+  const getMaterialName = () => {
+    if (warranty.itemId && typeof warranty.itemId === 'object') {
+      return warranty.itemId.materialName || warranty.itemId.name || 'Unknown Material';
+    }
+    return warranty.materialName || 'Unknown Material';
+  };
+
+  const getMaterialType = () => {
+    if (warranty.itemId && typeof warranty.itemId === 'object') {
+      return warranty.itemId.type || warranty.itemId.materialType || warranty.itemId.category || 'Unknown Type';
+    }
+    return warranty.type || warranty.materialType || 'Unknown Type';
+  };
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) return 'Not specified';
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-[#FFF8E8] rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -32,23 +86,23 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
                 <Shield size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Warranty ID</span>
-                  <p className="font-medium font-mono text-xs">{warranty._id || warranty.id || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{warranty._id || warranty.id || 'Not available'}</p>
                 </div>
               </div>
 
               <div className="flex items-center">
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
-                  <span className="text-sm text-[#AAB396]">Project ID</span>
-                  <p className="font-medium font-mono text-xs">{warranty.projectId || 'N/A'}</p>
+                  <span className="text-sm text-[#AAB396]">Project Name</span>
+                  <p className="font-medium">{getProjectName()}</p>
                 </div>
               </div>
 
               <div className="flex items-center">
                 <MapPin size={16} className="mr-2 text-[#AAB396]" />
                 <div>
-                  <span className="text-sm text-[#AAB396]">Project Name</span>
-                  <p className="font-medium">{warranty.projectName || 'N/A'}</p>
+                  <span className="text-sm text-[#AAB396]">Material Name</span>
+                  <p className="font-medium">{getMaterialName()}</p>
                 </div>
               </div>
             </div>
@@ -65,12 +119,12 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
 
               <div>
                 <span className="text-sm text-[#AAB396]">Warranty Type</span>
-                <p className="font-medium">{warranty.type || warranty.materialType || 'N/A'}</p>
+                <p className="font-medium">{getMaterialType()}</p>
               </div>
 
               <div>
                 <span className="text-sm text-[#AAB396]">Coverage</span>
-                <p className="font-medium">{warranty.coverage || warranty.materialCategory || 'N/A'}</p>
+                <p className="font-medium">{warranty.coverage || warranty.materialCategory || 'Standard Coverage'}</p>
               </div>
             </div>
           </div>
@@ -85,49 +139,38 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
               <div className="space-y-3">
                 <div>
                   <span className="text-sm text-[#AAB396]">Client Name</span>
-                  <p className="font-medium">{warranty.clientName || 'N/A'}</p>
+                  <p className="font-medium">{getClientName()}</p>
                 </div>
                 
                 <div>
-                  <span className="text-sm text-[#AAB396]">Client ID</span>
-                  <p className="font-medium font-mono text-xs">{warranty.clientId || 'N/A'}</p>
+                  <span className="text-sm text-[#AAB396]">Email</span>
+                  <p className="font-medium">{getClientEmail()}</p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <span className="text-sm text-[#AAB396]">Email</span>
-                  <p className="font-medium">{warranty.clientEmail || 'N/A'}</p>
-                </div>
-                
-                <div>
                   <span className="text-sm text-[#AAB396]">Phone</span>
-                  <p className="font-medium">{warranty.clientPhone || 'N/A'}</p>
+                  <p className="font-medium">{getClientPhone()}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Item Information */}
-          {(warranty.itemId || warranty.materialName) && (
-            <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
-              <h4 className="font-semibold text-[#674636] mb-3">Item Details</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {warranty.itemId && (
-                  <div>
-                    <span className="text-sm text-[#AAB396]">Item ID</span>
-                    <p className="font-medium font-mono text-xs">{warranty.itemId}</p>
-                  </div>
-                )}
-                {warranty.materialName && (
-                  <div>
-                    <span className="text-sm text-[#AAB396]">Material Name</span>
-                    <p className="font-medium">{warranty.materialName}</p>
-                  </div>
-                )}
+          <div className="bg-[#FFF8E8] border border-[#AAB396] p-4 rounded-lg">
+            <h4 className="font-semibold text-[#674636] mb-3">Item Details</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="text-sm text-[#AAB396]">Material Name</span>
+                <p className="font-medium">{getMaterialName()}</p>
+              </div>
+              <div>
+                <span className="text-sm text-[#AAB396]">Material Type</span>
+                <p className="font-medium">{getMaterialType()}</p>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Warranty Period */}
           <div className="bg-[#F7EED3] p-4 rounded-lg">
@@ -138,12 +181,12 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <span className="text-sm text-[#AAB396]">Start Date</span>
-                <p className="font-medium">{warranty.startDate || 'N/A'}</p>
+                <p className="font-medium">{formatDate(warranty.startDate || warranty.warrantyStart)}</p>
               </div>
               
               <div>
                 <span className="text-sm text-[#AAB396]">End Date</span>
-                <p className="font-medium">{warranty.endDate || 'N/A'}</p>
+                <p className="font-medium">{formatDate(warranty.endDate || warranty.warrantyEnd)}</p>
               </div>
               
               <div>
@@ -172,8 +215,8 @@ export const ViewWarrantyModal = ({ warranty, onClose }) => {
             <h4 className="font-semibold text-[#674636] mb-3">Warranty Terms & Conditions</h4>
             <div className="text-sm text-[#674636] space-y-2">
               <p>
-                This warranty covers {warranty.coverage?.toLowerCase() || 'materials and workmanship'} for the project "{warranty.projectName || 'N/A'}". 
-                The warranty is valid from {warranty.startDate || 'N/A'} to {warranty.endDate || 'N/A'}.
+                This warranty covers {warranty.coverage?.toLowerCase() || 'materials and workmanship'} for the project "{getProjectName()}". 
+                The warranty is valid from {formatDate(warranty.startDate || warranty.warrantyStart)} to {formatDate(warranty.endDate || warranty.warrantyEnd)}.
               </p>
               
               <div className="mt-3">

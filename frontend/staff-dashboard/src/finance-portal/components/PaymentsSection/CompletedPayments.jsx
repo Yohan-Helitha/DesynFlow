@@ -24,7 +24,7 @@ export const CompletedPayments = () => {
   const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
+  const fetchProcessedPayments = () => {
     setLoading(true);
     fetch('/api/payments/processed')
       .then((res) => {
@@ -39,6 +39,10 @@ export const CompletedPayments = () => {
         setError(err.message);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchProcessedPayments();
   }, []);
 
   const handleView = (payment) => {
@@ -60,9 +64,22 @@ export const CompletedPayments = () => {
   // Filter and sort payments
   const filteredPayments = payments
     .filter(
-      (payment) =>
-        (payment.projectId && String(payment.projectId).toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (payment.clientId && String(payment.clientId).toLowerCase().includes(searchTerm.toLowerCase()))
+      (payment) => {
+        if (!searchTerm) return true; // Show all payments when no search term
+        
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          (payment._id && payment._id.toString().toLowerCase().includes(searchLower)) ||
+          (payment.projectId && String(payment.projectId).toLowerCase().includes(searchLower)) ||
+          (payment.projectId?.projectName && payment.projectId.projectName.toLowerCase().includes(searchLower)) ||
+          (payment.clientId && String(payment.clientId).toLowerCase().includes(searchLower)) ||
+          (payment.clientId?.username && payment.clientId.username.toLowerCase().includes(searchLower)) ||
+          (payment.clientId?.email && payment.clientId.email.toLowerCase().includes(searchLower)) ||
+          (payment.method && payment.method.toLowerCase().includes(searchLower)) ||
+          (payment.type && payment.type.toLowerCase().includes(searchLower)) ||
+          (payment.status && payment.status.toLowerCase().includes(searchLower))
+        );
+      }
     )
     .sort((a, b) => {
       if (sortField === 'updatedAt') {
@@ -197,7 +214,10 @@ export const CompletedPayments = () => {
       {showViewModal && (
         <PaymentDetailsModal
           payment={selectedPayment}
-          onClose={() => setShowViewModal(false)}
+          onClose={() => {
+            setShowViewModal(false);
+            fetchProcessedPayments();
+          }}
         />
       )}
     </div>
