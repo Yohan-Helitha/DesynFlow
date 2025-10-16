@@ -212,7 +212,7 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
     <div>
       <Navbar />
       <div className="m-6">
-        <div className="border-2 border-gray-300 m-auto p-8 w-xl shadow bg-[#FFF8E8]">
+  <div className="border-2 border-brown-primary-300 w-full max-w-4xl p-8 shadow bg-cream-primary rounded">
           <h1 className="text-2xl font-bold mb-6">Update Stock Reorder Request</h1>
 
           {errors.general && (
