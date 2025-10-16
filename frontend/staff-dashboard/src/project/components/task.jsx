@@ -46,7 +46,7 @@ const TaskBoard = () => {
     
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:4000/api/tasks/project/${project._id}`);
+      const response = await fetch(`/api/tasks/project/${project._id}`);
       if (response.ok) {
         const data = await response.json();
         setTasks(Array.isArray(data) ? data : []);
@@ -67,7 +67,7 @@ const TaskBoard = () => {
   const fetchTeamMembers = async () => {
     try {
       // Get team data using populated endpoint
-      const response = await fetch(`http://localhost:4000/api/teams/populated`);
+      const response = await fetch(`/api/teams/populated`);
       if (response.ok) {
         const teamsData = await response.json();
         
@@ -107,7 +107,7 @@ const TaskBoard = () => {
   const fetchUserNames = async (members) => {
     try {
       // Fetch teams data with populated user information
-      const response = await fetch('http://localhost:4000/api/teams/populated');
+      const response = await fetch('/api/teams/populated');
       
       if (!response.ok) {
         throw new Error('Failed to fetch teams data');
@@ -148,7 +148,7 @@ const TaskBoard = () => {
     
     try {
       // Get team data first using populated endpoint
-      const teamRes = await fetch(`http://localhost:4000/api/teams/populated`);
+      const teamRes = await fetch(`/api/teams/populated`);
       const teamData = await teamRes.json();
       console.log('All teams:', teamData);
       
@@ -164,7 +164,7 @@ const TaskBoard = () => {
 
       if (teamObj) {
         // Get projects for this team
-        const projRes = await fetch(`http://localhost:4000/api/projects`);
+        const projRes = await fetch(`/api/projects`);
         const projData = await projRes.json();
         console.log('All projects:', projData);
         
@@ -280,7 +280,7 @@ const TaskBoard = () => {
 
   const handleStatusChange = async (task, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/tasks/${task._id}/status`, {
+      const response = await fetch(`/api/tasks/${task._id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -316,7 +316,7 @@ const TaskBoard = () => {
   const handleDeleteTask = async (task) => {
     if (window.confirm(`Are you sure you want to delete "${task.name}"?`)) {
       try {
-        const response = await fetch(`http://localhost:4000/api/tasks/${task._id}`, {
+        const response = await fetch(`/api/tasks/${task._id}`, {
           method: 'DELETE'
         });
 
@@ -351,7 +351,7 @@ const TaskBoard = () => {
 
       if (editingTask) {
         // Update existing task
-        const response = await fetch(`http://localhost:4000/api/tasks/${editingTask._id}`, {
+        const response = await fetch(`/api/tasks/${editingTask._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -372,7 +372,7 @@ const TaskBoard = () => {
         }
       } else {
         // Add new task
-        const response = await fetch(`http://localhost:4000/api/tasks`, {
+        const response = await fetch(`/api/tasks`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

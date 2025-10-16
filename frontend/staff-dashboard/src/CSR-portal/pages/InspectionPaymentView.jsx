@@ -11,7 +11,7 @@ const InspectionPaymentView = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("authToken");
-      const res = await axios.get("http://localhost:4000/api/payment-receipt/all", {
+      const res = await axios.get("/api/payment-receipt/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPayments(res.data.receipts || []);
@@ -28,7 +28,7 @@ const InspectionPaymentView = () => {
     try {
       const token = localStorage.getItem("authToken");
       await axios.patch(
-        `http://localhost:4000/api/payment-receipt/verify/${receiptId}`,
+        `/api/payment-receipt/verify/${receiptId}`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -38,7 +38,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onTaskUpdate, 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await fetch(`http://localhost:4000/api/tasks/${taskData._id}`, {
+      const response = await fetch(`/api/tasks/${taskData._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -91,7 +91,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onTaskUpdate, 
 
     try {
       const currentUser = JSON.parse(localStorage.getItem('user'));
-      const response = await fetch(`http://localhost:4000/api/tasks/${taskData._id}/block`, {
+      const response = await fetch(`/api/tasks/${taskData._id}/block`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,7 +126,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onTaskUpdate, 
         
         // In a real implementation, you'd upload the file to a file storage service first
         // For now, we'll simulate by using the filename
-        const response = await fetch(`http://localhost:4000/api/tasks/${taskData._id}/attachments`, {
+        const response = await fetch(`/api/tasks/${taskData._id}/attachments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -158,7 +158,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onTaskUpdate, 
     
     try {
       const currentUser = JSON.parse(localStorage.getItem('user'));
-      const response = await fetch(`http://localhost:4000/api/tasks/${taskData._id}/comments`, {
+      const response = await fetch(`/api/tasks/${taskData._id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

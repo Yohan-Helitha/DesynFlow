@@ -22,6 +22,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/reports': {
+        target: 'http://desynflow-backend:4000',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   build: {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_BASE_URL = "http://localhost:4000/api"; // Adjust this to match your backend URL
+const API_BASE_URL = "/api"; // Adjust this to match your backend URL
 
 export default function TeamManagement() {
   const [teams, setTeams] = useState([]);

@@ -18,7 +18,7 @@ const PaymentManagement = () => {
         return;
       }
       
-      const response = await axios.get('http://localhost:4000/api/payment-receipt/all', {
+      const response = await axios.get('/api/payment-receipt/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPayments(response.data);
@@ -39,7 +39,7 @@ const PaymentManagement = () => {
     try {
       const token = localStorage.getItem('authToken');
       await axios.post(
-        `http://localhost:4000/api/payment-receipt/send-email/${payment._id}`,
+        `/api/payment-receipt/send-email/${payment._id}`,
         {
           clientEmail: payment.clientEmail || payment.client?.email,
           clientName: payment.clientName || payment.client?.name,
@@ -203,3 +203,4 @@ const PaymentManagement = () => {
 };
 
 export default PaymentManagement;
+

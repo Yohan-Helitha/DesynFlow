@@ -25,7 +25,7 @@ function Orders() {
   // Function to mark order as received
   const markAsReceived = async (orderId) => {
     try {
-      await axios.put(`http://localhost:4000/api/purchase-orders/${orderId}/status`, {
+      await axios.put(`/api/purchase-orders/${orderId}/status`, {
         status: 'Received'
       });
       
@@ -57,7 +57,7 @@ function Orders() {
         setLoading(true);
         setError(null);
         console.log("Fetching orders from API...");
-        const res = await fetch("http://localhost:4000/api/purchase-orders"); // backend API
+        const res = await fetch("/api/purchase-orders"); // backend API
         
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -101,7 +101,7 @@ function Orders() {
           setLoading(true);
           setError(null);
           console.log("Fetching orders from API...");
-          const res = await fetch("http://localhost:4000/api/purchase-orders");
+          const res = await fetch("/api/purchase-orders");
           
           if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
@@ -362,3 +362,4 @@ function Orders() {
 }
 
 export default Orders;
+

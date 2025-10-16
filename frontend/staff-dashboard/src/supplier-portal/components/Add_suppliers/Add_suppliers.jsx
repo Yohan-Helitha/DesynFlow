@@ -124,7 +124,7 @@ function Add_suppliers() {
     };
 
     try {
-      const response = await axios.post("http://localhost:4000/api/suppliers", formattedData);
+      const response = await axios.post("/api/suppliers", formattedData);
       console.log(`Supplier "${formData.companyName}" has been added successfully!`);
       
       // Navigate to supplier details page after successful addition
@@ -351,3 +351,4 @@ function Add_suppliers() {
 }
 
 export default Add_suppliers;
+

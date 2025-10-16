@@ -15,7 +15,7 @@ import Payment from '../modules/finance/model/payment.js';
 import Expense from '../modules/finance/model/expenses.js';
 import Warranty from '../modules/finance/model/warrenty.js';
 import WarrantyClaim from '../modules/finance/model/warrenty_claim.js';
-import Notification from '../modules/finance/model/notification.js';
+import FinanceNotificationGeneral from '../modules/finance/model/notification.js';
 
 dotenv.config();
 
@@ -41,7 +41,7 @@ async function clearAllExceptUsers() {
   await Expense.deleteMany({});
   await Warranty.deleteMany({});
   await WarrantyClaim.deleteMany({});
-  await Notification.deleteMany({});
+  await FinanceNotificationGeneral.deleteMany({});
   
   console.log('✅ All collections cleared (except Users)');
 }
@@ -707,7 +707,7 @@ async function seedFinanceData() {
       });
     }
 
-    const createdNotifications = await Notification.insertMany(notifications);
+    const createdNotifications = await FinanceNotificationGeneral.insertMany(notifications);
     console.log(`✅ Created ${createdNotifications.length} notifications`);
 
     // ==================== Summary ====================

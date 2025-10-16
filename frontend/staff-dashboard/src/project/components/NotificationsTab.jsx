@@ -63,7 +63,7 @@ export default function NotificationsTab() {
         ...(filters.search && { search: filters.search })
       });
 
-      const response = await fetch(`http://localhost:4000/api/notifications?${queryParams}`);
+      const response = await fetch(`/api/notifications?${queryParams}`);
       const result = await response.json();
       
       if (result.success) {
@@ -84,7 +84,7 @@ export default function NotificationsTab() {
 
   const markAsRead = async (notificationIds) => {
     try {
-      const response = await fetch('http://localhost:4000/api/notifications/mark-read', {
+      const response = await fetch('/api/notifications/mark-read', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export default function NotificationsTab() {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/notifications/mark-all-read', {
+      const response = await fetch('/api/notifications/mark-all-read', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export default function NotificationsTab() {
 
   const deleteNotification = async (notificationId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}?userId=${user._id || user.id}`, {
+      const response = await fetch(`/api/notifications/${notificationId}?userId=${user._id || user.id}`, {
         method: 'DELETE'
       });
 

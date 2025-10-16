@@ -1,7 +1,7 @@
 // src/services/FstockMovementService.js
 export const fetchStockMovements = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/stock_movement");
+    const res = await fetch("/api/warehouse/stock_movement");
     if (!res.ok) throw new Error("Failed to fetch stock movements");
     const data = await res.json();
     return data.stock_movement;
@@ -14,7 +14,7 @@ export const fetchStockMovements = async () => {
 // Add new movement
 export const addStockMovement = async (movementData) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/stock_movement`, {
+    const res = await fetch(`/api/warehouse/stock_movement`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -38,7 +38,7 @@ export const addStockMovement = async (movementData) => {
 
 export const fetchStockMovementById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/stock_movement/${id}`);
+    const res = await fetch(`/api/warehouse/stock_movement/${id}`);
     if (!res.ok) throw new Error("Failed to fetch stock movement");
     const data = await res.json();
     console.log("Fetched movement:", data); // debug
@@ -51,7 +51,7 @@ export const fetchStockMovementById = async (id) => {
 
 export const updateStockMovement = async (id, data) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/stock_movement/${id}`, {
+    const res = await fetch(`/api/warehouse/stock_movement/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -76,7 +76,7 @@ export const updateStockMovement = async (id, data) => {
 // Delete product
 export const deleteStockMovement = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/stock_movement/${id}`, {
+    const res = await fetch(`/api/warehouse/stock_movement/${id}`, {
       method: "DELETE"
     });
 
@@ -91,3 +91,4 @@ export const deleteStockMovement = async (id) => {
     throw err;
   }
 };
+

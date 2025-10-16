@@ -14,7 +14,7 @@ export default function DocumentList({ documents }) {
           ? (attachment.originalName || attachment.filename || 'Document')
           : attachment.split('/').pop() || 'Document';
         const filePath = isObject ? attachment.path : attachment;
-        const downloadUrl = `http://localhost:4000${filePath}`;
+        const downloadUrl = `${filePath}`;
         
         return (
           <li key={index} className="bg-white rounded shadow px-4 py-2 flex items-center justify-between">

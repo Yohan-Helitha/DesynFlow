@@ -15,7 +15,7 @@ const AssignInspection = () => {
     try {
       const token = localStorage.getItem("authToken");
       const res = await axios.get(
-        "http://localhost:4000/api/inspection-request/list?status=pending",
+        "/api/inspection-request/list?status=pending",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -40,7 +40,7 @@ const AssignInspection = () => {
     try {
       const token = localStorage.getItem("authToken");
       const res = await axios.post(
-        "http://localhost:4000/api/assignment/assign",
+        "/api/assignment/assign",
         {
           inspectionRequestId: selectedRequest._id,
           inspectorId: selectedInspector._id,
@@ -112,3 +112,4 @@ const AssignInspection = () => {
 };
 
 export default AssignInspection;
+

@@ -16,7 +16,7 @@ const InspectionForm = ({ selectedAssignment }) => {
   });
   const [editingFormId, setEditingFormId] = useState(null);
 
-  const API_BASE = "http://localhost:4000/api/inspectorForms";
+  const API_BASE = "/api/inspectorForms";
 
   // Fetch inspector forms
   const fetchForms = async () => {
@@ -472,3 +472,4 @@ const InspectionForm = ({ selectedAssignment }) => {
 };
 
 export default InspectionForm;
+

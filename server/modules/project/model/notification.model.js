@@ -155,4 +155,4 @@ notificationSchema.statics.getUnreadCount = async function(userId) {
   }
 };
 
-export default mongoose.model('Notification', notificationSchema);
+export default mongoose.model('ProjectNotification', notificationSchema);

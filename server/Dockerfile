@@ -58,8 +58,8 @@ RUN npm config set registry https://registry.npmjs.org/ \
  && npm cache clean --force \
  && npm install -g nodemon
 
-# Install dependencies (use npm ci if package-lock.json exists, otherwise npm install)
-RUN if [ -f package-lock.json ]; then npm ci --include=dev --unsafe-perm; else npm install --include=dev --unsafe-perm; fi
+# Install dependencies (always use npm install to handle new dependencies)
+RUN npm install --include=dev --unsafe-perm
 
 # Copy source code
 COPY . .

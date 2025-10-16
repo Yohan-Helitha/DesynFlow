@@ -100,4 +100,4 @@ notificationSchema.virtual('recipient', {
 notificationSchema.set('toJSON', { virtuals: true });
 notificationSchema.set('toObject', { virtuals: true });
 
-export default mongoose.model('Notification', notificationSchema);
+export default mongoose.model('GeneralNotification', notificationSchema);

@@ -16,7 +16,7 @@ const InspectorAssignmentWithDistance = ({ inspectionRequestId, onAssignmentComp
     try {
       const token = localStorage.getItem('authToken');
       const response = await axios.get(
-        `http://localhost:4000/api/assignment/available-inspectors/${inspectionRequestId}`,
+        `/api/assignment/available-inspectors/${inspectionRequestId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -37,7 +37,7 @@ const InspectorAssignmentWithDistance = ({ inspectionRequestId, onAssignmentComp
     try {
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
-        'http://localhost:4000/api/assignment/assign',
+        '/api/assignment/assign',
         {
           inspectionRequestId: inspectionRequestId,
           inspectorId: inspectorId

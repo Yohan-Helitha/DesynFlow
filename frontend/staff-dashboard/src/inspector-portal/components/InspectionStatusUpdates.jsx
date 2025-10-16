@@ -15,7 +15,7 @@ const InspectionStatusUpdates = ({ assignment, inspector, onStatusUpdate }) => {
       
       // Update assignment status to completed
       await axios.patch(
-        `http://localhost:4000/api/assignment/status/${assignment._id}`,
+        `/api/assignment/status/${assignment._id}`,
         {
           status: 'completed',
           inspection_end_time: new Date(),
@@ -27,7 +27,7 @@ const InspectionStatusUpdates = ({ assignment, inspector, onStatusUpdate }) => {
       // Update inspector status back to available
       const inspectorId = inspector._id || inspector.id;
       await axios.post(
-        'http://localhost:4000/api/inspector-location/update',
+        '/api/inspector-location/update',
         {
           inspectorId: inspectorId,
           status: 'available'
@@ -58,7 +58,7 @@ const InspectionStatusUpdates = ({ assignment, inspector, onStatusUpdate }) => {
       const token = localStorage.getItem('authToken');
       
       await axios.patch(
-        `http://localhost:4000/api/assignment/status/${assignment._id}`,
+        `/api/assignment/status/${assignment._id}`,
         {
           status: 'paused',
           action_notes: 'Inspection paused by inspector'
@@ -89,7 +89,7 @@ const InspectionStatusUpdates = ({ assignment, inspector, onStatusUpdate }) => {
       const token = localStorage.getItem('authToken');
       
       await axios.patch(
-        `http://localhost:4000/api/assignment/status/${assignment._id}`,
+        `/api/assignment/status/${assignment._id}`,
         {
           status: 'in-progress',
           action_notes: 'Inspection resumed by inspector'

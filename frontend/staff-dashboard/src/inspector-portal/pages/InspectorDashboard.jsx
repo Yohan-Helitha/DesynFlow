@@ -23,7 +23,7 @@ const InspectorDashboard = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:4000/api/user/me', {
+      const response = await axios.get('/api/user/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -136,3 +136,4 @@ const InspectorDashboard = () => {
 };
 
 export default InspectorDashboard;
+

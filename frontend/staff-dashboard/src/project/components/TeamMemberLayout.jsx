@@ -1,7 +1,6 @@
 import React from "react";
 import { FaHome, FaTasks, FaBell, FaFolder, FaCalendarAlt } from "react-icons/fa";
 import { useNotifications } from "../contexts/NotificationContext";
-import { useNotifications } from "../contexts/NotificationContext";
 
 export default function TeamMemberLayout({ activeIndex, setActiveIndex, children }) {
   const { unreadCount } = useNotifications();

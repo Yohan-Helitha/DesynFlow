@@ -62,17 +62,17 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
       }
       
       const requestsRes = await axios.get(
-        'http://localhost:4000/api/inspection-request/all',
+        '/api/inspection-request/all',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
       const inspectorsRes = await axios.get(
-        'http://localhost:4000/api/inspector-location/all',
+        '/api/inspector-location/all',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
       const assignmentsRes = await axios.get(
-        'http://localhost:4000/api/assignment/list',
+        '/api/assignment/list',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -215,7 +215,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
     try {
       const token = localStorage.getItem('authToken');
       await axios.post(
-        'http://localhost:4000/api/assignment/assign',
+        '/api/assignment/assign',
         {
           inspectionRequestId: selectedRequest._id,
           inspectorId: finalInspector._id,
@@ -241,7 +241,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
     try {
       const token = localStorage.getItem('authToken');
       await axios.delete(
-        `http://localhost:4000/api/assignment/${assignmentId}`,
+        `/api/assignment/${assignmentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

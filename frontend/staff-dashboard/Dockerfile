@@ -12,8 +12,8 @@ RUN npm config set registry https://registry.npmjs.org/ \
  && npm config set fetch-retry-mintimeout 20000 \
  && npm cache clean --force
 
-# Install dependencies (fix for alpine rollup issue)
-RUN if [ -f package-lock.json ]; then npm ci --include=dev --unsafe-perm; else npm install --include=dev --unsafe-perm; fi
+# Install dependencies (always use npm install to handle new dependencies)
+RUN npm install --include=dev --unsafe-perm
 
 # Install platform-specific rollup binary
 RUN npm install @rollup/rollup-linux-x64-gnu --save-dev

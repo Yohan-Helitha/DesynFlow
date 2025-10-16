@@ -35,7 +35,7 @@ function Supplier_details() {
     if (userRole === "supplier" && currentSupplierId) {
       // For suppliers, load only their own data
       axios
-        .get(`http://localhost:4000/api/suppliers/${currentSupplierId}`)
+        .get(`/api/suppliers/${currentSupplierId}`)
         .then((res) => {
           setSuppliers([res.data]); // Array with single supplier
           setSelectedSupplier(res.data); // Auto-select their own profile
@@ -44,7 +44,7 @@ function Supplier_details() {
     } else {
       // For procurement officers, load all suppliers
       axios
-        .get("http://localhost:4000/api/suppliers")
+        .get("/api/suppliers")
         .then((res) => {
           // Sort suppliers by creation date - newest first
           const sortedSuppliers = res.data.sort((a, b) => {
@@ -304,3 +304,4 @@ function Supplier_details() {
 }
 
 export default Supplier_details;
+

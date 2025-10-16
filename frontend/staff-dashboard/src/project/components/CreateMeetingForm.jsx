@@ -92,8 +92,8 @@ export default function CreateMeetingForm({
       }
 
       const url = isEdit 
-        ? `http://localhost:4000/api/meetings/${editMeeting._id}`
-        : 'http://localhost:4000/api/meetings';
+        ? `/api/meetings/${editMeeting._id}`
+        : '/api/meetings';
       
       const method = isEdit ? 'PUT' : 'POST';
 

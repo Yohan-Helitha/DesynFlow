@@ -18,7 +18,7 @@ const InspectionRequests = () => {
         return;
       }
       
-      const response = await axios.get('http://localhost:4000/api/inspection-request/all', {
+      const response = await axios.get('/api/inspection-request/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -242,3 +242,4 @@ const InspectionRequests = () => {
 };
 
 export default InspectionRequests;
+

@@ -29,7 +29,7 @@ export default function AssignTeams() {
       try {
         setTeamLoading(true);
         setTeamError(null);
-        const res = await fetch("http://localhost:4000/api/teams");
+        const res = await fetch("/api/teams");
         if (!res.ok) throw new Error("Failed to fetch teams");
         const data = await res.json();
         setTeams(data.filter(t => t.active));
@@ -66,7 +66,7 @@ export default function AssignTeams() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("http://localhost:4000/api/projects");
+        const res = await fetch("/api/projects");
         if (!res.ok) throw new Error("Failed to fetch projects");
         const data = await res.json();
         console.log('Fetched projects:', data);
@@ -113,7 +113,7 @@ export default function AssignTeams() {
     }
     
     try {
-      const res = await fetch(`http://localhost:4000/api/projects/${id}`, {
+      const res = await fetch(`/api/projects/${id}`, {
         method: "DELETE"
       });
       
@@ -162,7 +162,7 @@ export default function AssignTeams() {
         const formData = new FormData();
         formData.append('file', form.inspectionReport);
 
-        const uploadRes = await fetch("http://localhost:4000/api/upload", {
+        const uploadRes = await fetch("/api/upload", {
           method: "POST",
           body: formData
         });
@@ -196,7 +196,7 @@ export default function AssignTeams() {
 
       if (editProjectId) {
         // Update existing project
-        const res = await fetch(`http://localhost:4000/api/projects/${editProjectId}`, {
+        const res = await fetch(`/api/projects/${editProjectId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(projectData)
@@ -214,7 +214,7 @@ export default function AssignTeams() {
         // Auto refresh to get populated data
         setTimeout(async () => {
           try {
-            const refreshRes = await fetch("http://localhost:4000/api/projects");
+            const refreshRes = await fetch("/api/projects");
             if (refreshRes.ok) {
               const refreshedData = await refreshRes.json();
               setProjects(Array.isArray(refreshedData) ? refreshedData : []);
@@ -225,7 +225,7 @@ export default function AssignTeams() {
         }, 500);
       } else {
         // Create new project
-        const res = await fetch("http://localhost:4000/api/projects", {
+        const res = await fetch("/api/projects", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(projectData)
@@ -243,7 +243,7 @@ export default function AssignTeams() {
         // Auto refresh to get populated data
         setTimeout(async () => {
           try {
-            const refreshRes = await fetch("http://localhost:4000/api/projects");
+            const refreshRes = await fetch("/api/projects");
             if (refreshRes.ok) {
               const refreshedData = await refreshRes.json();
               setProjects(Array.isArray(refreshedData) ? refreshedData : []);
@@ -491,7 +491,7 @@ export default function AssignTeams() {
                           <div key={i} className="text-xs text-blue-600 mt-1">
                             📄 {attachment.originalName || attachment.filename || 'Inspection Report'}
                             <a 
-                              href={`http://localhost:4000${attachment.path}`} 
+                              href={`${attachment.path}`} 
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="ml-2 underline hover:text-blue-800"

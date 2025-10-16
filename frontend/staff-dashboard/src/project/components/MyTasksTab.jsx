@@ -41,7 +41,7 @@ export default function MyTasksTab() {
       setLoading(true);
       
       // 1. Find which team this user belongs to
-      const teamRes = await fetch(`http://localhost:4000/api/teams/populated`);
+      const teamRes = await fetch(`/api/teams/populated`);
       const teamsData = await teamRes.json();
       const userTeam = teamsData.find(team => 
         team.members && team.members.some(member => {
@@ -55,7 +55,7 @@ export default function MyTasksTab() {
       }
 
       // 2. Get projects assigned to this team
-      const projRes = await fetch(`http://localhost:4000/api/projects`);
+      const projRes = await fetch(`/api/projects`);
       const projectsData = await projRes.json();
       const teamProjects = projectsData.filter(
         p => p.assignedTeamId && (
@@ -71,7 +71,7 @@ export default function MyTasksTab() {
       const allTasks = [];
       for (const project of teamProjects) {
         try {
-          const tasksRes = await fetch(`http://localhost:4000/api/tasks/project/${project._id}`);
+          const tasksRes = await fetch(`/api/tasks/project/${project._id}`);
           if (tasksRes.ok) {
             const projectTasks = await tasksRes.json();
             // Filter tasks assigned to this user
@@ -166,7 +166,7 @@ export default function MyTasksTab() {
         ...(status === 'Completed' && { completedAt: new Date() })
       };
 
-      const response = await fetch(`http://localhost:4000/api/tasks/${taskId}`, {
+      const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)

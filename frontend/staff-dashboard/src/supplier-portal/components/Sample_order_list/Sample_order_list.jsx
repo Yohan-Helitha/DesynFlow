@@ -29,7 +29,7 @@ function Sample_order_list() {
 
   const fetchSamples = () => {
     setLoading(true);
-    fetch("http://localhost:4000/api/samples/all")
+    fetch("/api/samples/all")
       .then(res => res.json())
       .then(data => {
         setSamples(Array.isArray(data) ? data : []);
@@ -183,3 +183,4 @@ function Sample_order_list() {
 }
 
 export default Sample_order_list;
+

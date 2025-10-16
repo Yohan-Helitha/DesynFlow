@@ -17,7 +17,7 @@ const AssignmentActions = ({ assignment, onActionComplete }) => {
       
       // Update assignment status to accepted and start inspection
       const response = await axios.patch(
-        `http://localhost:4000/api/assignment/status/${assignment._id}`,
+        `/api/assignment/status/${assignment._id}`,
         {
           status: 'in-progress',
           inspection_start_time: new Date(),
@@ -55,7 +55,7 @@ const AssignmentActions = ({ assignment, onActionComplete }) => {
       
       // Update assignment status to declined with reason
       const response = await axios.patch(
-        `http://localhost:4000/api/assignment/status/${assignment._id}`,
+        `/api/assignment/status/${assignment._id}`,
         {
           status: 'declined',
           decline_reason: declineReason,

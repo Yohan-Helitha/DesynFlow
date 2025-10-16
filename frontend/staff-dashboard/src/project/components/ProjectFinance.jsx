@@ -13,8 +13,8 @@ export default function ProjectFinance() {
       try {
         // Fetch estimations and quotations
         const [estRes, quoRes] = await Promise.all([
-          fetch("http://localhost:4000/api/finance/estimations"),
-          fetch("http://localhost:4000/api/finance/quotations")
+          fetch("/api/finance/estimations"),
+          fetch("/api/finance/quotations")
         ]);
 
         if (estRes.ok) {
@@ -93,7 +93,7 @@ export default function ProjectFinance() {
                           <td className="p-3">{est.status}</td>
                           <td className="p-3">
                             {est.lastQuotationId ? (
-                              <a href={`http://localhost:4000/api/finance/quotations/${est.lastQuotationId}`} className="text-green-primary hover:underline">View Quotation</a>
+                              <a href={`/api/finance/quotations/${est.lastQuotationId}`} className="text-green-primary hover:underline">View Quotation</a>
                             ) : (
                               <span className="text-gray-400">-</span>
                             )}
@@ -135,7 +135,7 @@ export default function ProjectFinance() {
                           <td className="p-3">{quo.grandTotal?.toLocaleString?.() ?? quo.grandTotal}</td>
                           <td className="p-3">
                             {quo.fileUrl ? (
-                              <a href={`http://localhost:4000${quo.fileUrl}`} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-1 text-green-primary hover:underline">
+                              <a href={`${quo.fileUrl}`} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-1 text-green-primary hover:underline">
                                 <FaDownload size={16} /> <span>Download</span>
                               </a>
                             ) : (

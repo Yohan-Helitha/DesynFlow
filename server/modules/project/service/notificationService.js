@@ -1,4 +1,4 @@
-import Notification from '../model/notification.model.js';
+import ProjectNotification from '../model/notification.model.js';
 import User from '../../auth/model/user.model.js';
 import mongoose from 'mongoose';
 
@@ -31,7 +31,7 @@ class NotificationService {
 
       const skip = (page - 1) * limit;
       
-      const notifications = await Notification.find(query)
+      const notifications = await ProjectNotification.find(query)
         .populate('senderId', 'name email role')
         .populate('actionData.taskId', 'name status priority')
         .populate('actionData.projectId', 'projectName status')
@@ -40,13 +40,13 @@ class NotificationService {
         .limit(limit)
         .lean();
 
-      const total = await Notification.countDocuments(query);
-      const unreadCount = await Notification.getUnreadCount(userId);
+      const total = await ProjectNotification.countDocuments(query);
+      const unreadCount = await ProjectNotification.getUnreadCount(userId);
 
       return {
         notifications: notifications.map(notification => ({
           ...notification,
-          timeAgo: this.getTimeAgo(notification.createdAt)
+          timeAgo: this.getTimeAgo(ProjectNotification.createdAt)
         })),
         pagination: {
           currentPage: page,
@@ -65,10 +65,10 @@ class NotificationService {
   // Create a new notification
   async createNotification(data) {
     try {
-      const notification = await Notification.createNotification(data);
+      const notification = await ProjectNotification.createNotification(data);
       
       // Populate sender info for real-time updates
-      await notification.populate('senderId', 'name email role');
+      await ProjectNotification.populate('senderId', 'name email role');
       
       return notification;
     } catch (error) {
@@ -80,7 +80,7 @@ class NotificationService {
   // Mark notifications as read
   async markAsRead(userId, notificationIds) {
     try {
-      const result = await Notification.markAsRead(userId, notificationIds);
+      const result = await ProjectNotification.markAsRead(userId, notificationIds);
       return result;
     } catch (error) {
       console.error('Error marking notifications as read:', error);
@@ -91,7 +91,7 @@ class NotificationService {
   // Mark all notifications as read for a user
   async markAllAsRead(userId) {
     try {
-      const result = await Notification.updateMany(
+      const result = await ProjectNotification.updateMany(
         { userId: new mongoose.Types.ObjectId(userId), isRead: false },
         { isRead: true }
       );
@@ -105,7 +105,7 @@ class NotificationService {
   // Delete notification
   async deleteNotification(userId, notificationId) {
     try {
-      const result = await Notification.deleteOne({
+      const result = await ProjectNotification.deleteOne({
         _id: new mongoose.Types.ObjectId(notificationId),
         userId: new mongoose.Types.ObjectId(userId)
       });
@@ -119,7 +119,7 @@ class NotificationService {
   // Get unread count
   async getUnreadCount(userId) {
     try {
-      return await Notification.getUnreadCount(userId);
+      return await ProjectNotification.getUnreadCount(userId);
     } catch (error) {
       console.error('Error getting unread count:', error);
       return 0;
@@ -302,7 +302,7 @@ class NotificationService {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const result = await Notification.deleteMany({
+      const result = await ProjectNotification.deleteMany({
         createdAt: { $lt: thirtyDaysAgo },
         isRead: true
       });

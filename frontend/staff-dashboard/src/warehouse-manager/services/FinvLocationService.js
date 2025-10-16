@@ -1,7 +1,7 @@
 // src/services/FInvLocationsService.js
 export const fetchInvLocation = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/inv_locations");
+    const res = await fetch("/api/warehouse/inv_locations");
     if (!res.ok) throw new Error("Failed to fetch inventory locations");
     const data = await res.json();
     return data.inv_locations;
@@ -14,7 +14,7 @@ export const fetchInvLocation = async () => {
 // Add new location
 export const addInvLocation = async (locationData) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/inv_locations`, {
+    const res = await fetch(`/api/warehouse/inv_locations`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -38,7 +38,7 @@ export const addInvLocation = async (locationData) => {
 
 export const fetchInvLocationById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/inv_locations/${id}`);
+    const res = await fetch(`/api/warehouse/inv_locations/${id}`);
     if (!res.ok) throw new Error("Failed to fetch location");
     const data = await res.json();
     console.log("Fetched location:", data); // debug
@@ -51,7 +51,7 @@ export const fetchInvLocationById = async (id) => {
 
 export const updateInvLocation = async (id, data) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/inv_locations/${id}`, {
+    const res = await fetch(`/api/warehouse/inv_locations/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -76,7 +76,7 @@ export const updateInvLocation = async (id, data) => {
 // Delete location
 export const deleteInvLocation = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/inv_locations/${id}`, {
+    const res = await fetch(`/api/warehouse/inv_locations/${id}`, {
       method: "DELETE"
     });
 
@@ -91,3 +91,4 @@ export const deleteInvLocation = async (id) => {
     throw err;
   }
 };
+

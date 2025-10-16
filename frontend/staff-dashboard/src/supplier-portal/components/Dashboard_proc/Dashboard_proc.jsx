@@ -180,7 +180,7 @@ function Dashboard_proc() {
       setLoading(true);
       try {
         // Fetch suppliers data
-        const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
+        const suppliersResponse = await fetch("/api/suppliers");
         const suppliersData = await suppliersResponse.json();
         
         // Sort suppliers by creation date - newest first
@@ -191,7 +191,7 @@ function Dashboard_proc() {
         });
 
         // Fetch orders data
-        const ordersResponse = await fetch("http://localhost:4000/api/dashboard/orders");
+        const ordersResponse = await fetch("/api/dashboard/orders");
         const ordersData = await ordersResponse.json();
         
         // Sort orders by creation date - newest first
@@ -203,7 +203,7 @@ function Dashboard_proc() {
 
         // Fetch top rated suppliers
         console.log('Fetching top suppliers...');
-        const topSuppliersResponse = await fetch("http://localhost:4000/api/supplier-ratings/top");
+        const topSuppliersResponse = await fetch("/api/supplier-ratings/top");
         const topSuppliers = await topSuppliersResponse.json();
         console.log('Top suppliers fetched:', topSuppliers);
 
@@ -232,7 +232,7 @@ function Dashboard_proc() {
         // Fetch recent activities from backend
         let recentActivities = [];
         try {
-          const activitiesResponse = await fetch('http://localhost:4000/api/dashboard/recent-activities');
+          const activitiesResponse = await fetch('/api/dashboard/recent-activities');
           if (activitiesResponse.ok) {
             recentActivities = await activitiesResponse.json();
           } else {
@@ -581,3 +581,4 @@ function Dashboard_proc() {
 }
 
 export default Dashboard_proc;
+

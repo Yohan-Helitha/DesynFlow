@@ -16,7 +16,7 @@ const LocationHistory = ({ inspector }) => {
       
       // Fetch assignment history with inspection details
       const response = await axios.get(
-        `http://localhost:4000/api/assignment/inspector/${inspectorId}`,
+        `/api/assignment/inspector/${inspectorId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
