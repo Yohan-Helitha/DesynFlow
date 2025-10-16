@@ -3,7 +3,9 @@ import PurchaseOrderService from '../service/purchaseOrder.service.js';
 // Create material request
 export const createPurchaseOrder = async (req, res) => {
   try {
+    console.log('Received order data:', JSON.stringify(req.body, null, 2));
     const order = await PurchaseOrderService.createPurchaseOrder(req.body);
+    console.log('Created order:', JSON.stringify(order, null, 2));
     res.status(201).json(order);
   } catch (err) {
     // Return specific validation errors

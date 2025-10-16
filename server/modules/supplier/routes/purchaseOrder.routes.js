@@ -28,4 +28,7 @@ router.patch('/:id/finance', financeApproval);
 // Get approval status
 router.get('/:id/status', getApprovalStatus);
 
+// Update order status
+router.put('/:id/status', updatePurchaseOrder);
+
 export default router;

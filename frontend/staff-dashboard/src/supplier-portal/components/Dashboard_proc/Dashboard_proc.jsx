@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./Dashboard_proc.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NotificationsProc from "../Notifications_proc/Notifications_proc";
-import Sidebar from "../Sidebar/Sidebar";
-import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser } from 'react-icons/fa';
+import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser, FaTruck, FaExchangeAlt, FaShoppingCart } from 'react-icons/fa';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -155,6 +154,7 @@ const generateChartData = (orders, suppliers, topSuppliers) => {
 function Dashboard_proc() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
     suppliers: { total: 0, active: 0, pending: 0 },
     orders: { total: 0, pending: 0, completed: 0, approved: 0, rejected: 0 },
@@ -180,16 +180,30 @@ function Dashboard_proc() {
       setLoading(true);
       try {
         // Fetch suppliers data
-        const suppliersResponse = await fetch("http://localhost:3000/api/suppliers");
-        const suppliers = await suppliersResponse.json();
+        const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
+        const suppliersData = await suppliersResponse.json();
+        
+        // Sort suppliers by creation date - newest first
+        const suppliers = suppliersData.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
 
         // Fetch orders data
-        const ordersResponse = await fetch("http://localhost:3000/api/dashboard/orders");
-        const orders = await ordersResponse.json();
+        const ordersResponse = await fetch("http://localhost:4000/api/dashboard/orders");
+        const ordersData = await ordersResponse.json();
+        
+        // Sort orders by creation date - newest first
+        const orders = ordersData.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
+          return dateB - dateA; // Newest first
+        });
 
         // Fetch top rated suppliers
         console.log('Fetching top suppliers...');
-        const topSuppliersResponse = await fetch("http://localhost:3000/api/supplier-ratings/top");
+        const topSuppliersResponse = await fetch("http://localhost:4000/api/supplier-ratings/top");
         const topSuppliers = await topSuppliersResponse.json();
         console.log('Top suppliers fetched:', topSuppliers);
 
@@ -218,7 +232,7 @@ function Dashboard_proc() {
         // Fetch recent activities from backend
         let recentActivities = [];
         try {
-          const activitiesResponse = await fetch('http://localhost:3001/api/supplier/dashboard/recent-activities');
+          const activitiesResponse = await fetch('http://localhost:4000/api/dashboard/recent-activities');
           if (activitiesResponse.ok) {
             recentActivities = await activitiesResponse.json();
           } else {
@@ -296,12 +310,7 @@ function Dashboard_proc() {
 
     fetchDashboardData();
 
-    // Set up auto-refresh every 30 seconds for real-time data
-    const intervalId = setInterval(() => {
-      fetchDashboardData();
-    }, 30000);
-
-    return () => clearInterval(intervalId);
+    // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
   // Check notification count from localStorage
@@ -317,8 +326,6 @@ function Dashboard_proc() {
 
   return (
     <div className="dashboard-page">
-      <Sidebar />
-
       {/* Main content */}
       <main className="main">
         <div className="topbar">
@@ -333,6 +340,12 @@ function Dashboard_proc() {
             <span>Procurement Officer</span>
             
           </div>
+        </div>
+
+        {/* Floating Dashboard Toggle Button */}
+        <div className="floating-toggle-btn" onClick={() => navigate('/procurement-officer/dashboard_sup')}>
+          <FaTruck className="toggle-icon" />
+          <span>Switch to Supplier View</span>
         </div>
 
         {/* Dashboard Stats Cards */}
@@ -350,7 +363,7 @@ function Dashboard_proc() {
                   <span className="pending">Pending: {dashboardData.suppliers.pending}</span>
                 </div>
               </div>
-              <Link to="/Update_delete_suppliers" className="stat-action">Manage Suppliers</Link>
+              <Link to="/procurement-officer/update_delete_suppliers" className="stat-action">Manage Suppliers</Link>
             </div>
 
             <div className="stat-card orders">
@@ -365,7 +378,7 @@ function Dashboard_proc() {
                   <span className="completed">Completed: {dashboardData.orders.completed}</span>
                 </div>
               </div>
-              <Link to="/Orders" className="stat-action">View Orders</Link>
+              <Link to="/procurement-officer/orders" className="stat-action">View Orders</Link>
             </div>
 
             <div className="stat-card budget">
@@ -380,7 +393,22 @@ function Dashboard_proc() {
                   <span className="pending">Pending: {dashboardData.budget.pendingApproval}</span>
                 </div>
               </div>
-              <Link to="/Budget_approval" className="stat-action">Review Budgets</Link>
+              <Link to="/procurement-officer/budget_approval" className="stat-action">Review Budgets</Link>
+            </div>
+
+            <div className="stat-card samples">
+              <div className="stat-header">
+                <h3>Sample Materials</h3>
+                <span className="stat-icon"><FaExchangeAlt /></span>
+              </div>
+              <div className="stat-content">
+                <div className="stat-main">Request</div>
+                <div className="stat-details">
+                  <span className="info">Get samples from suppliers</span>
+                  <span className="info">Evaluate materials quality</span>
+                </div>
+              </div>
+              <Link to="/procurement-officer/sample_order" className="stat-action">Request Samples</Link>
             </div>
           </div>
         </div>
@@ -446,6 +474,20 @@ function Dashboard_proc() {
                         <div className="completed-orders">({supplier.completedOrders} completed)</div>
                       )}
                     </div>
+                    <Link 
+                      to="/procurement-officer/order_form"
+                      className="info-btn"
+                      onClick={() => {
+                        // Store supplier data for the OrderForm to pick up
+                        sessionStorage.setItem('preselectedSupplier', JSON.stringify({
+                          preselectedSupplier: supplier,
+                          supplierLocked: true
+                        }));
+                      }}
+                      title={`Place order with ${supplier.name || supplier.companyName}`}
+                    >
+                      <FaShoppingCart /> Order
+                    </Link>
                   </div>
                 ))
               )}
@@ -526,7 +568,6 @@ function Dashboard_proc() {
             </div>
           </div>
         </div>
-
 
       </main>
 

@@ -15,7 +15,7 @@ import {
   User,
 } from "lucide-react";
 import { useNotifications } from "../context/notificationContext.jsx";
-// import logo from "./desynflow_logo.png";
+import logo from "./desynflow_logo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -36,14 +36,14 @@ const Navbar = () => {
   ];
 
   return (
-    <div className="shadow-sm border-b border-gray-700" style={{ backgroundColor: "#2B1B0E"}}>
+    <div className="navbar-container shadow-sm border-b border-gray-700">
       {/* Top Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("")}>
-          {/* <div className="p-2 rounded-lg" style={{ backgroundColor: "#FFFFFF" }}>
-            <Building2 className="w-6 h-6" style={{ color: "#000000" }} />
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/home")}>
+          {/* <div className="navbar-logo-icon">
+            <Building2 />
           </div>
-          <h1 className="text-xl font-semibold" style={{ color: "#FFFFFF" }}>
+          <h1 className="navbar-title">
             Warehouse Management
           </h1> */}
           {/* <img
@@ -54,10 +54,10 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center space-x-3 cursor-pointer">
-          <div className="p-2 rounded-full" style={{ backgroundColor: "#FFFFFF" }}>
-            <User className="w-5 h-5" style={{ color: "#2B1B0E" }} />
+          <div className="navbar-profile-icon">
+            <User />
           </div>
-          <span className="font-medium" style={{ color: "#FFFFFF" }}>
+          <span className="navbar-profile-text">
             Profile
           </span>
         </div>

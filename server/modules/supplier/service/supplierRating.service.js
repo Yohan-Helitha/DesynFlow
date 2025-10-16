@@ -77,7 +77,42 @@ const getTopRatedSuppliers = async () => {
   }
 };
 
+// Get ratings for a specific supplier
+const getSupplierRatings = async (supplierId) => {
+  try {
+    const ratings = await SupplierRating.find({ supplierId })
+      .populate('ratedBy', 'name email')
+      .sort({ createdAt: -1 });
+    
+    const supplier = await Supplier.findById(supplierId);
+    
+    if (!supplier) {
+      throw new Error('Supplier not found');
+    }
+    
+    const avgRating = supplier.rating || 0;
+    const totalRatings = ratings.length;
+    
+    return {
+      supplier: {
+        _id: supplier._id,
+        name: supplier.companyName || supplier.name,
+        email: supplier.email,
+        phone: supplier.phone,
+        averageRating: avgRating
+      },
+      ratings,
+      totalRatings,
+      averageRating: avgRating
+    };
+  } catch (error) {
+    console.error('Error fetching supplier ratings:', error);
+    throw error;
+  }
+};
+
 export default {
   addRating,
-  getTopRatedSuppliers
+  getTopRatedSuppliers,
+  getSupplierRatings
 };

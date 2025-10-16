@@ -6,6 +6,7 @@ import { Edit2, Trash2,Filter,Search,Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { generatePDF } from "../utils/pdfGenerator.js";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import './rawMaterials.css';
 
 
 const RawMaterials = () => {
