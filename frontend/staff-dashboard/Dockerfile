@@ -5,8 +5,15 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Clear npm cache and install dependencies (fix for alpine rollup issue)
-RUN npm cache clean --force && npm install --include=dev
+# Configure npm for robust installs and clear cache
+RUN npm config set registry https://registry.npmjs.org/ \
+ && npm config set fetch-retries 5 \
+ && npm config set fetch-retry-factor 10 \
+ && npm config set fetch-retry-mintimeout 20000 \
+ && npm cache clean --force
+
+# Install dependencies (fix for alpine rollup issue)
+RUN if [ -f package-lock.json ]; then npm ci --include=dev --unsafe-perm; else npm install --include=dev --unsafe-perm; fi
 
 # Install platform-specific rollup binary
 RUN npm install @rollup/rollup-linux-x64-gnu --save-dev

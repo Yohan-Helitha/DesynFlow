@@ -41,8 +41,12 @@
       errors.reorderLevel = "Reorder level must be less than restock level";
     }
 
+    if (current < restock || current > restock) {
+      errors.currentLevel = "Current level must be equal to restock level";
+    }
+
     if (current <= reorder) {
-      errors.reorderLevel = "Reorder level must be less than restock level";
+      errors.currentLevel = "Current level must be more than reorder level";
     }
   }
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { addSupplier, updateSupplier, getSuppliers, deleteSupplier } from '../controller/supplier.controller.js';
+import { addSupplier, updateSupplier, getSuppliers, deleteSupplier, linkSuppliersToUsers } from '../controller/supplier.controller.js';
 
 const router = express.Router();
 
@@ -14,5 +14,8 @@ router.get('/', getSuppliers);
 
 // Delete supplier
 router.delete('/:id', deleteSupplier);
+
+// Link suppliers to users
+router.post('/link-users', linkSuppliersToUsers);
 
 export default router;

@@ -87,7 +87,7 @@ const AddTransferRequestForm = ({ loggedInUserId }) => {
     try {
       await addTransferRequest(payload);
       alert("Transfer Request added successfully!");
-      navigate("/transfer-request");
+      navigate("/warehouse-manager/transfer-request");
     } catch (err) {
       if (err.errors) {
         setErrors(err.errors);
@@ -248,7 +248,7 @@ const AddTransferRequestForm = ({ loggedInUserId }) => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/transfer-request")}
+                onClick={() => navigate("/warehouse-manager/transfer-request")}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Cancel

@@ -82,8 +82,7 @@ export const NotificationsProvider = ({ children }) => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
+    // Auto-refresh removed - users can manually refresh if needed
   }, [location.pathname]);
 
   const markAsRead = () => {

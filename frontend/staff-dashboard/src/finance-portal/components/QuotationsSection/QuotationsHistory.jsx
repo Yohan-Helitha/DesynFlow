@@ -45,13 +45,7 @@ export const ApprovedQuotations = () => {
     reload()
   }, [])
 
-  // Add interval to auto-refresh quotations list
-  useEffect(() => {
-    const interval = setInterval(() => {
-      reload()
-    }, 30000) // Refresh every 30 seconds
-    return () => clearInterval(interval)
-  }, [])
+  // Auto-refresh removed - users can manually refresh if needed
 
   const openModalWith = async (quotation, enableEdit) => {
     try {

@@ -52,7 +52,11 @@ export default function TeamOverviewCard({ team, tasks, attendance }) {
                   key={index}
                   className="flex items-center justify-between text-sm text-gray-700 bg-gray-50 p-2 rounded-md"
                 >
-                  <span className="font-medium">{member.role}</span>
+                  <div>
+                    <span className="font-medium">
+                      {member.userId?.username || 'Unknown User'}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-500">
                       {member.availability}

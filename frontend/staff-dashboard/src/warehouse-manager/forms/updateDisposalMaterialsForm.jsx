@@ -82,7 +82,7 @@ const UpdateDisposalMaterialsForm = () => {
     try {
       await updateDisposalMaterial(id, formData);
       alert("Disposal material updated successfully!");
-      navigate("/disposal-materials");
+      navigate("/warehouse-manager/disposal-materials");
     } catch (err) {
       console.error("Update error:", err);
       setErrors({ general: "Failed to update disposal material." });
@@ -218,7 +218,7 @@ const UpdateDisposalMaterialsForm = () => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/disposal-materials")}
+                onClick={() => navigate("/warehouse-manager/disposal-materials")}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Cancel

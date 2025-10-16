@@ -22,11 +22,10 @@ import UpdateDisposalMaterialsForm from './forms/updateDisposalMaterialsForm.jsx
 import SReorderRequest from './pages/sReorderRequest.jsx';
 import AddSReorderRequestForm from './forms/addSReorderRequestForm.jsx';
 import UpdateSReorderRequestForm from './forms/updateSReorderRequestForm.jsx';
-import AuditLog from './pages/auditLog.jsx';
+import AuditLogs from './pages/auditLog.jsx';
 import Notifications from './pages/notifications.jsx';
 import ThresholdAlerts from './pages/thresholdAlerts.jsx';
 import { NotificationsProvider } from './context/notificationContext.jsx';
-import './App.css';
 
 const WarehouseDashboard = () => {
   return (
@@ -55,7 +54,7 @@ const WarehouseDashboard = () => {
           <Route path="/reorder-request" element={<SReorderRequest />} />
           <Route path="/reorder-request/add" element={<AddSReorderRequestForm />} />
           <Route path="/reorder-request/update/:id" element={<UpdateSReorderRequestForm />} />
-          <Route path="/audit-log" element={<AuditLog />} />
+          <Route path="/audit-logs" element={<AuditLogs />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/threshold-alerts" element={<ThresholdAlerts />} />
         </Routes>

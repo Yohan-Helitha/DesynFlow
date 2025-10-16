@@ -1,7 +1,10 @@
 import express from 'express';
-import { uploadSample, reviewSample, getSamples } from '../controller/sample.controller.js';
+import { uploadSample, reviewSample, getSamples, getAllSamples } from '../controller/sample.controller.js';
 
 const router = express.Router();
+
+// Get all samples (must come before /:supplierId route)
+router.get('/all', getAllSamples);
 
 // Supplier uploads sample
 router.post('/upload', uploadSample);

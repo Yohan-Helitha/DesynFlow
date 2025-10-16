@@ -1,21 +1,18 @@
 import React from 'react';
+import { FaBell } from "react-icons/fa";
 
 export default function Header() {
   return (
     <header className="bg-white shadow-sm p-6 flex items-center justify-between">
-      <div className="flex-1 max-w-xl">
-        <input
-          type="text"
-          placeholder="Search projects, teams..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
+      <div className="flex-1" />
 
       <div className="flex items-center gap-6 ml-6">
         <div className="relative group">
           <div className="cursor-pointer">
-            <span className="text-2xl">🔔</span>
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <button className="p-2 rounded-full bg-brown-primary-300 hover:bg-brown-primary text-white">
+              <FaBell size={20} />
+            </button>
+            <span className="absolute -top-1 -right-1 bg-red-brown text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
               3
             </span>
           </div>

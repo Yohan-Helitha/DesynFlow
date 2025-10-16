@@ -127,7 +127,7 @@ const UpdateTransferRequestForm = ({ loggedInUserId }) => {
     try {
       await updateTransferRequest(id, payload);
       alert("Transfer Request updated successfully!");
-      navigate("/transfer-request");
+      navigate("/warehouse-manager/transfer-request");
     } catch (err) {
       if (err.errors) {
         setErrors(err.errors);
@@ -293,7 +293,7 @@ const UpdateTransferRequestForm = ({ loggedInUserId }) => {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/transfer-request")}
+                onClick={() => navigate("/warehouse-manager/transfer-request")}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md"
               >
                 Cancel

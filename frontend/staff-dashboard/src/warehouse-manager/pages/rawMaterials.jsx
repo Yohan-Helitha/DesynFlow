@@ -128,7 +128,7 @@ const RawMaterials = () => {
       <div className="m-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold mt-6 mb-10">Raw Materials</h1>
-          <button className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10" onClick={() => navigate('/add-material')}>
+          <button className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10" onClick={() => navigate('/warehouse-manager/raw-materials/add')}>
             + Add Material
             </button>
         </div>
@@ -139,7 +139,7 @@ const RawMaterials = () => {
             <BarChart data={chartArray}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="monthYear" />
-              <YAxis />
+              <YAxis domain={[0, 'dataMax + 2']} />
               <Tooltip />
               <Legend />
               <Bar dataKey="count" fill="#674636" barSize={30}/> 
@@ -254,11 +254,11 @@ const RawMaterials = () => {
                 filteredMaterials.map((material) => (
                     <tr 
                     key={material._id}
-                    className={material.currentLevel < material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"}
+                    className={material.currentLevel <= material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"}
                     >
-                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-0  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>
+                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel <= material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-0  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>
                         <div className="flex items-center justify-center gap-8">
-                            <div className="group relative cursor-pointer" onClick={() => navigate(`/update-material/${material._id}`)}>
+                            <div className="group relative cursor-pointer" onClick={() => navigate(`/warehouse-manager/raw-materials/update/${material._id}`)}>
                             <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
                             
                             </div>
@@ -282,7 +282,7 @@ const RawMaterials = () => {
 
                         </div>
                     </td>
-                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-32  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{material.materialId}</td>
+                    <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel <= material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-32  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{material.materialId}</td>
                     <td className={`border border-gray-300 px-4 py-2 ${material.currentLevel < material.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-64  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{material.materialName}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{material.category}</td>
                     <td className="border border-gray-300 px-4 py-2 w-48">{material.type}</td>
