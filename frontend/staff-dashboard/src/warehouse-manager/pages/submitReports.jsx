@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../component/navbar.jsx";
 import { useNavigate } from "react-router-dom";
-import { Eye, Trash2, Search, Filter } from "lucide-react";
-import { fetchReports, deleteReport } from "../services/FsubmitReportsService.js"; // your API service
+import { Eye, Search, Filter } from "lucide-react";
+import { fetchReports } from "../services/FsubmitReportsService.js"; // your API service
 
 const SubmitReports = () => {
   const navigate = useNavigate();
@@ -11,11 +11,23 @@ const SubmitReports = () => {
   const [filterBy, setFilterBy] = useState("all");
   const [showFilter, setShowFilter] = useState(false);
 
+  // Helper function to get full file URL
+  const getFileUrl = (relativePath) => {
+    if (!relativePath) return "#";
+    // If it's already a full URL, return as is
+    if (relativePath.startsWith("http")) return relativePath;
+    // Otherwise, construct the full URL
+    return `http://localhost:4000/${relativePath}`;
+  };
+
   // Fetch reports
   const getReports = async () => {
     try {
+      console.log("Getting reports...");
       const data = await fetchReports();
+      console.log("Fetched reports data:", data);
       setReports(data);
+      console.log("Set reports state:", data);
     } catch (err) {
       console.error("Failed to fetch reports:", err);
     }
@@ -24,19 +36,6 @@ const SubmitReports = () => {
   useEffect(() => {
     getReports();
   }, []);
-
-  // Delete report
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this report?")) return;
-    try {
-      await deleteReport(id);
-      setReports(reports.filter(r => r._id !== id));
-      alert("Report deleted successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete report.");
-    }
-  };
 
   // Filtered reports
   const filteredReports = reports.filter(r => {
@@ -97,43 +96,52 @@ const SubmitReports = () => {
           </div>
         </div>
 
-        {/* Reports Table */}
-        <div className="overflow-x-auto text-xs">
-          <table className="min-w-max border-collapse border border-gray-300">
-            <thead>
-              <tr style={{ background: "#674636", color:"#FFFFFF" }}>
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 bg-[#674636] z-40">Actions</th>
-                <th className="border border-gray-300 px-4 py-2 w-64">Report Title</th>
-                <th className="border border-gray-300 px-4 py-2 w-32">Submitted By</th>
-                <th className="border border-gray-300 px-4 py-2 w-32">Created At</th>
-                <th className="border border-gray-300 px-4 py-2 w-32">File</th>
-              </tr>
-            </thead>
-            <tbody className="text-center">
-              {filteredReports.length > 0 ? filteredReports.map(r => (
-                <tr key={r._id} className="bg-[#FFF8E8]">
-                  <td className="border border-gray-300 px-4 py-2 sticky left-0 bg-[#FFF8E8] z-40">
-                    <div className="flex items-center justify-center gap-4">
-                      <Eye className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" onClick={() => window.open(r.reportFileUrl, "_blank")} />
-                      <Trash2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" onClick={() => handleDelete(r._id)} />
-                    </div>
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">{r.reportTitle}</td>
-                  <td className="border border-gray-300 px-4 py-2">{r.submittedBy}</td>
-                  <td className="border border-gray-300 px-4 py-2">{new Date(r.createdAt).toLocaleString()}</td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <a href={r.reportFileUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
-                      View File
-                    </a>
-                  </td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan="5" className="text-center p-4">No reports found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* Reports Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredReports.length > 0 ? filteredReports.map(r => (
+            <div key={r._id} className="bg-[#FFF8E8] border border-gray-300 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+              {/* Report Title */}
+              <h3 className="text-lg font-semibold text-[#674636] mb-3 break-words">
+                {r.reportTitle}
+              </h3>
+              
+              {/* Report Details */}
+              <div className="space-y-2 text-sm text-gray-700 mb-4">
+                <div className="flex justify-between">
+                  <span className="font-medium">Submitted By:</span>
+                  <span>{r.submittedBy}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Created At:</span>
+                  <span>{new Date(r.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Time:</span>
+                  <span>{new Date(r.createdAt).toLocaleTimeString()}</span>
+                </div>
+              </div>
+              
+              {/* File Action */}
+              <div className="flex justify-center">
+                <a 
+                  href={getFileUrl(r.reportFileUrl)} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="inline-flex items-center gap-2 bg-[#674636] hover:bg-[#A67C52] text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  View Report
+                </a>
+              </div>
+            </div>
+          )) : (
+            <div className="col-span-full text-center p-8 text-gray-500">
+              <div className="bg-[#FFF8E8] border border-gray-300 rounded-lg p-8">
+                <h3 className="text-lg font-medium text-gray-700 mb-2">No reports found</h3>
+                <p className="text-sm">No reports match your current search criteria.</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -30,6 +30,11 @@ const SubmitReportForm = ({ loggedInUserId }) => {
       return;
     }
 
+    // Confirmation dialog
+    if (!window.confirm("Do you want to submit this report? Once it is submitted it cannot be undone.")) {
+      return;
+    }
+
     try {
       const payload = new FormData();
       payload.append("reportTitle", formData.reportTitle);

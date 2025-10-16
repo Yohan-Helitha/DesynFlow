@@ -10,7 +10,6 @@ import {
 export const getAllReports = async (req, res) => {
   try {
     const reports = await getAllReportsService();
-    if (reports.length === 0) return res.status(404).json({ message: "No reports found" });
     return res.status(200).json({ reports });
   } catch (err) {
     console.error(err);

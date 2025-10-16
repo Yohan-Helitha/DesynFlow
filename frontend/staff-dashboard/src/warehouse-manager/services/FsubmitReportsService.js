@@ -5,10 +5,14 @@ const BASE_URL = "http://localhost:4000/api/warehouse/submit-reports";
 // Fetch all submitted reports
 export const fetchReports = async () => {
   try {
+    console.log("Fetching reports from:", BASE_URL);
     const res = await fetch(BASE_URL);
+    console.log("Response status:", res.status);
     if (!res.ok) throw new Error("Failed to fetch reports");
     const data = await res.json();
-    return data.submit_reports || [];
+    console.log("Received data:", data);
+    console.log("Reports array:", data.reports);
+    return data.reports || [];
   } catch (err) {
     console.error("Fetch reports error:", err);
     return [];
