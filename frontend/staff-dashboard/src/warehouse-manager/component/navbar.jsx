@@ -36,7 +36,7 @@ const Navbar = () => {
   ];
 
   return (
-    <div className="navbar-container shadow-sm border-b border-gray-700">
+    <div className="navbar-container bg-brown-primary text-cream-primary shadow-sm border-b border-brown-primary-300">
       {/* Top Header */}
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/home")}>
@@ -79,7 +79,7 @@ const Navbar = () => {
                 onClick={() => navigate(`/warehouse-manager/${item.path}`)}
                 className={`
                   cursor-pointer relative group flex items-center px-3 py-2 rounded-lg transition-all duration-200
-                  ${isActive ? "bg-[#AAB396] text-[#37353E]" : "text-white hover:bg-[#3D2914]"}
+                  ${isActive ? "bg-green-primary text-brown-primary" : "text-cream-primary hover:bg-brown-primary-300 hover:text-cream-primary"}
                 `}
               >
                 <IconComponent className="w-5 h-5" />
