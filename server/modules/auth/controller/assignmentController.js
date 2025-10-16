@@ -3,6 +3,20 @@ import InspectorLocation from '../model/inspectorLocation.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
 import User from '../model/user.model.js';
 
+// Calculate distance between two coordinates using Haversine formula (for 35km validation)
+const calculateDistance = (lat1, lng1, lat2, lng2) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c; // Distance in kilometers
+  return distance;
+};
+
 // Assign the nearest available inspector to an inspection request
 export const assignInspector = async (req, res) => {
   try {
@@ -22,8 +36,36 @@ export const assignInspector = async (req, res) => {
     if (!inspectionRequest) {
       return res.status(404).json({ message: 'Inspection request not found.' });
     }
-    
-    // Create assignment
+
+    // Calculate distance for 35km assignment validation
+    let calculatedDistance = null;
+    if (inspectionRequest.property_latitude && inspectionRequest.property_longitude) {
+      calculatedDistance = calculateDistance(
+        location.inspector_latitude,
+        location.inspector_longitude,
+        inspectionRequest.property_latitude,
+        inspectionRequest.property_longitude
+      );
+      
+      // Enforce 35km maximum distance rule for assignments
+      if (calculatedDistance > 35) {
+        return res.status(400).json({ 
+          message: `Assignment not allowed. Inspector is ${calculatedDistance.toFixed(1)}km away from property (Maximum: 35km)`,
+          distance: calculatedDistance.toFixed(1),
+          maxDistance: 35,
+          inspectorLocation: {
+            address: location.current_address,
+            coordinates: `${location.inspector_latitude}, ${location.inspector_longitude}`
+          },
+          propertyLocation: {
+            address: inspectionRequest.property_full_address || `${inspectionRequest.propertyLocation_address}, ${inspectionRequest.propertyLocation_city}`,
+            coordinates: `${inspectionRequest.property_latitude}, ${inspectionRequest.property_longitude}`
+          }
+        });
+      }
+    }
+
+    // Create assignment (only if within 35km)
     const assignment = new Assignment({
       InspectionRequest_ID: inspectionRequestId,
       inspector_ID: inspectorId,
@@ -31,7 +73,7 @@ export const assignInspector = async (req, res) => {
       status: 'assigned'
     });
     await assignment.save();
-    
+
     // Update inspector status to busy AND update location to property location
     location.status = 'busy';
     
@@ -67,7 +109,16 @@ export const assignInspector = async (req, res) => {
     location.updateAt = new Date();
     await location.save();
     
-    res.status(201).json({ message: 'Inspector assigned and location updated to property.', assignment });
+    res.status(201).json({ 
+      message: 'Inspector assigned and location updated to property successfully.', 
+      assignment,
+      distanceInfo: {
+        calculated: calculatedDistance ? calculatedDistance.toFixed(1) : 'N/A',
+        unit: 'km',
+        withinLimit: calculatedDistance ? calculatedDistance <= 35 : true,
+        maxAllowed: 35
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -128,30 +179,80 @@ export const getInspectorAssignments = async (req, res) => {
   }
 };
 
-// Update assignment status (e.g., completed, canceled)
+// Update assignment status (e.g., completed, canceled, declined, paused)
 export const updateAssignmentStatus = async (req, res) => {
   try {
     const { assignmentId } = req.params;
-    const { status } = req.body;
-    if (!['assigned', 'completed', 'canceled'].includes(status)) {
+    const { 
+      status, 
+      decline_reason, 
+      action_notes, 
+      inspection_start_time, 
+      inspection_end_time 
+    } = req.body;
+    
+    // Validate status
+    if (!['assigned', 'in-progress', 'paused', 'completed', 'declined', 'canceled'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status.' });
     }
+    
     const assignment = await Assignment.findById(assignmentId);
     if (!assignment) return res.status(404).json({ message: 'Assignment not found.' });
+    
+    // Update assignment fields
     assignment.status = status;
     assignment.updatedAt = new Date();
-    await assignment.save();
-    // If completed or canceled, set inspector status to available
-    if (['completed', 'canceled'].includes(status)) {
-      const location = await InspectorLocation.findOne({ inspector_ID: assignment.inspector_ID });
-      if (location) {
-        location.status = 'available';
-        location.updateAt = new Date(); // Update timestamp when becoming available
-        await location.save();
-        // Note: Inspector location stays at completed property (their last work location)
-      }
+    
+    // Add decline reason if provided
+    if (decline_reason) {
+      assignment.decline_reason = decline_reason;
     }
-    res.status(200).json({ message: 'Assignment status updated.', assignment });
+    
+    // Add action notes if provided
+    if (action_notes) {
+      assignment.action_notes = action_notes;
+    }
+    
+    // Handle timing updates
+    if (inspection_start_time) {
+      assignment.inspection_start_time = new Date(inspection_start_time);
+    }
+    
+    if (inspection_end_time) {
+      assignment.inspection_end_time = new Date(inspection_end_time);
+    }
+    
+    await assignment.save();
+    
+    // Update inspector status based on assignment status
+    const location = await InspectorLocation.findOne({ inspector_ID: assignment.inspector_ID });
+    if (location) {
+      switch (status) {
+        case 'in-progress':
+          location.status = 'busy';
+          break;
+        case 'completed':
+        case 'canceled':
+        case 'declined':
+          location.status = 'available';
+          break;
+        case 'paused':
+          // Keep current status (usually 'busy')
+          break;
+        default:
+          // 'assigned' - keep current status
+          break;
+      }
+      
+      location.updateAt = new Date();
+      await location.save();
+    }
+    
+    res.status(200).json({ 
+      message: 'Assignment status updated successfully.', 
+      assignment,
+      inspector_status: location?.status 
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -173,6 +274,83 @@ export const deleteAssignment = async (req, res) => {
     
     await Assignment.findByIdAndDelete(assignmentId);
     res.status(200).json({ message: 'Assignment deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get available inspectors with distances from a specific property (for CSR selection)
+export const getAvailableInspectorsWithDistances = async (req, res) => {
+  try {
+    const { inspectionRequestId } = req.params;
+    
+    // Get property details
+    const inspectionRequest = await InspectionRequest.findById(inspectionRequestId);
+    if (!inspectionRequest) {
+      return res.status(404).json({ message: 'Inspection request not found.' });
+    }
+    
+    // Get all available inspectors
+    const availableInspectors = await InspectorLocation.find({ 
+      status: 'available' 
+    }).populate('inspector_ID', 'username email phone');
+    
+    // Calculate distances for each inspector
+    const inspectorsWithDistances = availableInspectors.map(location => {
+      let distance = null;
+      let withinLimit = false;
+      
+      if (inspectionRequest.property_latitude && inspectionRequest.property_longitude && 
+          location.inspector_latitude && location.inspector_longitude) {
+        distance = calculateDistance(
+          location.inspector_latitude,
+          location.inspector_longitude,
+          inspectionRequest.property_latitude,
+          inspectionRequest.property_longitude
+        );
+        withinLimit = distance <= 35;
+      }
+      
+      return {
+        inspector: location.inspector_ID,
+        location: {
+          coordinates: {
+            latitude: location.inspector_latitude,
+            longitude: location.inspector_longitude
+          },
+          address: location.current_address,
+          region: location.region,
+          status: location.status
+        },
+        distance: {
+          calculated: distance ? distance.toFixed(1) : 'N/A',
+          unit: 'km',
+          withinLimit: withinLimit,
+          maxAllowed: 35
+        }
+      };
+    });
+    
+    // Sort by distance (closest first)
+    inspectorsWithDistances.sort((a, b) => {
+      if (a.distance.calculated === 'N/A') return 1;
+      if (b.distance.calculated === 'N/A') return -1;
+      return parseFloat(a.distance.calculated) - parseFloat(b.distance.calculated);
+    });
+    
+    res.status(200).json({
+      property: {
+        address: inspectionRequest.property_full_address || 
+          `${inspectionRequest.propertyLocation_address}, ${inspectionRequest.propertyLocation_city}`,
+        coordinates: {
+          latitude: inspectionRequest.property_latitude,
+          longitude: inspectionRequest.property_longitude
+        }
+      },
+      availableInspectors: inspectorsWithDistances,
+      totalInspectors: inspectorsWithDistances.length,
+      inspectorsWithinLimit: inspectorsWithDistances.filter(i => i.distance.withinLimit).length
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -4,13 +4,17 @@ import {
   listAssignments,
   getInspectorAssignments,
   updateAssignmentStatus,
-  deleteAssignment
+  deleteAssignment,
+  getAvailableInspectorsWithDistances
 } from '../controller/assignmentController.js';
 
 const router = Router();
 
 // Route: Assign an inspector to an inspection request
 router.post('/assign', assignInspector);
+
+// Route: Get available inspectors with distances from property (for CSR selection)
+router.get('/available-inspectors/:inspectionRequestId', getAvailableInspectorsWithDistances);
 
 // Route: List all assignments (optionally filter by status or inspector)
 router.get('/list', listAssignments);
