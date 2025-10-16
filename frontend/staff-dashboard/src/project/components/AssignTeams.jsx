@@ -85,14 +85,26 @@ export default function AssignTeams() {
   const handleEdit = (project) => {
     setModalOpen(true);
     setEditProjectId(project._id);
+    
+    // Format dates for input fields (YYYY-MM-DD format)
+    const formatDateForInput = (date) => {
+      if (!date) return "";
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
+    };
+
     setForm({
-      name: project.projectName,
-      client: project.clientId || "",
+      name: project.projectName || "",
+      client: typeof project.clientId === 'object' && project.clientId?.email 
+        ? project.clientId.email 
+        : typeof project.clientId === 'string' 
+        ? project.clientId 
+        : "",
       team: project.assignedTeamId?.teamName || "",
       teamId: project.assignedTeamId?._id || project.assignedTeamId || "",
-      dueDate: project.dueDate || "",
-      startDate: project.startDate || "",
-      inspectionReport: null,
+      dueDate: formatDateForInput(project.dueDate),
+      startDate: formatDateForInput(project.startDate),
+      inspectionReport: null, // Can't pre-populate file input for security reasons
     });
   };
   const handleDelete = async (id) => {
@@ -122,20 +134,20 @@ export default function AssignTeams() {
   // Handler for create/update
   const handleSave = async () => {
     // Client-side validation
-    if (!form.name || !form.client || !form.teamId || !form.startDate || !form.dueDate || !form.inspectionReport) {
-      alert("Please fill in all required fields including inspection report.");
+    const isEditing = !!editProjectId;
+    const existingProject = isEditing ? projects.find(p => p._id === editProjectId) : null;
+    const hasExistingReport = existingProject?.attachments?.length > 0;
+    
+    if (!form.name || !form.client || !form.startDate || !form.dueDate || 
+        (!isEditing && !form.inspectionReport) || // For new projects, inspection report is required
+        (!hasExistingReport && !form.inspectionReport)) { // For existing projects without report, new one is required
+      alert("Please fill in all required fields. Team assignment is optional - projects without teams will be set to 'On Hold'.");
       return;
     }
 
     // Date validation
-    const today = new Date();
-    today.setHours(0,0,0,0); // ignore time part
     const startDate = new Date(form.startDate);
     const dueDate = new Date(form.dueDate);
-    if (startDate < today) {
-      alert("Start date cannot be in the past.");
-      return;
-    }
     if (dueDate < startDate) {
       alert("Due date cannot be earlier than start date.");
       return;
@@ -175,12 +187,16 @@ export default function AssignTeams() {
       const projectData = {
         projectName: form.name,
         clientId: form.client,
-        assignedTeamId: form.teamId,
         startDate: form.startDate,
         dueDate: form.dueDate,
         inspectionReportPath,
         inspectionReportOriginalName
       };
+
+      // Only add assignedTeamId if a team is selected
+      if (form.teamId) {
+        projectData.assignedTeamId = form.teamId;
+      }
 
       if (editProjectId) {
         // Update existing project
@@ -198,6 +214,19 @@ export default function AssignTeams() {
         const updatedProject = await res.json();
         setProjects(prev => prev.map(p => p._id === editProjectId ? updatedProject : p));
         alert("Project updated successfully!");
+        
+        // Auto refresh to get populated data
+        setTimeout(async () => {
+          try {
+            const refreshRes = await fetch("http://localhost:4000/api/projects");
+            if (refreshRes.ok) {
+              const refreshedData = await refreshRes.json();
+              setProjects(Array.isArray(refreshedData) ? refreshedData : []);
+            }
+          } catch (error) {
+            console.error('Auto-refresh failed:', error);
+          }
+        }, 500);
       } else {
         // Create new project
         const res = await fetch("http://localhost:4000/api/projects", {
@@ -214,6 +243,19 @@ export default function AssignTeams() {
         const newProject = await res.json();
         setProjects(prev => [...prev, newProject]);
         alert("Project created successfully!");
+        
+        // Auto refresh to get populated data
+        setTimeout(async () => {
+          try {
+            const refreshRes = await fetch("http://localhost:4000/api/projects");
+            if (refreshRes.ok) {
+              const refreshedData = await refreshRes.json();
+              setProjects(Array.isArray(refreshedData) ? refreshedData : []);
+            }
+          } catch (error) {
+            console.error('Auto-refresh failed:', error);
+          }
+        }, 500);
       }
 
       // Reset form and close modal
@@ -305,7 +347,15 @@ export default function AssignTeams() {
                     </span>
                   </div>
                   <div className="mb-2 text-sm text-gray-700 leading-[1.8]">
-                    <div><span className="font-semibold">Client:</span> {typeof project.clientId === 'string' ? project.clientId : (project.clientId || "N/A")}</div>
+                    <div><span className="font-semibold">Client:</span> {
+                      typeof project.clientId === 'object' && project.clientId?.email 
+                        ? project.clientId.email 
+                        : typeof project.clientId === 'object' && project.clientId?.username
+                        ? project.clientId.username
+                        : typeof project.clientId === 'string' 
+                        ? project.clientId 
+                        : "N/A"
+                    }</div>
                     <div><span className="font-semibold">Start Date:</span> {project.startDate ? new Date(project.startDate).toLocaleDateString() : "N/A"}</div>
                     <div><span className="font-semibold">Due Date:</span> {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : "N/A"}</div>
                     <div><span className="font-semibold">Assigned Team:</span> {project.assignedTeamId?.teamName || "No Team Assigned"}</div>
@@ -370,17 +420,17 @@ export default function AssignTeams() {
                     />
                   </div>
                   <div>
-                    <label className="block text-brown-primary font-semibold mb-1">Client *</label>
+                    <label className="block text-brown-primary font-semibold mb-1">Client Email *</label>
                     <input
-                      type="text"
+                      type="email"
                       className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
                       value={form.client}
                       onChange={e => setForm({ ...form, client: e.target.value })}
-                      placeholder="Enter client name"
+                      placeholder="Enter client email address"
                     />
                   </div>
                   <div>
-                    <label className="block text-brown-primary font-semibold mb-1">Assigned Team *</label>
+                    <label className="block text-brown-primary font-semibold mb-1">Assigned Team (Optional)</label>
                     {teamLoading ? (
                       <div className="text-xs text-gray-500">Loading teams...</div>
                     ) : teamError ? (
@@ -398,7 +448,7 @@ export default function AssignTeams() {
                           });
                         }}
                       >
-                        <option value="">Select a team</option>
+                        <option value="">Select a team (or leave unassigned)</option>
                         {availableTeams.map(team => (
                           <option key={team._id} value={team._id} data-name={team.teamName}>
                             {team.teamName}
@@ -414,6 +464,7 @@ export default function AssignTeams() {
                     <label className="block text-brown-primary font-semibold mb-1">Start Date *</label>
                     <input
                       type="date"
+                      min={new Date().toISOString().split('T')[0]}
                       className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
                       value={form.startDate}
                       onChange={e => setForm({ ...form, startDate: e.target.value })}
@@ -423,6 +474,7 @@ export default function AssignTeams() {
                     <label className="block text-brown-primary font-semibold mb-1">Due Date *</label>
                     <input
                       type="date"
+                      min={form.startDate || new Date().toISOString().split('T')[0]}
                       className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
                       value={form.dueDate}
                       onChange={e => setForm({ ...form, dueDate: e.target.value })}
@@ -430,6 +482,25 @@ export default function AssignTeams() {
                   </div>
                   <div>
                     <label className="block text-brown-primary font-semibold mb-1">Inspection Report (PDF) *</label>
+                    {editProjectId && projects.find(p => p._id === editProjectId)?.attachments?.length > 0 && (
+                      <div className="mb-2 p-2 bg-blue-50 rounded border">
+                        <div className="text-sm text-blue-700 font-medium">Current file:</div>
+                        {projects.find(p => p._id === editProjectId)?.attachments?.map((attachment, i) => (
+                          <div key={i} className="text-xs text-blue-600 mt-1">
+                            📄 {attachment.originalName || attachment.filename || 'Inspection Report'}
+                            <a 
+                              href={`http://localhost:4000${attachment.path}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="ml-2 underline hover:text-blue-800"
+                            >
+                              View
+                            </a>
+                          </div>
+                        ))}
+                        <div className="text-xs text-gray-600 mt-1">Upload a new file to replace the current one</div>
+                      </div>
+                    )}
                     <input
                       type="file"
                       accept="application/pdf"
@@ -458,15 +529,19 @@ export default function AssignTeams() {
                   <button
                     className="px-4 py-2 rounded bg-brown-primary text-white font-semibold hover:bg-opacity-90"
                     onClick={handleSave}
-                    disabled={
-                      !form.name ||
-                      !form.client ||
-                      !form.team ||
-                      !form.startDate ||
-                      !form.dueDate ||
-                      !form.inspectionReport ||
-                      (form.inspectionReport && form.inspectionReport.type !== "application/pdf")
-                    }
+                    disabled={(() => {
+                      const isEditing = !!editProjectId;
+                      const existingProject = isEditing ? projects.find(p => p._id === editProjectId) : null;
+                      const hasExistingReport = existingProject?.attachments?.length > 0;
+                      
+                      return !form.name ||
+                        !form.client ||
+                        !form.startDate ||
+                        !form.dueDate ||
+                        (!isEditing && !form.inspectionReport) || // New project needs report
+                        (!hasExistingReport && !form.inspectionReport) || // Existing project without report needs new one
+                        (form.inspectionReport && form.inspectionReport.type !== "application/pdf");
+                    })()}
                   >
                     {editProjectId ? "Update Project" : "Create Project"}
                   </button>

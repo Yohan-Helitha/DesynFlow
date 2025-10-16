@@ -49,6 +49,11 @@ const LoginPage = () => {
           }
           if (data.user) {
             localStorage.setItem("user", JSON.stringify(data.user));
+            
+            // Store supplier-specific ID if user is a supplier
+            if (data.user.role === "supplier" && data.user.id) {
+              localStorage.setItem("supplierUserId", data.user.id);
+            }
           }
 
           // Role-based navigation
@@ -68,6 +73,8 @@ const LoginPage = () => {
             navigate("/procurement-officer");
           } else if (userRole === "finance manager") {
             navigate("/finance-manager");
+          } else if (userRole === "supplier") {
+            navigate("/dashboard_sup");
           } else {
             // If role doesn't match any staff role, show error
             setError("Access denied. This portal is for staff members only.");

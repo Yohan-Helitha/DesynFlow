@@ -17,6 +17,7 @@ import supplierRatingRouter from "./modules/supplier/routes/supplierRating.route
 import materialRouter from "./modules/supplier/routes/material.routes.js";
 import sampleRouter from "./modules/supplier/routes/sample.routes.js";
 import dashboardRouter from "./modules/supplier/routes/dashboard.routes.js";
+import supplierNotificationRouter from "./modules/supplier/routes/notification.routes.js";
 
 import './modules/project/model/project.model.js';
 import './modules/project/model/task.model.js';
@@ -103,6 +104,7 @@ app.use("/api/purchase-orders", purchaseOrderRouter);
 app.use("/api/materials", materialRouter);
 app.use("/api/samples", sampleRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/supplier-notifications", supplierNotificationRouter);
 
 // Mount auth routes
 app.use("/api/auth", authRouter);

@@ -135,7 +135,7 @@ const ManuProducts = () => {
       <div className="m-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold mt-6 mb-10">Manufactured Products</h1>
-          <button className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10" onClick={() => navigate('/add-product')}>
+          <button className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10" onClick={() => navigate('/warehouse-manager/manufactured-products/add')}>
             + Add New Product
             </button>
         </div>
@@ -146,7 +146,7 @@ const ManuProducts = () => {
             <BarChart data={chartArray}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="monthYear" />
-              <YAxis />
+              <YAxis domain={[0, 'dataMax + 2']} />
               <Tooltip />
               <Legend />
               <Bar dataKey="count" fill="#674636" barSize={30} /> 
@@ -271,11 +271,11 @@ const ManuProducts = () => {
                 filteredProducts.map((product) => (
                     <tr 
                     key={product._id}
-                    className={product.currentLevel < product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"}
+                    className={product.currentLevel <= product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"}
                     >
-                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel < product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-0  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>
+                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel <= product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-0  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>
                         <div className="flex items-center justify-center gap-8">
-                            <div className="group relative cursor-pointer" onClick={() => navigate(`/update-product/${product._id}`)}>
+                            <div className="group relative cursor-pointer" onClick={() => navigate(`/warehouse-manager/manufactured-products/update/${product._id}`)}>
                             <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
                             
                             </div>
@@ -299,8 +299,8 @@ const ManuProducts = () => {
 
                         </div>
                     </td>
-                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel < product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-32 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{product.materialId}</td>
-                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel < product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-64  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{product.materialName}</td>
+                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel <= product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-32 z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{product.materialId}</td>
+                    <td className={`border border-gray-300 px-4 py-2 ${product.currentLevel <= product.reorderLevel ? "bg-[#AAB396]" : "bg-[#FFF8E8]"} sticky left-64  z-40 relative after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-300 after:z-50`}>{product.materialName}</td>
                     <td className="border border-gray-300 px-4 py-2">{product.category}</td>
                     <td className="border border-gray-300 px-4 py-2">{product.type}</td>
                     <td className="border border-gray-300 px-4 py-2">{product.unit}</td>

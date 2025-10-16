@@ -8,6 +8,7 @@ const createPurchaseOrder = async (data) => {
   const items = await Promise.all((data.items || []).map(async (item) => {
     let materialId = item.materialId;
     let materialName = item.materialName || item.name || null;
+    let unit = item.unit || null; // Use the unit provided from the form
 
     if (!isValidObjectId(materialId)) {
       // Treat provided materialId as name if it's not an ObjectId
@@ -15,19 +16,34 @@ const createPurchaseOrder = async (data) => {
         materialName = materialId;
         materialId = undefined;
       }
-      // Try to resolve by materialName from Material collection (if exists)
+      // Try to resolve by materialName from Material collection
       if (materialName) {
         try {
           const matDoc = await Material.findOne({ materialName });
-          if (matDoc) materialId = matDoc._id;
+          if (matDoc) {
+            materialId = matDoc._id;
+            materialName = materialName || matDoc.materialName;
+          }
         } catch {}
       }
+    } else {
+      
+      try {
+
+        const matDoc = await Material.findById(materialId);
+
+        if (matDoc) {
+          materialName = materialName || matDoc.materialName;
+        }
+
+      } catch {}
     }
 
     return {
       materialId, // may be undefined if not resolvable; schema allows optional
       materialName: materialName || undefined,
       qty: item.qty ?? Number(item.quantity ?? 0),
+      unit: unit || 'Kilo', // Default to 'Kilo' if no unit is specified
       unitPrice: item.unitPrice ?? Number(item.pricePerUnit ?? 0)
     };
   }));
@@ -51,7 +67,7 @@ const updatePurchaseOrder = async (id, data) => {
 const getAllPurchaseOrders = async () => {
   return await PurchaseOrder.find()
     .populate('supplierId', 'companyName')
-    .populate('items.materialId', 'materialName');
+    .populate('items.materialId', 'materialName unit');
 };
 
 const forwardToFinance = async (id) => {

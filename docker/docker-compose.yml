@@ -16,11 +16,13 @@ services:
     env_file:
       - ../server/.env
     environment:
-      - MONGO_URI=mongodb+srv://admin:yHQRwteBuSfgJdDG@cluster0.fdaxphm.mongodb.net/desynflow
+      - PORT=4000
     volumes:
       - ../server:/app
       - /app/node_modules
-    command: npm run dev
+    depends_on:
+      - mongo
+    command: sh -c "npm install --include=dev && npm run dev"
     restart: unless-stopped
     networks:
       - default

@@ -1,5 +1,5 @@
-/* ===== Base Styling ===== */
-body {
+/* ===== Main Container ===== */
+.supplier-details-page {
   margin: 0;
   padding: 20px;
   font-family: "Inter", "Segoe UI", Tahoma, sans-serif;
@@ -10,7 +10,7 @@ body {
   box-sizing: border-box;
 }
 
-body::before {
+.supplier-details-page::before {
   content: "";
   position: fixed;
   top: 0;
@@ -22,20 +22,6 @@ body::before {
     radial-gradient(circle at 80% 20%, rgba(103, 70, 54, 0.04) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
-}
-
-/* ===== Main Container ===== */
-.suppliers-container {
-  background: linear-gradient(135deg, rgba(255, 248, 232, 0.95) 0%, rgba(247, 238, 211, 0.9) 100%);
-  padding: 32px;
-  margin: 0 auto;
-  max-width: 1200px;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(103, 70, 54, 0.1);
-  backdrop-filter: blur(10px);
-  position: relative;
-  overflow: visible;
-  animation: containerFadeIn 0.6s ease-out;
 }
 
 /* ===== Page Header ===== */
@@ -76,7 +62,7 @@ body::before {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
-  border: 2px solid #8B4513;
+  border: 2px solid #674636;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -84,21 +70,21 @@ body::before {
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  background: #D2691E;
-  color: #8B4513;
-  box-shadow: 0 2px 6px rgba(139, 69, 19, 0.2);
+  background: #674636;
+  color: #FFF8E8;
+  box-shadow: 0 2px 6px rgba(103, 70, 54, 0.2);
 }
 
 .btn-primary:hover {
-  background: #CD853F;
-  color: #654321;
-  border-color: #654321;
-  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+  background: #5a3d2e;
+  color: #FFF8E8;
+  border-color: #5a3d2e;
+  box-shadow: 0 4px 12px rgba(103, 70, 54, 0.3);
   transform: translateY(-2px);
 }
 
 .btn-primary a {
-  color: #8B4513;
+  color: #FFF8E8;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -106,7 +92,7 @@ body::before {
 }
 
 .btn-primary:hover a {
-  color: #654321;
+  color: #FFF8E8;
 }
 
 .icon {
@@ -190,7 +176,6 @@ body::before {
   overflow-x: auto;
   overflow-y: visible;
   animation: tableSlideUp 0.8s ease-out 0.4s both;
-  padding: 0 4px;
 }
 
 @keyframes tableSlideUp {
@@ -299,6 +284,9 @@ tbody tr:last-child td:last-child {
 
 /* ===== Action Buttons ===== */
 .info-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   background: #FFF8E8;
   color: #1B1A55;
   border: 1px solid #535C91;
@@ -575,4 +563,48 @@ tbody tr:last-child td:last-child {
     flex: 1;
     justify-content: center;
   }
+}
+
+/* Material item styles */
+.material-item-inline {
+  font-size: 12px;
+  margin-bottom: 2px;
+  padding: 2px 6px;
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  display: inline-block;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.no-materials-text {
+  color: #999;
+}
+
+.materials-container {
+  margin-top: 8px;
+}
+
+.material-detail-item {
+  padding: 8px 12px;
+  margin: 4px 0;
+  background-color: #f8f9fa;
+  border-left: 4px solid #674636;
+  border-radius: 4px;
+}
+
+.material-name {
+  color: #674636;
+  font-weight: bold;
+}
+
+.material-price {
+  float: right;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.no-materials-modal {
+  color: #666;
+  font-style: italic;
 }

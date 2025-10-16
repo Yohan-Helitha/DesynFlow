@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaUser, FaCalendarAlt, FaClipboardList, FaBolt, FaCheckCircle, FaBan, FaFilter, FaPlus, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaClipboardList, FaBolt, FaCheckCircle, FaBan, FaPlus, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
 const STATUS = {
   PENDING: 'Pending',
@@ -15,7 +15,15 @@ const TaskBoard = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
   const [project, setProject] = useState(null);
-  const leaderId = "68d638d66e8afdd7536b87f8";
+  const [userNames, setUserNames] = useState({}); // Store user names by ID
+  
+  // Get leader ID from logged-in user
+  const getLeaderId = () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.id || user._id;
+  };
+  
+  const leaderId = getLeaderId();
   
   const [newTask, setNewTask] = useState({
     name: '',
@@ -31,17 +39,26 @@ const TaskBoard = () => {
 
   // Fetch tasks, team members, and project data
   const fetchTasks = async () => {
-    if (!project?._id) return;
+    if (!project?._id) {
+      setLoading(false);
+      return;
+    }
     
     try {
       setLoading(true);
       const response = await fetch(`http://localhost:4000/api/tasks/project/${project._id}`);
       if (response.ok) {
         const data = await response.json();
-        setTasks(data);
+        setTasks(Array.isArray(data) ? data : []);
+      } else {
+        // If API returns error (like 404 for new projects), set empty array
+        console.log(`No tasks found for project ${project._id}, this is normal for new projects`);
+        setTasks([]);
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
+      // Set empty tasks array instead of staying in loading state
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -52,36 +69,105 @@ const TaskBoard = () => {
       const response = await fetch(`http://localhost:4000/api/team-members/${leaderId}`);
       if (response.ok) {
         const data = await response.json();
-        setTeamMembers(data.members || []);
+        setTeamMembers(Array.isArray(data.members) ? data.members : []);
+        
+        // Fetch user names for all team members
+        await fetchUserNames(data.members || []);
+      } else {
+        console.log('No team members found or API endpoint not available');
+        setTeamMembers([]);
       }
     } catch (error) {
       console.error('Error fetching team members:', error);
+      setTeamMembers([]);
+    }
+  };
+
+  const fetchUserNames = async (members) => {
+    try {
+      // Fetch teams data to get populated user information
+      const response = await fetch('http://localhost:4000/api/teams', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch teams data');
+      }
+      
+      const teamsData = await response.json();
+      const names = {};
+      
+      // Extract user data from all teams
+      teamsData.forEach(team => {
+        team.members.forEach(teamMember => {
+          const userId = teamMember.userId._id;
+          const username = teamMember.userId.username;
+          names[userId] = username;
+        });
+      });
+      
+      // Set the user names
+      setUserNames(names);
+    } catch (error) {
+      console.error('Error fetching user names:', error);
+      // Fallback: create names from member data if available
+      const names = {};
+      for (const member of members) {
+        const userId = typeof member.userId === 'object' ? member.userId._id : member.userId;
+        names[userId] = `User ${userId?.slice(-4) || 'Unknown'}`;
+      }
+      setUserNames(names);
     }
   };
 
   const fetchProject = async () => {
+    console.log('fetchProject called, leaderId:', leaderId);
+    
     try {
       // Get team data first
       const teamRes = await fetch(`http://localhost:4000/api/teams`);
       const teamData = await teamRes.json();
+      console.log('All teams:', teamData);
+      
       const teamObj = Array.isArray(teamData)
-        ? teamData.find(t => t.leaderId === leaderId || t.leaderId._id === leaderId)
+        ? teamData.find(t => {
+            const teamLeaderId = t.leaderId?._id || t.leaderId;
+            console.log('Checking team:', t.teamName, 'leaderId:', teamLeaderId, 'matches:', teamLeaderId === leaderId);
+            return teamLeaderId === leaderId;
+          })
         : null;
+      
+      console.log('Found team for leader:', teamObj);
 
       if (teamObj) {
         // Get projects for this team
         const projRes = await fetch(`http://localhost:4000/api/projects`);
         const projData = await projRes.json();
+        console.log('All projects:', projData);
+        
         const teamProjects = projData.filter(
           p => p.assignedTeamId._id === teamObj._id
         );
         
+        console.log('Filtered projects for team:', teamProjects);
+        
         if (teamProjects.length > 0) {
           setProject(teamProjects[0]); // Use first project
+        } else {
+          // No projects found for this team
+          console.log('No projects found for team');
+          setLoading(false);
         }
+      } else {
+        // No team found for this leader
+        console.log('No team found for leader ID:', leaderId);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching project:', error);
+      setLoading(false);
     }
   };
 
@@ -302,8 +388,15 @@ const TaskBoard = () => {
   };
 
   const getMemberName = (assignedToId) => {
-    const member = teamMembers.find(m => m.userId === assignedToId);
-    return member ? `${member.userId} (${member.role || 'Member'})` : assignedToId;
+    const member = teamMembers.find(m => {
+      const userId = typeof m.userId === 'object' ? m.userId._id : m.userId;
+      return userId === assignedToId;
+    });
+    
+    const displayName = userNames[assignedToId] || `User ${assignedToId?.slice(-4) || 'Unknown'}`;
+    const role = member ? member.role || 'Member' : 'Member';
+    
+    return `${displayName} (${role})`;
   };
 
   const renderTaskCard = (task, status) => (
@@ -328,20 +421,20 @@ const TaskBoard = () => {
       <div className="flex items-center gap-2 mb-3">
         <div className={`inline-block px-2 py-1 text-xs rounded-md ${
           task.priority === 'high' 
-            ? 'bg-red-100 text-red-800' 
+            ? 'bg-red-brown text-white' 
             : task.priority === 'medium' 
-              ? 'bg-yellow-100 text-yellow-800' 
-              : 'bg-green-100 text-green-800'
+              ? 'bg-brown-primary-300 text-white' 
+              : 'bg-green-primary text-white'
         }`}>
           {task.priority}
         </div>
         {task.weight > 0 && (
-          <div className="inline-block px-2 py-1 text-xs rounded-md bg-blue-100 text-blue-800">
+          <div className="inline-block px-2 py-1 text-xs rounded-md bg-brown-primary-300 text-white">
             Weight: {task.weight}
           </div>
         )}
         {task.progressPercentage > 0 && (
-          <div className="inline-block px-2 py-1 text-xs rounded-md bg-gray-100 text-gray-800">
+          <div className="inline-block px-2 py-1 text-xs rounded-md bg-cream-primary text-dark-brown">
             {task.progressPercentage}%
           </div>
         )}
@@ -410,7 +503,15 @@ const TaskBoard = () => {
   if (loading) return <div className="p-8 text-amber-600">Loading tasks...</div>;
 
   if (!project) {
-    return <div className="p-8 text-gray-500">No project selected</div>;
+    return (
+      <div className="p-8 text-center">
+        <FaClipboardList className="mx-auto mb-4 text-4xl text-gray-400" />
+        <h3 className="text-lg font-semibold text-brown-primary mb-2">No Project Assigned</h3>
+        <p className="text-gray-600">
+          Your team doesn't have any projects assigned yet. Contact your project manager to get started.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -418,9 +519,6 @@ const TaskBoard = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-brown-primary">Task Management</h2>
         <div className="flex gap-3">
-          <button className="bg-white hover:bg-gray-50 text-brown-primary px-4 py-2 rounded-lg border border-brown-light transition-colors flex items-center gap-2">
-            <FaFilter /> Filter
-          </button>
           <button 
             className="bg-brown-primary hover:bg-brown-secondary text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             onClick={() => setShowAddModal(true)}
@@ -429,6 +527,25 @@ const TaskBoard = () => {
           </button>
         </div>
       </div>
+
+      {/* Show helpful message when no tasks exist */}
+      {tasks.length === 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <div className="text-center">
+            <FaClipboardList className="mx-auto mb-3 text-4xl text-blue-400" />
+            <h3 className="text-lg font-semibold text-brown-primary mb-2">No Tasks Yet</h3>
+            <p className="text-gray-600 mb-4">
+              This is a new project! Start by creating your first task to organize and track your team's work.
+            </p>
+            <button 
+              className="bg-brown-primary hover:bg-brown-secondary text-white px-6 py-2 rounded-lg transition-colors inline-flex items-center gap-2"
+              onClick={() => setShowAddModal(true)}
+            >
+              <FaPlus /> Create Your First Task
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="bg-amber-50 rounded-lg p-4">
@@ -441,49 +558,77 @@ const TaskBoard = () => {
             </span>
           </div>
           <div className="space-y-3">
-            {getTasksByStatus(STATUS.PENDING).map((task) => renderTaskCard(task, STATUS.PENDING))}
+            {getTasksByStatus(STATUS.PENDING).length > 0 ? (
+              getTasksByStatus(STATUS.PENDING).map((task) => renderTaskCard(task, STATUS.PENDING))
+            ) : (
+              <div className="text-gray-500 text-sm text-center py-8">
+                <FaClipboardList className="mx-auto mb-2 text-2xl opacity-50" />
+                No pending tasks
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="bg-blue-50 rounded-lg p-4">
+  <div className="bg-cream-light rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
               <FaBolt /> In Progress
             </span>
-            <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+            <span className="bg-brown-primary-300 text-white px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.IN_PROGRESS).length}
             </span>
           </div>
           <div className="space-y-3">
-            {getTasksByStatus(STATUS.IN_PROGRESS).map((task) => renderTaskCard(task, STATUS.IN_PROGRESS))}
+            {getTasksByStatus(STATUS.IN_PROGRESS).length > 0 ? (
+              getTasksByStatus(STATUS.IN_PROGRESS).map((task) => renderTaskCard(task, STATUS.IN_PROGRESS))
+            ) : (
+              <div className="text-gray-500 text-sm text-center py-8">
+                <FaBolt className="mx-auto mb-2 text-2xl opacity-50" />
+                No tasks in progress
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="bg-green-50 rounded-lg p-4">
+  <div className="bg-cream-primary rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
               <FaCheckCircle /> Completed
             </span>
-            <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
+            <span className="bg-green-primary text-white px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.COMPLETED).length}
             </span>
           </div>
           <div className="space-y-3">
-            {getTasksByStatus(STATUS.COMPLETED).map((task) => renderTaskCard(task, STATUS.COMPLETED))}
+            {getTasksByStatus(STATUS.COMPLETED).length > 0 ? (
+              getTasksByStatus(STATUS.COMPLETED).map((task) => renderTaskCard(task, STATUS.COMPLETED))
+            ) : (
+              <div className="text-gray-500 text-sm text-center py-8">
+                <FaCheckCircle className="mx-auto mb-2 text-2xl opacity-50" />
+                No completed tasks
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="bg-red-50 rounded-lg p-4">
+  <div className="bg-cream-light rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
             <span className="font-semibold text-brown-primary flex items-center gap-2">
               <FaBan /> Blocked
             </span>
-            <span className="bg-red-200 text-red-800 px-2 py-1 rounded-full text-sm font-medium">
+            <span className="bg-red-brown text-white px-2 py-1 rounded-full text-sm font-medium">
               {getTasksByStatus(STATUS.BLOCKED).length}
             </span>
           </div>
           <div className="space-y-3">
-            {getTasksByStatus(STATUS.BLOCKED).map((task) => renderTaskCard(task, STATUS.BLOCKED))}
+            {getTasksByStatus(STATUS.BLOCKED).length > 0 ? (
+              getTasksByStatus(STATUS.BLOCKED).map((task) => renderTaskCard(task, STATUS.BLOCKED))
+            ) : (
+              <div className="text-gray-500 text-sm text-center py-8">
+                <FaBan className="mx-auto mb-2 text-2xl opacity-50" />
+                No blocked tasks
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -562,17 +707,22 @@ const TaskBoard = () => {
                   required
                 >
                   <option value="">Select team member</option>
-                  {teamMembers.map((member) => (
-                    <option 
-                      key={member.userId} 
-                      value={member.userId}
-                      disabled={member.availability === 'On Leave'}
-                      className={member.availability === 'On Leave' ? 'text-gray-400' : ''}
-                    >
-                      {member.userId} ({member.role || 'Member'}) - {member.availability}
-                      {member.availability === 'On Leave' && ' (Unavailable)'}
-                    </option>
-                  ))}
+                  {teamMembers.map((member) => {
+                    const userId = typeof member.userId === 'object' ? member.userId._id : member.userId;
+                    const displayName = userNames[userId] || `User ${userId?.slice(-4) || 'Unknown'}`;
+                    
+                    return (
+                      <option 
+                        key={userId} 
+                        value={userId}
+                        disabled={member.availability === 'On Leave'}
+                        className={member.availability === 'On Leave' ? 'text-gray-400' : ''}
+                      >
+                        {displayName} ({member.role || 'Member'}) - {member.availability}
+                        {member.availability === 'On Leave' && ' (Unavailable)'}
+                      </option>
+                    );
+                  })}
                 </select>
                 {formErrors.assignedTo && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.assignedTo}</p>
@@ -605,7 +755,14 @@ const TaskBoard = () => {
                   type="date"
                   value={newTask.dueDate}
                   onChange={(e) => handleFieldChange('dueDate', e.target.value)}
-                  min={new Date().toISOString().split('T')[0]} // Disable past dates
+                  // lock dates before today and start day of project
+                  min={(() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    const projectStart = project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : today;
+                    return projectStart > today ? projectStart : today;
+                  })()}
+                  //lock after dates after project due date
+                  max={project?.dueDate ? new Date(project.dueDate).toISOString().split('T')[0] : undefined}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brown-primary ${
                     formErrors.dueDate ? 'border-red-500 bg-red-50' : 'border-gray-300'
                   }`}

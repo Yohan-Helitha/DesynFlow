@@ -110,7 +110,7 @@ const AddSReorderRequestForm = ({ loggedInUserId }) => {
       };
       await addSReorderRequest(payload);
       alert("Stock Reorder Request added successfully!");
-      navigate("/s-reorder-requests");
+      navigate("/warehouse-manager/reorder-request");
     } catch (err) {
       console.error(err);
       setErrors({ general: err.message || "Failed to add stock reorder request" });
@@ -215,7 +215,7 @@ const AddSReorderRequestForm = ({ loggedInUserId }) => {
             {/* Buttons */}
             <div className="flex gap-4 pt-6">
               <button type="submit" className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-6 rounded-md">Add Request</button>
-              <button type="button" onClick={() => navigate("/s-reorder-requests")} className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md">Cancel</button>
+              <button type="button" onClick={() => navigate("/warehouse-manager/reorder-request")} className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md">Cancel</button>
             </div>
           </form>
         </div>

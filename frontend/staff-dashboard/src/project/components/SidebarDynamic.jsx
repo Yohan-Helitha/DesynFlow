@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaHome, FaTasks, FaCalendarAlt, FaBoxOpen, FaCog, FaChartBar, FaUsers, FaClipboardList, FaFileAlt } from 'react-icons/fa';
+import { FaHome, FaTasks, FaCalendarAlt, FaBoxOpen, FaCog, FaChartBar, FaUsers, FaClipboardList, FaFileAlt, FaCreditCard, FaSignOutAlt } from 'react-icons/fa';
 
 const teamLeaderNavItems = [
   { label: "Team Overview", icon: <FaHome />, id: "overview" },
@@ -14,12 +14,12 @@ const projectManagerNavItems = [
   { label: "Assign Teams", icon: <FaUsers />, id: "assign-teams" },
   { label: "Manage Team", icon: <FaClipboardList />, id: "manage-team" },
   { label: "Reports", icon: <FaFileAlt />, id: "reports" },
-  { label: "Settings", icon: <FaCog />, id: "settings" },
+  { label: "Budget", icon: <FaCreditCard  />, id: "budget" },
 ];
 
-export default function Sidebar({ activeIndex, setActiveIndex, userRole }) {
-  const navItems = userRole === "team leader" ? teamLeaderNavItems : projectManagerNavItems;
-  const dashboardTitle = userRole === "team leader" ? "Team Leader" : "Interior PM";
+export default function Sidebar({ activeIndex, setActiveIndex, userRole, onLogout }) {
+  const navItems = (userRole === "team leader" || userRole === "team-leader") ? teamLeaderNavItems : projectManagerNavItems;
+  const dashboardTitle = (userRole === "team leader" || userRole === "team-leader") ? "Team Leader" : "Interior PM";
   
   return (
     <aside className="w-64 bg-brown-primary text-white flex flex-col shadow-lg">
@@ -44,8 +44,29 @@ export default function Sidebar({ activeIndex, setActiveIndex, userRole }) {
           ))}
         </nav>
       </div>
-      <div className="mt-auto p-4 border-t border-green-primary border-opacity-30 text-center text-xs text-green-primary">
-        {userRole === "team leader" ? "Team Leader Dashboard v1.0" : "Interior Design PM v1.0"}
+      <div className="mt-auto p-4 border-t border-green-primary border-opacity-30">
+        <div className="text-center text-xs text-green-primary mb-3">
+          {(userRole === "team leader" || userRole === "team-leader") ? "Team Leader Dashboard v1.0" : "Interior Design PM v1.0"}
+        </div>
+        <div>
+          {(userRole === "team leader" || userRole === "team-leader") ? (
+            <button
+              onClick={() => onLogout && onLogout()}
+              className="w-full flex items-center justify-center space-x-2 p-3 bg-green-primary text-white hover:bg-green-secondary rounded-lg transition-colors duration-200"
+            >
+              <FaSignOutAlt />
+              <span className="font-medium">Logout</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => onLogout && onLogout()}
+              className="w-full flex items-center justify-center space-x-2 p-3 bg-red-brown text-white hover:bg-dark-brown rounded-lg transition-colors duration-200"
+            >
+              <FaSignOutAlt />
+              <span className="font-medium">Logout</span>
+            </button>
+          )}
+        </div>
       </div>
     </aside>
   );
