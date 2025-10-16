@@ -8,7 +8,7 @@ function SupplierDashboard() {
   // Don't show the procurement sidebar on supplier-specific routes
   const isSupplierRoute = location.pathname.includes('/dashboard_sup') || 
                          location.pathname.includes('/order_details_sup') || 
-                         location.pathname.includes('/sample_order_list');
+                         location.pathname.includes('/sample_order_list_sup');
   
   return (
     <div className="page-with-sidebar">

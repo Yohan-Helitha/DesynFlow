@@ -357,6 +357,32 @@ body.sidebar-open .sample-order-list-page {
   cursor: default;
 }
 
+/* ===== Status Badge Styles ===== */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.requested {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.status-badge.approved {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+}
+
+.status-badge.rejected {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
 /* ===== Responsive Design ===== */
 @media (max-width: 768px) {
   .sidebar {

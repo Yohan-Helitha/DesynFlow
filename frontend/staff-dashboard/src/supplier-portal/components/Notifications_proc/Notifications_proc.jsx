@@ -8,17 +8,24 @@ function Notifications_proc({ panelOpen, togglePanel }) {
 
   useEffect(() => {
     if (panelOpen) {
-      // Get backend notifications
-      fetch("http://localhost:4000/notification")
+      // Get supplier-specific notifications for sample requests
+      fetch("http://localhost:4000/api/supplier-notifications")
         .then((res) => res.json())
-        .then((data) => {
+        .then((supplierNotifs) => {
           // Get local notifications
           const localNotifs = JSON.parse(
             localStorage.getItem("dashboard_notifications") || "[]"
           );
-          setNotifications([...localNotifs.reverse(), ...data]);
+          
+          // Combine and sort by timestamp
+          const allNotifications = [...localNotifs, ...supplierNotifs]
+            .sort((a, b) => new Date(b.createdAt || b.timestamp || 0) - new Date(a.createdAt || a.timestamp || 0));
+          
+          setNotifications(allNotifications);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error("Error fetching notifications:", error);
+          // Fallback to local notifications
           const localNotifs = JSON.parse(
             localStorage.getItem("dashboard_notifications") || "[]"
           );

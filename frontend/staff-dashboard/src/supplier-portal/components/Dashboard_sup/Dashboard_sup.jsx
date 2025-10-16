@@ -188,8 +188,20 @@ function Dashboard_sup() {
     }
   });
   const [loading, setLoading] = useState(true);
+  const [processingSampleId, setProcessingSampleId] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedSampleId, setSelectedSampleId] = useState(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  // Store supplierUserId in localStorage on component mount
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user.id && user.role === "supplier") {
+      localStorage.setItem("supplierUserId", user.id);
+    }
+  }, []);
 
   // Fetch pending approval orders
   const fetchPendingOrders = async () => {
@@ -267,6 +279,81 @@ function Dashboard_sup() {
   console.error('Failed to reject order. Please try again.');
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  // Handle sample order approval
+  const handleSampleApprove = async (sampleId) => {
+    try {
+      setProcessingSampleId(sampleId);
+      await axios.patch(`http://localhost:4000/api/samples/${sampleId}/review`, { 
+        status: "Approved",
+        reviewNote: "Sample approved by supplier"
+      });
+      
+      // Add notification to localStorage
+      const sampleToApprove = requests.find(r => r._id === sampleId);
+      if (sampleToApprove) {
+        const notification = {
+          id: Date.now(),
+          type: "success",
+          message: `Sample request for ${sampleToApprove.materialId?.materialName || 'material'} has been approved!`
+        };
+        const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+        notifs.push(notification);
+        localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
+      }
+      
+      // Refresh requests
+      fetchSupplierDashboardData();
+    } catch (error) {
+      console.error("Error approving sample:", error);
+    } finally {
+      setProcessingSampleId(null);
+    }
+  };
+
+  // Handle sample order rejection with reason
+  const handleSampleReject = (sampleId) => {
+    setSelectedSampleId(sampleId);
+    setShowRejectModal(true);
+  };
+
+  const confirmSampleReject = async () => {
+    if (!rejectReason.trim()) {
+      alert('Please provide a reason for rejection');
+      return;
+    }
+
+    try {
+      setProcessingSampleId(selectedSampleId);
+      await axios.patch(`http://localhost:4000/api/samples/${selectedSampleId}/review`, { 
+        status: "Rejected",
+        reviewNote: rejectReason
+      });
+      
+      // Add notification to localStorage
+      const sampleToReject = requests.find(r => r._id === selectedSampleId);
+      if (sampleToReject) {
+        const notification = {
+          id: Date.now(),
+          type: "warning",
+          message: `Sample request for ${sampleToReject.materialId?.materialName || 'material'} has been rejected.`
+        };
+        const notifs = JSON.parse(localStorage.getItem("dashboard_notifications") || "[]");
+        notifs.push(notification);
+        localStorage.setItem("dashboard_notifications", JSON.stringify(notifs));
+      }
+      
+      // Reset state and refresh
+      setShowRejectModal(false);
+      setRejectReason('');
+      setSelectedSampleId(null);
+      fetchSupplierDashboardData();
+    } catch (error) {
+      console.error("Error rejecting sample:", error);
+    } finally {
+      setProcessingSampleId(null);
     }
   };
 
@@ -573,7 +660,7 @@ function Dashboard_sup() {
             <Link to="/procurement-officer/order_details_sup">My Orders</Link>
           </li>
           <li>
-            <Link to="/procurement-officer/sample_order_list">Sample Orders</Link>
+            <Link to="/procurement-officer/sample_order_list_sup">Sample Orders</Link>
           </li>
           <li>
             <span className="profile-settings-disabled">Profile Settings</span>
@@ -693,38 +780,6 @@ function Dashboard_sup() {
           </div>
         </div>
 
-
-        {/* Sample Requests */}
-        <section className="sample-requests">
-          <h2>Sample Order Requests</h2>
-          {visibleRequests.length === 0 ? (
-            <p className="empty">No new sample requests 🎉</p>
-          ) : (
-            <div className="requests-grid">
-              {visibleRequests.map((req) => (
-                <div key={req._id} className="request-card">
-                  <div className="request-header">
-                    <span className="request-type">Sample Request</span>
-                    <span className={`request-status ${req.status}`}>{req.status}</span>
-                  </div>
-                  <div className="request-info">
-                    <p><strong>Material:</strong> {req.materialId?.materialName || req.materialId?.name || "Unknown Material"}</p>
-                    <p><strong>Requested By:</strong> {req.requestedBy?.name || req.requestedBy?.email || "Unknown User"}</p>
-                    {req.reviewNote && (
-                      <p><strong>Note:</strong> {req.reviewNote}</p>
-                    )}
-                  </div>
-                  <div className="request-actions">
-                    <button className="btn-noted" onClick={() => handleNoted(req._id)}>
-                      Mark as Noted
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
       </main>
 
       {/* Pending Approval Results Panel */}
@@ -800,6 +855,73 @@ function Dashboard_sup() {
           )}
         </div>
       </div>
+
+      {/* Sample Rejection Modal */}
+      {showRejectModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Reject Sample Request</h3>
+              <button 
+                className="modal-close"
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason('');
+                  setSelectedSampleId(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <label htmlFor="rejectReason">Reason for rejection:</label>
+              <select 
+                id="rejectReason"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                className="reject-reason-select"
+              >
+                <option value="">Select a reason...</option>
+                <option value="Material not available">Material not available</option>
+                <option value="Quality specifications cannot be met">Quality specifications cannot be met</option>
+                <option value="Insufficient sample quantity">Insufficient sample quantity</option>
+                <option value="Delivery timeline too tight">Delivery timeline too tight</option>
+                <option value="Cost considerations">Cost considerations</option>
+                <option value="Technical specifications unclear">Technical specifications unclear</option>
+                <option value="Currently at capacity">Currently at capacity</option>
+                <option value="Other">Other</option>
+              </select>
+              {rejectReason === 'Other' && (
+                <textarea 
+                  placeholder="Please specify the reason..."
+                  value={rejectReason === 'Other' ? '' : rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  className="custom-reason-textarea"
+                />
+              )}
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="btn-cancel"
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason('');
+                  setSelectedSampleId(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn-confirm-reject"
+                onClick={confirmSampleReject}
+                disabled={!rejectReason.trim() || processingSampleId}
+              >
+                {processingSampleId ? "Processing..." : "Confirm Rejection"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

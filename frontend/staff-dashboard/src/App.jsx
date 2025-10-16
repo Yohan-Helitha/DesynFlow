@@ -25,6 +25,7 @@ import SampleOrder from './supplier-portal/components/Sample_order/Sample_order'
 import DashboardSup from './supplier-portal/components/Dashboard_sup/Dashboard_sup';
 import OrderDetailsSup from './supplier-portal/components/Order_details_sup/Order_details_sup';
 import SampleOrderList from './supplier-portal/components/Sample_order_list/Sample_order_list';
+import SampleOrderListSup from './supplier-portal/components/SampleOrderList/sample_order_list_sup';
 import SampleOrderDetails from './supplier-portal/components/Sample_order_details/Sample_order_details';
 import RateSupplier from './supplier-portal/components/Rate_supplier/Rate_supplier';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
@@ -71,6 +72,7 @@ function App() {
               <Route path="dashboard_sup" element={<DashboardSup />} />
               <Route path="order_details_sup" element={<OrderDetailsSup />} />
               <Route path="sample_order_list" element={<SampleOrderList />} />
+              <Route path="sample_order_list_sup" element={<SampleOrderListSup />} />
               <Route path="sample_order_details/:id" element={<SampleOrderDetails />} />
               <Route path="rate_supplier" element={<RateSupplier />} />
             </Route>

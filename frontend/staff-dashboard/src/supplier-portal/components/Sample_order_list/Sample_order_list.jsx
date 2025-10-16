@@ -166,7 +166,7 @@ function Sample_order_list() {
                   <td>{s.supplierId?.companyName || s.supplierId?.name || "Unknown"}</td>
                   <td>{s.materialId?.materialName || s.materialId?.name || "Unknown"}</td>
                   <td>{s.requestedBy?.name || s.requestedBy?.email || "Unknown"}</td>
-                  <td>{s.status}</td>
+                  <td><span className={`status-badge ${s.status.toLowerCase()}`}>{s.status}</span></td>
                   <td>{s.reviewNote || "-"}</td>
                   <td>{new Date(s.createdAt).toLocaleString()}</td>
                   <td>

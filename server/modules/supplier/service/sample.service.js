@@ -43,12 +43,57 @@ const uploadSample = async (data) => {
 };
 
 const reviewSample = async (id, { status, reviewNote }) => {
-  if (!['Approved', 'Rejected'].includes(status)) throw new Error('Invalid status');
-  return await Sample.findByIdAndUpdate(id, { status, reviewNote }, { new: true });
+  if (!['Approved', 'Rejected', 'Dispatched'].includes(status)) throw new Error('Invalid status');
+  
+  const sample = await Sample.findByIdAndUpdate(id, { 
+    status, 
+    reviewNote,
+    reviewedAt: new Date() 
+  }, { new: true })
+    .populate('supplierId', 'companyName name')
+    .populate('materialId', 'materialName name')
+    .populate('requestedBy', 'name email');
+
+  // Create notification for procurement team
+  try {
+    const SupplierRequestNotification = (await import('../model/supplierRequestNotification.model.js')).default;
+    
+    let message = '';
+    if (status === 'Approved') {
+      message = `Sample request for ${sample.materialId.materialName} has been approved by supplier`;
+    } else if (status === 'Rejected') {
+      message = `Sample request for ${sample.materialId.materialName} has been rejected by supplier`;
+    } else if (status === 'Dispatched') {
+      message = `Sample for ${sample.materialId.materialName} has been dispatched by supplier`;
+    }
+    
+    await SupplierRequestNotification.create({
+      type: 'sample_status_update',
+      supplierId: sample.supplierId._id,
+      materialId: sample.materialId._id,
+      message: message,
+      details: {
+        sampleId: sample._id,
+        status: status,
+        reviewNote: reviewNote,
+        supplierName: sample.supplierId.companyName || sample.supplierId.name,
+        materialName: sample.materialId.materialName
+      }
+    });
+  } catch (notificationError) {
+    console.error('Failed to create notification:', notificationError);
+    // Don't fail the whole operation if notification fails
+  }
+
+  return sample;
 };
 
 const getSamples = async (supplierId) => {
-  return await Sample.find({ supplierId });
+  return await Sample.find({ supplierId })
+    .populate('supplierId', 'companyName name')
+    .populate('materialId', 'materialName name')
+    .populate('requestedBy', 'name email')
+    .sort({ createdAt: -1 });
 };
 
 const getAllSamples = async () => {
