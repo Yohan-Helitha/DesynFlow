@@ -14,6 +14,7 @@ import {
   Building2,
   User,
   ShieldCheck,
+  Clipboard
 } from "lucide-react";
 import { useNotifications } from "../context/notificationContext.jsx";
 // import logo from "./desynflow_logo.png";
@@ -34,6 +35,7 @@ const Navbar = () => {
     { icon: Trash2, label: "Disposal Materials", path: "disposal-materials" },
     { icon: ShieldCheck, label: "Warranty Claims", path: "warranty-claims" },
     { icon: FileText, label: "Audit Log", path: "audit-logs" },
+    { icon: Clipboard, label: "Submit Reports", path: "submit-reports" },
     { icon: Bell, label: "Notifications", path: "notifications" },
   ];
 

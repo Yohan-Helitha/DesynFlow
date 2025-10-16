@@ -162,7 +162,7 @@ const chartData = Object.keys(requestsPerMonth)
           <h1 className="text-2xl font-bold mt-6 mb-10">Stock Reorder Requests</h1>
           <button
             className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-4 rounded shadow mt-6 mb-10"
-            onClick={() => navigate("/add-s-reorder-requests")}
+            onClick={() => navigate("/warehouse-manager/reorder-request/add")}
           >
             + Add Reorder Request
           </button>
@@ -327,7 +327,7 @@ const chartData = Object.keys(requestsPerMonth)
                         <div className="flex items-center justify-center gap-6">
                           <div
                             className="group relative cursor-pointer"
-                            onClick={() => navigate(`/update-s-reorder-requests/${request._id}`)}
+                            onClick={() => navigate(`/warehouse-manager/reorder-request/update/${request._id}`)}
                           >
                             <Edit2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
                           </div>
