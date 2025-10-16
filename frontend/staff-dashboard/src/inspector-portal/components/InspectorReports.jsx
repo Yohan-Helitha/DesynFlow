@@ -27,14 +27,11 @@ const InspectorReports = () => {
 
   const handleDownload = (report) => {
     if (report.pdfPath) {
-      // Simple download of existing PDF file
-      const link = document.createElement('a');
-      link.href = `${report.pdfPath}`;
-      link.download = `Inspection_Report_${report.reportData?.clientName || 'Report'}_${new Date().toISOString().split('T')[0]}.pdf`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Construct proper URL for PDF access through proxy
+      const pdfUrl = report.pdfPath.startsWith('/') ? report.pdfPath : `/${report.pdfPath}`;
+      
+      // Open PDF in new tab for viewing instead of downloading
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
     } else {
       alert('PDF file not available. Please try generating the report again.');
     }
@@ -201,13 +198,13 @@ const InspectorReports = () => {
                   <h4 className="text-lg font-semibold text-brown-primary mb-3">Inspection Report PDF</h4>
                   <div className="border border-brown-primary-300 rounded">
                     <iframe
-                      src={`${selectedReport.pdfPath}`}
+                      src={selectedReport.pdfPath.startsWith('/') ? selectedReport.pdfPath : `/${selectedReport.pdfPath}`}
                       width="100%"
                       height="500px"
                       title="Inspection Report PDF"
                       className="rounded"
                     >
-                      <p>Your browser does not support PDFs. <a href={`${selectedReport.pdfPath}`} target="_blank" rel="noopener noreferrer">Download the PDF</a> instead.</p>
+                      <p>Your browser does not support PDFs. <a href={selectedReport.pdfPath.startsWith('/') ? selectedReport.pdfPath : `/${selectedReport.pdfPath}`} target="_blank" rel="noopener noreferrer">Download the PDF</a> instead.</p>
                     </iframe>
                   </div>
                 </div>
