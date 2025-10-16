@@ -1,7 +1,7 @@
 // src/services/FtransferRequestService.js
 export const fetchTransferRequests = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/transfer_request");
+    const res = await fetch("/api/warehouse/transfer_request");
     if (!res.ok) throw new Error("Failed to fetch transfer requests");
     const data = await res.json();
     return data.transfer_request;
@@ -14,7 +14,7 @@ export const fetchTransferRequests = async () => {
 // Add new product
 export const addTransferRequest = async (requestData) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/transfer_request`, {
+    const res = await fetch(`/api/warehouse/transfer_request`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -38,7 +38,7 @@ export const addTransferRequest = async (requestData) => {
 
 export const fetchTransferRequestById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/transfer_request/${id}`);
+    const res = await fetch(`/api/warehouse/transfer_request/${id}`);
     if (!res.ok) throw new Error("Failed to fetch stock request");
     const data = await res.json();
     console.log("Fetched request:", data); // debug
@@ -51,7 +51,7 @@ export const fetchTransferRequestById = async (id) => {
 
 export const updateTransferRequest = async (id, data) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/transfer_request/${id}`, {
+    const res = await fetch(`/api/warehouse/transfer_request/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -76,7 +76,7 @@ export const updateTransferRequest = async (id, data) => {
 // Delete product
 export const deleteTransferRequest = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/transfer_request/${id}`, {
+    const res = await fetch(`/api/warehouse/transfer_request/${id}`, {
       method: "DELETE"
     });
 
@@ -91,3 +91,4 @@ export const deleteTransferRequest = async (id) => {
     throw err;
   }
 };
+

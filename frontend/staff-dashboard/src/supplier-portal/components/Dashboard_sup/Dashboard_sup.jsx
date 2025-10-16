@@ -206,7 +206,7 @@ function Dashboard_sup() {
   // Fetch pending approval orders
   const fetchPendingOrders = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/purchase-orders");
+      const response = await axios.get("/api/purchase-orders");
       const allOrders = response.data;
       
       // Sort all orders by creation date - newest first
@@ -228,7 +228,7 @@ function Dashboard_sup() {
   const handleApprove = async (id) => {
     try {
       setProcessingId(id);
-      await axios.put(`http://localhost:4000/api/purchase-orders/${id}`, { status: "Approved" });
+      await axios.put(`/api/purchase-orders/${id}`, { status: "Approved" });
       
       // Add notification to localStorage
       const orderToApprove = pendingOrders.find(o => o._id === id);
@@ -257,7 +257,7 @@ function Dashboard_sup() {
   const handleReject = async (id) => {
     try {
       setProcessingId(id);
-      await axios.put(`http://localhost:4000/api/purchase-orders/${id}`, { status: "Rejected" });
+      await axios.put(`/api/purchase-orders/${id}`, { status: "Rejected" });
       
       // Add notification to localStorage
       const orderToReject = pendingOrders.find(o => o._id === id);
@@ -286,7 +286,7 @@ function Dashboard_sup() {
   const handleSampleApprove = async (sampleId) => {
     try {
       setProcessingSampleId(sampleId);
-      await axios.patch(`http://localhost:4000/api/samples/${sampleId}/review`, { 
+      await axios.patch(`/api/samples/${sampleId}/review`, { 
         status: "Approved",
         reviewNote: "Sample approved by supplier"
       });
@@ -327,7 +327,7 @@ function Dashboard_sup() {
 
     try {
       setProcessingSampleId(selectedSampleId);
-      await axios.patch(`http://localhost:4000/api/samples/${selectedSampleId}/review`, { 
+      await axios.patch(`/api/samples/${selectedSampleId}/review`, { 
         status: "Rejected",
         reviewNote: rejectReason
       });
@@ -369,7 +369,7 @@ function Dashboard_sup() {
 
       try {
         // Fetch all suppliers data instead of specific supplier
-        const suppliersResponse = await fetch("http://localhost:4000/api/suppliers");
+        const suppliersResponse = await fetch("/api/suppliers");
         const suppliersData = await suppliersResponse.json();
         
         // Sort suppliers by creation date - newest first
@@ -385,12 +385,12 @@ function Dashboard_sup() {
         }
 
         // Fetch all sample requests
-        const samplesResponse = await fetch("http://localhost:4000/api/samples/all");
+        const samplesResponse = await fetch("/api/samples/all");
         const allSamples = await samplesResponse.json();
         setRequests(Array.isArray(allSamples) ? allSamples : []);
 
         // Fetch all orders from all suppliers
-        const ordersResponse = await fetch("http://localhost:4000/api/purchase-orders");
+        const ordersResponse = await fetch("/api/purchase-orders");
         const ordersData = await ordersResponse.json();
         
         // Sort orders by creation date - newest first
@@ -401,14 +401,14 @@ function Dashboard_sup() {
         });
 
         // Fetch all materials from all suppliers
-        const materialsResponse = await fetch("http://localhost:4000/api/materials");
+        const materialsResponse = await fetch("/api/materials");
         const materials = await materialsResponse.json();
 
         // Fetch all supplier ratings
         let allSupplierRatings = [];
         try {
           const ratingsPromises = suppliers.map(supplier => 
-            fetch(`http://localhost:4000/api/supplier-ratings/${supplier._id}`)
+            fetch(`/api/supplier-ratings/${supplier._id}`)
               .then(res => res.ok ? res.json() : [])
               .catch(() => [])
           );
@@ -927,3 +927,4 @@ function Dashboard_sup() {
 }
 
 export default Dashboard_sup;
+

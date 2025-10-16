@@ -71,7 +71,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
 
       // Fetch assignments for this inspector
       const response = await axios.get(
-        `http://localhost:4000/api/assignment/inspector/${inspector._id || inspector.id}`,
+        `/api/assignment/inspector/${inspector._id || inspector.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -108,7 +108,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
       }
       
       const response = await axios.get(
-        `http://localhost:4000/api/inspector-location/${inspector._id || inspector.id}`,
+        `/api/inspector-location/${inspector._id || inspector.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -172,7 +172,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
       if (location) {
         // Use the existing update endpoint with current location data
         await axios.post(
-          'http://localhost:4000/api/inspector-location/update',
+          '/api/inspector-location/update',
           {
             inspectorId: inspector._id || inspector.id,
             lat: location.inspector_latitude,
@@ -435,3 +435,4 @@ const LocationManagement = ({ inspector, setMessage }) => {
 };
 
 export default LocationManagement;
+

@@ -11,7 +11,7 @@ const InspectorReports = () => {
     const fetchReports = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const res = await axios.get('http://localhost:4000/api/auth-reports/my-reports', {
+        const res = await axios.get('/api/auth-reports/my-reports', {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         setReports(res.data);
@@ -29,7 +29,7 @@ const InspectorReports = () => {
     if (report.pdfPath) {
       // Simple download of existing PDF file
       const link = document.createElement('a');
-      link.href = `http://localhost:4000${report.pdfPath}`;
+      link.href = `${report.pdfPath}`;
       link.download = `Inspection_Report_${report.reportData?.clientName || 'Report'}_${new Date().toISOString().split('T')[0]}.pdf`;
       link.target = '_blank';
       document.body.appendChild(link);
@@ -44,7 +44,7 @@ const InspectorReports = () => {
     if (!window.confirm('Are you sure you want to delete this report?')) return;
     try {
       const token = localStorage.getItem('authToken');
-      await axios.delete(`http://localhost:4000/api/auth-reports/${reportId}`, {
+      await axios.delete(`/api/auth-reports/${reportId}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       setReports(reports.filter(r => r._id !== reportId));
@@ -201,13 +201,13 @@ const InspectorReports = () => {
                   <h4 className="text-lg font-semibold text-brown-primary mb-3">Inspection Report PDF</h4>
                   <div className="border border-brown-primary-300 rounded">
                     <iframe
-                      src={`http://localhost:4000${selectedReport.pdfPath}`}
+                      src={`${selectedReport.pdfPath}`}
                       width="100%"
                       height="500px"
                       title="Inspection Report PDF"
                       className="rounded"
                     >
-                      <p>Your browser does not support PDFs. <a href={`http://localhost:4000${selectedReport.pdfPath}`} target="_blank" rel="noopener noreferrer">Download the PDF</a> instead.</p>
+                      <p>Your browser does not support PDFs. <a href={`${selectedReport.pdfPath}`} target="_blank" rel="noopener noreferrer">Download the PDF</a> instead.</p>
                     </iframe>
                   </div>
                 </div>

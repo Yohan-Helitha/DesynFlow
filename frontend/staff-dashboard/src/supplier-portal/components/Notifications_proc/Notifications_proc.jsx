@@ -9,7 +9,7 @@ function Notifications_proc({ panelOpen, togglePanel }) {
   useEffect(() => {
     if (panelOpen) {
       // Get supplier-specific notifications for sample requests
-      fetch("http://localhost:4000/api/supplier-notifications")
+      fetch("/api/supplier-notifications")
         .then((res) => res.json())
         .then((supplierNotifs) => {
           // Get local notifications
@@ -128,3 +128,4 @@ function Notifications_proc({ panelOpen, togglePanel }) {
 }
 
 export default Notifications_proc;
+

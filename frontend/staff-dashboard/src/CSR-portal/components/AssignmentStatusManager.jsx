@@ -18,7 +18,7 @@ const AssignmentStatusManager = () => {
       }
 
       const response = await axios.get(
-        'http://localhost:4000/api/assignment/list',
+        '/api/assignment/list',
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -58,7 +58,7 @@ const AssignmentStatusManager = () => {
       }
 
       await axios.patch(
-        `http://localhost:4000/api/assignment/status/${assignmentId}`,
+        `/api/assignment/status/${assignmentId}`,
         updateData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

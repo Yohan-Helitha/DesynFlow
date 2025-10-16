@@ -19,7 +19,7 @@ const AssignmentHistory = () => {
       }
 
       const response = await axios.get(
-        'http://localhost:4000/api/assignment/list',
+        '/api/assignment/list',
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -49,7 +49,7 @@ const AssignmentHistory = () => {
     try {
       const token = localStorage.getItem('authToken');
       await axios.delete(
-        `http://localhost:4000/api/assignment/${assignmentId}`,
+        `/api/assignment/${assignmentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

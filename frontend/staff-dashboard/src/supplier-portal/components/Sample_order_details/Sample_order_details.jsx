@@ -8,7 +8,7 @@ function Sample_order_details() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:4000/api/samples/${id}`)
+    fetch(`/api/samples/${id}`)
       .then(res => res.json())
       .then(data => {
         setSample(data);
@@ -42,3 +42,4 @@ function Sample_order_details() {
 }
 
 export default Sample_order_details;
+

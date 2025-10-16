@@ -16,7 +16,7 @@ const DynamicInspectionForm = ({ selectedAssignment }) => {
   const [editingFormId, setEditingFormId] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const API_BASE = "http://localhost:4000/api/inspectorForms";
+  const API_BASE = "/api/inspectorForms";
 
   // Initialize form when assignment is selected
   useEffect(() => {

@@ -1,7 +1,7 @@
 // src/services/FdisposalMaterialsService.js
 export const fetchDisposalMaterials = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/disposal_materials");
+    const res = await fetch("/api/warehouse/disposal_materials");
     if (!res.ok) throw new Error("Failed to fetch disposal materials");
     const data = await res.json();
     return data.disposal_materials;
@@ -14,7 +14,7 @@ export const fetchDisposalMaterials = async () => {
 // Add material
 export const addDisposalMaterial = async (disposalMaterialData) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/disposal_materials`, {
+    const res = await fetch(`/api/warehouse/disposal_materials`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -38,7 +38,7 @@ export const addDisposalMaterial = async (disposalMaterialData) => {
 
 export const fetchDisposalMaterialsById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/disposal_materials/${id}`);
+    const res = await fetch(`/api/warehouse/disposal_materials/${id}`);
     
     if (!res.ok) throw new Error("Failed to fetch material");
     const data = await res.json();
@@ -52,7 +52,7 @@ export const fetchDisposalMaterialsById = async (id) => {
 
 export const fetchDisposalRecordById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/disposal_materials/record/${id}`);
+    const res = await fetch(`/api/warehouse/disposal_materials/record/${id}`);
     
     if (!res.ok) throw new Error("Failed to fetch material");
     const data = await res.json();
@@ -67,7 +67,7 @@ export const fetchDisposalRecordById = async (id) => {
 
 export const updateDisposalMaterial = async (id, data) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/disposal_materials/${id}`, {
+    const res = await fetch(`/api/warehouse/disposal_materials/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -92,7 +92,7 @@ export const updateDisposalMaterial = async (id, data) => {
 // Delete location
 export const deleteDisposalMaterial = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/disposal_materials/${id}`, {
+    const res = await fetch(`/api/warehouse/disposal_materials/${id}`, {
       method: "DELETE"
     });
 
@@ -107,3 +107,4 @@ export const deleteDisposalMaterial = async (id) => {
     throw err;
   }
 };
+
