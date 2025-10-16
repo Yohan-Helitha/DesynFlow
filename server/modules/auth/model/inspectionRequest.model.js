@@ -15,6 +15,9 @@ const inspectionRequestSchema = new mongoose.Schema({
   // Property basics
   propertyLocation_address: { type: String, required: true },
   propertyLocation_city: { type: String, required: true },
+  property_latitude: { type: Number }, // GPS coordinates for property location
+  property_longitude: { type: Number }, // GPS coordinates for property location
+  property_full_address: { type: String }, // Complete human-readable address
   propertyType: { 
     type: String, 
     enum: ['residential', 'commercial', 'apartment'],
@@ -41,5 +44,7 @@ const inspectionRequestSchema = new mongoose.Schema({
 
 inspectionRequestSchema.index({ client_ID: 1, createdAt: -1 });
 inspectionRequestSchema.index({ status: 1 });
+inspectionRequestSchema.index({ propertyLocation_city: 1 }); // For regional property queries
+inspectionRequestSchema.index({ property_latitude: 1, property_longitude: 1 }); // For location-based queries
 
 export default mongoose.model('InspectionRequest', inspectionRequestSchema);

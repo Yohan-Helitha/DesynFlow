@@ -1,6 +1,6 @@
 ﻿import mongoose from 'mongoose';
 
-// Inspector Enhanced Form - Dynamic inspection details (matches diagram: Inspection_Enhanced_Form_table)
+// Inspector Enhanced Form - Dynamic inspection details
 const inspectorFormSchema = new mongoose.Schema({
   // Links to inspection request
   InspectionRequest_ID: {
@@ -16,30 +16,33 @@ const inspectorFormSchema = new mongoose.Schema({
     required: true
   },
   
-  // Dynamic room details (filled by inspector after visiting)
-  floor_number: { type: Number, required: true },
-  roomID: { type: String, required: true },
-  room_name: { type: String, required: true },
+  // Dynamic floors and rooms structure
+  floors: [{
+    floor_number: { type: Number, required: true },
+    rooms: [{
+      room_name: { type: String, required: true },
+      dimensions: {
+        length: { type: Number, required: true },
+        width: { type: Number, required: true },
+        height: { type: Number, required: true },
+        unit: { type: String, default: 'feet' }
+      }
+    }]
+  }],
+  
+  // Inspector recommendations
+  recommendations: { type: String },
+  
   status: { 
     type: String,
-    enum: ['pending', 'in-progress', 'completed'],
-    default: 'pending'
-  },
-  
-  // Inspector measurements (not client responsibility)
-  inspection_Date: { type: Date, default: Date.now },
-  room_dimension: { type: String }, // Inspector measures this
-  room_photo: [String], // Inspector takes photos
-  
-  // Inspector notes
-  inspector_notes: { type: String },
-  completion_status: {
-    type: String,
-    enum: ['draft', 'submitted', 'approved'],
+    enum: ['draft', 'in-progress', 'completed'],
     default: 'draft'
   },
+  
+  // Inspection date
+  inspection_Date: { type: Date, default: Date.now },
 
-  // New flag to lock form after report generation
+  // Form completion flag
   report_generated: {
     type: Boolean,
     default: false

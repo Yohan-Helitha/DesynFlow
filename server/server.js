@@ -1,10 +1,12 @@
 import express from "express";
 import dotenv from "dotenv";
+import { createServer } from 'http';
 import { connectDB, disconnectedDB } from "./config/db.js";
 
 import { logger } from "./config/logger.js";
 import { app } from "./app.js";
 import { env } from "./config/env.js";
+import webSocketService from "./services/webSocketService.js";
 
 dotenv.config();
 
@@ -26,7 +28,13 @@ const onShutdown = async (signal) => {
 async function start() {
     try {
         await connectDB();
-        const server = app.listen(env.PORT, () => {
+        
+        const server = createServer(app);
+        
+        // Initialize WebSocket service
+        webSocketService.initialize(server);
+        
+        server.listen(env.PORT, () => {
             logger.info(`${env.APP_NAME} running on http://localhost:${env.PORT}`);
         });
 

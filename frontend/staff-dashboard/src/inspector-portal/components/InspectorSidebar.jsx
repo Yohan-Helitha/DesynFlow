@@ -9,9 +9,15 @@ const InspectorSidebar = ({ activeSection, onSelect, onLogout, inspectorName }) 
       description: 'Update location & availability'
     },
     {
+      id: 'assignments',
+      name: 'My Assignments',
+      icon: '📋',
+      description: 'View assigned inspection jobs'
+    },
+    {
       id: 'inspection',
       name: 'Inspection Forms',
-      icon: '📋',
+      icon: '📝',
       description: 'Dynamic inspection forms'
     },
     {
@@ -23,16 +29,16 @@ const InspectorSidebar = ({ activeSection, onSelect, onLogout, inspectorName }) 
   ];
 
   return (
-    <div className="w-80 bg-white shadow-xl flex flex-col">
+    <div className="w-80 bg-cream-primary shadow-xl flex flex-col">
       {/* Header */}
-      <div className="p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      <div className="p-6 bg-brown-primary text-cream-primary">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 bg-cream-light rounded-full flex items-center justify-center">
             <span className="text-2xl">👨‍🔧</span>
           </div>
           <div>
-            <h2 className="text-xl font-bold">Inspector Portal</h2>
-            <p className="text-blue-200 text-sm">Welcome, {inspectorName}</p>
+            <h2 className="text-xl text-cream-light font-bold">Inspector Portal</h2>
+            <p className="text-cream-light text-sm">Welcome, {inspectorName}</p>
           </div>
         </div>
       </div>
@@ -46,20 +52,20 @@ const InspectorSidebar = ({ activeSection, onSelect, onLogout, inspectorName }) 
               onClick={() => onSelect(item.id)}
               className={`group cursor-pointer p-4 rounded-lg transition-all duration-200 ${
                 activeSection === item.id
-                  ? 'bg-blue-50 border-l-4 border-blue-600 shadow-md'
-                  : 'hover:bg-gray-50 hover:shadow-sm'
+                  ? 'bg-cream-light border-l-4 border-soft-green shadow-md'
+                  : 'hover:bg-cream-light hover:shadow-sm'
               }`}
             >
               <div className="flex items-center space-x-3">
                 <span className="text-2xl">{item.icon}</span>
                 <div>
                   <div className={`font-semibold ${
-                    activeSection === item.id ? 'text-blue-700' : 'text-gray-700'
+                    activeSection === item.id ? 'text-soft-green' : 'text-brown-primary'
                   }`}>
                     {item.name}
                   </div>
                   <div className={`text-sm ${
-                    activeSection === item.id ? 'text-blue-600' : 'text-gray-500'
+                    activeSection === item.id ? 'text-soft-green' : 'text-brown-secondary'
                   }`}>
                     {item.description}
                   </div>
@@ -67,7 +73,7 @@ const InspectorSidebar = ({ activeSection, onSelect, onLogout, inspectorName }) 
               </div>
               {activeSection === item.id && (
                 <div className="ml-11 mt-2">
-                  <div className="w-full h-1 bg-blue-600 rounded-full"></div>
+                  <div className="w-full h-1 bg-green-primary rounded-full"></div>
                 </div>
               )}
             </div>
@@ -76,12 +82,11 @@ const InspectorSidebar = ({ activeSection, onSelect, onLogout, inspectorName }) 
       </div>
 
       {/* Footer */}
-      <div className="p-6 border-t border-gray-200">
+      <div className="p-6 border-t border-brown-secondary">
         <button
           onClick={onLogout}
-          className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200 flex items-center justify-center space-x-2"
+          className="w-full bg-red-brown text-cream-primary py-3 px-4 rounded-lg font-semibold hover:bg-dark-brown transition-colors duration-200 flex items-center justify-center space-x-2"
         >
-          <span>🚪</span>
           <span>Logout</span>
         </button>
       </div>
