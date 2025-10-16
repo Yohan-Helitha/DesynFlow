@@ -23,8 +23,9 @@ function FinanceDashboard() {
   };
 
   const handleNavigation = (section) => {
-    if (section === 'dashboard') {
-      navigate('/finance-manager');
+    // Redirect dashboard to reports
+    if (section === 'dashboard' || section === 'reports') {
+      navigate('/finance-manager/reports');
     } else {
       navigate(`/finance-manager/${section}`);
     }
@@ -39,8 +40,8 @@ function FinanceDashboard() {
       <div className="flex-1 overflow-auto">
         <Routes>
           {/* Finance Dashboard Routes */}
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route index element={<ReportsSection />} />
+          <Route path="dashboard" element={<ReportsSection />} />
           <Route path="inspections" element={<InspectionSection />} />
           <Route path="estimations" element={<EstimationsSection />} />
           <Route path="quotations" element={<QuotationsSection />} />

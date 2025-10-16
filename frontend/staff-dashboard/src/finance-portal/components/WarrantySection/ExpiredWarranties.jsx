@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  RefreshCw,
 } from 'lucide-react';
 import { ViewWarrantyModal } from './ViewWarrantyModal';
 

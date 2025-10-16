@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Wrench, RefreshCw } from 'lucide-react';
+import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Wrench } from 'lucide-react';
 import WarrantyClaimActionModal from './WarrantyClaimActionModal';
 
 // Table displaying warranty claims (warrenty_claim model)
@@ -12,27 +12,27 @@ export const WarrantyRequest = () => {
 	const [sortDirection, setSortDirection] = useState('desc');
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 5;
-	const [refreshKey, setRefreshKey] = useState(0);
 	const [showViewModal, setShowViewModal] = useState(false);
 	const [selectedClaim, setSelectedClaim] = useState(null);
 
 	useEffect(() => {
-		async function fetchClaims() {
-			setLoading(true);
-			setError('');
-			try {
-				const resp = await fetch('/api/claims/pending');
-				if (!resp.ok) throw new Error('Failed to load pending warranty claims');
-				const data = await resp.json();
-				setClaims(Array.isArray(data) ? data : []);
-			} catch (e) {
-				setError(e.message);
-			} finally {
-				setLoading(false);
-			}
-		}
 		fetchClaims();
-	}, [refreshKey]);
+	}, []);
+
+	const fetchClaims = async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const resp = await fetch('/api/claims/pending');
+			if (!resp.ok) throw new Error('Failed to load pending warranty claims');
+			const data = await resp.json();
+			setClaims(Array.isArray(data) ? data : []);
+		} catch (e) {
+			setError(e.message);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	const handleSort = (field) => {
 		if (sortField === field) {
@@ -116,13 +116,6 @@ export const WarrantyRequest = () => {
 							<Filter size={16} className="text-[#AAB396]" />
 						</button>
 					</div>
-					<button
-						onClick={() => setRefreshKey(k => k + 1)}
-						className="bg-[#674636] text-[#FFF8E8] px-3 py-2 rounded-md text-sm font-medium hover:bg-[#AAB396] flex items-center"
-						title="Refresh"
-					>
-						<RefreshCw size={16} className="mr-1" /> Refresh
-					</button>
 				</div>
 			</div>
 
@@ -217,7 +210,7 @@ export const WarrantyRequest = () => {
 					onClose={() => setShowViewModal(false)}
 					onAction={() => {
 						setShowViewModal(false);
-						setRefreshKey(k => k + 1);
+						fetchClaims(); // Refresh data after action
 					}}
 				/>
 			)}

@@ -80,22 +80,31 @@ export const generateAndNotifyReport = async (req, res) => {
   }
 };
 
-// Get report summary (last 6 months)
+// Get report summary (last 6 months from selected date or current date)
 export const getReportSummary = async (req, res) => {
   try {
-    const now = new Date();
+    // Allow year and month to be passed as query params, default to current date
+    const { year, month } = req.query;
+    
+    let baseDate;
+    if (year && month) {
+      baseDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    } else {
+      baseDate = new Date();
+    }
+    
     const reports = [];
     
-    // Get last 6 months
+    // Get last 6 months from the base date
     for (let i = 0; i < 6; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
+      const date = new Date(baseDate.getFullYear(), baseDate.getMonth() - i, 1);
+      const reportYear = date.getFullYear();
+      const reportMonth = date.getMonth() + 1;
       
-      const report = await reportService.getMonthlyReport(year, month);
+      const report = await reportService.getMonthlyReport(reportYear, reportMonth);
       reports.push({
-        year,
-        month,
+        year: reportYear,
+        month: reportMonth,
         monthName: report.reportMetadata.period.monthName,
         totalIncome: report.incomeSummary.totalIncome,
         totalExpenses: report.expenseSummary.totalExpenses,

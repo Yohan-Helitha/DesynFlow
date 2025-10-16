@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, FileText, User, Calendar, AlertCircle, CheckCircle, XCircle, Clock, Package, Truck } from 'lucide-react';
 
 
-const WarrantyClaimActionModal = ({ claim, onClose }) => {
+const WarrantyClaimActionModal = ({ claim, onClose, onAction }) => {
   if (!claim) return null;
 
   const getStatusIcon = (status) => {
@@ -416,7 +416,11 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
             className="px-6 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
             onClick={async () => {
               await fetch(`/api/claims/${claim._id}/approve`, { method: 'PUT' });
-              onClose();
+              if (onAction) {
+                onAction(); // Triggers refresh in parent component
+              } else {
+                onClose();
+              }
             }}
           >
             Approve
@@ -425,7 +429,11 @@ const WarrantyClaimActionModal = ({ claim, onClose }) => {
             className="px-6 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
             onClick={async () => {
               await fetch(`/api/claims/${claim._id}/reject`, { method: 'PUT' });
-              onClose();
+              if (onAction) {
+                onAction(); // Triggers refresh in parent component
+              } else {
+                onClose();
+              }
             }}
           >
             Reject

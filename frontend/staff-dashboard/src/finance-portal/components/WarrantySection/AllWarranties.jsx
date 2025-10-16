@@ -11,7 +11,6 @@ import {
   ToggleLeft,
   ToggleRight,
   Loader2,
-  RotateCcw,
 } from 'lucide-react';
 import { ViewWarrantyModal } from './ViewWarrantyModal';
 import { AddWarrantyModal } from './AddWarrantyModal';
@@ -28,7 +27,6 @@ export const AllWarranties = () => {
   const [allWarranties, setAllWarranties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch warranties from backend
   useEffect(() => {
@@ -37,9 +35,8 @@ export const AllWarranties = () => {
 
   const fetchWarranties = async () => {
     try {
-      if (!refreshing) setLoading(true);
+      setLoading(true);
       setError(null);
-      setRefreshing(true);
       const response = await fetch('/api/warranties/all');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -51,7 +48,6 @@ export const AllWarranties = () => {
       setError('Failed to load warranties. Please try again.');
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -231,17 +227,6 @@ export const AllWarranties = () => {
               <Filter size={16} className="text-[#AAB396]" />
             </button>
           </div>
-
-          {/* Refresh */}
-          <button
-            onClick={fetchWarranties}
-            disabled={refreshing}
-            className={`px-3 py-2 rounded-md text-sm font-medium flex items-center border border-[#AAB396] ${refreshing ? 'text-[#AAB396] cursor-not-allowed' : 'text-[#674636] hover:bg-[#F7EED3]'}`}
-            title="Refresh warranties"
-          >
-            <RotateCcw size={16} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-            {refreshing ? 'Refreshing' : 'Refresh'}
-          </button>
 
           {/* Add Warranty Button - only show for active warranties */}
           {showActiveOnly && (
@@ -439,12 +424,22 @@ export const AllWarranties = () => {
       {showViewModal && (
         <ViewWarrantyModal
           warranty={selectedWarranty}
-          onClose={() => setShowViewModal(false)}
+          onClose={() => {
+            setShowViewModal(false);
+            fetchWarranties(); // Refresh data when modal closes
+          }}
         />
       )}
 
       {/* Add Warranty Modal */}
-      {showAddModal && <AddWarrantyModal onClose={() => setShowAddModal(false)} />}
+      {showAddModal && (
+        <AddWarrantyModal
+          onClose={() => {
+            setShowAddModal(false);
+            fetchWarranties(); // Refresh data when modal closes
+          }}
+        />
+      )}
     </div>
   );
 };

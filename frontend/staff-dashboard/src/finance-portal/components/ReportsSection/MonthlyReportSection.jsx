@@ -4,6 +4,7 @@ import { Download, Calendar, TrendingUp, TrendingDown, AlertTriangle, DollarSign
 export const MonthlyReportSection = () => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [summary, setSummary] = useState([]);
@@ -12,25 +13,36 @@ export const MonthlyReportSection = () => {
   const fetchReport = async (year, month) => {
     try {
       setLoading(true);
+      setError(null);
+      console.log(`Fetching report for ${year}-${month}`);
       const res = await fetch(`/api/monthly-reports?year=${year}&month=${month}`);
-      if (res.ok) {
-        const data = await res.json();
-        setReport(data);
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to fetch report: ${res.status} ${res.statusText}`);
       }
+      const data = await res.json();
+      console.log('Report data received:', data);
+      setReport(data);
     } catch (error) {
       console.error('Error fetching report:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch 6-month summary
-  const fetchSummary = async () => {
+  // Fetch 6-month summary based on selected date
+  const fetchSummary = async (year, month) => {
     try {
-      const res = await fetch('/api/monthly-reports/summary');
+      console.log(`Fetching 6-month summary from ${year}-${month}`);
+      const res = await fetch(`/api/monthly-reports/summary?year=${year}&month=${month}`);
       if (res.ok) {
         const data = await res.json();
+        console.log('Summary data received:', data);
         setSummary(data);
+      } else {
+        console.error('Failed to fetch summary:', res.status);
       }
     } catch (error) {
       console.error('Error fetching summary:', error);
@@ -39,7 +51,7 @@ export const MonthlyReportSection = () => {
 
   useEffect(() => {
     fetchReport(selectedYear, selectedMonth);
-    fetchSummary();
+    fetchSummary(selectedYear, selectedMonth);
   }, [selectedYear, selectedMonth]);
 
   // Generate years for dropdown
@@ -60,20 +72,99 @@ export const MonthlyReportSection = () => {
     { value: 12, label: 'December' }
   ];
 
-  // Download report as JSON
+  // Download report as CSV (Excel-compatible)
   const downloadReport = () => {
     if (!report) return;
-    const dataStr = JSON.stringify(report, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const exportFileDefaultName = `finance-report-${selectedYear}-${selectedMonth}.json`;
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    
+    // Build CSV content
+    let csv = '';
+    
+    // Header
+    csv += `Financial Report - ${report.reportMetadata.period.monthName} ${selectedYear}\n`;
+    csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+    
+    // Summary Section
+    csv += 'FINANCIAL SUMMARY\n';
+    csv += 'Category,Amount (LKR)\n';
+    csv += `Total Income,${report.incomeSummary.totalIncome}\n`;
+    csv += `Total Expenses,${report.expenseSummary.totalExpenses}\n`;
+    csv += `Net Cash Flow,${report.cashFlow.netCashFlow}\n`;
+    csv += `Current Balance,${report.cashFlow.currentBalance}\n\n`;
+    
+    // Income by Type
+    csv += 'INCOME BY TYPE\n';
+    csv += 'Type,Amount (LKR)\n';
+    Object.entries(report.incomeSummary.byType).forEach(([type, amount]) => {
+      csv += `${type},${amount}\n`;
+    });
+    csv += '\n';
+    
+    // Expenses by Category
+    csv += 'EXPENSES BY CATEGORY\n';
+    csv += 'Category,Amount (LKR)\n';
+    Object.entries(report.expenseSummary.byCategory).forEach(([category, amount]) => {
+      csv += `${category},${amount}\n`;
+    });
+    csv += '\n';
+    
+    // Project Financial Health
+    csv += 'PROJECT FINANCIAL HEALTH\n';
+    csv += 'Status,Count\n';
+    csv += `On Budget,${report.projectFinancialHealth.onBudget}\n`;
+    csv += `At Risk (80%+),${report.projectFinancialHealth.atRisk}\n`;
+    csv += `Over Budget,${report.projectFinancialHealth.overBudget}\n\n`;
+    
+    // Budget Analysis
+    csv += 'BUDGET VS ACTUAL BY PROJECT\n';
+    csv += 'Project,Budget,Actual,Variance,% Spent,Status\n';
+    report.budgetAnalysis.forEach(project => {
+      csv += `${project.projectName},${project.budget.total},${project.actual.total},${project.variance.total},${project.percentageSpent}%,${project.status}\n`;
+    });
+    csv += '\n';
+    
+    // Alerts
+    csv += 'ALERTS\n';
+    csv += `Budget Threshold Breaches,${report.alerts.budgetThresholdBreaches}\n`;
+    csv += `Projects Over Budget,${report.alerts.projectsOverBudget}\n`;
+    csv += `Pending Payments Count,${report.alerts.pendingPaymentsCount}\n`;
+    csv += `High Value Pending Payments,${report.alerts.highValuePendingPayments}\n`;
+    
+    // Create download
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `finance-report-${selectedYear}-${String(selectedMonth).padStart(2, '0')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading report...</div>;
+    return <div className="text-center py-8 text-[#674636]">Loading report...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-red-600 mb-4">Error loading report: {error}</div>
+        <button 
+          onClick={() => fetchReport(selectedYear, selectedMonth)}
+          className="px-4 py-2 bg-[#674636] text-[#FFF8E8] rounded-md hover:bg-[#AAB396]"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!report) {
+    return (
+      <div className="text-center py-8 text-[#AAB396]">
+        No report data available for the selected period.
+      </div>
+    );
   }
 
   return (
@@ -103,9 +194,10 @@ export const MonthlyReportSection = () => {
           <button
             onClick={downloadReport}
             className="flex items-center space-x-2 bg-[#674636] text-[#FFF8E8] px-4 py-2 rounded-md hover:bg-[#AAB396] transition-colors"
+            title="Download report as CSV file (Excel-compatible)"
           >
             <Download size={18} />
-            <span>Download</span>
+            <span>Download CSV</span>
           </button>
         </div>
       </div>

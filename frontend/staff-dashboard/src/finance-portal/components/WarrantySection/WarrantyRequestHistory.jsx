@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Eye, RefreshCw, Clock } from 'lucide-react';
+import { Filter, ArrowUpDown, ChevronLeft, ChevronRight, Eye, Clock } from 'lucide-react';
 import { ViewWarrantyClaimModal } from './ViewWarrantyClaimModal';
 
 // Table displaying resolved warranty claims (Approved, Rejected, Replaced statuses)
@@ -12,27 +12,27 @@ export const WarrantyRequestHistory = () => {
 	const [sortDirection, setSortDirection] = useState('desc');
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 5;
-	const [refreshKey, setRefreshKey] = useState(0);
 	const [showViewModal, setShowViewModal] = useState(false);
 	const [selectedClaim, setSelectedClaim] = useState(null);
 
 	useEffect(() => {
-		async function fetchResolvedClaims() {
-			setLoading(true);
-			setError('');
-			try {
-				const resp = await fetch('/api/claims/resolved');
-				if (!resp.ok) throw new Error('Failed to load resolved warranty claims');
-				const data = await resp.json();
-				setClaims(Array.isArray(data) ? data : []);
-			} catch (e) {
-				setError(e.message);
-			} finally {
-				setLoading(false);
-			}
-		}
 		fetchResolvedClaims();
-	}, [refreshKey]);
+	}, []);
+
+	const fetchResolvedClaims = async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const resp = await fetch('/api/claims/resolved');
+			if (!resp.ok) throw new Error('Failed to load resolved warranty claims');
+			const data = await resp.json();
+			setClaims(Array.isArray(data) ? data : []);
+		} catch (e) {
+			setError(e.message);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	const handleSort = (field) => {
 		if (sortField === field) {
@@ -120,13 +120,6 @@ export const WarrantyRequestHistory = () => {
 							<Filter size={16} className="text-[#AAB396]" />
 						</button>
 					</div>
-					<button
-						onClick={() => setRefreshKey(k => k + 1)}
-						className="bg-[#674636] text-[#FFF8E8] px-3 py-2 rounded-md text-sm font-medium hover:bg-[#AAB396] flex items-center"
-						title="Refresh"
-					>
-						<RefreshCw size={16} className="mr-1" /> Refresh
-					</button>
 				</div>
 			</div>
 
