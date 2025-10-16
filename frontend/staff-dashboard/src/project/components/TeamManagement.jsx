@@ -22,7 +22,7 @@ export default function TeamManagement() {
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/teams`);
+      const response = await fetch(`${API_BASE_URL}/teams/populated`);
       if (!response.ok) throw new Error('Failed to fetch teams');
       const data = await response.json();
       setTeams(data);

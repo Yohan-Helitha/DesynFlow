@@ -21,10 +21,20 @@ export const getMaterialRequestById = async (id) => {
   return MaterialRequest.findById(id);
 };
 
+export const getAllPendingRequests = async () => {
+  return MaterialRequest.find({ 
+    status: { $in: ['Pending', 'PartiallyApproved'] } 
+  })
+  .populate('projectId', 'projectName')
+  .populate('requestedBy', 'name email')
+  .sort({ createdAt: -1 });
+};
+
 export default {
   createMaterialRequest,
   updateMaterialRequest,
   deleteMaterialRequest,
   getMaterialRequestsByProject,
-  getMaterialRequestById
+  getMaterialRequestById,
+  getAllPendingRequests
 };

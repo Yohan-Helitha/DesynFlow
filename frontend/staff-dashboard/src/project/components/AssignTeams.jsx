@@ -190,13 +190,9 @@ export default function AssignTeams() {
         startDate: form.startDate,
         dueDate: form.dueDate,
         inspectionReportPath,
-        inspectionReportOriginalName
+        inspectionReportOriginalName,
+        assignedTeamId: form.teamId || null // Always include assignedTeamId, null if no team selected
       };
-
-      // Only add assignedTeamId if a team is selected
-      if (form.teamId) {
-        projectData.assignedTeamId = form.teamId;
-      }
 
       if (editProjectId) {
         // Update existing project
@@ -337,6 +333,8 @@ export default function AssignTeams() {
                         ? "bg-green-100 text-green-700"
                         : project.status === "In Progress"
                         ? "bg-blue-100 text-blue-700"
+                        : project.status === "Completed"
+                        ? "bg-purple-100 text-purple-700"
                         : project.status === "On Hold"
                         ? "bg-yellow-100 text-yellow-700"
                         : project.status === "Pending"
@@ -360,16 +358,20 @@ export default function AssignTeams() {
                     <div><span className="font-semibold">Due Date:</span> {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : "N/A"}</div>
                     <div><span className="font-semibold">Assigned Team:</span> {project.assignedTeamId?.teamName || "No Team Assigned"}</div>
                   </div>
-                  {project.status === "In Progress" && (
+                  {(project.status === "In Progress" || project.status === "Completed") && (
                     <div className="mb-2">
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-gray-600">Progress</span>
-                        <span className="text-gray-600">{project.progress}%</span>
+                        <span className="text-gray-600">{project.progress || 0}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div
-                          className="bg-brown-primary h-2.5 rounded-full"
-                          style={{ width: `${project.progress}%` }}
+                          className={`h-2.5 rounded-full ${
+                            project.status === "Completed" 
+                              ? "bg-purple-500" 
+                              : "bg-brown-primary"
+                          }`}
+                          style={{ width: `${project.progress || 0}%` }}
                         ></div>
                       </div>
                     </div>

@@ -5,7 +5,10 @@ import {
   updateTaskStatusService,
   updateTaskService,
   deleteTaskService,
-  getTaskByIdService
+  getTaskByIdService,
+  blockTaskWithIssueService,
+  addTaskCommentService,
+  addTaskAttachmentService
 } from '../service/task.service.js';
 import Team from '../model/team.model.js';
 
@@ -152,5 +155,86 @@ export const getTeamMembers = async (req, res) => {
   } catch (error) {
     console.error('Error fetching team members:', error);
     res.status(500).json({ message: 'Error fetching team members', error: error.message });
+  }
+};
+
+// Block task with issue tracking
+export const blockTaskWithIssue = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { issueDescription, blockedBy } = req.body;
+
+    if (!issueDescription || !issueDescription.trim()) {
+      return res.status(400).json({ 
+        message: 'Issue description is required when blocking a task' 
+      });
+    }
+
+    const result = await blockTaskWithIssueService(id, issueDescription, blockedBy);
+    
+    if (!result.success) {
+      return res.status(404).json({ message: result.message });
+    }
+
+    res.json({
+      message: 'Task blocked and issue logged successfully',
+      task: result.task,
+      progressUpdate: result.progressUpdate
+    });
+  } catch (error) {
+    console.error('Error blocking task:', error);
+    res.status(500).json({ message: 'Error blocking task', error: error.message });
+  }
+};
+
+// Add comment to task
+export const addTaskComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content, author } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: 'Comment content is required' });
+    }
+
+    const updatedTask = await addTaskCommentService(id, content, author);
+    
+    if (!updatedTask) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json(updatedTask);
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    res.status(500).json({ message: 'Error adding comment', error: error.message });
+  }
+};
+
+// Add attachment to task
+export const addTaskAttachment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { filename, originalName, uploadedBy, fileSize, mimeType } = req.body;
+
+    if (!filename || !originalName) {
+      return res.status(400).json({ message: 'Filename and original name are required' });
+    }
+
+    const updatedTask = await addTaskAttachmentService(id, {
+      filename,
+      originalName,
+      uploadedBy,
+      fileSize,
+      mimeType
+    });
+    
+    if (!updatedTask) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json(updatedTask);
+  } catch (error) {
+    console.error('Error adding attachment:', error);
+    res.status(500).json({ message: 'Error adding attachment', error: error.message });
   }
 };

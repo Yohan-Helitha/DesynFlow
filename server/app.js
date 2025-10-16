@@ -26,11 +26,14 @@ import './modules/project/model/milestone.model.js';
 import './modules/project/model/material.model.js';
 import './modules/project/model/meeting.model.js';
 import './modules/project/model/progressupdate.model.js';
+import './modules/project/model/notification.model.js';
 
 //Routes
 import projectRoutes from './modules/project/routes/project.routes.js';
 import taskRoutes from './modules/project/routes/task.routes.js';
 import teamRoutes from './modules/project/routes/team.routes.js';
+import progressUpdateRoutes from './modules/project/routes/progressupdate.routes.js';
+import personalFileRoutes from './modules/project/routes/personalfile.routes.js';
 import kpiRoutes from './modules/project/routes/kpi.routes.js';
 import viewReportRoutes from './modules/project/routes/viewReport.routes.js';
 import downloadReportRoutes from './modules/project/routes/downloadReport.routes.js';
@@ -41,6 +44,7 @@ import materialRequestRoutes from './modules/project/routes/materialRequest.rout
 import reportRoutes from './modules/project/routes/report.routes.js';
 import fileRoutes from './modules/project/routes/file.routes.js';
 import meetingRoutes from './modules/project/routes/meeting.routes.js';
+import notificationRoutes from './modules/project/routes/notificationRoutes.js';
 import fileServeRoutes from './routes/fileServe.js';
 import uploadRoutes from './routes/upload.routes.js';
 
@@ -122,6 +126,9 @@ app.use("/api/pm-notifications", pmNotificationRoutes);
 app.use('/api', projectRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', teamRoutes);
+app.use('/api', progressUpdateRoutes);
+app.use('/api', personalFileRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api', kpiRoutes);
 app.use('/api', viewReportRoutes);
 app.use('/api', downloadReportRoutes);

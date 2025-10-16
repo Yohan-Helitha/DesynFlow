@@ -54,7 +54,7 @@ export default function TeamOverviewCard({ team, tasks, attendance }) {
                 >
                   <div>
                     <span className="font-medium">
-                      {member.userId?.username || 'Unknown User'}
+                      {member.userId?.username || member.userId?.email || member.name || 'Unknown User'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
