@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './Restock_alerts.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+// Removed toast import as it is no longer used
 import { FaTimes, FaClipboardList, FaExclamationTriangle, FaBox, FaClock, FaArrowUp } from 'react-icons/fa';
 import Sidebar from '../Sidebar/Sidebar';
+// Use existing service used by warehouse pages to fetch threshold alerts
+import { fetchThresholdAlerts } from '../../../warehouse-manager/services/FthresholdAlertService.js';
+import { FaCheckCircle } from 'react-icons/fa';
 
 function RestockAlerts() {
+  const navigate = useNavigate();
   const [alerts, setAlerts] = useState([]);
   const [filteredAlerts, setFilteredAlerts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,102 +17,64 @@ function RestockAlerts() {
   const [loading, setLoading] = useState(true);
   const [selectedAlert, setSelectedAlert] = useState(null);
 
-  // Sample restock alert data
-  const sampleAlerts = [
-    {
-      id: 'RST001',
-      materialName: 'Steel Rebar 12mm',
-      category: 'Construction Materials',
-      currentStock: 15,
-      minThreshold: 50,
-      maxThreshold: 200,
-      priority: 'critical',
-      supplier: 'Ceylon Steel Corp',
-      estimatedRunOut: '3 days',
-      suggestedReorder: 150,
-      unitPrice: 125.50,
-      avgConsumption: 8,
-      lastOrderDate: '2024-09-15',
-      location: 'Warehouse A'
-    },
-    {
-      id: 'RST002',
-      materialName: 'Concrete Mix Grade 25',
-      category: 'Concrete & Cement',
-      currentStock: 28,
-      minThreshold: 40,
-      maxThreshold: 120,
-      priority: 'high',
-      supplier: 'Lanka Cement Ltd',
-      estimatedRunOut: '1 week',
-      suggestedReorder: 80,
-      unitPrice: 95.75,
-      avgConsumption: 12,
-      lastOrderDate: '2024-10-01',
-      location: 'Warehouse B'
-    },
-    {
-      id: 'RST003',
-      materialName: 'Ceramic Tiles 60x60cm',
-      category: 'Finishing Materials',
-      currentStock: 45,
-      minThreshold: 60,
-      maxThreshold: 180,
-      priority: 'medium',
-      supplier: 'Royal Ceramics',
-      estimatedRunOut: '10 days',
-      suggestedReorder: 100,
-      unitPrice: 850.00,
-      avgConsumption: 5,
-      lastOrderDate: '2024-09-28',
-      location: 'Warehouse C'
-    },
-    {
-      id: 'RST004',
-      materialName: 'Electrical Cables 2.5mm²',
-      category: 'Electrical',
-      currentStock: 8,
-      minThreshold: 25,
-      maxThreshold: 75,
-      priority: 'critical',
-      supplier: 'Power Electronics',
-      estimatedRunOut: '2 days',
-      suggestedReorder: 60,
-      unitPrice: 45.25,
-      avgConsumption: 4,
-      lastOrderDate: '2024-09-20',
-      location: 'Warehouse A'
-    },
-    {
-      id: 'RST005',
-      materialName: 'Paint - White Emulsion 4L',
-      category: 'Finishing Materials',
-      currentStock: 22,
-      minThreshold: 30,
-      maxThreshold: 90,
-      priority: 'medium',
-      supplier: 'Color World Paints',
-      estimatedRunOut: '2 weeks',
-      suggestedReorder: 50,
-      unitPrice: 1250.00,
-      avgConsumption: 3,
-      lastOrderDate: '2024-10-05',
-      location: 'Warehouse B'
-    }
-  ];
+  // Map backend threshold alerts to this UI's shape
+  const mapToUiAlert = (ta) => {
+    const current = Number(ta.currentLevel ?? 0);
+    const min = Number(ta.restockLevel ?? 0);
+    const ratio = min > 0 ? current / min : 0;
+    let priority = 'low';
+    if (ratio <= 0.25) priority = 'critical';
+    else if (ratio <= 0.5) priority = 'high';
+    else if (ratio <= 0.8) priority = 'medium';
+
+    const suggested = Math.max(min - current, 0);
+
+    return {
+      id: ta.alertId || ta._id,
+      docId: ta._id, // keep original _id for API operations like delete
+      materialName: ta.materialName || 'Unknown material',
+      category: ta.category || '-',
+      currentStock: current,
+      minThreshold: min,
+      maxThreshold: ta.maxThreshold || min * 3 || 0,
+      priority,
+      supplier: ta.supplier || '-',
+      estimatedRunOut: '-',
+      suggestedReorder: suggested,
+      unitPrice: ta.unitPrice || 0,
+      avgConsumption: ta.avgConsumption || 0,
+      lastOrderDate: ta.alertDate ? new Date(ta.alertDate).toLocaleDateString() : '-',
+      location: ta.inventoryName || '-'
+    };
+  };
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      setLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        setAlerts(sampleAlerts);
-        setFilteredAlerts(sampleAlerts);
-        setLoading(false);
-      }, 1500);
+    let isMounted = true;
+    let intervalId;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchThresholdAlerts();
+        if (!isMounted) return;
+        const mapped = Array.isArray(data) ? data.map(mapToUiAlert) : [];
+        setAlerts(mapped);
+        setFilteredAlerts(mapped);
+      } catch (e) {
+        console.error('Failed to load threshold alerts', e);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     };
 
-    fetchAlerts();
+    load();
+    // Poll every 20s for dynamic updates
+    intervalId = setInterval(load, 20000);
+
+    return () => {
+      isMounted = false;
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   // Filter alerts based on search and priority
@@ -115,10 +82,11 @@ function RestockAlerts() {
     let filtered = alerts;
 
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(alert => 
-        alert.materialName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        alert.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        alert.supplier.toLowerCase().includes(searchTerm.toLowerCase())
+        (alert.materialName || '').toLowerCase().includes(term) ||
+        (alert.category || '').toLowerCase().includes(term) ||
+        (alert.supplier || '').toLowerCase().includes(term)
       );
     }
 
@@ -144,7 +112,8 @@ function RestockAlerts() {
   };
 
   const getStockPercentage = (current, min) => {
-    return ((current / min) * 100).toFixed(0);
+    if (!min || min <= 0) return 0;
+    return Math.max(0, Math.min(100, ((current / min) * 100))).toFixed(0);
   };
 
   const formatCurrency = (amount) => {
@@ -155,12 +124,31 @@ function RestockAlerts() {
   };
 
   const handleCreateOrder = (alert) => {
-    // This would navigate to order form with pre-filled data
-    console.log('Creating order for:', alert);
+    // Navigate to the existing Order Form route and pass context for potential prefill
+    navigate('/procurement-officer/order_form', {
+      state: {
+        fromRestockAlert: true,
+        recommended: {
+          materialName: alert.materialName,
+          suggestedReorder: alert.suggestedReorder,
+          unitPrice: alert.unitPrice,
+          priority: alert.priority
+        }
+      }
+    });
   };
 
   const handleMarkResolved = (alertId) => {
     setAlerts(prev => prev.filter(alert => alert.id !== alertId));
+  };
+
+  const handleMarkReceived = async (alert) => {
+    try {
+      // Use the existing delete API as a resolution/acknowledge action
+    } catch (err) {
+      console.error('Failed to mark as received:', err);
+      toast.error('Failed to mark as received. Please try again.');
+    }
   };
 
   if (loading) {
@@ -280,6 +268,7 @@ function RestockAlerts() {
                     </td>
                     <td>
                       <div className="action-buttons-table">
+                        {/* Mark as Received button intentionally not shown here; handled in Orders page */}
                         <button
                           className="btn-create-order"
                           onClick={() => handleCreateOrder(alert)}

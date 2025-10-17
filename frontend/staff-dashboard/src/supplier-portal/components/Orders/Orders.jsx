@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Orders.css';
 import axios from "axios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { toast } from 'sonner';
 import { FaClipboardList, FaPlus, FaBox, FaCheckCircle, FaTimesCircle, FaFileAlt, FaStar, FaHourglassHalf, FaRegClock } from 'react-icons/fa';
 import { generateOrderReceiptPDF } from '../../utils/pdfGenerator';
 
@@ -28,6 +29,17 @@ function Orders() {
       await axios.put(`/api/purchase-orders/${orderId}/status`, {
         status: 'Received'
       });
+      // Send notification to warehouse manager via supplier notifications API
+      try {
+        await axios.post('/api/supplier-notifications', {
+          type: 'order_update',
+          purchaseOrderId: orderId,
+          message: 'Order marked as Received by Procurement. Please update stock accordingly.',
+          status: 'New'
+        });
+      } catch (notifyErr) {
+        console.warn('Notification to warehouse manager failed (non-blocking):', notifyErr?.response?.data || notifyErr.message);
+      }
       
       // Update local state and maintain sorting order
       setOrders(prevOrders => {
@@ -44,9 +56,10 @@ function Orders() {
           return dateB - dateA; // Newest first
         });
       });
+      toast.success('Order marked as received. Warehouse manager notified.');
     } catch (error) {
       console.error('Error marking order as received:', error);
-  console.error('Failed to mark order as received. Please try again.');
+      toast.error('Failed to mark order as received. Please try again.');
     }
   };
 
