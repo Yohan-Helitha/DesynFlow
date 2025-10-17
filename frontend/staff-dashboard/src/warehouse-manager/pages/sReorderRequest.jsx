@@ -13,6 +13,7 @@ const SReorderRequest = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBy, setFilterBy] = useState("all");
   const [showFilter, setShowFilter] = useState(false);
+  const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
 
   // Fetch stock reorder requests
   const getRequests = async () => {
@@ -92,8 +93,39 @@ const SReorderRequest = () => {
   });
 
   //pdf function
-    const handleDownloadPDF = () => {
-      console.log("Downloading PDF...");
+    const handleDownloadPDF = (timeFilter = 'all') => {
+      console.log("Downloading PDF for:", timeFilter);
+
+      let dataToDownload = filteredRequests;
+      
+      // Filter data based on time selection
+      if (timeFilter !== 'all') {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        
+        dataToDownload = filteredRequests.filter(request => {
+          const requestDate = new Date(request.createdAt);
+          const requestYear = requestDate.getFullYear();
+          const requestMonth = requestDate.getMonth() + 1;
+          
+          switch (timeFilter) {
+            case 'thisMonth':
+              return requestYear === currentYear && requestMonth === currentMonth;
+            case 'previousMonth':
+              const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+              const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+              return requestYear === prevYear && requestMonth === prevMonth;
+            case 'thisYear':
+              return requestYear === currentYear;
+            default:
+              if (typeof timeFilter === 'number' && timeFilter >= 1 && timeFilter <= 12) {
+                return requestYear === currentYear && requestMonth === timeFilter;
+              }
+              return true;
+          }
+        });
+      }
   
       const columns = [
       "ID", "Inventory ID", "Inventory Name", "Inventory Address", "Inventory Contact", "Material ID", 
@@ -101,7 +133,7 @@ const SReorderRequest = () => {
       "Unit", "Expected By", "Warehouse Manager Name", "Created At", "Status"
       ];
   
-      const rows = filteredRequests.map(request => [
+      const rows = dataToDownload.map(request => [
         request.stockReorderRequestId,
         request.inventoryId,
         request.inventoryName,
@@ -117,9 +149,16 @@ const SReorderRequest = () => {
         new Date(request.createdAt).toLocaleString(),
         request.status
       ]);
+
+      const timeFilterName = timeFilter === 'all' ? 'All Records' : 
+                            timeFilter === 'thisMonth' ? 'This Month' :
+                            timeFilter === 'previousMonth' ? 'Previous Month' :
+                            timeFilter === 'thisYear' ? 'This Year' :
+                            typeof timeFilter === 'number' ? new Date(2024, timeFilter - 1).toLocaleString('default', { month: 'long' }) :
+                            'Filtered';
   
-      generatePDF(columns, rows, "Stock Reorder Request Report");
-  
+      generatePDF(columns, rows, `Stock Reorder Request Report - ${timeFilterName}`);
+      setShowDownloadDropdown(false);
     };
 
     // Chart data calculation - always uses full 'requests' array (not filtered)
@@ -270,13 +309,62 @@ const chartData = Object.keys(requestsPerMonth)
                 )}
               </div>  
 
-            <button
-              onClick={handleDownloadPDF}
-              className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
-              title="Download PDF"
-            >
-              <Download className="w-5 h-5 text-gray-700" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowDownloadDropdown(!showDownloadDropdown)}
+                className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
+                title="Download PDF"
+              >
+                <Download className="w-5 h-5 text-gray-700" />
+              </button>
+
+              {/* Download Dropdown */}
+              {showDownloadDropdown && (
+                <div className="absolute right-0 top-full mt-2 bg-white border border-gray-300 rounded shadow-md w-48 z-50">
+                  <ul className="text-sm">
+                    <li
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                      onClick={() => handleDownloadPDF('thisMonth')}
+                    >
+                      This Month
+                    </li>
+                    <li
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                      onClick={() => handleDownloadPDF('previousMonth')}
+                    >
+                      Previous Month
+                    </li>
+                    <li
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                      onClick={() => handleDownloadPDF('thisYear')}
+                    >
+                      This Year
+                    </li>
+                    <li className="px-4 py-2 text-gray-500 font-medium border-b border-gray-200">
+                      Select Month:
+                    </li>
+                    {[
+                      'January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'
+                    ].map((month, index) => (
+                      <li
+                        key={month}
+                        className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleDownloadPDF(index + 1)}
+                      >
+                        {month}
+                      </li>
+                    ))}
+                    <li
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-t border-gray-200 font-medium"
+                      onClick={() => handleDownloadPDF('all')}
+                    >
+                      All Records
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
 
         </div>
 
