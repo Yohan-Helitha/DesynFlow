@@ -121,29 +121,29 @@ const AuditLogs = () => {
           <div className="relative">
             <button
               onClick={() => setShowFilter(s => !s)}
-              className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
+              className="p-2 border border-brown-primary-300 rounded bg-cream-light text-brown-primary hover:bg-brown-primary-300 hover:text-cream-primary focus:outline-none focus:ring-2 focus:ring-brown-primary-300"
               title="Filters"
             >
-              <Filter className="w-5 h-5 text-gray-700" />
+              <Filter className="w-5 h-5" />
             </button>
 
             {showFilter && (
-              <div className="absolute right-0 top-full mt-2 bg-white border border-gray-300 rounded shadow-md w-80 z-50 p-3">
+              <div className="absolute right-0 top-full mt-2 bg-cream-light border border-brown-primary-300 rounded-lg shadow-lg w-80 z-50 p-4 text-brown-primary">
 
                 {/* ENTITY section */}
                 <div className="mb-3">
-                  <div className="font-semibold mb-1">Entity</div>
-                  <div className="">
+                  <div className="font-semibold mb-2">Entity</div>
+                  <div className="flex flex-col">
                     {entityOptions.length === 0 ? (
-                      <div className="text-xs text-gray-500">No entities</div>
+                      <div className="text-xs text-brown-primary-300">No entities</div>
                     ) : (
                       entityOptions.map(entity => (
-                        <label key={entity} className="flex items-center text-sm mb-1">
+                        <label key={entity} className="flex items-center text-sm mb-2 space-x-2">
                           <input
                             type="checkbox"
                             checked={selectedEntities.includes(entity)}
                             onChange={() => toggleEntity(entity)}
-                            className="mr-2"
+                            className="w-4 h-4 text-brown-primary-300 rounded"
                           />
                           <span className="truncate">{entity}</span>
                         </label>
@@ -154,28 +154,30 @@ const AuditLogs = () => {
 
                 {/* ACTION */}
                 <div className="mb-3">
-                  <div className="font-semibold mb-1">Action</div>
-                  {["insert", "update", "delete"].map(action => (
-                    <label key={action} className="flex items-center text-sm mb-1">
-                      <input
-                        type="checkbox"
-                        checked={selectedActions.includes(action)}
-                        onChange={() => toggleAction(action)}
-                        className="mr-2"
-                      />
-                      <span className="capitalize">{action}</span>
-                    </label>
-                  ))}
+                  <div className="font-semibold mb-2">Action</div>
+                  <div className="flex flex-col">
+                    {["insert", "update", "delete"].map(action => (
+                      <label key={action} className="flex items-center text-sm mb-2 space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedActions.includes(action)}
+                          onChange={() => toggleAction(action)}
+                          className="w-4 h-4"
+                        />
+                        <span className="capitalize">{action}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 {/* CREATED BY */}
                 <div className="mb-3">
-                  <label className="flex items-center text-sm">
+                  <label className="flex items-center text-sm mb-2 space-x-2">
                     <input
                       type="checkbox"
                       checked={createdByChecked}
                       onChange={() => setCreatedByChecked(!createdByChecked)}
-                      className="mr-2"
+                      className="w-4 h-4"
                     />
                     <span>Created By</span>
                   </label>
@@ -183,12 +185,12 @@ const AuditLogs = () => {
 
                 {/* CREATED AT */}
                 <div className="mb-3">
-                  <label className="flex items-center text-sm">
+                  <label className="flex items-center text-sm mb-2 space-x-2">
                     <input
                       type="checkbox"
                       checked={createdAtChecked}
                       onChange={() => setCreatedAtChecked(!createdAtChecked)}
-                      className="mr-2"
+                      className="w-4 h-4"
                     />
                     <span>Created At</span>
                   </label>
@@ -203,13 +205,13 @@ const AuditLogs = () => {
                       setCreatedByChecked(false);
                       setCreatedAtChecked(false);
                     }}
-                    className="text-xs px-2 py-1 border rounded"
+                    className="text-xs px-2 py-1 border border-brown-primary-300 rounded text-brown-primary bg-cream-light hover:bg-brown-primary-50"
                   >
                     Clear
                   </button>
                   <button
                     onClick={() => setShowFilter(false)}
-                    className="text-xs px-2 py-1 bg-amber-500 text-white rounded"
+                    className="text-xs px-2 py-1 bg-brown-primary text-cream-primary rounded hover:bg-brown-secondary"
                   >
                     Apply
                   </button>
