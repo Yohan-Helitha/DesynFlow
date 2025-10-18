@@ -14,7 +14,8 @@ import {
   Building2,
   User,
   ShieldCheck,
-  Clipboard
+  Clipboard,
+  Boxes
 } from "lucide-react";
 import { useNotifications } from "../context/notificationContext.jsx";
 import logo from "./desynflow_logo.png";
@@ -32,6 +33,7 @@ const Navbar = () => {
     { icon: MoveRight, label: "Stock Movements", path: "stock-movement" },
     { icon: Send, label: "Transfer Requests", path: "transfer-request" },
     { icon: RotateCcw, label: "Stock Reorder Requests", path: "reorder-request" },
+    { icon: Boxes, label: "Material Requests", path: "material-requests" },
     { icon: Trash2, label: "Disposal Materials", path: "disposal-materials" },
     { icon: ShieldCheck, label: "Warranty Claims", path: "warranty-claims" },
     { icon: FileText, label: "Audit Log", path: "audit-logs" },

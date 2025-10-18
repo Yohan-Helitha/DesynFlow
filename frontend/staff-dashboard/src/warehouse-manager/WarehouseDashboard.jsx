@@ -30,6 +30,7 @@ import { NotificationsProvider } from './context/notificationContext.jsx';
 import UpdateWarrantyClaimForm from './forms/updateWarrantyClaimsForm.jsx'; 
 import SubmitReports from './pages/submitReports.jsx';
 import AddSubmitReportsForm from './forms/addSubmitReportsForm.jsx';
+import WarehouseRequests from './pages/materialRequests.jsx';
 
 const WarehouseDashboard = () => {
   return (
@@ -65,6 +66,7 @@ const WarehouseDashboard = () => {
           <Route path="/reorder-request/update/:id" element={<UpdateWarrantyClaimForm />} />
           <Route path="/submit-reports" element={<SubmitReports />} />
           <Route path="/submit-reports/add" element={<AddSubmitReportsForm />} />
+          <Route path="/material-requests" element={<WarehouseRequests />} />
         </Routes>
       </NotificationsProvider>
     </div>
