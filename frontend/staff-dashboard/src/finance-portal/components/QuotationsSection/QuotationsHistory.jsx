@@ -29,9 +29,14 @@ export const ApprovedQuotations = () => {
   const reload = async () => {
     setLoading(true)
     try {
-      const data = await safeFetchJson('/api/quotations')
+      // Add cache-busting to ensure we get fresh data from server
+      const bustParam = `_=${Date.now()}`;
+      const data = await safeFetchJson(`/api/quotations?${bustParam}`)
       console.log('[QuotationsHistory] Loaded quotations:', data?.length || 0, 'items');
-      console.log('[QuotationsHistory] Sample quotation:', data?.[0]);
+      if (data && data.length > 0) {
+        console.log('[QuotationsHistory] First quotation fileUrl:', data[0].fileUrl);
+        console.log('[QuotationsHistory] First quotation full:', data[0]);
+      }
       setQuotations(Array.isArray(data) ? data : [])
     } catch (err) {
       console.error('[QuotationsHistory] Error loading quotations:', err);
@@ -67,38 +72,46 @@ export const ApprovedQuotations = () => {
 
   const handleDownload = async (quotation) => {
     try {
+      const normalize = (u) => {
+        if (!u) return null;
+        const s = String(u).replace(/\\/g, '/');
+        if (/^https?:\/\//i.test(s)) return s;
+        return s.startsWith('/') ? s : `/${s}`;
+      };
+
       let url = quotation?.fileUrl
+      console.log('[QuotationsHistory] Download: Initial fileUrl from row:', url);
+      
       if (!url && quotation?._id) {
+        console.log('[QuotationsHistory] No fileUrl in row, fetching full quotation...');
         const full = await safeFetchJson(`/api/quotations/${quotation._id}`)
         url = full?.fileUrl
+        console.log('[QuotationsHistory] Fetched fileUrl:', url);
       }
       if (!url) {
         alert('No PDF available for this quotation yet.')
         return
       }
-      const isAbsolute = /^https?:\/\//i.test(url)
-      if (!isAbsolute && !url.startsWith('/')) url = '/' + url
-      window.open(url, '_blank', 'noopener')
+      const base = normalize(url);
+      const bust = Date.now();
+      const withBust = base ? `${base}${base.includes('?') ? '&' : '?'}v=${bust}` : base;
+      console.log('[QuotationsHistory] Opening PDF with cache-bust:', withBust);
+      if (!withBust) {
+        alert('Failed to open quotation PDF.');
+        return;
+      }
+      window.open(withBust, '_blank', 'noopener')
     } catch (err) {
+      console.error('[QuotationsHistory] Download error:', err);
       alert('Failed to open quotation PDF.')
     }
   }
 
   const handleUpdate = async (updated) => {
     try {
-      const payload = {
-        laborItems: updated.laborItems || [],
-        materialItems: updated.materialItems || [],
-        serviceItems: updated.serviceItems || [],
-        contingencyItems: updated.contingencyItems || [],
-        taxes: updated.taxes || [],
-        remarks: updated.remarks || ''
-      }
-      await safeFetchJson(`/api/quotations/${updated._id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+      // The modal already saved and returned the updated quotation (with new fileUrl)
+      // Just close and refresh the list to show the new data
+      console.log('[QuotationsHistory] Quotation updated:', updated._id, 'new fileUrl:', updated.fileUrl);
       setShowViewModal(false)
       setSelectedQuotation(null)
       await reload()

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { X, Download } from 'lucide-react'
 
 // Editable modal for updating a quotation
@@ -11,9 +11,28 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
     taxes: [...(quotation.taxes || [])],
   })
 
+  // Track current file URL so the modal reflects newly generated PDFs immediately
+  const [currentFileUrl, setCurrentFileUrl] = useState(quotation.fileUrl || null)
+  const [cacheBust, setCacheBust] = useState(0)
+
   // Materials catalog for dropdown
   const [materials, setMaterials] = useState([])
   const [materialsError, setMaterialsError] = useState(null)
+
+  // Helper to normalize URLs
+  const normalizeUrl = (url) => {
+    if (!url) return null
+    if (/^https?:\/\//i.test(url)) return url
+    const raw = url.startsWith('/') ? url.slice(1) : url
+    return `/${raw}`
+  }
+
+  // Precompute the href for the download link so it's a plain string (not a function)
+  const downloadHref = useMemo(() => {
+    const base = normalizeUrl(currentFileUrl || quotation.fileUrl)
+    if (!base) return '#'
+    return cacheBust ? `${base}${base.includes('?') ? '&' : '?'}v=${cacheBust}` : base
+  }, [currentFileUrl, quotation.fileUrl, cacheBust])
 
   useEffect(() => {
     let cancelled = false
@@ -271,9 +290,35 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
             </button>
             {onSave && (
               <button
-                onClick={() => {
-                  const payload = { ...quotation, ...editable }
-                  onSave(payload)
+                onClick={async () => {
+                  try {
+                    const payload = { ...editable, remarks: quotation.remarks };
+                    console.log('[UpdateQuotationModal] Saving quotation:', quotation._id);
+                    const res = await fetch(`/api/quotations/${quotation._id}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) {
+                      const text = await res.text();
+                      throw new Error(text || `Failed to update quotation (${res.status})`);
+                    }
+                    const updated = await res.json();
+                    console.log('[UpdateQuotationModal] Server response:', updated);
+                    console.log('[UpdateQuotationModal] New fileUrl:', updated.fileUrl);
+                    // Prefer server-returned fileUrl (new PDF location)
+                    const merged = { ...quotation, ...editable, fileUrl: updated.fileUrl };
+                    // Update local link immediately and add cache-busting token so browser fetches the fresh file
+                    if (updated.fileUrl) {
+                      setCurrentFileUrl(updated.fileUrl)
+                      setCacheBust(Date.now())
+                      console.log('[UpdateQuotationModal] Updated local fileUrl and cache-bust');
+                    }
+                    onSave(merged);
+                  } catch (err) {
+                    console.error('Failed to save quotation:', err);
+                    alert(`Failed to save quotation: ${err.message || err}`);
+                  }
                 }}
                 className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-[#FFF8E8] hover:bg-[#AAB396]"
               >
@@ -282,7 +327,7 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
             )}
             {quotation?.fileUrl && (
               <a
-                href={/^https?:\/\//i.test(quotation.fileUrl) ? quotation.fileUrl : `/${quotation.fileUrl.startsWith('/') ? quotation.fileUrl.slice(1) : quotation.fileUrl}`}
+                href={downloadHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-[#FFF8E8] hover:bg-[#AAB396]"

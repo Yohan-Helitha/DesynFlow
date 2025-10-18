@@ -291,6 +291,56 @@ export const updateQuotation = async (req, res) => {
     quotation.totalTax = calcTax(taxes);
     quotation.grandTotal = quotation.subtotal + quotation.totalContingency + quotation.totalTax;
     await quotation.save();
+
+    // Regenerate PDF and update fileUrl (replace proof with new location)
+    try {
+      // Attempt to remove previous PDF to prevent clutter (non-fatal)
+      if (quotation.fileUrl) {
+        try {
+          const path = await import('path');
+          const fs = await import('fs');
+          // Build absolute path from relative fileUrl
+          const oldPath = quotation.fileUrl.startsWith('/') 
+            ? quotation.fileUrl.slice(1) 
+            : quotation.fileUrl;
+          const absolutePath = path.resolve(process.cwd(), oldPath);
+          console.log('[quotation] Attempting to delete old PDF:', absolutePath);
+          await fs.promises.unlink(absolutePath).catch((err) => {
+            console.log('[quotation] Could not delete old PDF (may not exist):', err.message);
+          });
+        } catch (unlinkErr) {
+          console.log('[quotation] Error preparing old PDF deletion:', unlinkErr.message);
+        }
+      }
+
+      // Extract projectId as string (may be populated as object)
+      const projectIdStr = typeof quotation.projectId === 'object' 
+        ? String(quotation.projectId._id) 
+        : String(quotation.projectId);
+
+      const { url } = await generateQuotationPdf({
+        projectId: projectIdStr,
+        estimateVersion: quotation.estimateVersion,
+        version: quotation.version,
+        remarks: quotation.remarks,
+        laborItems: quotation.laborItems,
+        materialItems: quotation.materialItems,
+        serviceItems: quotation.serviceItems,
+        contingencyItems: quotation.contingencyItems,
+        taxes: quotation.taxes,
+        subtotal: quotation.subtotal,
+        totalContingency: quotation.totalContingency,
+        totalTax: quotation.totalTax,
+        grandTotal: quotation.grandTotal,
+      });
+      console.log('[quotation] Generated new PDF:', url);
+      quotation.fileUrl = url;
+      await quotation.save();
+      console.log('[quotation] Updated quotation fileUrl in DB:', quotation._id, '→', url);
+    } catch (pdfErr) {
+      console.warn('[quotation] Failed to regenerate PDF on update:', pdfErr?.message || pdfErr);
+    }
+
     res.json(quotation);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -315,6 +365,10 @@ export const getQuotations = async (req, res) => {
       .populate('materialItems.materialId', 'materialId materialName unit type')
       .populate('createdBy updatedBy sentTo', 'name email')
       .sort({ createdAt: -1 });
+    console.log('[quotations] GET /api/quotations returning', docs.length, 'items');
+    if (docs.length > 0) {
+      console.log('[quotations] First item fileUrl:', docs[0].fileUrl);
+    }
     res.json(docs);
   } catch (err) {
     res.status(500).json({ error: err.message });

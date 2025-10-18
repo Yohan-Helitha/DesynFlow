@@ -7,7 +7,7 @@ const PaymentSchema = new Schema({
   clientId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   amount: { type: Number, required: true },
   method: { type: String, enum: ['Bank', 'Online', 'Cash'] },
-  type: { type: String, enum: ['InspectionCost', 'ProjectPayment', 'Advance'] },
+  type: { type: String, enum: ['Advance', 'Final'] },
   receiptUrl: { type: String },
   status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], index: true, default: 'Pending' },
   comment: { type: String, default: null, maxlength: 500 },

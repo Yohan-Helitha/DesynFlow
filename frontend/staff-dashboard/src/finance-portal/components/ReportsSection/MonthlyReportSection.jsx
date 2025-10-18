@@ -298,13 +298,13 @@ export const MonthlyReportSection = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#AAB396]">
-                    <th className="text-left py-2 px-4 text-[#674636]">Project</th>
-                    <th className="text-right py-2 px-4 text-[#674636]">Budget</th>
-                    <th className="text-right py-2 px-4 text-[#674636]">Actual</th>
-                    <th className="text-right py-2 px-4 text-[#674636]">Variance</th>
-                    <th className="text-right py-2 px-4 text-[#674636]">% Spent</th>
-                    <th className="text-center py-2 px-4 text-[#674636]">Status</th>
+                  <tr className="border-b-2 border-[#AAB396] bg-[#FFF8E8]">
+                    <th className="text-left py-3 px-4 text-[#674636] font-semibold text-sm">Project Name</th>
+                    <th className="text-right py-3 px-4 text-[#674636] font-semibold text-sm">Budget (LKR)</th>
+                    <th className="text-right py-3 px-4 text-[#674636] font-semibold text-sm">Actual Spent (LKR)</th>
+                    <th className="text-right py-3 px-4 text-[#674636] font-semibold text-sm">Variance (LKR)</th>
+                    <th className="text-right py-3 px-4 text-[#674636] font-semibold text-sm">Budget Used (%)</th>
+                    <th className="text-center py-3 px-4 text-[#674636] font-semibold text-sm">Financial Status</th>
                   </tr>
                 </thead>
                 <tbody>
