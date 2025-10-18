@@ -5,6 +5,9 @@ import MilestoneList from "./components/MilestoneList";
 import ProgressBar from "./components/ProgressBar";
 import DocumentList from "./components/DocumentList";
 import CreateMeetingForm from "./components/CreateMeetingForm";
+import UploadModelModal from "./components/UploadModelModal";
+import ProjectModelViewer from "../common/components/ProjectModelViewer";
+import Project3DModelCard from "./components/Project3DModelCard";
 
 export default function LeaderDashboard() {
   // Get the logged-in user's data and validate role
@@ -37,6 +40,9 @@ export default function LeaderDashboard() {
   const [error, setError] = useState(null);
   const [showMeetingForm, setShowMeetingForm] = useState(false);
   const [editMeeting, setEditMeeting] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [viewModelUrl, setViewModelUrl] = useState(null);
+  const [designRestriction, setDesignRestriction] = useState(false);
 
   // Function to calculate project progress based on completed tasks
   const calculateProjectProgress = (projectTasks) => {
@@ -94,6 +100,17 @@ export default function LeaderDashboard() {
           }
 
           await fetchMeetings(ongoing._id);
+          // load 3D model info for ongoing project
+          try {
+            const projRes2 = await fetch(`/api/projects/${ongoing._id}`);
+            if (projRes2.ok) {
+              const projJson = await projRes2.json();
+              setViewModelUrl(projJson.finalDesign3DUrl || null);
+              setDesignRestriction(!!projJson.designAccessRestriction);
+            }
+          } catch (err) {
+            console.warn('3D model fetch error', err);
+          }
         } else {
           setReports([]);
           setMeetings([]);
@@ -323,6 +340,38 @@ export default function LeaderDashboard() {
         project={projects[0]} // Use first project for now
         editMeeting={editMeeting}
       />
+
+      {/* Upload 3D Model Modal */}
+      <UploadModelModal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)} projectId={projects[0]?._id} onUploaded={(data) => {
+        setViewModelUrl(data.fileUrl);
+        setDesignRestriction(data.designAccessRestriction);
+        alert('3D model uploaded');
+      }} />
+
+      {/* Viewer modal/simple area: show card and viewer */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold text-brown-primary mb-2">3D Design</h3>
+        {viewModelUrl ? (
+          <>
+            <Project3DModelCard modelUrl={viewModelUrl} restriction={designRestriction} onView={() => {/* open inline viewer below */}} onDelete={async () => {
+              if (!confirm('Delete 3D model?')) return;
+              const token = localStorage.getItem('authToken');
+              const res = await fetch(`/api/project/${projects[0]._id}/3dmodel`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} });
+              if (res.ok) { setViewModelUrl(null); setDesignRestriction(false); alert('Deleted'); } else { alert('Delete failed'); }
+            }} canDelete={true} />
+            <div className="mt-4 bg-white p-4 rounded shadow">
+              <ProjectModelViewer src={viewModelUrl} restriction={designRestriction} />
+            </div>
+          </>
+        ) : (
+          <div className="bg-cream-light p-4 rounded">
+            <p className="text-gray-600">No 3D model uploaded yet.</p>
+            <div className="mt-3">
+              <button onClick={() => setShowUploadModal(true)} className="px-4 py-2 bg-brown-primary text-white rounded">Upload 3D Model</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

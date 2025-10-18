@@ -47,6 +47,7 @@ import budgetManagementRoutes from './modules/project/routes/budgetManagement.ro
 import quotationManagementRoutes from './modules/project/routes/quotationManagement.routes.js';
 import fileRoutes from './modules/project/routes/file.routes.js';
 import meetingRoutes from './modules/project/routes/meeting.routes.js';
+import threeDModelRoutes from './modules/project/routes/threeDModel.routes.js';
 import notificationRoutes from './modules/project/routes/notificationRoutes.js';
 import fileServeRoutes from './routes/fileServe.js';
 import uploadRoutes from './routes/upload.routes.js';
@@ -145,6 +146,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/project', inspectionReportRoutes);
 app.use('/api/project', budgetManagementRoutes);
 app.use('/api/project', quotationManagementRoutes);
+app.use('/api/project', threeDModelRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);
