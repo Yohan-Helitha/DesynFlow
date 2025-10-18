@@ -1,29 +1,59 @@
-body {
-  margin: 0;
-  font-family: "Segoe UI", Tahoma, sans-serif;
-  background: #F7EED3;
-}
-
+/* Wrapper similar to Add_suppliers and consistent with dashboard */
 .form-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 16px;
 }
 
+/* Card container */
 .budget-form {
   background: #FFF8E8;
-  padding: 32px 48px;  /* top-bottom = 32px, left-right = 48px */
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  max-width: 550px;    /* optional: increase width to balance spacing */
-  width: 100%;
+  padding: 32px;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 .budget-form h2 {
   text-align: center;
+  margin: 0;
+  font-size: 26px;
   color: #674636;
+}
+
+/* Back header reused classes from Add_suppliers */
+.header-with-back {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 24px;
+  position: relative;
+}
+
+.back-to-suppliers-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #8B4513;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.back-to-suppliers-btn:hover {
+  color: #654321;
+  background: rgba(139, 69, 19, 0.1);
+  transform: translateY(-50%) translateX(-2px);
+  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.2);
 }
 
 .form-group {
@@ -39,10 +69,20 @@ body {
 
 .form-group input {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
+  background: #fff;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fff;
 }
 
 .form-buttons {
@@ -55,11 +95,11 @@ body {
   background: #674636;
   color: #FFF8E8;
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 600;
   transition: background 0.3s;
 }
 

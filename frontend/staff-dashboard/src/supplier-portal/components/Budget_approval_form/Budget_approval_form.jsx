@@ -1,74 +1,203 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './Budget_approval_form.css';
-import Sidebar from "../Sidebar/Sidebar";
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import axios from 'axios';
 
 function Budget_approval_form() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [suppliers, setSuppliers] = useState([]);
+  const [selectedSupplierId, setSelectedSupplierId] = useState('');
+  const [materials, setMaterials] = useState([]);
+  const [selectedMaterialId, setSelectedMaterialId] = useState('');
+  const [quantity, setQuantity] = useState(1);
+
+  // Preselect supplier/material if provided via navigation state
+  useEffect(() => {
+    const state = location.state || {};
+    const pre = state.preselectedSupplier;
+    if (pre?._id) {
+      setSelectedSupplierId(pre._id);
+    }
+    // Optional: preselect material by name if passed
+    if (state.preselectedMaterialName && materials.length) {
+      const match = materials.find(m => m.materialName?.toLowerCase() === state.preselectedMaterialName.toLowerCase());
+      if (match) setSelectedMaterialId(match.materialId);
+    }
+  }, [location.state, materials]);
+
+  useEffect(() => {
+    const loadSuppliers = async () => {
+      try {
+        const res = await axios.get('/api/suppliers');
+        setSuppliers(res.data || []);
+      } catch (err) {
+        console.error('Failed to load suppliers', err);
+        toast.error('Failed to load suppliers.');
+      }
+    };
+    loadSuppliers();
+  }, []);
+
+  useEffect(() => {
+    const loadMaterials = async () => {
+      if (!selectedSupplierId) {
+        setMaterials([]);
+        setSelectedMaterialId('');
+        return;
+      }
+      try {
+        const res = await axios.get('/api/materials', { params: { supplierId: selectedSupplierId } });
+        let mapped = (res.data || []).map((cat) => ({
+          catalogId: cat._id,
+          materialId: cat.materialId?._id || cat.materialId,
+          materialName: cat.materialId?.materialName || 'Unknown',
+          unit: cat.materialId?.unit || '',
+          pricePerUnit: cat.pricePerUnit ?? 0,
+        }));
+        // Fallback to supplier.materials if catalog is empty
+        if (!mapped.length) {
+          const supplier = suppliers.find(s => s._id === selectedSupplierId);
+          if (supplier?.materials?.length) {
+            mapped = supplier.materials.map((m, idx) => ({
+              catalogId: `embedded-${idx}`,
+              materialId: m.name, // no id available; use name as key
+              materialName: m.name,
+              unit: '',
+              pricePerUnit: m.pricePerUnit ?? 0,
+            }));
+          }
+        }
+        setMaterials(mapped);
+        setSelectedMaterialId('');
+      } catch (err) {
+        console.error('Failed to load materials', err);
+        // Try fallback if API errored
+        const supplier = suppliers.find(s => s._id === selectedSupplierId);
+        if (supplier?.materials?.length) {
+          const mapped = supplier.materials.map((m, idx) => ({
+            catalogId: `embedded-${idx}`,
+            materialId: m.name,
+            materialName: m.name,
+            unit: '',
+            pricePerUnit: m.pricePerUnit ?? 0,
+          }));
+          setMaterials(mapped);
+        } else {
+          toast.error('Failed to load materials.');
+          setMaterials([]);
+        }
+        setSelectedMaterialId('');
+      }
+    };
+    loadMaterials();
+  }, [selectedSupplierId, suppliers]);
+
+  const selectedSupplier = useMemo(() => suppliers.find(s => s._id === selectedSupplierId), [suppliers, selectedSupplierId]);
+  const selectedMaterial = useMemo(() => materials.find(m => m.materialId === selectedMaterialId), [materials, selectedMaterialId]);
+  const estimatedBudget = useMemo(() => {
+    const price = selectedMaterial?.pricePerUnit || 0;
+    const qty = Number(quantity) || 0;
+    return price * qty;
+  }, [selectedMaterial, quantity]);
   // handle form submit
   function handleSubmit(e) {
     e.preventDefault();
 
-    const materialId = document.getElementById('materialId').value.trim();
-    const materialName = document.getElementById('materialName').value.trim();
-    const quantity = document.getElementById('quantity').value.trim();
-    const supplierName = document.getElementById('supplierName').value.trim();
-    const supplierId = document.getElementById('supplierId').value.trim();
-    const budget = document.getElementById('budget').value.trim();
+    const materialId = selectedMaterialId;
+    const materialName = selectedMaterial?.materialName || '';
+    const supplierName = selectedSupplier?.companyName || '';
+    const supplierId = selectedSupplierId;
+    const budget = estimatedBudget;
 
-    if (!materialId || !materialName || !quantity || !supplierName || !supplierId || !budget) {
-      console.warn('Please fill in all fields before submitting.');
+    if (!materialId || !materialName || !quantity || !supplierName || !supplierId) {
+      toast.warning('Please fill in all fields before submitting.');
       return;
     }
 
     if (quantity <= 0 || budget <= 0) {
-      console.warn('Quantity and Budget must be greater than 0.');
+      toast.error('Quantity and Budget must be greater than 0.');
       return;
     }
 
-  console.log('Budget Approval Request submitted successfully');
-    e.target.reset();
+    // TODO: Integrate with backend endpoint when available.
+    // For now, simulate success and navigate back.
+    toast.success('Budget approval request submitted');
+    // e.target.reset();
+    navigate('/procurement-officer/budget_approval');
   }
 
   function handleCancel() {
     if (window.confirm('Are you sure you want to cancel this request?')) {
-      document.querySelector('.budget-form').reset();
+      const form = document.querySelector('.budget-form');
+      if (form) form.reset();
+      navigate('/procurement-officer/budget_approval');
     }
   }
 
   return (
-    <div className="page-with-sidebar">
-      <Sidebar />
-      <div className="form-wrapper">
-        <form className="budget-form" onSubmit={handleSubmit}>
+    <div className="form-wrapper">
+      <form className="budget-form" onSubmit={handleSubmit}>
+        <div className="header-with-back">
+          <button type="button" className="back-to-suppliers-btn" onClick={() => navigate('/procurement-officer/budget_approval')}>
+            ← Back to Budget Approvals
+          </button>
           <h2>Budget Approval Request</h2>
-
-        <div className="form-group">
-          <label htmlFor="materialId">Material ID</label>
-          <input type="text" id="materialId" placeholder="Enter Material ID" />
         </div>
 
+        {/* Supplier Dropdown */}
         <div className="form-group">
-          <label htmlFor="materialName">Material Name</label>
-          <input type="text" id="materialName" placeholder="Enter Material Name" />
+          <label htmlFor="supplierName">Supplier</label>
+          <select
+            id="supplierName"
+            value={selectedSupplierId}
+            onChange={(e) => setSelectedSupplierId(e.target.value)}
+          >
+            <option value="">Select a supplier</option>
+            {suppliers.map((s) => (
+              <option key={s._id} value={s._id}>
+                {s.companyName} {s.contactName ? `- ${s.contactName}` : ''}
+              </option>
+            ))}
+          </select>
         </div>
 
+        {/* Material Dropdown */}
+        <div className="form-group">
+          <label htmlFor="materialName">Material</label>
+          <select
+            id="materialName"
+            value={selectedMaterialId}
+            onChange={(e) => setSelectedMaterialId(e.target.value)}
+            disabled={!selectedSupplierId || materials.length === 0}
+          >
+            <option value="">{!selectedSupplierId ? 'Select a supplier first' : (materials.length ? 'Select a material' : 'No materials found')}</option>
+            {materials.map((m) => (
+              <option key={m.materialId} value={m.materialId}>
+                {m.materialName} {m.unit ? `(${m.unit})` : ''} - LKR {m.pricePerUnit?.toLocaleString()}/unit
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Quantity */}
         <div className="form-group">
           <label htmlFor="quantity">Quantity</label>
-          <input type="number" id="quantity" placeholder="Enter Quantity" />
+          <input
+            type="number"
+            id="quantity"
+            placeholder="Enter Quantity"
+            min={1}
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
         </div>
 
+        {/* Estimated Budget (read-only) */}
         <div className="form-group">
-          <label htmlFor="supplierName">Supplier Name</label>
-          <input type="text" id="supplierName" placeholder="Enter Supplier Name" />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="supplierId">Supplier ID</label>
-          <input type="text" id="supplierId" placeholder="Enter Supplier ID" />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="budget">Estimated Budget (LKR)</label>
-          <input type="number" id="budget" placeholder="Enter Amount in LKR" />
+          <label>Estimated Budget (LKR)</label>
+          <input type="text" value={estimatedBudget ? `LKR ${estimatedBudget.toLocaleString()}` : ''} readOnly />
         </div>
 
         <div className="form-buttons">
@@ -76,7 +205,6 @@ function Budget_approval_form() {
           <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
         </div>
       </form>
-      </div>
     </div>
   );
 }

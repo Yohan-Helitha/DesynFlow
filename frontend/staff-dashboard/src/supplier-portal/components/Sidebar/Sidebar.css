@@ -63,33 +63,34 @@
 }
 
 .sidebar-header .close-btn {
-  background: rgba(255, 248, 232, 0.1);
-  border: 2px solid rgba(255, 248, 232, 0.2);
-  color: #FFF8E8;
-  font-size: 18px;
+  background: transparent;
+  border: none;
+  color: #FFF8E8; /* creamish */
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-weight: bold;
+  transition: opacity 0.2s ease;
+  border-radius: 50%;
+  padding: 4px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar-header .close-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   vertical-align: middle;
-  fill: #FFF8E8;
+  fill: #FFF8E8; /* creamish */
 }
 
-.sidebar-header .close-btn:focus {
-  outline: 3px solid rgba(255, 248, 232, 0.25);
+.sidebar-header .close-btn:focus { outline: none; }
+.sidebar-header .close-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 248, 232, 0.4);
+  border-radius: 50%;
 }
 
-.sidebar-header .close-btn:hover {
-  background: rgba(255, 248, 232, 0.2);
-  border-color: rgba(255, 248, 232, 0.4);
-  transform: scale(1.05);
-}
+.sidebar-header .close-btn:hover { opacity: 0.8; }
 
 .nav {
   list-style: none;
