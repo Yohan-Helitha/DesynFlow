@@ -71,6 +71,7 @@ import auditLogRoute from "./modules/warehouse-manager/routes/auditLogRoute.js";
 import thresholdAlertRoute from "./modules/warehouse-manager/routes/thresholdAlertRoute.js";
 import warrantyClaimsRoute from "./modules/warehouse-manager/routes/warrantyClaimsRoute.js";
 import submitReportsRoute from "./modules/warehouse-manager/routes/submitReportsRoute.js";
+import materialRequestRoute from "./modules/warehouse-manager/routes/materialRequestsRoute.js";
 
 //finane routes
 
@@ -156,6 +157,7 @@ app.use("/api/warehouse/audit_log", auditLogRoute);
 app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
 app.use("/api/warehouse/warranty_claims", warrantyClaimsRoute);
 app.use("/api/warehouse/submit-reports", submitReportsRoute);
+app.use("/api/warehouse/material-requests", materialRequestRoute);
 
 //finance module routes
 
