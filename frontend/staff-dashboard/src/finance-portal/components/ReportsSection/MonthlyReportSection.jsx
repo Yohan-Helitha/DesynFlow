@@ -193,11 +193,12 @@ export const MonthlyReportSection = () => {
           </select>
           <button
             onClick={downloadReport}
-            className="flex items-center space-x-2 bg-[#674636] text-[#FFF8E8] px-4 py-2 rounded-md hover:bg-[#AAB396] transition-colors"
+            aria-label="Download CSV"
+            className="flex items-center space-x-2 bg-[#674636] text-[#FFF8E8] h-10 px-3 py-2 rounded-md hover:bg-[#AAB396] transition-colors text-sm"
             title="Download report as CSV file (Excel-compatible)"
           >
-            <Download size={18} />
-            <span>Download CSV</span>
+            <Download size={16} />
+            <span className="select-none">Download CSV</span>
           </button>
         </div>
       </div>

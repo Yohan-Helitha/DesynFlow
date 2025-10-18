@@ -147,13 +147,13 @@ export const ExpensesChart = () => {
               />
               <Bar 
                 dataKey="Expenses" 
-                fill="#E57373" 
+                fill="#674636" 
                 radius={[8, 8, 0, 0]}
                 name="Expenses (Actual)"
               />
               <Bar 
                 dataKey="Budget" 
-                fill="#64B5F6" 
+                fill="#AAB396" 
                 radius={[8, 8, 0, 0]}
                 name="Budget (Allocated)"
               />

@@ -99,14 +99,14 @@ export const NotificationDropdown = () => {
     }
   };
 
-  // Get priority color
+  // Get priority color (aligned with brand palette)
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 border-red-400 text-red-800';
-      case 'high': return 'bg-orange-100 border-orange-400 text-orange-800';
-      case 'medium': return 'bg-blue-100 border-blue-400 text-blue-800';
-      case 'low': return 'bg-gray-100 border-gray-400 text-gray-800';
-      default: return 'bg-gray-100 border-gray-400 text-gray-800';
+      case 'urgent': return 'bg-red-100 border-red-300 text-red-800';
+      case 'high': return 'bg-orange-100 border-orange-300 text-orange-800';
+      case 'medium': return 'bg-[#F7EED3] border-[#AAB396] text-[#674636]';
+      case 'low': return 'bg-[#FFF8E8] border-[#AAB396] text-[#674636]';
+      default: return 'bg-[#FFF8E8] border-[#AAB396] text-[#674636]';
     }
   };
 
@@ -157,11 +157,12 @@ export const NotificationDropdown = () => {
       {/* Bell Icon */}
       <button
         onClick={toggleDropdown}
-        className="relative p-2 text-[#FFF8E8] hover:bg-[#AAB396] rounded-full transition-colors"
+        aria-label="Notifications"
+        className="relative h-10 w-10 flex items-center justify-center text-[#674636] bg-[#FFF8E8] hover:bg-[#AAB396] hover:text-[#FFF8E8] rounded-full border border-[#AAB396] transition-colors"
       >
-        <Bell size={20} />
+        <Bell size={20} className="pointer-events-none" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center shadow-md">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -169,15 +170,15 @@ export const NotificationDropdown = () => {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+        <div className="absolute right-0 mt-2 w-96 bg-[#FFF8E8] rounded-lg shadow-xl border border-[#AAB396] z-50">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between p-4 border-b border-[#AAB396] bg-[#F7EED3] rounded-t-lg">
             <h3 className="text-lg font-semibold text-[#674636]">Notifications</h3>
             <div className="flex items-center space-x-2">
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                  className="text-sm text-[#674636] hover:text-[#AAB396]"
                   title="Mark all as read"
                 >
                   <Check size={16} />
@@ -185,7 +186,7 @@ export const NotificationDropdown = () => {
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-[#674636]/60 hover:text-[#674636]"
               >
                 <X size={20} />
               </button>
@@ -195,18 +196,18 @@ export const NotificationDropdown = () => {
           {/* Notifications List */}
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
-              <div className="p-4 text-center text-gray-500">Loading...</div>
+              <div className="p-4 text-center text-[#674636]/70">Loading...</div>
             ) : notifications.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                <Bell size={48} className="mx-auto mb-2 text-gray-300" />
+              <div className="p-8 text-center text-[#674636]/70">
+                <Bell size={48} className="mx-auto mb-2 text-[#AAB396]" />
                 <p>No notifications</p>
               </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification._id}
-                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                    !notification.isRead ? 'bg-blue-50' : ''
+                  className={`p-4 border-b border-[#AAB396]/40 hover:bg-[#F7EED3] transition-colors ${
+                    !notification.isRead ? 'bg-[#FFF8E8]' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between">
@@ -219,14 +220,14 @@ export const NotificationDropdown = () => {
                           {notification.priority}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
-                      <span className="text-xs text-gray-400">{formatTime(notification.createdAt)}</span>
+                      <p className="text-sm text-[#674636]/80 mb-2">{notification.message}</p>
+                      <span className="text-xs text-[#674636]/60">{formatTime(notification.createdAt)}</span>
                     </div>
                     <div className="flex items-center space-x-2 ml-2">
                       {!notification.isRead && (
                         <button
                           onClick={() => markAsRead(notification._id)}
-                          className="text-blue-500 hover:text-blue-700"
+                          className="text-[#674636] hover:text-[#AAB396]"
                           title="Mark as read"
                         >
                           <Check size={16} />
