@@ -194,11 +194,11 @@ export default function CalendarViewTab() {
       <TeamMemberHeader title="Calendar View" />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Calendar Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+  {/* Calendar Header */}
+  <div className="bg-cream-light rounded-lg shadow-lg p-6 mb-6 border border-brown-100">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-bold text-brown-primary">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold text-brown-primary">
                 {viewMode === 'week' 
                   ? `Week of ${currentDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
                   : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
@@ -206,7 +206,7 @@ export default function CalendarViewTab() {
               </h2>
               <button
                 onClick={navigateToToday}
-                className="bg-brown-primary text-white px-4 py-2 rounded-lg hover:bg-brown-secondary text-sm"
+                className="bg-brown-primary text-white px-4 py-2 rounded-lg hover:bg-brown-primary-300 text-sm"
               >
                 Today
               </button>
@@ -214,7 +214,7 @@ export default function CalendarViewTab() {
             
             <div className="flex items-center gap-4">
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-200 rounded-lg p-1">
+              <div className="flex bg-cream-primary rounded-lg p-1 border border-brown-100">
                 <button
                   onClick={() => setViewMode('month')}
                   className={`px-3 py-1 rounded text-sm ${
@@ -237,13 +237,13 @@ export default function CalendarViewTab() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigateMonth(-1)}
-                  className="p-2 rounded-lg hover:bg-gray-200"
+                  className="p-2 rounded-lg hover:bg-cream-light"
                 >
                   <FaChevronLeft />
                 </button>
                 <button
                   onClick={() => navigateMonth(1)}
-                  className="p-2 rounded-lg hover:bg-gray-200"
+                  className="p-2 rounded-lg hover:bg-cream-light"
                 >
                   <FaChevronRight />
                 </button>
@@ -253,35 +253,35 @@ export default function CalendarViewTab() {
 
           {/* Task Summary */}
           <div className="grid grid-cols-4 gap-4 text-center">
-            <div className="bg-blue-50 rounded-lg p-3">
-              <div className="text-blue-600 font-bold text-lg">
+            <div className="bg-cream-primary rounded-lg p-3 border border-brown-100">
+              <div className="text-brown-primary font-bold text-lg">
                 {tasks.filter(t => t.status === 'In Progress').length}
               </div>
-              <div className="text-blue-600 text-sm">In Progress</div>
+              <div className="text-brown-primary text-sm">In Progress</div>
             </div>
-            <div className="bg-yellow-50 rounded-lg p-3">
-              <div className="text-yellow-600 font-bold text-lg">
+            <div className="bg-cream-primary rounded-lg p-3 border border-brown-100">
+              <div className="text-brown-secondary font-bold text-lg">
                 {tasks.filter(t => t.status === 'Pending').length}
               </div>
-              <div className="text-yellow-600 text-sm">Pending</div>
+              <div className="text-brown-secondary text-sm">Pending</div>
             </div>
-            <div className="bg-red-50 rounded-lg p-3">
-              <div className="text-red-600 font-bold text-lg">
+            <div className="bg-cream-primary rounded-lg p-3 border border-brown-100">
+              <div className="text-red-brown font-bold text-lg">
                 {tasks.filter(t => isOverdue(t)).length}
               </div>
-              <div className="text-red-600 text-sm">Overdue</div>
+              <div className="text-red-brown text-sm">Overdue</div>
             </div>
-            <div className="bg-green-50 rounded-lg p-3">
-              <div className="text-green-600 font-bold text-lg">
+            <div className="bg-cream-primary rounded-lg p-3 border border-brown-100">
+              <div className="text-green-primary font-bold text-lg">
                 {tasks.filter(t => t.status === 'Completed' || t.status === 'Done').length}
               </div>
-              <div className="text-green-600 text-sm">Completed</div>
+              <div className="text-green-primary text-sm">Completed</div>
             </div>
           </div>
         </div>
 
         {/* Calendar Grid */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-cream-light rounded-lg shadow-lg overflow-hidden border border-brown-100">
           {/* Day Headers */}
           <div className="grid grid-cols-7 bg-brown-primary text-white">
             {dayNames.map(day => (
@@ -301,12 +301,12 @@ export default function CalendarViewTab() {
               return (
                 <div
                   key={index}
-                  className={`${viewMode === 'week' ? 'min-h-40' : 'min-h-32'} border border-gray-200 p-2 cursor-pointer transition-colors ${
+                  className={`${viewMode === 'week' ? 'min-h-40' : 'min-h-32'} border p-2 cursor-pointer transition-colors ${
                     isCurrentMonthDate 
                       ? isTodayDate 
-                        ? 'bg-blue-50 border-blue-300' 
-                        : 'bg-white hover:bg-gray-50'
-                      : 'bg-gray-50 text-gray-400'
+                        ? 'bg-cream-primary border-brown-primary' 
+                        : 'bg-cream-light hover:bg-cream-primary'
+                      : 'bg-cream-primary text-gray-400'
                   } ${
                     selectedDate?.toDateString() === date.toDateString() ? 'ring-2 ring-brown-primary' : ''
                   }`}
@@ -316,7 +316,7 @@ export default function CalendarViewTab() {
                 >
                   {/* Date Number */}
                   <div className={`text-sm font-medium mb-1 ${
-                    isTodayDate ? 'text-blue-600 font-bold' : isCurrentMonthDate ? 'text-gray-800' : 'text-gray-400'
+                    isTodayDate ? 'text-brown-primary font-bold' : isCurrentMonthDate ? 'text-brown-secondary' : 'text-gray-400'
                   }`}>
                     {date.getDate()}
                     {viewMode === 'week' && (
@@ -331,9 +331,7 @@ export default function CalendarViewTab() {
                     {dateTasks.slice(0, viewMode === 'week' ? 5 : 3).map((task, taskIndex) => (
                       <div
                         key={task._id || taskIndex}
-                        className={`text-xs p-1 rounded cursor-pointer truncate ${
-                          getStatusColor(task.status)
-                        } text-white hover:opacity-80`}
+                        className={`text-xs p-1 rounded cursor-pointer truncate ${getStatusColor(task.status)} text-white hover:opacity-80`}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedTask(task);
@@ -362,7 +360,7 @@ export default function CalendarViewTab() {
 
         {/* Selected Date Details */}
         {selectedDate && (
-          <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
+          <div className="mt-6 bg-cream-light rounded-lg shadow-lg p-6 border border-brown-100">
             <h3 className="text-lg font-bold text-brown-primary mb-4 flex items-center gap-2">
               <FaCalendarAlt />
               Tasks for {selectedDate.toLocaleDateString('en-US', { 

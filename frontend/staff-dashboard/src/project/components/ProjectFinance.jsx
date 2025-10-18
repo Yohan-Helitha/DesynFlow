@@ -231,7 +231,7 @@ export default function ProjectFinance() {
         </button>
       </div>
 
-      <div className="bg-white shadow-md rounded-lg p-6">
+  <div className="bg-cream-light shadow-md rounded-lg p-6">
         {loading ? (
           <div className="text-brown-primary p-4">Loading...</div>
         ) : (
@@ -293,7 +293,7 @@ export default function ProjectFinance() {
                                   
                                   <button
                                     onClick={() => handleRejectEstimation(est)}
-                                    className="flex items-center space-x-1 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
+                                    className="flex items-center space-x-1 px-2 py-1 bg-red-brown text-white rounded hover:bg-red-brown text-xs"
                                     title="Reject"
                                   >
                                     <FaTimes size={12} />
@@ -341,7 +341,7 @@ export default function ProjectFinance() {
                               quo.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
                               quo.status === 'Locked' ? 'bg-gray-100 text-gray-800' :
                               quo.status === 'Revised' ? 'bg-yellow-100 text-yellow-800' :
-                              quo.status === 'Sent' ? 'bg-blue-100 text-blue-800' :
+                              quo.status === 'Sent' ? 'bg-cream-light text-brown-primary' :
                               'bg-gray-100 text-gray-800'
                             }`}>
                               {quo.status}
@@ -352,7 +352,7 @@ export default function ProjectFinance() {
                             <div className="flex space-x-2">
                               <button
                                 onClick={() => handleViewQuotation(quo)}
-                                className="flex items-center space-x-1 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
+                                className="flex items-center space-x-1 px-2 py-1 bg-brown-primary text-white rounded hover:bg-brown-primary-300 text-xs"
                                 title="View Details"
                               >
                                 <FaEye size={12} />
@@ -413,7 +413,7 @@ export default function ProjectFinance() {
       {/* View Estimation Modal */}
       {showViewModal && selectedEstimation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-cream-light rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-brown-primary">Estimation Details</h2>
               <button
@@ -544,7 +544,7 @@ export default function ProjectFinance() {
       {/* Reject Estimation Modal */}
       {showRejectModal && selectedEstimation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-cream-light rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-brown-primary">Reject Estimation</h2>
               <button
@@ -597,7 +597,7 @@ export default function ProjectFinance() {
       {/* View Quotation Modal */}
       {showQuotationViewModal && selectedQuotation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-cream-light rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-brown-primary">Quotation Details</h2>
               <button
@@ -690,7 +690,7 @@ export default function ProjectFinance() {
                   href={`${selectedQuotation.fileUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="px-4 py-2 bg-brown-primary text-white rounded hover:bg-brown-primary-300"
                 >
                   Download PDF
                 </a>
@@ -709,7 +709,7 @@ export default function ProjectFinance() {
       {/* Reject Quotation Modal */}
       {showQuotationRejectModal && selectedQuotation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-cream-light rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-brown-primary">Reject Quotation</h2>
               <button
@@ -750,7 +750,7 @@ export default function ProjectFinance() {
               </button>
               <button
                 onClick={handleConfirmQuotationReject}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="px-4 py-2 bg-red-brown text-white rounded hover:bg-red-brown"
               >
                 Reject
               </button>

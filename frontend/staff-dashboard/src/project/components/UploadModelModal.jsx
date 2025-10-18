@@ -41,7 +41,7 @@ export default function UploadModelModal({ isOpen, onClose, projectId, onUploade
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6 w-96">
+      <form onSubmit={handleSubmit} className="bg-cream-light rounded-lg p-6 w-96">
         <h3 className="text-lg font-semibold mb-4">Upload 3D Model (.glb/.gltf)</h3>
         <div className="mb-3">
           <label className="block text-sm font-medium">File</label>

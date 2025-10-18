@@ -69,7 +69,7 @@ export default function ProjectOverview({ projectId, onBack }) {
       </button>
 
       {/* Project Header */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-l-8 border-green-primary">
+      <div className="bg-cream-light rounded-2xl shadow-lg p-6 mb-8 border-l-8 border-green-primary">
         <h2 className="text-2xl font-bold text-brown-primary mb-4">
           {project.projectName}
         </h2>
@@ -91,7 +91,7 @@ export default function ProjectOverview({ projectId, onBack }) {
                 project.status === "Active"
                   ? "bg-green-100 text-green-700"
                   : project.status === "In Progress"
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-cream-light text-brown-primary"
                   : project.status === "Completed"
                   ? "bg-purple-100 text-purple-700"
                   : project.status === "On Hold"
@@ -123,7 +123,7 @@ export default function ProjectOverview({ projectId, onBack }) {
       {/* Two-column layout */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Team Overview */}
-        <div className="bg-white rounded-xl shadow-md p-6">
+  <div className="bg-cream-light rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-brown-primary mb-3 flex items-center gap-2">
             <FaUsers /> Team Overview
           </h3>
@@ -154,7 +154,7 @@ export default function ProjectOverview({ projectId, onBack }) {
             <div>
               <p className="font-semibold text-brown-primary">Quick Stats</p>
               <div className="grid grid-cols-2 gap-2 mt-2">
-                <div className="bg-blue-50 rounded-lg p-3 text-center shadow-sm">
+                <div className="bg-cream-light rounded-lg p-3 text-center shadow-sm">
                   <div className="text-xs text-gray-600">Active Tasks</div>
                   <div className="font-bold text-blue-700">{project.quickStats?.activeTasks ?? 0}</div>
                 </div>
@@ -168,7 +168,7 @@ export default function ProjectOverview({ projectId, onBack }) {
         </div>
 
         {/* Timeline */}
-        <div className="bg-white rounded-xl shadow-md p-6">
+  <div className="bg-cream-light rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-brown-primary mb-3 flex items-center gap-2">
             <FaCalendarAlt /> Timeline
           </h3>
@@ -192,7 +192,7 @@ export default function ProjectOverview({ projectId, onBack }) {
         </div>
 
         {/* Documents */}
-        <div className="bg-white rounded-xl shadow-md p-6">
+  <div className="bg-cream-light rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-brown-primary mb-3 flex items-center gap-2">
             <FaFileAlt /> Documents
           </h3>
@@ -270,7 +270,7 @@ export default function ProjectOverview({ projectId, onBack }) {
         </div>
 
         {/* Resource Requests */}
-        <div className="bg-white rounded-xl shadow-md p-6">
+  <div className="bg-cream-light rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-brown-primary mb-3 flex items-center gap-2">
             <FaBoxOpen /> Resource Requests
           </h3>
@@ -292,7 +292,7 @@ export default function ProjectOverview({ projectId, onBack }) {
         </div>
 
         {/* Reports */}
-        <div className="bg-white rounded-xl shadow-md p-6 md:col-span-2">
+  <div className="bg-cream-light rounded-xl shadow-md p-6 md:col-span-2">
           <h3 className="text-lg font-semibold text-brown-primary mb-3 flex items-center gap-2">
             <FaChartBar /> Reports
           </h3>

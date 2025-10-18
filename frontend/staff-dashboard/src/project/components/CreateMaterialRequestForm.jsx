@@ -139,13 +139,13 @@ export default function CreateMaterialRequestForm({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-cream-light rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-brown-100">
         <h2 className="text-xl font-bold text-brown-primary mb-4">
           {isEdit ? 'Edit Material Request' : 'Create New Material Request'}
         </h2>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-brown/10 border border-red-brown text-red-brown px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
@@ -160,7 +160,7 @@ export default function CreateMaterialRequestForm({
               type="text"
               value={project?.projectName || 'Loading...'}
               disabled
-              className="w-full p-2 border border-gray-300 rounded bg-gray-100 text-gray-600"
+              className="w-full p-2 border border-gray-300 rounded bg-white text-gray-700"
             />
           </div>
 
@@ -170,14 +170,14 @@ export default function CreateMaterialRequestForm({
               Material Items
             </label>
             {form.items.map((item, index) => (
-              <div key={index} className="flex gap-2 mb-2 items-end">
+                  <div key={index} className="flex gap-2 mb-2 items-end">
                 <div className="flex-1">
                   <input
                     type="text"
                     placeholder="Item name"
                     value={item.itemName}
                     onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brown-primary focus:border-transparent"
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brown-primary focus:border-transparent bg-white"
                     required
                   />
                 </div>
@@ -221,7 +221,7 @@ export default function CreateMaterialRequestForm({
               value={form.neededBy}
               onChange={(e) => setForm({ ...form, neededBy: e.target.value })}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brown-primary focus:border-transparent"
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brown-primary focus:border-transparent bg-white"
               required
             />
           </div>
@@ -236,7 +236,7 @@ export default function CreateMaterialRequestForm({
               onChange={(e) => setForm({ ...form, warehouseNote: e.target.value })}
               placeholder="Any additional notes or specifications..."
               rows="3"
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brown-primary focus:border-transparent"
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brown-primary focus:border-transparent bg-white"
             />
           </div>
 
@@ -245,14 +245,14 @@ export default function CreateMaterialRequestForm({
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+              className="flex-1 px-4 py-2 border border-brown-100 text-brown-primary rounded bg-cream-primary hover:bg-cream-light"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-brown-primary text-white rounded hover:bg-brown-secondary disabled:bg-gray-400"
+              className="flex-1 px-4 py-2 bg-brown-primary text-white rounded hover:bg-brown-primary-300 disabled:opacity-60"
             >
               {loading ? 'Saving...' : (isEdit ? 'Update Request' : 'Create Request')}
             </button>

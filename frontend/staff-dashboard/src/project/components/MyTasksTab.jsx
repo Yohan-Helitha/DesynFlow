@@ -215,7 +215,7 @@ export default function MyTasksTab() {
     switch (status) {
       case 'Completed': return 'bg-green-100 text-green-800';
       case 'Done': return 'bg-green-100 text-green-800';
-      case 'In Progress': return 'bg-blue-100 text-blue-800';
+  case 'In Progress': return 'bg-cream-light text-brown-primary';
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
       case 'Blocked': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -282,7 +282,7 @@ export default function MyTasksTab() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+  <div className="bg-cream-light rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <FaFilter className="text-brown-primary" />
             <span className="font-semibold text-brown-primary">Filters</span>
@@ -380,7 +380,7 @@ export default function MyTasksTab() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleBulkStatusChange('In Progress')}
-                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                  className="bg-brown-primary text-white px-3 py-1 rounded text-sm hover:bg-brown-primary-300"
                 >
                   Start Selected
                 </button>
@@ -403,17 +403,17 @@ export default function MyTasksTab() {
 
         {/* Tasks Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+          <div className="bg-cream-light rounded-lg shadow-md p-4 text-center">
             <div className="text-2xl font-bold text-brown-primary">{filteredTasks.length}</div>
             <div className="text-gray-600">Total Tasks</div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+          <div className="bg-cream-light rounded-lg shadow-md p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">
               {filteredTasks.filter(t => t.status === 'In Progress').length}
             </div>
             <div className="text-gray-600">In Progress</div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+          <div className="bg-cream-light rounded-lg shadow-md p-4 text-center">
             <div className="text-2xl font-bold text-green-600">
               {filteredTasks.filter(t => t.status === 'Completed' || t.status === 'Done').length}
             </div>
@@ -428,7 +428,7 @@ export default function MyTasksTab() {
         </div>
 
         {/* Tasks List */}
-        <div className="bg-white rounded-lg shadow-md">
+  <div className="bg-cream-light rounded-lg shadow-md">
           {/* Table Header */}
           <div className="border-b border-gray-200 p-4">
             <div className="flex items-center gap-4">
@@ -499,7 +499,7 @@ export default function MyTasksTab() {
                           className={`p-1 rounded ${
                             timeTracking.active && timeTracking.taskId === task._id
                               ? 'bg-red-500 text-white'
-                              : 'bg-blue-500 text-white'
+                              : 'bg-brown-primary text-white'
                           }`}
                           title={timeTracking.active && timeTracking.taskId === task._id ? 'Stop timer' : 'Start timer'}
                         >
@@ -510,7 +510,7 @@ export default function MyTasksTab() {
                           <>
                             <button
                               onClick={() => updateTaskStatus(task._id, 'In Progress', 50)}
-                              className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
+                              className="bg-brown-primary text-white px-2 py-1 rounded text-xs hover:bg-brown-primary-300"
                             >
                               Start
                             </button>
@@ -556,7 +556,7 @@ export default function MyTasksTab() {
       {/* Task Details Modal - Placeholder for now */}
       {showTaskModal && selectedTask && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+          <div className="bg-cream-light rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
             <div className="p-6">
               <h2 className="text-xl font-bold text-brown-primary mb-4">{selectedTask.name}</h2>
               <p className="text-gray-600 mb-4">Task details modal coming next...</p>

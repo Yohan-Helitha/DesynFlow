@@ -111,7 +111,7 @@ export default function ReportsManagement() {
       </div>
 
       {/* Report Lists */}
-      <div className="bg-white shadow-md rounded-lg p-6">
+  <div className="bg-cream-light shadow-md rounded-lg p-6">
         {activeTab === "inspection" && (
           <div>
             <h3 className="text-lg font-semibold text-brown-primary mb-4">

@@ -238,7 +238,7 @@ export default function LeaderDashboard() {
         <h3 className="text-lg font-semibold text-brown-primary mb-2">Generated Reports</h3>
         <ul className="space-y-2">
           {reports.map((rep, idx) => (
-            <li key={rep._id || idx} className="bg-white rounded shadow px-4 py-2 flex items-center justify-between">
+            <li key={rep._id || idx} className="bg-cream-light rounded shadow px-4 py-2 flex items-center justify-between">
               <div>
                 <p className="font-semibold text-brown-primary">{rep.reportType || `Report ${idx + 1}`}</p>
                 <p className="text-xs text-gray-500">Created: {new Date(rep.createdAt).toLocaleDateString()}</p>
@@ -279,11 +279,11 @@ export default function LeaderDashboard() {
         <h3 className="text-lg font-semibold text-brown-primary mb-2">Meetings</h3>
         <ul className="space-y-2 mb-4">
           {meetings.map((meet, idx) => (
-            <li key={meet._id || idx} className="bg-white rounded shadow px-4 py-2">
+            <li key={meet._id || idx} className="bg-cream-light rounded shadow px-4 py-2">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{meet.channel}</span>
+                    <span className="text-xs bg-cream-light text-brown-primary px-2 py-1 rounded">{meet.channel}</span>
                     <p className="font-semibold text-brown-primary">{meet.channel} Meeting</p>
                   </div>
                   <p className="text-xs text-gray-500 mb-1">
@@ -359,7 +359,7 @@ export default function LeaderDashboard() {
               const res = await fetch(`/api/project/${projects[0]._id}/3dmodel`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} });
               if (res.ok) { setViewModelUrl(null); setDesignRestriction(false); alert('Deleted'); } else { alert('Delete failed'); }
             }} canDelete={true} />
-            <div className="mt-4 bg-white p-4 rounded shadow">
+            <div className="mt-4 bg-cream-light p-4 rounded shadow">
               <ProjectModelViewer src={viewModelUrl} restriction={designRestriction} />
             </div>
           </>

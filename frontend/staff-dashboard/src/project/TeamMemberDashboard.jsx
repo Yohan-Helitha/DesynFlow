@@ -33,7 +33,7 @@ export default function TeamMemberDashboard() {
   if (!user) {
     return (
       <div className="min-h-screen bg-cream-light flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full text-center">
+  <div className="bg-cream-light rounded-lg shadow-md p-8 max-w-md w-full text-center">
           <h2 className="text-xl font-bold text-red-600 mb-4">Access Denied</h2>
           <p className="text-gray-600 mb-4">
             This dashboard is only accessible to users with "team member" role. 

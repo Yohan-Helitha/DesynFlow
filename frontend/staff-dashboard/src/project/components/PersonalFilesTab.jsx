@@ -278,7 +278,7 @@ export default function PersonalFilesTab() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar - Folders */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-cream-light rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-bold text-brown-primary mb-4 flex items-center gap-2">
                 <FaFolder /> Folders
               </h3>
@@ -338,7 +338,7 @@ export default function PersonalFilesTab() {
 
             {/* Upload Progress */}
             {Object.keys(uploadProgress).length > 0 && (
-              <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
+              <div className="bg-cream-light rounded-lg shadow-lg p-4 mb-6">
                 <h4 className="font-medium text-gray-800 mb-3">Uploading Files...</h4>
                 {Object.entries(uploadProgress).map(([fileName, progress]) => (
                   <div key={fileName} className="mb-2">
@@ -358,7 +358,7 @@ export default function PersonalFilesTab() {
             )}
 
             {/* Files Grid */}
-            <div className="bg-white rounded-lg shadow-lg">
+            <div className="bg-cream-light rounded-lg shadow-lg">
               {filteredFiles.length === 0 ? (
                 <div className="p-12 text-center text-gray-500">
                   <FaFile className="mx-auto text-4xl mb-4" />
@@ -395,7 +395,7 @@ export default function PersonalFilesTab() {
                         </button>
                         <button
                           onClick={() => deleteFile(file._id)}
-                          className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+                          className="bg-red-brown text-white px-2 py-1 rounded text-sm hover:bg-red-brown"
                         >
                           <FaTrash size={10} />
                         </button>
@@ -412,7 +412,7 @@ export default function PersonalFilesTab() {
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-cream-light rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-bold text-brown-primary mb-4">Upload Files</h3>
             <input
               type="file"
@@ -438,7 +438,7 @@ export default function PersonalFilesTab() {
       {/* Create Folder Modal */}
       {showCreateFolderModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-cream-light rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-bold text-brown-primary mb-4">Create New Folder</h3>
             <input
               type="text"
