@@ -47,6 +47,10 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
   const [inspectorsWithDistances, setInspectorsWithDistances] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [message, setMessage] = useState('');
+  
+  // Inspector management
+  const [inspectorActions, setInspectorActions] = useState({}); // Track inspector actions {inspectorId: {action: 'accepted/declined', reason: ''}}
+  const [pendingAssignments, setPendingAssignments] = useState([]); // Track assignments waiting for inspector response
 
   // Fetch data
   const fetchData = async () => {
@@ -197,11 +201,46 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
     setMessage('');
   };
 
+  // ✅ PHASE 1: Simulate inspector responses (for testing)
+  const simulateInspectorAccept = (inspectorId) => {
+    setInspectorActions(prev => ({
+      ...prev,
+      [inspectorId]: {
+        action: 'accepted',
+        reason: '',
+        timestamp: new Date()
+      }
+    }));
+    
+    // ✅ PHASE 1: Update inspector location (simple simulation)
+    // In real implementation, this would come from inspector portal
+    setMessage('✅ Inspector accepted the assignment! Location will be updated.');
+  };
+
+  const simulateInspectorDecline = (inspectorId, reason = 'Schedule conflict') => {
+    setInspectorActions(prev => ({
+      ...prev,
+      [inspectorId]: {
+        action: 'declined',
+        reason: reason,
+        timestamp: new Date()
+      }
+    }));
+    
+    setMessage('❌ Inspector declined the assignment.');
+  };
+
   const handleAssign = async () => {
     const finalInspector = selectedInspectorFromMap || inspectors.find(i => i._id === selectedInspectorFromDropdown);
     
     if (!selectedRequest || !finalInspector) {
       alert('❌ Please select both request and inspector');
+      return;
+    }
+
+    // ✅ PHASE 1: Availability validation
+    if (finalInspector.status === 'busy') {
+      alert('❌ Cannot assign to busy inspector. Please select an available inspector.');
       return;
     }
 
@@ -223,7 +262,27 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      alert('✅ Inspector assigned successfully!');
+      // ✅ PHASE 1: Track pending assignment
+      const newPendingAssignment = {
+        inspectorId: finalInspector._id,
+        requestId: selectedRequest._id,
+        assignedAt: new Date(),
+        status: 'pending'
+      };
+      
+      setPendingAssignments(prev => [...prev, newPendingAssignment]);
+      
+      // Update inspector action status to "Assigned (Waiting)"
+      setInspectorActions(prev => ({
+        ...prev,
+        [finalInspector._id]: {
+          action: 'assigned',
+          reason: 'Waiting for response',
+          timestamp: new Date()
+        }
+      }));
+      
+      alert('✅ Inspector assigned successfully! Waiting for inspector response...');
       setSelectedRequest(null);
       setSelectedInspectorFromMap(null);
       setSelectedInspectorFromDropdown(null);
@@ -310,7 +369,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
               type="text"
               value={searchAddress}
               onChange={(e) => setSearchAddress(e.target.value)}
-              placeholder="Enter property address (e.g., 123 Main Street, Colombo)"
+              placeholder="Enter real address (e.g., Galle Road Colombo, Kandy City Center, etc.)"
               className="flex-1 border-2 border-brown-light rounded-lg px-4 py-3 focus:outline-none focus:ring-4 focus:ring-soft-green/30 focus:border-soft-green text-dark-brown"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
@@ -587,6 +646,116 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
           </div>
         </div>
       )}
+
+      {/* Inspector Management Table */}
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-brown-light">
+        <div className="flex items-center space-x-2 mb-6">
+          <div className="w-3 h-3 bg-soft-green rounded-full"></div>
+          <h3 className="text-xl font-semibold text-dark-brown">👨‍🔧 Inspector Management</h3>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-cream-light border-b-2 border-brown-light">
+                <th className="text-left p-4 font-semibold text-dark-brown">Inspector Name</th>
+                <th className="text-left p-4 font-semibold text-dark-brown">Current Location</th>
+                <th className="text-left p-4 font-semibold text-dark-brown">Action</th>
+                <th className="text-left p-4 font-semibold text-dark-brown">Availability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inspectors.length > 0 ? (
+                inspectors.map((inspector, index) => (
+                  <tr key={inspector._id} className={`border-b border-brown-light hover:bg-cream-light/50 ${
+                    selectedInspectorFromMap?._id === inspector._id ? 'bg-green-50 border-green-200' : ''
+                  }`}>
+                    <td className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          inspector.status === 'available' ? 'bg-blue-500' : 'bg-yellow-500'
+                        }`}></div>
+                        <span className="font-semibold text-dark-brown">
+                          {inspector.inspector_ID?.username || `Inspector ${index + 1}`}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-700">
+                      <div>
+                        <p className="font-medium">{inspector.current_address}</p>
+                        <p className="text-sm text-gray-500">{inspector.region}</p>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {inspectorActions[inspector._id] ? (
+                        <div>
+                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            inspectorActions[inspector._id].action === 'accepted' ? 'bg-green-100 text-green-700' :
+                            inspectorActions[inspector._id].action === 'declined' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {inspectorActions[inspector._id].action === 'accepted' ? '✅ Accepted' :
+                             inspectorActions[inspector._id].action === 'declined' ? '❌ Declined' :
+                             '⏳ Assigned (Waiting)'}
+                          </span>
+                          {inspectorActions[inspector._id].reason && inspectorActions[inspector._id].action === 'declined' && (
+                            <p className="text-xs text-red-600 mt-1">
+                              Reason: {inspectorActions[inspector._id].reason}
+                            </p>
+                          )}
+                        </div>
+                      ) : pendingAssignments.includes(inspector._id) ? (
+                        <div>
+                          <span className="px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-700">
+                            📨 Waiting Response
+                          </span>
+                          {/* ✅ PHASE 1: Testing buttons for simulation */}
+                          <div className="mt-2 space-x-1">
+                            <button
+                              onClick={() => simulateInspectorAccept(inspector._id)}
+                              className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                              title="Simulate Accept"
+                            >
+                              ✅ Accept
+                            </button>
+                            <button
+                              onClick={() => simulateInspectorDecline(inspector._id)}
+                              className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                              title="Simulate Decline"
+                            >
+                              ❌ Decline
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                          Ready
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        inspector.status === 'available' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {inspector.status === 'available' ? '✅ Available' : '🟡 Busy'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="p-8 text-center text-gray-500">
+                    <div className="text-4xl mb-2">👨‍🔧</div>
+                    <p>No inspectors found</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* Current Assignments */}
       <div className="bg-white rounded-xl shadow-lg p-6 border border-brown-light">

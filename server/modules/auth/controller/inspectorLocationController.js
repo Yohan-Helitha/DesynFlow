@@ -42,7 +42,7 @@ export const updateLocation = async (req, res) => {
 export const getAllLocations = async (req, res) => {
   try {
     const locations = await InspectorLocation.find({ status: { $ne: 'offline' } })
-      .populate('inspector_ID', 'name email phone role');
+      .populate('inspector_ID', 'username email phone role');
     res.status(200).json(locations);
   } catch (err) {
     res.status(500).json({ message: err.message });
