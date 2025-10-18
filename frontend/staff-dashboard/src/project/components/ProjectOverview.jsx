@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 export default function ProjectOverview({ projectId, onBack }) {
   const [project, setProject] = useState(null);
+  const [quotationDocuments, setQuotationDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,7 +23,35 @@ export default function ProjectOverview({ projectId, onBack }) {
         setLoading(false);
       }
     }
-    if (projectId) fetchProject();
+    
+    async function fetchQuotationDocuments() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const res = await fetch(`/api/quotations?projectId=${projectId}&status=Confirmed`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Also fetch locked quotations
+          const lockedRes = await fetch(`/api/quotations?projectId=${projectId}&status=Locked`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          const lockedData = lockedRes.ok ? await lockedRes.json() : [];
+          
+          // Combine both confirmed and locked quotations
+          const allQuotationDocs = [...(Array.isArray(data) ? data : []), ...(Array.isArray(lockedData) ? lockedData : [])];
+          setQuotationDocuments(allQuotationDocs.filter(q => q.fileUrl)); // Only include quotations with files
+        }
+      } catch (err) {
+        console.error('Error fetching quotation documents:', err);
+        setQuotationDocuments([]);
+      }
+    }
+    
+    if (projectId) {
+      fetchProject();
+      fetchQuotationDocuments();
+    }
   }, [projectId]);
 
   if (loading) return <div className="text-center text-gray-500 p-8">Loading project...</div>;
@@ -168,30 +197,73 @@ export default function ProjectOverview({ projectId, onBack }) {
             <FaFileAlt /> Documents
           </h3>
           <ul className="space-y-2">
-            {project.attachments?.length > 0 ? (
-              project.attachments.map((attachment, i) => {
-                // Handle both object and string attachment formats
-                const isObject = typeof attachment === 'object';
-                const filename = isObject ? attachment.filename || attachment.originalName : attachment.split('/').pop();
-                const displayName = isObject ? attachment.originalName || filename : filename?.replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
-                const fileExtension = filename?.split('.').pop()?.toUpperCase();
-                const downloadUrl = `${isObject ? attachment.path : attachment}`;
-                
-                return (
+            {/* Project Attachments */}
+            {project.attachments?.length > 0 && (
+              <>
+                <li className="text-sm font-medium text-gray-600 mb-2 border-b pb-1">Project Attachments</li>
+                {project.attachments.map((attachment, i) => {
+                  // Handle both object and string attachment formats
+                  const isObject = typeof attachment === 'object';
+                  const filename = isObject ? attachment.filename || attachment.originalName : attachment.split('/').pop();
+                  const displayName = isObject ? attachment.originalName || filename : filename?.replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
+                  const fileExtension = filename?.split('.').pop()?.toUpperCase();
+                  const downloadUrl = `${isObject ? attachment.path : attachment}`;
+                  
+                  return (
+                    <li
+                      key={`attachment-${i}`}
+                      className="bg-cream-light rounded-lg px-4 py-2 flex justify-between items-center shadow-sm hover:bg-cream-primary cursor-pointer"
+                      onClick={() => window.open(downloadUrl, '_blank')}
+                    >
+                      <span className="font-semibold text-brown-primary">{displayName}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">{fileExtension}</span>
+                        <span className="text-xs text-blue-600 font-medium">Download</span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </>
+            )}
+            
+            {/* Quotation Documents */}
+            {quotationDocuments.length > 0 && (
+              <>
+                <li className="text-sm font-medium text-gray-600 mb-2 border-b pb-1 mt-4">Approved Quotations</li>
+                {quotationDocuments.map((quotation, i) => (
                   <li
-                    key={i}
-                    className="bg-cream-light rounded-lg px-4 py-2 flex justify-between items-center shadow-sm hover:bg-cream-primary cursor-pointer"
-                    onClick={() => window.open(downloadUrl, '_blank')}
+                    key={`quotation-${quotation._id}-${i}`}
+                    className="bg-green-50 rounded-lg px-4 py-3 flex justify-between items-center shadow-sm hover:bg-green-100 cursor-pointer border-l-4 border-green-500"
+                    onClick={() => window.open(quotation.fileUrl, '_blank')}
                   >
-                    <span className="font-semibold text-brown-primary">{displayName}</span>
+                    <div>
+                      <span className="font-semibold text-green-800">
+                        Quotation v{quotation.version} (Est. #{quotation.estimateVersion})
+                      </span>
+                      <div className="text-xs text-green-600 flex items-center gap-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          quotation.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
+                          quotation.status === 'Locked' ? 'bg-gray-100 text-gray-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {quotation.status}
+                        </span>
+                        <span>${quotation.grandTotal?.toLocaleString?.() ?? quotation.grandTotal}</span>
+                        {quotation.createdAt && (
+                          <span>{new Date(quotation.createdAt).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">{fileExtension}</span>
+                      <span className="text-xs text-green-600">PDF</span>
                       <span className="text-xs text-blue-600 font-medium">Download</span>
                     </div>
                   </li>
-                );
-              })
-            ) : (
+                ))}
+              </>
+            )}
+            
+            {project.attachments?.length === 0 && quotationDocuments.length === 0 && (
               <li className="text-gray-500">No documents found.</li>
             )}
           </ul>

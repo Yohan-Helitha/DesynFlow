@@ -12,6 +12,12 @@ export default function ProjectFinance() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedEstimation, setSelectedEstimation] = useState(null);
   const [rejectRemarks, setRejectRemarks] = useState("");
+  
+  // Quotation modal states
+  const [showQuotationViewModal, setShowQuotationViewModal] = useState(false);
+  const [showQuotationRejectModal, setShowQuotationRejectModal] = useState(false);
+  const [selectedQuotation, setSelectedQuotation] = useState(null);
+  const [quotationRejectRemarks, setQuotationRejectRemarks] = useState("");
 
   useEffect(() => {
     fetchEstimations();
@@ -42,7 +48,7 @@ export default function ProjectFinance() {
   const fetchQuotations = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch("/api/quotations", {
+      const response = await fetch("/api/project/quotations", {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (response.ok) {
@@ -126,6 +132,79 @@ export default function ProjectFinance() {
     } catch (err) {
       console.error('Error rejecting estimation:', err);
       alert('Error rejecting estimation');
+    }
+  };
+
+  // Quotation handlers
+  const handleViewQuotation = (quotation) => {
+    setSelectedQuotation(quotation);
+    setShowQuotationViewModal(true);
+  };
+
+  const handleApproveQuotation = async (quotationId) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`/api/project/quotation/${quotationId}/approve`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+      });
+
+      if (response.ok) {
+        alert('Quotation approved successfully!');
+        fetchQuotations(); // Refresh the list
+      } else {
+        const errorData = await response.json();
+        console.error('Quotation approval error:', errorData);
+        alert(`Failed to approve quotation: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Error approving quotation:', err);
+      alert('Error approving quotation');
+    }
+  };
+
+  const handleRejectQuotation = (quotation) => {
+    setSelectedQuotation(quotation);
+    setQuotationRejectRemarks("");
+    setShowQuotationRejectModal(true);
+  };
+
+  const handleConfirmQuotationReject = async () => {
+    if (!quotationRejectRemarks.trim()) {
+      alert('Please provide remarks for rejection');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`/api/project/quotation/${selectedQuotation._id}/reject`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          remarks: quotationRejectRemarks
+        })
+      });
+
+      if (response.ok) {
+        alert('Quotation rejected successfully!');
+        setShowQuotationRejectModal(false);
+        setSelectedQuotation(null);
+        setQuotationRejectRemarks("");
+        fetchQuotations(); // Refresh the list
+      } else {
+        const errorData = await response.json();
+        console.error('Quotation rejection error:', errorData);
+        alert(`Failed to reject quotation: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Error rejecting quotation:', err);
+      alert('Error rejecting quotation');
     }
   };
 
@@ -257,16 +336,64 @@ export default function ProjectFinance() {
                           <td className="p-3">{quo.projectName || quo.projectId?.projectName || quo.projectId}</td>
                           <td className="p-3">{quo.estimateVersion}</td>
                           <td className="p-3">{quo.version}</td>
-                          <td className="p-3">{quo.status}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              quo.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
+                              quo.status === 'Locked' ? 'bg-gray-100 text-gray-800' :
+                              quo.status === 'Revised' ? 'bg-yellow-100 text-yellow-800' :
+                              quo.status === 'Sent' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {quo.status}
+                            </span>
+                          </td>
                           <td className="p-3">{quo.grandTotal?.toLocaleString?.() ?? quo.grandTotal}</td>
                           <td className="p-3">
-                            {quo.fileUrl ? (
-                              <a href={`${quo.fileUrl}`} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-1 text-green-primary hover:underline">
-                                <FaDownload size={16} /> <span>Download</span>
-                              </a>
-                            ) : (
-                              <span className="text-gray-400">Not available</span>
-                            )}
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleViewQuotation(quo)}
+                                className="flex items-center space-x-1 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
+                                title="View Details"
+                              >
+                                <FaEye size={12} />
+                                <span>View</span>
+                              </button>
+                              
+                              {quo.status === 'Sent' && (
+                                <>
+                                  <button
+                                    onClick={() => handleApproveQuotation(quo._id)}
+                                    className="flex items-center space-x-1 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+                                    title="Accept"
+                                  >
+                                    <FaCheck size={12} />
+                                    <span>Accept</span>
+                                  </button>
+                                  
+                                  <button
+                                    onClick={() => handleRejectQuotation(quo)}
+                                    className="flex items-center space-x-1 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
+                                    title="Reject"
+                                  >
+                                    <FaTimes size={12} />
+                                    <span>Reject</span>
+                                  </button>
+                                </>
+                              )}
+                              
+                              {quo.fileUrl && (
+                                <a 
+                                  href={`${quo.fileUrl}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="flex items-center space-x-1 px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs"
+                                  title="Download PDF"
+                                >
+                                  <FaDownload size={12} />
+                                  <span>PDF</span>
+                                </a>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -458,6 +585,171 @@ export default function ProjectFinance() {
               </button>
               <button
                 onClick={handleConfirmReject}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Quotation Modal */}
+      {showQuotationViewModal && selectedQuotation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-brown-primary">Quotation Details</h2>
+              <button
+                onClick={() => setShowQuotationViewModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Project Info */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3 text-brown-primary">Quotation Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="font-medium text-gray-700">Project:</span>
+                  <p className="text-gray-900">{selectedQuotation.projectName || selectedQuotation.projectId?.projectName || selectedQuotation.projectId}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Estimate Version:</span>
+                  <p className="text-gray-900">{selectedQuotation.estimateVersion}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Quotation Version:</span>
+                  <p className="text-gray-900">{selectedQuotation.version}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Status:</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    selectedQuotation.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
+                    selectedQuotation.status === 'Locked' ? 'bg-gray-100 text-gray-800' :
+                    selectedQuotation.status === 'Revised' ? 'bg-yellow-100 text-yellow-800' :
+                    selectedQuotation.status === 'Sent' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {selectedQuotation.status}
+                  </span>
+                </div>
+                {selectedQuotation.createdAt && (
+                  <div>
+                    <span className="font-medium text-gray-700">Created:</span>
+                    <p className="text-gray-900">{new Date(selectedQuotation.createdAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedQuotation.sentAt && (
+                  <div>
+                    <span className="font-medium text-gray-700">Sent:</span>
+                    <p className="text-gray-900">{new Date(selectedQuotation.sentAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cost Summary */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3 text-brown-primary">Cost Summary</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="font-medium text-gray-700">Subtotal:</span>
+                  <p className="text-gray-900 font-semibold">${selectedQuotation.subtotal?.toLocaleString?.() ?? selectedQuotation.subtotal}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Contingency:</span>
+                  <p className="text-gray-900">${selectedQuotation.totalContingency?.toLocaleString?.() ?? selectedQuotation.totalContingency}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Tax:</span>
+                  <p className="text-gray-900">${selectedQuotation.totalTax?.toLocaleString?.() ?? selectedQuotation.totalTax}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Grand Total:</span>
+                  <p className="text-lg text-brown-primary font-bold">${selectedQuotation.grandTotal?.toLocaleString?.() ?? selectedQuotation.grandTotal}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Remarks */}
+            {selectedQuotation.remarks && (
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3 text-brown-primary">Remarks</h3>
+                <div className="bg-gray-50 p-3 rounded border">
+                  <p className="text-gray-700 whitespace-pre-wrap">{selectedQuotation.remarks}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3">
+              {selectedQuotation.fileUrl && (
+                <a
+                  href={`${selectedQuotation.fileUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Download PDF
+                </a>
+              )}
+              <button
+                onClick={() => setShowQuotationViewModal(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Quotation Modal */}
+      {showQuotationRejectModal && selectedQuotation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-brown-primary">Reject Quotation</h2>
+              <button
+                onClick={() => setShowQuotationRejectModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-gray-700 mb-2">
+                Are you sure you want to reject this quotation?
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Project: {selectedQuotation.projectName || selectedQuotation.projectId?.projectName || selectedQuotation.projectId} (Est: {selectedQuotation.estimateVersion}, Ver: {selectedQuotation.version})
+              </p>
+              
+              <label htmlFor="quotationRejectRemarks" className="block text-sm font-medium text-gray-700 mb-2">
+                Remarks (Required) *
+              </label>
+              <textarea
+                id="quotationRejectRemarks"
+                value={quotationRejectRemarks}
+                onChange={(e) => setQuotationRejectRemarks(e.target.value)}
+                placeholder="Please provide the reason for rejection..."
+                className="w-full h-24 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowQuotationRejectModal(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmQuotationReject}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
                 Reject

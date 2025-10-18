@@ -44,6 +44,7 @@ import materialRequestRoutes from './modules/project/routes/materialRequest.rout
 import reportRoutes from './modules/project/routes/report.routes.js';
 import inspectionReportRoutes from './modules/project/routes/inspectionReport.routes.js';
 import budgetManagementRoutes from './modules/project/routes/budgetManagement.routes.js';
+import quotationManagementRoutes from './modules/project/routes/quotationManagement.routes.js';
 import fileRoutes from './modules/project/routes/file.routes.js';
 import meetingRoutes from './modules/project/routes/meeting.routes.js';
 import notificationRoutes from './modules/project/routes/notificationRoutes.js';
@@ -143,6 +144,7 @@ app.use('/api', materialRequestRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/project', inspectionReportRoutes);
 app.use('/api/project', budgetManagementRoutes);
+app.use('/api/project', quotationManagementRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);
