@@ -60,20 +60,46 @@ const LocationManagement = ({ inspector, setMessage }) => {
     if (notification.actionData && notification.actionData.assignmentId) {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.post(
-          `/api/assignment/${notification.actionData.assignmentId}/${action}`,
-          {},
+        
+        // Prepare the request data based on action
+        let requestData = {};
+        if (action === 'accept') {
+          requestData = {
+            status: 'in-progress',
+            inspection_start_time: new Date(),
+            action_notes: 'Assignment accepted by inspector via notification'
+          };
+        } else if (action === 'decline') {
+          requestData = {
+            status: 'declined',
+            decline_reason: 'Declined via notification',
+            action_notes: 'Assignment declined by inspector via notification'
+          };
+        }
+
+        // Use the correct backend endpoint format
+        const response = await axios.patch(
+          `/api/assignment/status/${notification.actionData.assignmentId}`,
+          requestData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (response.data.success) {
+        if (response.data) {
           setMessage(`✅ Assignment ${action}ed successfully`);
           setRefreshTrigger(prev => prev + 1); // Refresh data
           removeNotification(notification.id);
+          
+          // If accepted, show additional success message about location update
+          if (action === 'accept') {
+            setTimeout(() => {
+              setMessage('✅ Assignment accepted! Inspection started and location updated to property address.');
+            }, 1000);
+          }
         }
       } catch (error) {
         console.error(`Error ${action}ing assignment:`, error);
-        setMessage(`❌ Failed to ${action} assignment`);
+        const errorMessage = error.response?.data?.message || error.message;
+        setMessage(`❌ Failed to ${action} assignment: ${errorMessage}`);
       }
     }
   };
@@ -348,8 +374,15 @@ const LocationManagement = ({ inspector, setMessage }) => {
             {location.current_address ? (
               <div className="bg-cream-primary rounded-lg p-3 border border-green-primary">
                 <p className="text-brown-primary font-medium">
-                  📮 <span className="font-semibold">Address:</span> {location.current_address}
+                  📮 <span className="font-semibold">Current Location:</span> {location.current_address}
                 </p>
+                {currentAssignment && status === 'busy' && (
+                  <div className="mt-2 bg-blue-50 rounded p-2 border border-blue-200">
+                    <p className="text-blue-800 text-xs font-medium">
+                      🏠 Inspection Location: This is where you were assigned to conduct the inspection
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               /* Old/Seed Location Data - Automatic Update Message */
@@ -358,7 +391,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
                   ℹ️ Location will update automatically
                 </p>
                 <p className="text-blue-600 text-xs mb-2">
-                  Your location will be automatically updated when a Customer Service Representative assigns you to a new property
+                  Your location will be automatically updated to the property address when you accept an inspection assignment
                 </p>
               </div>
             )}

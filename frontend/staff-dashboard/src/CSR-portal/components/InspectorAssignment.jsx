@@ -32,7 +32,7 @@ const markerIcons = {
   selectedInspector: createColoredIcon('green')     // 🟢 Green for selected inspector
 };
 
-const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
+const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthError }) => {
   const [inspectionRequests, setInspectionRequests] = useState([]);
   const [inspectors, setInspectors] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -58,10 +58,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
       const token = localStorage.getItem('authToken');
       
       if (!token) {
-        setInspectionRequests([]);
-        setInspectors([]);
-        setAssignments([]);
-        setLoading(false);
+        console.error('No auth token found in InspectorAssignment');
+        if (onAuthError) onAuthError();
         return;
       }
       
@@ -85,6 +83,14 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
       setAssignments(assignmentsRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
+      
+      // Handle authentication errors
+      if (error.response?.status === 401) {
+        console.error('Authentication failed in InspectorAssignment');
+        if (onAuthError) onAuthError();
+        return;
+      }
+      
       setInspectionRequests([]);
       setInspectors([]);
       setAssignments([]);

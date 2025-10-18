@@ -1,5 +1,6 @@
 import InspectorForm from '../model/inspectorDynamicForm.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
+import Assignment from '../model/assignment.model.js';
 import AuthInspectionReport from '../model/report.model.js';
 import PMNotification from '../model/notification.model.js';
 import User from '../model/user.model.js';
@@ -279,6 +280,39 @@ export const submitAndGenerateReport = async (req, res) => {
     // 2. Submit form
     form.status = 'completed';
     await form.save();
+
+    // 2.5. Update related assignment status to completed
+    try {
+      const assignment = await Assignment.findOne({ 
+        InspectionRequest_ID: form.InspectionRequest_ID,
+        inspector_ID: inspector_ID
+      });
+      
+      if (assignment) {
+        assignment.status = 'completed';
+        assignment.inspection_end_time = new Date();
+        assignment.updatedAt = new Date();
+        await assignment.save();
+        console.log(`Assignment ${assignment._id} status updated to completed`);
+        
+        // 🔥 Send real-time notification to CSR about assignment completion
+        const csrUsers = await User.find({ role: 'customer service representative' });
+        for (let csr of csrUsers) {
+          webSocketService.sendToUser(csr._id.toString(), 'assignment_completed', {
+            assignmentId: assignment._id,
+            inspectorName: req.user.username,
+            propertyAddress: form.InspectionRequest_ID?.propertyLocation_address || 'N/A',
+            clientName: form.InspectionRequest_ID?.client_name || 'Client',
+            timestamp: new Date().toISOString()
+          });
+        }
+      } else {
+        console.log('No matching assignment found for this inspection request and inspector');
+      }
+    } catch (assignmentError) {
+      console.error('Error updating assignment status:', assignmentError);
+      // Continue with the process even if assignment update fails
+    }
 
     // 3. Generate detailed report content from form data
     const reportContent = `

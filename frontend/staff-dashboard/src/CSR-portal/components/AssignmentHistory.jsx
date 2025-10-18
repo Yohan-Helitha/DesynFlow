@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import socketService from '../../services/socketService';
 
-const AssignmentHistory = () => {
+const AssignmentHistory = ({ csr, onAuthError }) => {
   const [historyAssignments, setHistoryAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState({});
@@ -32,6 +33,12 @@ const AssignmentHistory = () => {
       setMessage(completedAssignments.length === 0 ? 'No completed assignments found' : '');
     } catch (error) {
       console.error('Error fetching assignment history:', error);
+      if (error.response?.status === 401) {
+        if (onAuthError) {
+          onAuthError();
+          return;
+        }
+      }
       setMessage('❌ Failed to fetch assignment history');
     } finally {
       setLoading(false);
@@ -57,6 +64,12 @@ const AssignmentHistory = () => {
       fetchAssignmentHistory(); // Refresh the list
     } catch (error) {
       console.error('Error deleting assignment:', error);
+      if (error.response?.status === 401) {
+        if (onAuthError) {
+          onAuthError();
+          return;
+        }
+      }
       setMessage('❌ Failed to delete assignment');
     } finally {
       setDeleting(prev => ({ ...prev, [assignmentId]: false }));
@@ -115,9 +128,50 @@ const AssignmentHistory = () => {
 
   useEffect(() => {
     fetchAssignmentHistory();
-  }, []);
+    
+    // Set up WebSocket for real-time updates
+    if (csr && (csr._id || csr.id)) {
+      const userId = csr._id || csr.id;
+      const userRole = 'customer service representative';
+      
+      socketService.connect(userId, userRole);
+      socketService.joinRoom('csr', userId);
+      
+      // Listen for assignment completion notifications
+      socketService.onAssignmentCompleted((completionData) => {
+        console.log('Assignment completed notification received in history:', completionData);
+        
+        // Refresh assignment history when an assignment is completed
+        fetchAssignmentHistory();
+      });
 
-  if (loading) {
+      // Listen for assignment declined notifications
+      socketService.onAssignmentDeclined((declinedData) => {
+        console.log('Assignment declined notification received in history:', declinedData);
+        
+        // Refresh assignment history when an assignment is declined
+        fetchAssignmentHistory();
+      });
+      
+      // Cleanup on unmount
+      return () => {
+        const userId = csr._id || csr.id;
+        socketService.leaveRoom('csr', userId);
+        socketService.disconnect();
+      };
+    } else {
+      // Fallback: Set up real-time polling if no WebSocket
+      const interval = setInterval(fetchAssignmentHistory, 10000); // Poll every 10 seconds
+      
+      // Cleanup interval on unmount
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [csr]);
+
+  // Show loading state while waiting for csr data or while fetching
+  if (!csr || loading) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary"></div>

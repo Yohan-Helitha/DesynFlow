@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import socketService from '../../services/socketService';
 
-const AssignmentStatusManager = () => {
+const AssignmentStatusManager = ({ csr, onAuthError }) => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState({});
@@ -12,8 +13,8 @@ const AssignmentStatusManager = () => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        setMessage('❌ Authentication required');
-        setLoading(false);
+        console.error('No auth token found in AssignmentStatusManager');
+        if (onAuthError) onAuthError();
         return;
       }
 
@@ -31,6 +32,14 @@ const AssignmentStatusManager = () => {
       setMessage(activeAssignments.length === 0 ? 'No active assignments found' : '');
     } catch (error) {
       console.error('Error fetching assignments:', error);
+      
+      // Handle authentication errors
+      if (error.response?.status === 401) {
+        console.error('Authentication failed in AssignmentStatusManager');
+        if (onAuthError) onAuthError();
+        return;
+      }
+      
       setMessage('❌ Failed to fetch assignments');
     } finally {
       setLoading(false);
@@ -116,11 +125,42 @@ const AssignmentStatusManager = () => {
   useEffect(() => {
     fetchAssignments();
     
-    // Set up real-time polling to sync with Inspector Portal actions
-    const interval = setInterval(fetchAssignments, 5000); // Poll every 5 seconds
-    
-    return () => clearInterval(interval);
-  }, []);
+    // Set up WebSocket for real-time updates
+    if (csr && (csr._id || csr.id)) {
+      const userId = csr._id || csr.id;
+      const userRole = 'customer service representative';
+      
+      socketService.connect(userId, userRole);
+      socketService.joinRoom('csr', userId);
+      
+      // Listen for assignment completion notifications
+      socketService.onAssignmentCompleted((completionData) => {
+        console.log('Assignment completed notification received:', completionData);
+        
+        // Show notification message
+        setMessage(`✅ Assignment completed by ${completionData.inspectorName} for ${completionData.propertyAddress}`);
+        
+        // Refresh assignments list
+        fetchAssignments();
+        
+        // Clear message after 5 seconds
+        setTimeout(() => {
+          setMessage('');
+        }, 5000);
+      });
+      
+      // Cleanup on unmount
+      return () => {
+        const userId = csr._id || csr.id;
+        socketService.leaveRoom('csr', userId);
+        socketService.disconnect();
+      };
+    } else {
+      // Fallback: Set up real-time polling if no WebSocket
+      const interval = setInterval(fetchAssignments, 5000); // Poll every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [csr]);
 
   if (loading) {
     return (

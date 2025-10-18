@@ -268,17 +268,35 @@ export const updateAssignmentStatus = async (req, res) => {
     
     await assignment.save();
     
-    // Update inspector status based on assignment status
+    // Update inspector status and location based on assignment status
     const location = await InspectorLocation.findOne({ inspector_ID: assignment.inspector_ID });
     if (location) {
       switch (status) {
         case 'in-progress':
           location.status = 'busy';
+          
+          // Update inspector's current address to the inspection location
+          const inspectionRequest = await InspectionRequest.findById(assignment.InspectionRequest_ID);
+          if (inspectionRequest) {
+            // Update inspector location to property coordinates and address
+            if (inspectionRequest.property_latitude && inspectionRequest.property_longitude) {
+              location.inspector_latitude = inspectionRequest.property_latitude;
+              location.inspector_longitude = inspectionRequest.property_longitude;
+            }
+            
+            // Set current address to property address
+            if (inspectionRequest.property_full_address) {
+              location.current_address = inspectionRequest.property_full_address;
+            }
+            
+            console.log(`Inspector location updated to property: ${inspectionRequest.property_full_address}`);
+          }
           break;
         case 'completed':
         case 'canceled':
         case 'declined':
           location.status = 'available';
+          // Note: Keep inspector at property location even after completion for tracking
           break;
         case 'paused':
           // Keep current status (usually 'busy')

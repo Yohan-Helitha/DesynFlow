@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const InspectionRequests = () => {
+const InspectionRequests = ({ csr, onAuthError }) => {
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,10 +11,10 @@ const InspectionRequests = () => {
     try {
       const token = localStorage.getItem('authToken');
       
-      // Simple check: if no token, don't make API call
+      // Simple check: if no token, redirect to login
       if (!token) {
-        setRequests([]);
-        setLoading(false);
+        console.error('No auth token found in InspectionRequests');
+        if (onAuthError) onAuthError();
         return;
       }
       
@@ -26,7 +26,15 @@ const InspectionRequests = () => {
       setRequests(response.data);
     } catch (error) {
       console.error('Error fetching requests:', error);
-      // Set empty array for now - will show "No Inspection Requests"
+      
+      // Handle authentication errors
+      if (error.response?.status === 401) {
+        console.error('Authentication failed in InspectionRequests');
+        if (onAuthError) onAuthError();
+        return;
+      }
+      
+      // Set empty array for other errors - will show "No Inspection Requests"
       setRequests([]);
     } finally {
       setLoading(false);
