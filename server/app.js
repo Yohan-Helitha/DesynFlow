@@ -42,6 +42,7 @@ import milestoneTimelineRoutes from './modules/project/routes/milestoneTimeline.
 import attendanceRoutes from './modules/project/routes/attendance.routes.js';
 import materialRequestRoutes from './modules/project/routes/materialRequest.routes.js';
 import reportRoutes from './modules/project/routes/report.routes.js';
+import inspectionReportRoutes from './modules/project/routes/inspectionReport.routes.js';
 import fileRoutes from './modules/project/routes/file.routes.js';
 import meetingRoutes from './modules/project/routes/meeting.routes.js';
 import notificationRoutes from './modules/project/routes/notificationRoutes.js';
@@ -139,6 +140,7 @@ app.use('/api', milestoneTimelineRoutes);
 app.use('/api', attendanceRoutes);
 app.use('/api', materialRequestRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/project', inspectionReportRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);
