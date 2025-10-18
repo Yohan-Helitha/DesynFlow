@@ -6,7 +6,7 @@ import { generatePDF } from "../utils/pdfGenerator.js";
 import {
   fetchWarrantyClaims,
   deleteWarrantyClaim,
-} from "../services/warrantyClaimService.js";
+} from "../services/FwarrantyClaimService.js";
 import {
   BarChart,
   Bar,

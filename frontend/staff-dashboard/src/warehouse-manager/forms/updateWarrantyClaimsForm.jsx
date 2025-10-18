@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../component/navbar.jsx";
-import { fetchWarrantyClaimById, updateWarrantyClaim } from "../services/warrantyClaimService.js";
+import { fetchWarrantyClaimById, updateWarrantyClaim } from "../services/FwarrantyClaimService.js";
 
 const UpdateWarrantyClaimForm = ({ loggedInUserId }) => {
   const { id } = useParams();
