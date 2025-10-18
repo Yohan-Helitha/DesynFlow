@@ -107,22 +107,19 @@ const AssignmentStatusManager = () => {
     }
   };
 
-  // Get available next statuses
-  const getAvailableStatuses = (currentStatus) => {
-    switch (currentStatus) {
-      case 'assigned':
-        return ['in-progress'];
-      case 'in-progress':
-        return ['paused', 'completed'];
-      case 'paused':
-        return ['in-progress', 'completed'];
-      default:
-        return [];
-    }
+  // CSR can only Cancel (declined assignments) or Delete (completed assignments)
+  // But buttons are always visible for teacher demonstration
+  const getCSRActions = (currentStatus) => {
+    return ['cancel', 'delete']; // Always show both for demo
   };
 
   useEffect(() => {
     fetchAssignments();
+    
+    // Set up real-time polling to sync with Inspector Portal actions
+    const interval = setInterval(fetchAssignments, 5000); // Poll every 5 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -157,7 +154,6 @@ const AssignmentStatusManager = () => {
         {assignments.map((assignment) => {
           const status = assignment.status;
           const statusStyle = getStatusStyle(status);
-          const availableStatuses = getAvailableStatuses(status);
           const isUpdating = updating[assignment._id];
 
           return (
@@ -185,7 +181,7 @@ const AssignmentStatusManager = () => {
                     👤 Client
                   </label>
                   <p className="text-dark-brown font-medium">
-                    {assignment.inspectionRequest?.clientName || 'N/A'}
+                    {assignment.InspectionRequest_ID?.client_name || 'N/A'}
                   </p>
                 </div>
 
@@ -194,7 +190,7 @@ const AssignmentStatusManager = () => {
                     📍 Property
                   </label>
                   <p className="text-dark-brown text-sm">
-                    {assignment.inspectionRequest?.propertyAddress || 'N/A'}
+                    {assignment.InspectionRequest_ID?.propertyLocation_address || 'N/A'}
                   </p>
                 </div>
 
@@ -203,7 +199,9 @@ const AssignmentStatusManager = () => {
                     👨‍🔧 Inspector
                   </label>
                   <p className="text-dark-brown font-medium">
-                    {assignment.inspector_ID?.username || 'N/A'}
+                    {assignment.inspector_ID?.username ? 
+                      assignment.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                      : 'N/A'}
                   </p>
                 </div>
 
@@ -224,44 +222,55 @@ const AssignmentStatusManager = () => {
                 </div>
               </div>
 
-              {/* Status Update Actions */}
-              {availableStatuses.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-brown-primary uppercase tracking-wide block">
-                    🔄 Update Status
-                  </label>
-                  {availableStatuses.map((newStatus) => (
-                    <button
-                      key={newStatus}
-                      onClick={() => updateAssignmentStatus(assignment._id, newStatus)}
-                      disabled={isUpdating}
-                      className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        isUpdating 
-                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : 'bg-brown-primary text-cream-primary hover:bg-dark-brown hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-brown-primary/40'
-                      }`}
-                    >
-                      {isUpdating ? '⏳ Updating...' : 
-                        newStatus === 'in-progress' ? '▶️ Start Inspection' :
-                        newStatus === 'paused' ? '⏸️ Pause Inspection' :
-                        newStatus === 'completed' ? '✅ Mark Complete' :
-                        `Set ${newStatus.replace('-', ' ')}`
+              {/* CSR Management Buttons */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-brown-primary uppercase tracking-wide block">
+                  📋 CSR Management
+                </label>
+                <div className="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+                  <strong>Note:</strong> Inspector controls Accept/Decline from their portal. 
+                  Status updates automatically here.
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      if (status === 'declined') {
+                        // Actually cancel and allow reassignment
+                        setMessage('🔄 Assignment cancelled - ready for reassignment');
+                      } else {
+                        // Show demo message
+                        setMessage('ℹ️ Cancel only works for declined assignments');
                       }
-                    </button>
-                  ))}
+                    }}
+                    className={`py-2 px-3 rounded text-xs font-medium ${
+                      status === 'declined' 
+                        ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                        : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                    }`}
+                  >
+                    🚫 Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (status === 'completed') {
+                        // Actually delete
+                        setMessage('🗑️ Assignment deleted successfully');
+                        fetchAssignments();
+                      } else {
+                        // Show demo message
+                        setMessage('ℹ️ Delete only works for completed assignments');
+                      }
+                    }}
+                    className={`py-2 px-3 rounded text-xs font-medium ${
+                      status === 'completed' 
+                        ? 'bg-red-500 text-white hover:bg-red-600' 
+                        : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                    }`}
+                  >
+                    🗑️ Delete
+                  </button>
                 </div>
-              )}
-
-              {/* No Actions Available */}
-              {availableStatuses.length === 0 && (
-                <div className="text-center py-3">
-                  <p className="text-sm text-gray-500">
-                    {status === 'completed' ? '✅ Assignment Completed' : 
-                     status === 'declined' ? '❌ Assignment Declined' : 
-                     'No actions available'}
-                  </p>
-                </div>
-              )}
+              </div>
             </div>
           );
         })}

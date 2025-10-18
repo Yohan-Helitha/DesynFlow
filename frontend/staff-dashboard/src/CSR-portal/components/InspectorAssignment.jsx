@@ -479,7 +479,9 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
             <option value="">-- Choose Inspector --</option>
             {inspectors.map(inspector => (
               <option key={inspector._id} value={inspector._id}>
-                {inspector.inspector_ID?.username || 'Inspector'} - {inspector.current_address} ({inspector.status})
+                {inspector.inspector_ID?.username ? 
+                  inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                  : 'Inspector Name Missing'} - {inspector.current_address} ({inspector.status})
               </option>
             ))}
           </select>
@@ -487,7 +489,9 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
           {selectedInspectorFromMap && (
             <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-green-800 text-sm">
-                🟢 <strong>Selected from Map:</strong> {selectedInspectorFromMap.inspector_ID?.username || 'Inspector'} 
+                🟢 <strong>Selected from Map:</strong> {selectedInspectorFromMap.inspector_ID?.username ? 
+                  selectedInspectorFromMap.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                  : 'Inspector Name Missing'}
                 {selectedInspectorFromMap.distanceToProperty && 
                   ` (${selectedInspectorFromMap.distanceToProperty.toFixed(1)}km away)`
                 }
@@ -565,7 +569,9 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
                       <h4 className={`font-bold mb-2 ${
                         inspector.status === 'available' ? 'text-blue-800' : 'text-yellow-800'
                       }`}>
-                        {inspector.status === 'available' ? '🔵' : '🟡'} {inspector.inspector_ID?.username || 'Inspector'}
+                        {inspector.status === 'available' ? '🔵' : '🟡'} {inspector.inspector_ID?.username ? 
+                          inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                          : 'Inspector Name Missing'}
                       </h4>
                       <div className="text-sm space-y-1">
                         <p><strong>Status:</strong> <span className={`font-semibold ${
@@ -676,7 +682,9 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
                           inspector.status === 'available' ? 'bg-blue-500' : 'bg-yellow-500'
                         }`}></div>
                         <span className="font-semibold text-dark-brown">
-                          {inspector.inspector_ID?.username || `Inspector ${index + 1}`}
+                          {inspector.inspector_ID?.username ? 
+                            inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                            : 'Inspector Name Missing'}
                         </span>
                       </div>
                     </td>
