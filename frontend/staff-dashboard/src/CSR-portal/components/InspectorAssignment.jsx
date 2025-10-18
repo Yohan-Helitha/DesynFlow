@@ -775,11 +775,11 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
                     </h4>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p><strong>Client:</strong> {assignment.inspectionRequest?.client_name || 'N/A'}</p>
-                        <p><strong>Property:</strong> {assignment.inspectionRequest?.propertyLocation_address || 'N/A'}</p>
+                        <p><strong>Client:</strong> {assignment.InspectionRequest_ID?.client_name || 'N/A'}</p>
+                        <p><strong>Property:</strong> {assignment.InspectionRequest_ID?.propertyLocation_address || 'N/A'}</p>
                       </div>
                       <div>
-                        <p><strong>Inspector:</strong> {assignment.inspector?.username || 'N/A'}</p>
+                        <p><strong>Inspector:</strong> {assignment.inspector_ID?.username || 'N/A'}</p>
                         <p><strong>Status:</strong> <span className={`font-semibold ${
                           assignment.status === 'assigned' ? 'text-green-600' : 'text-orange-600'
                         }`}>{assignment.status}</span></p>
