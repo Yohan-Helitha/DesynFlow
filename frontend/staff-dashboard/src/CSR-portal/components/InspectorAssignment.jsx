@@ -290,7 +290,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
       fetchData();
     } catch (error) {
       console.error('Error assigning inspector:', error);
-      alert('❌ Failed to assign inspector');
+      const errorMessage = error.response?.data?.message || error.message;
+      alert(`❌ ${errorMessage}`);
     }
   };
 

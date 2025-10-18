@@ -3,6 +3,8 @@ import axios from 'axios';
 import LocationHistory from './LocationHistory';
 import AssignmentActions from './AssignmentActions';
 import InspectionStatusUpdates from './InspectionStatusUpdates';
+import socketService from '../../services/socketService';
+import NotificationSystem from '../../components/NotificationSystem';
 
 const LocationManagement = ({ inspector, setMessage }) => {
   const [location, setLocation] = useState(null);
@@ -10,6 +12,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
   const [currentAssignment, setCurrentAssignment] = useState(null);
   const [loadingAssignment, setLoadingAssignment] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [notifications, setNotifications] = useState([]);
 
   // Handle assignment action completion (accept/decline)
   const handleAssignmentAction = (action, assignment, reason = null) => {
@@ -23,6 +26,56 @@ const LocationManagement = ({ inspector, setMessage }) => {
     console.log('Status updated to:', newStatus);
     // Trigger refresh of data
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  // Add notification
+  const addNotification = (type, title, message, actionData = null) => {
+    const id = Date.now().toString();
+    const notification = {
+      id,
+      type,
+      title,
+      message,
+      actionData,
+      timestamp: new Date().toISOString()
+    };
+    
+    setNotifications(prev => [...prev, notification]);
+    
+    // Auto remove after 10 seconds for info notifications
+    if (type === 'info') {
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 10000);
+    }
+  };
+
+  // Remove notification
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  // Handle notification action (Accept/Decline assignment)
+  const handleNotificationAction = async (action, notification) => {
+    if (notification.actionData && notification.actionData.assignmentId) {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.post(
+          `/api/assignment/${notification.actionData.assignmentId}/${action}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (response.data.success) {
+          setMessage(`✅ Assignment ${action}ed successfully`);
+          setRefreshTrigger(prev => prev + 1); // Refresh data
+          removeNotification(notification.id);
+        }
+      } catch (error) {
+        console.error(`Error ${action}ing assignment:`, error);
+        setMessage(`❌ Failed to ${action} assignment`);
+      }
+    }
   };
 
   // Reverse geocoding: Convert coordinates to readable address
@@ -152,6 +205,72 @@ const LocationManagement = ({ inspector, setMessage }) => {
       console.log('Inspector data not ready yet, skipping location fetch');
     }
   }, [inspector, refreshTrigger]);
+
+  // WebSocket integration for real-time notifications
+  useEffect(() => {
+    if (inspector && (inspector._id || inspector.id)) {
+      // Connect to WebSocket with proper authentication
+      const userId = inspector._id || inspector.id;
+      const userRole = 'inspector';
+      
+      socketService.connect(userId, userRole);
+      socketService.joinRoom('inspector', userId);
+      
+      // Listen for assignment notifications
+      socketService.onAssignmentCreated((notificationData) => {
+        console.log('Real-time assignment received:', notificationData);
+        
+        const assignmentDetails = notificationData.assignmentDetails || {};
+        
+        // Add notification with Accept/Decline actions
+        addNotification(
+          'new_assignment',
+          notificationData.title || '🚨 New Inspection Assignment',
+          notificationData.message || `You have been assigned to inspect a property`,
+          {
+            assignmentId: assignmentDetails.assignmentId,
+            propertyAddress: assignmentDetails.propertyAddress,
+            distance: assignmentDetails.distance
+          }
+        );
+        
+        // Refresh assignment data to show in UI
+        setRefreshTrigger(prev => prev + 1);
+        
+        // Optional: Play notification sound
+        try {
+          const audio = new Audio('/notification-sound.mp3');
+          audio.play().catch(e => console.log('Could not play notification sound:', e));
+        } catch (e) {
+          console.log('Notification sound not available');
+        }
+      });
+
+      // Listen for assignment updates
+      socketService.onAssignmentUpdated((updateData) => {
+        console.log('Assignment updated:', updateData);
+        
+        if (updateData.status === 'completed' || updateData.status === 'cancelled') {
+          addNotification(
+            'info',
+            '📋 Assignment Updated',
+            `Your assignment has been ${updateData.status}`,
+            null
+          );
+        }
+        
+        // Refresh assignment data
+        setRefreshTrigger(prev => prev + 1);
+      });
+      
+      // Cleanup on unmount
+      return () => {
+        const userId = inspector._id || inspector.id;
+        socketService.leaveRoom('inspector', userId);
+        socketService.disconnect();
+      };
+    }
+  }, [inspector]);
 
   // Update availability status
   const updateStatus = async (newStatus) => {
@@ -423,13 +542,20 @@ const LocationManagement = ({ inspector, setMessage }) => {
       {/* Instructions */}
       <div className="bg-cream-primary rounded-lg p-4 border border-brown-primary-300">
         <h3 className="text-sm font-semibold text-brown-primary mb-2">💡 How Location Management Works:</h3>
-        <ul className="text-sm text-brown-secondary space-y-1">
+        <ul className="space-y-1 text-sm text-brown-secondary">
           <li>• Your location updates automatically when CSR assigns you to properties</li>
           <li>• Set your availability status (Available/Unavailable)</li>
           <li>• Status automatically becomes "Busy" when assigned to work</li>
           <li>• Distance calculations are handled by Finance team for cost tracking</li>
         </ul>
       </div>
+
+      {/* Real-time Notification System */}
+      <NotificationSystem 
+        notifications={notifications}
+        onRemove={removeNotification}
+        onAction={handleNotificationAction}
+      />
     </div>
   );
 };

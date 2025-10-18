@@ -38,6 +38,15 @@ export const assignInspector = async (req, res) => {
       return res.status(404).json({ message: 'Inspection request not found.' });
     }
 
+    // Check if there's already an assignment for this inspection request
+    const existingAssignment = await Assignment.findOne({ 
+      InspectionRequest_ID: inspectionRequestId,
+      status: { $in: ['assigned', 'in-progress'] }
+    });
+    if (existingAssignment) {
+      return res.status(400).json({ message: 'This inspection request is already assigned to another inspector.' });
+    }
+
     // Calculate distance for 35km assignment validation
     let calculatedDistance = null;
     if (inspectionRequest.property_latitude && inspectionRequest.property_longitude) {

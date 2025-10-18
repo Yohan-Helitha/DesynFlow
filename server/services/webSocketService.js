@@ -38,6 +38,26 @@ class WebSocketService {
         }
       });
 
+      // Handle joining specific rooms
+      socket.on('join_room', (data) => {
+        const { roomType, roomId } = data;
+        if (roomType && roomId) {
+          const roomName = `${roomType}_${roomId}`;
+          socket.join(roomName);
+          console.log(`Socket ${socket.id} joined room: ${roomName}`);
+        }
+      });
+
+      // Handle leaving specific rooms
+      socket.on('leave_room', (data) => {
+        const { roomType, roomId } = data;
+        if (roomType && roomId) {
+          const roomName = `${roomType}_${roomId}`;
+          socket.leave(roomName);
+          console.log(`Socket ${socket.id} left room: ${roomName}`);
+        }
+      });
+
       // Handle disconnect
       socket.on('disconnect', () => {
         if (socket.userId) {
