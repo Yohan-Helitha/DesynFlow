@@ -262,7 +262,7 @@ export default function LeaderDashboard() {
                     href={`${rep.filePath}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline flex items-center gap-1"
+                    className="text-brown-primary hover:underline flex items-center gap-1"
                   >
                     📄 Download
                   </a>
@@ -295,27 +295,27 @@ export default function LeaderDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   {meet.link && (
-                    <a 
-                      href={meet.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-blue-600 hover:underline text-xs"
+                      <a 
+                        href={meet.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-brown-primary hover:underline text-xs"
+                      >
+                        Join
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleEditMeeting(meet)}
+                      className="text-soft-green hover:text-green-primary text-xs"
                     >
-                      Join
-                    </a>
-                  )}
-                  <button
-                    onClick={() => handleEditMeeting(meet)}
-                    className="text-green-600 hover:text-green-800 text-xs"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteMeeting(meet._id)}
-                    className="text-red-600 hover:text-red-800 text-xs"
-                  >
-                    Delete
-                  </button>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteMeeting(meet._id)}
+                      className="text-red-brown hover:text-dark-brown text-xs"
+                    >
+                      Delete
+                    </button>
                 </div>
               </div>
             </li>

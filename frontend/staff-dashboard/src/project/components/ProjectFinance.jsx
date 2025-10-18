@@ -273,18 +273,18 @@ export default function ProjectFinance() {
                             <div className="flex space-x-2">
                               <button
                                 onClick={() => handleViewEstimation(est)}
-                                className="flex items-center space-x-1 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
+                                className="flex items-center justify-center px-2 py-1 bg-brown-primary text-white rounded hover:bg-brown-primary-300 text-xs"
                                 title="View Details"
+                                aria-label="View estimation details"
                               >
                                 <FaEye size={12} />
-                                <span>View</span>
                               </button>
                               
                               {(est.status === 'Pending' || est.status === 'pending') && (
                                 <>
                                   <button
                                     onClick={() => handleApproveEstimation(est._id)}
-                                    className="flex items-center space-x-1 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+                                    className="flex items-center space-x-1 px-2 py-1 bg-soft-green text-white rounded hover:bg-green-primary text-xs"
                                     title="Accept"
                                   >
                                     <FaCheck size={12} />
@@ -293,7 +293,7 @@ export default function ProjectFinance() {
                                   
                                   <button
                                     onClick={() => handleRejectEstimation(est)}
-                                    className="flex items-center space-x-1 px-2 py-1 bg-red-brown text-white rounded hover:bg-red-brown text-xs"
+                                    className="flex items-center space-x-1 px-2 py-1 bg-red-brown text-white rounded hover:bg-dark-brown text-xs"
                                     title="Reject"
                                   >
                                     <FaTimes size={12} />
@@ -301,6 +301,31 @@ export default function ProjectFinance() {
                                   </button>
                                 </>
                               )}
+                                  {(
+                                    est.fileUrl || est.filePath || (est.attachments && est.attachments.length)
+                                  ) ? (
+                                    <a
+                                      href={est.fileUrl || est.filePath || (est.attachments && est.attachments[0]?.path) || `/api/project/estimation/${est._id}/download`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center space-x-1 px-2 py-1 bg-warm-brown text-white rounded hover:bg-brown-secondary text-xs"
+                                      title="Download PDF"
+                                    >
+                                      <FaDownload size={12} />
+                                      <span>PDF</span>
+                                    </a>
+                                  ) : (
+                                    <a
+                                      href={`/api/project/estimation/${est._id}/download`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center space-x-1 px-2 py-1 bg-warm-brown text-white rounded hover:bg-brown-secondary text-xs"
+                                      title="Download PDF"
+                                    >
+                                      <FaDownload size={12} />
+                                      <span>PDF</span>
+                                    </a>
+                                  )}
                             </div>
                           </td>
                         </tr>
@@ -352,18 +377,18 @@ export default function ProjectFinance() {
                             <div className="flex space-x-2">
                               <button
                                 onClick={() => handleViewQuotation(quo)}
-                                className="flex items-center space-x-1 px-2 py-1 bg-brown-primary text-white rounded hover:bg-brown-primary-300 text-xs"
+                                className="flex items-center justify-center px-2 py-1 bg-brown-primary text-white rounded hover:bg-brown-primary-300 text-xs"
                                 title="View Details"
+                                aria-label="View quotation details"
                               >
                                 <FaEye size={12} />
-                                <span>View</span>
                               </button>
                               
                               {quo.status === 'Sent' && (
                                 <>
                                   <button
                                     onClick={() => handleApproveQuotation(quo._id)}
-                                    className="flex items-center space-x-1 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+                                    className="flex items-center space-x-1 px-2 py-1 bg-soft-green text-white rounded hover:bg-green-primary text-xs"
                                     title="Accept"
                                   >
                                     <FaCheck size={12} />
@@ -372,7 +397,7 @@ export default function ProjectFinance() {
                                   
                                   <button
                                     onClick={() => handleRejectQuotation(quo)}
-                                    className="flex items-center space-x-1 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
+                                    className="flex items-center space-x-1 px-2 py-1 bg-red-brown text-white rounded hover:bg-dark-brown text-xs"
                                     title="Reject"
                                   >
                                     <FaTimes size={12} />
@@ -386,7 +411,7 @@ export default function ProjectFinance() {
                                   href={`${quo.fileUrl}`} 
                                   target="_blank" 
                                   rel="noopener noreferrer" 
-                                  className="flex items-center space-x-1 px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs"
+                                  className="flex items-center space-x-1 px-2 py-1 bg-warm-brown text-white rounded hover:bg-brown-secondary text-xs"
                                   title="Download PDF"
                                 >
                                   <FaDownload size={12} />

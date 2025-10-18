@@ -69,7 +69,7 @@ export default function ProjectOverview({ projectId, onBack }) {
       </button>
 
       {/* Project Header */}
-      <div className="bg-cream-light rounded-2xl shadow-lg p-6 mb-8 border-l-8 border-green-primary">
+  <div className="bg-cream-light rounded-2xl shadow-lg p-6 mb-8 border-l-8 border-green-primary">
         <h2 className="text-2xl font-bold text-brown-primary mb-4">
           {project.projectName}
         </h2>
@@ -89,13 +89,13 @@ export default function ProjectOverview({ projectId, onBack }) {
             <span
               className={`px-3 py-1 rounded-full text-xs font-bold ${
                 project.status === "Active"
-                  ? "bg-green-100 text-green-700"
+                  ? "bg-green-primary/10 text-green-primary"
                   : project.status === "In Progress"
                   ? "bg-cream-light text-brown-primary"
                   : project.status === "Completed"
-                  ? "bg-purple-100 text-purple-700"
+                  ? "bg-green-primary/10 text-green-primary"
                   : project.status === "On Hold"
-                  ? "bg-yellow-100 text-yellow-700"
+                  ? "bg-warm-brown text-white"
                   : "bg-gray-200 text-gray-600"
               }`}
             >
@@ -103,11 +103,11 @@ export default function ProjectOverview({ projectId, onBack }) {
             </span>
             {(project.status === "In Progress" || project.status === "Completed") && (
               <div className="flex items-center gap-2 w-full">
-                <div className="w-32 bg-gray-200 rounded-full h-2.5">
+                <div className="w-32 bg-cream-primary rounded-full h-2.5">
                   <div
                     className={`h-2.5 rounded-full ${
                       project.status === "Completed" 
-                        ? "bg-purple-500" 
+                        ? "bg-green-primary" 
                         : "bg-brown-primary"
                     }`}
                     style={{ width: `${project.progress || 0}%` }}
@@ -156,11 +156,11 @@ export default function ProjectOverview({ projectId, onBack }) {
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <div className="bg-cream-light rounded-lg p-3 text-center shadow-sm">
                   <div className="text-xs text-gray-600">Active Tasks</div>
-                  <div className="font-bold text-blue-700">{project.quickStats?.activeTasks ?? 0}</div>
+                  <div className="font-bold text-brown-primary">{project.quickStats?.activeTasks ?? 0}</div>
                 </div>
-                <div className="bg-green-50 rounded-lg p-3 text-center shadow-sm">
+                <div className="bg-cream-light rounded-lg p-3 text-center shadow-sm">
                   <div className="text-xs text-gray-600">Attendance</div>
-                  <div className="font-bold text-green-700">{project.quickStats?.attendance ?? 0}</div>
+                  <div className="font-bold text-green-primary">{project.quickStats?.attendance ?? 0}</div>
                 </div>
               </div>
             </div>
@@ -211,16 +211,16 @@ export default function ProjectOverview({ projectId, onBack }) {
                   
                   return (
                     <li
-                      key={`attachment-${i}`}
-                      className="bg-cream-light rounded-lg px-4 py-2 flex justify-between items-center shadow-sm hover:bg-cream-primary cursor-pointer"
-                      onClick={() => window.open(downloadUrl, '_blank')}
-                    >
-                      <span className="font-semibold text-brown-primary">{displayName}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">{fileExtension}</span>
-                        <span className="text-xs text-blue-600 font-medium">Download</span>
-                      </div>
-                    </li>
+                          key={`attachment-${i}`}
+                          className="bg-cream-light rounded-lg px-4 py-2 flex justify-between items-center shadow-sm hover:bg-cream-primary cursor-pointer"
+                          onClick={() => window.open(downloadUrl, '_blank')}
+                        >
+                          <span className="font-semibold text-brown-primary">{displayName}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-brown-secondary">{fileExtension}</span>
+                            <span className="text-xs text-brown-primary font-medium">Download</span>
+                          </div>
+                        </li>
                   );
                 })}
               </>
@@ -232,33 +232,33 @@ export default function ProjectOverview({ projectId, onBack }) {
                 <li className="text-sm font-medium text-gray-600 mb-2 border-b pb-1 mt-4">Approved Quotations</li>
                 {quotationDocuments.map((quotation, i) => (
                   <li
-                    key={`quotation-${quotation._id}-${i}`}
-                    className="bg-green-50 rounded-lg px-4 py-3 flex justify-between items-center shadow-sm hover:bg-green-100 cursor-pointer border-l-4 border-green-500"
-                    onClick={() => window.open(quotation.fileUrl, '_blank')}
-                  >
-                    <div>
-                      <span className="font-semibold text-green-800">
-                        Quotation v{quotation.version} (Est. #{quotation.estimateVersion})
-                      </span>
-                      <div className="text-xs text-green-600 flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          quotation.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
-                          quotation.status === 'Locked' ? 'bg-gray-100 text-gray-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {quotation.status}
+                      key={`quotation-${quotation._id}-${i}`}
+                      className="bg-cream-primary rounded-lg px-4 py-3 flex justify-between items-center shadow-sm hover:bg-cream-light cursor-pointer border-l-4 border-green-primary"
+                      onClick={() => window.open(quotation.fileUrl, '_blank')}
+                    >
+                      <div>
+                        <span className="font-semibold text-brown-primary">
+                          Quotation v{quotation.version} (Est. #{quotation.estimateVersion})
                         </span>
-                        <span>${quotation.grandTotal?.toLocaleString?.() ?? quotation.grandTotal}</span>
-                        {quotation.createdAt && (
-                          <span>{new Date(quotation.createdAt).toLocaleDateString()}</span>
-                        )}
+                        <div className="text-xs text-brown-secondary flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            quotation.status === 'Confirmed' ? 'bg-green-primary/10 text-green-primary' :
+                            quotation.status === 'Locked' ? 'bg-cream-light text-brown-primary' :
+                            'bg-cream-light text-brown-primary'
+                          }`}>
+                            {quotation.status}
+                          </span>
+                          <span>${quotation.grandTotal?.toLocaleString?.() ?? quotation.grandTotal}</span>
+                          {quotation.createdAt && (
+                            <span>{new Date(quotation.createdAt).toLocaleDateString()}</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-green-600">PDF</span>
-                      <span className="text-xs text-blue-600 font-medium">Download</span>
-                    </div>
-                  </li>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-brown-primary">PDF</span>
+                        <span className="text-xs text-brown-primary font-medium">Download</span>
+                      </div>
+                    </li>
                 ))}
               </>
             )}
