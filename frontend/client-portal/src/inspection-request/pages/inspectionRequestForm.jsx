@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const InspectionRequestForm = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     client_name: "",
     email: "",
@@ -54,57 +56,61 @@ const InspectionRequestForm = () => {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage("✅ Inspection request submitted successfully!");
+        setMessage("Inspection request submitted successfully!");
+        // Navigate to dashboard after successful submission
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1500); // Show success message for 1.5 seconds before redirecting
       } else {
-        setMessage(`❌ ${data.message || "Failed to submit request"}`);
+        setMessage(` ${data.message || "Failed to submit request"}`);
       }
     } catch (error) {
-      setMessage("❌ Server error. Please try again.");
+      setMessage(" Server error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white shadow-md p-6 rounded-lg">
-      <h2 className="text-2xl font-bold mb-6">Inspection Request Form</h2>
-      {message && <p className="mb-4">{message}</p>}
+    <div className="max-w-3xl mx-auto bg-cream-primary shadow-md p-6 rounded-lg border border-brown-primary-300">
+      <h2 className="text-2xl font-bold mb-6 text-brown-primary">Inspection Request Form</h2>
+      {message && <p className="mb-4 text-brown-secondary">{message}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Client Info */}
-        <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Client Information</h3>
+        <div className="bg-cream-light p-6 rounded-lg shadow-sm border border-brown-primary-300">
+          <h3 className="text-lg font-semibold mb-4 text-brown-primary">Client Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Full Name</label>
+              <label className="block text-sm font-medium mb-1 text-brown-secondary">Full Name</label>
               <input
                 type="text"
                 name="client_name"
                 value={form.client_name}
                 onChange={handleChange}
-                className="w-full border p-2 rounded"
+                className="w-full border border-brown-primary-300 p-2 rounded bg-white"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label className="block text-sm font-medium mb-1 text-brown-secondary">Email</label>
               <input
                 type="email"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full border p-2 rounded"
+                className="w-full border border-brown-primary-300 p-2 rounded bg-white"
                 required
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Phone Number</label>
+              <label className="block text-sm font-medium mb-1 text-brown-secondary">Phone Number</label>
               <input
                 type="tel"
                 name="phone_number"
                 value={form.phone_number}
                 onChange={handleChange}
-                className="w-full border p-2 rounded"
+                className="w-full border border-brown-primary-300 p-2 rounded bg-white"
                 required
               />
             </div>
@@ -112,38 +118,38 @@ const InspectionRequestForm = () => {
         </div>
 
         {/* Property Info */}
-        <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Property Details</h3>
+        <div className="bg-cream-light p-6 rounded-lg shadow-sm border border-brown-primary-300">
+          <h3 className="text-lg font-semibold mb-4 text-brown-primary">Property Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Address</label>
+              <label className="block text-sm font-medium mb-1 text-brown-secondary">Address</label>
               <input
                 type="text"
                 name="propertyLocation_address"
                 value={form.propertyLocation_address}
                 onChange={handleChange}
-                className="w-full border p-2 rounded"
+                className="w-full border border-brown-primary-300 p-2 rounded bg-white"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">City</label>
+              <label className="block text-sm font-medium mb-1 text-brown-secondary">City</label>
               <input
                 type="text"
                 name="propertyLocation_city"
                 value={form.propertyLocation_city}
                 onChange={handleChange}
-                className="w-full border p-2 rounded"
+                className="w-full border border-brown-primary-300 p-2 rounded bg-white"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Property Type</label>
+              <label className="block text-sm font-medium mb-1 text-brown-secondary">Property Type</label>
               <select
                 name="propertyType"
                 value={form.propertyType}
                 onChange={handleChange}
-                className="w-full border p-2 rounded"
+                className="w-full border border-brown-primary-300 p-2 rounded bg-white"
               >
                 <option value="residential">Residential</option>
                 <option value="commercial">Office</option>
@@ -153,25 +159,25 @@ const InspectionRequestForm = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">No. of Floors</label>
+              <label className="block text-sm font-medium mb-1 text-brown-secondary">No. of Floors</label>
               <input
                 type="number"
                 name="number_of_floor"
                 min="1"
                 value={form.number_of_floor}
                 onChange={handleChange}
-                className="w-full border p-2 rounded"
+                className="w-full border border-brown-primary-300 p-2 rounded bg-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">No. of Rooms</label>
+              <label className="block text-sm font-medium mb-1 text-brown-secondary">No. of Rooms</label>
               <input
                 type="number"
                 name="number_of_room"
                 min="1"
                 value={form.number_of_room}
                 onChange={handleChange}
-                className="w-full border p-2 rounded"
+                className="w-full border border-brown-primary-300 p-2 rounded bg-white"
                 required
               />
             </div>
@@ -179,7 +185,7 @@ const InspectionRequestForm = () => {
 
           {/* Rooms */}
           <div className="mt-4">
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-brown-secondary">
               Room Names (Optional)
             </label>
             {form.room_name.map((room, index) => (
@@ -189,13 +195,13 @@ const InspectionRequestForm = () => {
                   value={room}
                   onChange={(e) => handleRoomChange(index, e.target.value)}
                   placeholder={`Room ${index + 1}`}
-                  className="flex-1 border p-2 rounded"
+                  className="flex-1 border border-brown-primary-300 p-2 rounded bg-white"
                 />
                 {index > 0 && (
                   <button
                     type="button"
                     onClick={() => removeRoom(index)}
-                    className="px-3 py-1 bg-red-500 text-white rounded"
+                    className="px-3 py-1 bg-red-brown text-white rounded"
                   >
                     Remove
                   </button>
@@ -205,7 +211,7 @@ const InspectionRequestForm = () => {
             <button
               type="button"
               onClick={addRoom}
-              className="px-3 py-1 bg-gray-200 rounded"
+              className="px-3 py-1 bg-green-secondary text-white rounded"
             >
               + Add Room
             </button>
@@ -213,25 +219,36 @@ const InspectionRequestForm = () => {
 
           {/* Inspection Date */}
           <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">Preferred Date</label>
+            <label className="block text-sm font-medium mb-1 text-brown-secondary">Preferred Date</label>
             <input
               type="date"
               name="inspection_date"
               value={form.inspection_date}
               onChange={handleChange}
-              className="w-full border p-2 rounded"
+              className="w-full border border-brown-primary-300 p-2 rounded bg-white"
             />
           </div>
         </div>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-        >
-          {loading ? "Submitting..." : "Submit Inspection Request"}
-        </button>
+        {/* Submit Button - Always Visible */}
+        <div className="mt-8 pt-4 border-t border-brown-primary-300 bg-white">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-primary text-white p-4 rounded-lg hover:bg-soft-green transition-colors duration-200 font-bold text-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-h-[60px] flex items-center justify-center"
+            style={{ 
+              display: 'block !important', 
+              visibility: 'visible !important', 
+              position: 'relative', 
+              zIndex: 1000,
+              backgroundColor: '#4ade80',
+              color: '#ffffff',
+              border: '2px solid #22c55e'
+            }}
+          >
+            {loading ? "Submitting..." : "Submit Inspection Request"}
+          </button>
+        </div>
       </form>
     </div>
   );

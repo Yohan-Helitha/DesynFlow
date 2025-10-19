@@ -31,24 +31,33 @@ const LoginPage = () => {
     e.preventDefault();
     if (!validate()) return;
 
+    console.log('🔐 Starting login process...', { email, password: '***' });
+
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      
+      console.log('📡 Response received:', { status: response.status, ok: response.ok });
+      
       const data = await response.json();
+      console.log('📄 Response data:', data);
 
       if (response.ok) {
         if (data.require2FA) {
+          console.log('🔒 2FA required, redirecting to OTP...');
           navigate(`/verify-otp?email=${email}`);
         } else {
           // Store token and user data if provided
           if (data.token) {
             localStorage.setItem("authToken", data.token);
+            console.log('🎫 Token stored successfully');
           }
           if (data.user) {
             localStorage.setItem("user", JSON.stringify(data.user));
+            console.log('👤 User data stored:', data.user);
             
             // Store supplier-specific ID if user is a supplier
             if (data.user.role === "supplier" && data.user.id) {
@@ -58,8 +67,10 @@ const LoginPage = () => {
 
           // Role-based navigation
           const userRole = data.user?.role;
+          console.log('🎭 User role detected:', userRole);
           
           if (userRole === "customer service representative") {
+            console.log('🏢 Redirecting to CSR dashboard...');
             navigate("/csr-dashboard");
           } else if (userRole === "inspector") {
             navigate("/inspector-dashboard");
@@ -67,6 +78,8 @@ const LoginPage = () => {
             navigate("/project-manager");
           } else if (userRole === "team leader") {
             navigate("/team-leader");
+          } else if (userRole === "team member") {
+            navigate("/team-member");
           } else if (userRole === "warehouse manager") {
             navigate("/warehouse-manager");
           } else if (userRole === "procurement officer") {
@@ -77,13 +90,16 @@ const LoginPage = () => {
             navigate("/dashboard_sup");
           } else {
             // If role doesn't match any staff role, show error
+            console.log('❌ Role not recognized:', userRole);
             setError("Access denied. This portal is for staff members only.");
           }
         }
       } else {
+        console.log('❌ Response not OK:', data);
         setError(data.message || "Login failed");
       }
     } catch (err) {
+      console.error('🚨 Login error:', err);
       setError("Server error, please try again.");
     }
   };
@@ -114,7 +130,7 @@ const LoginPage = () => {
 
       {/* Right side (form) */}
       <div className="w-1/2 flex items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md p-10 bg-white shadow-lg rounded-lg">
+  <div className="w-full max-w-md p-10 bg-cream-light shadow-lg rounded-lg">
           <div className="text-center mb-6">
             <span className="text-4xl">🏠</span>
             <h2 className="text-2xl font-bold mt-2">Staff Portal</h2>
@@ -159,7 +175,7 @@ const LoginPage = () => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              className="w-full bg-brown-primary text-white py-2 rounded hover:bg-brown-primary-300"
             >
               Login 
             </button>

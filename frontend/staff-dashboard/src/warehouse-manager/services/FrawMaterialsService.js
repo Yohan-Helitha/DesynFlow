@@ -1,7 +1,7 @@
 // src/services/FrawMaterialsService.js
 export const fetchRawMaterial = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/raw_materials");
+    const res = await fetch("/api/warehouse/raw_materials");
     if (!res.ok) throw new Error("Failed to fetch raw materials");
     const data = await res.json();
     return data.raw_materials;
@@ -14,7 +14,7 @@ export const fetchRawMaterial = async () => {
 // Add new product
 export const addRawMaterial = async (materialData) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/raw_materials`, {
+    const res = await fetch(`/api/warehouse/raw_materials`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -38,7 +38,7 @@ export const addRawMaterial = async (materialData) => {
 
 export const fetchRawMaterialById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/raw_materials/${id}`);
+    const res = await fetch(`/api/warehouse/raw_materials/${id}`);
     if (!res.ok) throw new Error("Failed to fetch material");
     const data = await res.json();
     console.log("Fetched material:", data); // debug
@@ -51,7 +51,7 @@ export const fetchRawMaterialById = async (id) => {
 
 export const updateRawMaterial = async (id, data) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/raw_materials/${id}`, {
+    const res = await fetch(`/api/warehouse/raw_materials/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -76,7 +76,7 @@ export const updateRawMaterial = async (id, data) => {
 // Delete product
 export const deleteRawMaterial = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/raw_materials/${id}`, {
+    const res = await fetch(`/api/warehouse/raw_materials/${id}`, {
       method: "DELETE"
     });
 
@@ -91,3 +91,4 @@ export const deleteRawMaterial = async (id) => {
     throw err;
   }
 };
+

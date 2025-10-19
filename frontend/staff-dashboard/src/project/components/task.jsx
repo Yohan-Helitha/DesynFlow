@@ -4,7 +4,7 @@ import { FaUser, FaCalendarAlt, FaClipboardList, FaBolt, FaCheckCircle, FaBan, F
 const STATUS = {
   PENDING: 'Pending',
   IN_PROGRESS: 'In Progress',
-  COMPLETED: 'Done',
+  COMPLETED: 'Completed',
   BLOCKED: 'Blocked'
 };
 
@@ -36,6 +36,9 @@ const TaskBoard = () => {
   });
   
   const [formErrors, setFormErrors] = useState({});
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [blockingTask, setBlockingTask] = useState(null);
+  const [blockIssueDescription, setBlockIssueDescription] = useState('');
 
   // Fetch tasks, team members, and project data
   const fetchTasks = async () => {
@@ -46,7 +49,7 @@ const TaskBoard = () => {
     
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:4000/api/tasks/project/${project._id}`);
+      const response = await fetch(`/api/tasks/project/${project._id}`);
       if (response.ok) {
         const data = await response.json();
         setTasks(Array.isArray(data) ? data : []);
@@ -66,15 +69,36 @@ const TaskBoard = () => {
 
   const fetchTeamMembers = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/team-members/${leaderId}`);
+      // Get team data using populated endpoint
+      const response = await fetch(`/api/teams/populated`);
       if (response.ok) {
-        const data = await response.json();
-        setTeamMembers(Array.isArray(data.members) ? data.members : []);
+        const teamsData = await response.json();
         
-        // Fetch user names for all team members
-        await fetchUserNames(data.members || []);
+        // Find the team where the current user is the leader
+        const userTeam = teamsData.find(team => {
+          const teamLeaderId = team.leaderId?._id || team.leaderId;
+          return teamLeaderId === leaderId;
+        });
+        
+        if (userTeam && userTeam.members) {
+          setTeamMembers(userTeam.members);
+          
+          // Extract user names directly from the populated data
+          const names = {};
+          userTeam.members.forEach(member => {
+            if (member.userId && member.userId._id) {
+              const userId = member.userId._id;
+              const username = member.userId.username || member.userId.email || 'Unknown User';
+              names[userId] = username;
+            }
+          });
+          setUserNames(names);
+        } else {
+          console.log('No team found for leader ID:', leaderId);
+          setTeamMembers([]);
+        }
       } else {
-        console.log('No team members found or API endpoint not available');
+        console.log('Failed to fetch teams data');
         setTeamMembers([]);
       }
     } catch (error) {
@@ -85,12 +109,8 @@ const TaskBoard = () => {
 
   const fetchUserNames = async (members) => {
     try {
-      // Fetch teams data to get populated user information
-      const response = await fetch('http://localhost:4000/api/teams', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
+      // Fetch teams data with populated user information
+      const response = await fetch('/api/teams/populated');
       
       if (!response.ok) {
         throw new Error('Failed to fetch teams data');
@@ -101,11 +121,15 @@ const TaskBoard = () => {
       
       // Extract user data from all teams
       teamsData.forEach(team => {
-        team.members.forEach(teamMember => {
-          const userId = teamMember.userId._id;
-          const username = teamMember.userId.username;
-          names[userId] = username;
-        });
+        if (team.members && Array.isArray(team.members)) {
+          team.members.forEach(teamMember => {
+            if (teamMember.userId && teamMember.userId._id) {
+              const userId = teamMember.userId._id;
+              const username = teamMember.userId.username || teamMember.userId.email || 'Unknown User';
+              names[userId] = username;
+            }
+          });
+        }
       });
       
       // Set the user names
@@ -126,8 +150,8 @@ const TaskBoard = () => {
     console.log('fetchProject called, leaderId:', leaderId);
     
     try {
-      // Get team data first
-      const teamRes = await fetch(`http://localhost:4000/api/teams`);
+      // Get team data first using populated endpoint
+      const teamRes = await fetch(`/api/teams/populated`);
       const teamData = await teamRes.json();
       console.log('All teams:', teamData);
       
@@ -143,7 +167,7 @@ const TaskBoard = () => {
 
       if (teamObj) {
         // Get projects for this team
-        const projRes = await fetch(`http://localhost:4000/api/projects`);
+        const projRes = await fetch(`/api/projects`);
         const projData = await projRes.json();
         console.log('All projects:', projData);
         
@@ -258,8 +282,15 @@ const TaskBoard = () => {
   };
 
   const handleStatusChange = async (task, newStatus) => {
+    if (newStatus === 'Blocked') {
+      // Show block modal instead of directly blocking
+      setBlockingTask(task);
+      setShowBlockModal(true);
+      return;
+    }
+
     try {
-      const response = await fetch(`http://localhost:4000/api/tasks/${task._id}/status`, {
+      const response = await fetch(`/api/tasks/${task._id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -292,10 +323,48 @@ const TaskBoard = () => {
     setShowAddModal(true);
   };
 
+  const handleBlockTask = async () => {
+    if (!blockIssueDescription.trim()) {
+      alert('Please provide a description for the issue');
+      return;
+    }
+
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const response = await fetch(`/api/tasks/${blockingTask._id}/block`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          issueDescription: blockIssueDescription,
+          blockedBy: currentUser?.id || currentUser?._id
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setTasks(prevTasks => 
+          prevTasks.map(t => 
+            t._id === blockingTask._id ? result.task : t
+          )
+        );
+        setShowBlockModal(false);
+        setBlockingTask(null);
+        setBlockIssueDescription('');
+        alert('Task blocked and issue logged successfully for weekly reporting');
+      } else {
+        const error = await response.json();
+        alert(`Error blocking task: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Error blocking task:', error);
+      alert('Error blocking task');
+    }
+  };
+
   const handleDeleteTask = async (task) => {
     if (window.confirm(`Are you sure you want to delete "${task.name}"?`)) {
       try {
-        const response = await fetch(`http://localhost:4000/api/tasks/${task._id}`, {
+        const response = await fetch(`/api/tasks/${task._id}`, {
           method: 'DELETE'
         });
 
@@ -330,7 +399,7 @@ const TaskBoard = () => {
 
       if (editingTask) {
         // Update existing task
-        const response = await fetch(`http://localhost:4000/api/tasks/${editingTask._id}`, {
+        const response = await fetch(`/api/tasks/${editingTask._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -351,7 +420,7 @@ const TaskBoard = () => {
         }
       } else {
         // Add new task
-        const response = await fetch(`http://localhost:4000/api/tasks`, {
+        const response = await fetch(`/api/tasks`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -727,7 +796,10 @@ const TaskBoard = () => {
                 {formErrors.assignedTo && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.assignedTo}</p>
                 )}
-                {newTask.assignedTo && teamMembers.find(m => m.userId === newTask.assignedTo)?.availability === 'Busy' && (
+                {newTask.assignedTo && teamMembers.find(m => {
+                  const userId = typeof m.userId === 'object' ? m.userId._id : m.userId;
+                  return userId === newTask.assignedTo;
+                })?.availability === 'Busy' && (
                   <p className="text-amber-600 text-xs mt-1"><FaExclamationTriangle className="inline mr-1" /> This team member is currently busy</p>
                 )}
               </div>
@@ -813,6 +885,58 @@ const TaskBoard = () => {
               >
                 {editingTask ? 'Update Task' : 'Add Task'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Task Modal */}
+      {showBlockModal && blockingTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-red-brown">Block Task - Report Issue</h3>
+              <button 
+                className="text-gray-500 hover:text-gray-700 text-xl"
+                onClick={() => {
+                  setShowBlockModal(false);
+                  setBlockingTask(null);
+                  setBlockIssueDescription('');
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="p-4">
+              <p className="text-gray-600 mb-4">
+                Please describe the issue that's blocking this task "{blockingTask.name}". This will be tracked for weekly reports.
+              </p>
+              <textarea
+                value={blockIssueDescription}
+                onChange={(e) => setBlockIssueDescription(e.target.value)}
+                placeholder="Describe the issue in detail..."
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-brown"
+              />
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={handleBlockTask}
+                  disabled={!blockIssueDescription.trim()}
+                  className="flex-1 bg-red-brown text-white px-4 py-2 rounded-lg hover:bg-red-brown transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Block Task
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBlockModal(false);
+                    setBlockingTask(null);
+                    setBlockIssueDescription('');
+                  }}
+                  className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

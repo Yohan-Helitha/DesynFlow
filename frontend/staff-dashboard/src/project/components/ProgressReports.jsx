@@ -10,7 +10,7 @@ export default function ProgressReports() {
   const [dateEnd, setDateEnd] = useState('');
   const [includeProgress, setIncludeProgress] = useState(true);
   const [includeIssues, setIncludeIssues] = useState(true);
-  const [includeResourceUsage, setIncludeResourceUsage] = useState(true);
+  const [includeMaterialList, setIncludeMaterialList] = useState(true);
   const [summary, setSummary] = useState('');
   const [files, setFiles] = useState([]);
   const [reports, setReports] = useState([]);
@@ -20,14 +20,14 @@ export default function ProgressReports() {
   useEffect(() => {
     async function fetchProjectsAndReports() {
       try {
-        const projRes = await fetch(`http://localhost:4000/api/projects`);
+        const projRes = await fetch(`/api/projects`);
         const projectsData = await projRes.json();
         setProjects(projectsData);
         if (projectsData.length > 0) setProject(projectsData[0]._id);
 
         // Fetch reports for first project
         if (projectsData[0]) {
-          const repRes = await fetch(`http://localhost:4000/api/reports/project/${projectsData[0]._id}`);
+          const repRes = await fetch(`/api/reports/project/${projectsData[0]._id}`);
           const repData = await repRes.json();
           setReports(repData);
         }
@@ -54,7 +54,7 @@ export default function ProgressReports() {
     if (!confirm('Are you sure you want to delete this report?')) return;
 
     try {
-      const response = await fetch(`http://localhost:4000/api/reports/${reportId}`, {
+      const response = await fetch(`/api/reports/${reportId}`, {
         method: 'DELETE',
       });
 
@@ -93,12 +93,12 @@ export default function ProgressReports() {
         dateStart,
         dateEnd,
         summary,
-        includeProgress,
-        includeIssues,
-        includeResourceUsage
+  includeProgress,
+  includeIssues,
+  includeMaterialList
       };
 
-      const response = await fetch('http://localhost:4000/api/reports/generate', {
+      const response = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,24 +108,40 @@ export default function ProgressReports() {
 
       if (response.ok) {
         const result = await response.json();
-        
+
+        // Determine public URL: prefer fileUrl on saved report, else use filePath returned
+        const publicUrl = result.report?.fileUrl || result.filePath || '';
+        const normalizedUrl = publicUrl.startsWith('http') ? publicUrl : `${window.location.origin}${publicUrl}`;
+
         // Add to generated files
-        setGeneratedFiles([...generatedFiles, { 
+        setGeneratedFiles(prev => ([...prev, { 
           name: result.fileName, 
-          url: `http://localhost:4000${result.filePath}`,
-          id: result.report._id
-        }]);
-        
+          url: normalizedUrl,
+          id: result.report?._id
+        }]));
+
         // Add to reports list to show in existing reports section
         setReports(prev => [result.report, ...prev]);
-        
+
         // Reset form
         setSummary('');
         setFiles([]);
-        alert('Report generated successfully!');
+
+        // Open the generated PDF in a new tab if available
+        if (normalizedUrl) {
+          window.open(normalizedUrl, '_blank');
+        }
+
+        alert('Report generated successfully! The PDF will open in a new tab.');
       } else {
-        const error = await response.json();
-        alert(`Failed to generate report: ${error.error}`);
+        let errorMsg = 'Failed to generate report.';
+        try {
+          const error = await response.json();
+          errorMsg = error.error || error.message || errorMsg;
+        } catch (e) {
+          // ignore
+        }
+        alert(`Failed to generate report: ${errorMsg}`);
       }
     } catch (error) {
       console.error('Error generating report:', error);
@@ -140,69 +156,116 @@ export default function ProgressReports() {
       <h2 className="text-2xl font-bold text-brown-primary mb-6">Reporting &amp; Updates</h2>
 
       {/* Generate New Report UI */}
-      <div className="bg-cream-light rounded-lg shadow-md mb-8">
-        <div className="border-b border-gray-200 px-6 py-4">
+      <div className="bg-cream-light rounded-lg shadow-md mb-8 overflow-hidden">
+        <div className="border-b border-gray-200 px-6 py-4 bg-transparent">
           <span className="font-semibold text-brown-primary text-lg">Generate New Report</span>
         </div>
         <form className="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-brown-primary mb-1">Report Type</label>
-            <select value={reportType} onChange={e => setReportType(e.target.value)} className="w-full px-3 py-2 border rounded-md">
+            <select
+              value={reportType}
+              onChange={e => setReportType(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-green-primary"
+            >
               <option>Weekly Progress Report</option>
               <option>Final Completion Report</option>
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-brown-primary mb-1">Project</label>
-            <select value={project} onChange={e => setProject(e.target.value)} className="w-full px-3 py-2 border rounded-md">
+            <select
+              value={project}
+              onChange={e => setProject(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-green-primary"
+            >
               {projects.map(p => (
                 <option key={p._id} value={p._id}>{p.projectName || p.name}</option>
               ))}
             </select>
           </div>
-          <div className="flex gap-4 items-end">
+
+          <div className="flex gap-4 items-center">
             <div className="flex-1">
               <label className="block text-sm font-medium text-brown-primary mb-1">Date Range</label>
-              <input type="date" value={dateStart} onChange={e => setDateStart(e.target.value)} className="w-full px-3 py-2 border rounded-md mb-2" />
+              <input
+                type="date"
+                value={dateStart}
+                onChange={e => setDateStart(e.target.value)}
+                className="w-full h-10 px-3 border border-gray-200 rounded-md bg-white"
+              />
             </div>
             <div className="flex-1">
               <label className="block text-sm font-medium text-brown-primary mb-1">&nbsp;</label>
-              <input type="date" value={dateEnd} onChange={e => setDateEnd(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+              <input
+                type="date"
+                value={dateEnd}
+                onChange={e => setDateEnd(e.target.value)}
+                className="w-full h-10 px-3 border border-gray-200 rounded-md bg-white"
+              />
             </div>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-brown-primary mb-1">Include Data</label>
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={includeProgress} onChange={e => setIncludeProgress(e.target.checked)} /> Progress Updates
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={includeProgress}
+                  onChange={e => setIncludeProgress(e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-green-primary"
+                />
+                <span className="text-sm text-brown-primary">Progress Updates</span>
               </label>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={includeIssues} onChange={e => setIncludeIssues(e.target.checked)} /> Issues &amp; Delays
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={includeIssues}
+                  onChange={e => setIncludeIssues(e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-green-primary"
+                />
+                <span className="text-sm text-brown-primary">Issues &amp; Delays</span>
               </label>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={includeResourceUsage} onChange={e => setIncludeResourceUsage(e.target.checked)} /> Resource Usage
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={includeMaterialList}
+                  onChange={e => setIncludeMaterialList(e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-green-primary"
+                />
+                <span className="text-sm text-brown-primary">Material List</span>
               </label>
             </div>
           </div>
+
           <div className="col-span-2">
             <label className="block text-sm font-medium text-brown-primary mb-1">Report Summary</label>
-            <textarea value={summary} onChange={e => setSummary(e.target.value)} placeholder="Enter a summary of the report..." rows={3} className="w-full px-3 py-2 border rounded-md" />
+            <textarea
+              value={summary}
+              onChange={e => setSummary(e.target.value)}
+              placeholder="Enter a summary of the report..."
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md resize-vertical min-h-[100px] bg-white"
+            />
           </div>
+
           <div className="col-span-2">
             <label className="block text-sm font-medium text-brown-primary mb-1">Supporting Files</label>
-            <div className="border-2 border-dashed border-brown-primary rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-cream-light">
+            <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center gap-3 bg-white">
               <FaFileUpload className="text-2xl text-brown-primary mb-2" />
               <input type="file" multiple accept="image/*" onChange={handleFileChange} className="hidden" id="file-upload" />
-              <label htmlFor="file-upload" className="px-4 py-2 bg-brown-primary text-white rounded cursor-pointer">Browse Images</label>
+              <label htmlFor="file-upload" className="px-4 py-2 bg-brown-primary text-white rounded-md cursor-pointer hover:bg-brown-secondary transition">Browse Images</label>
               <span className="text-xs text-brown-primary">Drag and drop image files here, or click to select images</span>
               {files.length > 0 && (
-                <div className="mt-2 text-xs text-brown-primary">{files.map(f => f.name).join(', ')}</div>
+                <div className="mt-2 text-xs text-brown-primary w-full text-left">{files.map(f => f.name).join(', ')}</div>
               )}
             </div>
           </div>
+
           <div className="col-span-2 flex justify-end gap-3 mt-4">
-            <button type="button" className="px-4 py-2 border border-brown-primary rounded text-brown-primary bg-white hover:bg-cream-primary">Save as Draft</button>
-            <button type="button" className="px-4 py-2 bg-brown-primary text-white rounded hover:bg-brown-secondary" onClick={handleGenerateReport}>Generate Report</button>
+            <button type="button" className="px-4 py-2 border border-brown-primary rounded text-brown-primary bg-white hover:bg-cream-primary transition">Save as Draft</button>
+            <button type="button" className="px-4 py-2 bg-brown-primary text-white rounded hover:bg-brown-secondary transition" onClick={handleGenerateReport}>Generate Report</button>
           </div>
         </form>
       </div>
@@ -248,16 +311,20 @@ export default function ProgressReports() {
                     }`}>
                       {report.status}
                     </span>
-                    {report.filePath && report.status === 'completed' && (
-                      <a 
-                        href={`http://localhost:4000${report.filePath}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline text-xs flex items-center gap-1"
-                      >
-                        <FaDownload size={12} /> Download
-                      </a>
-                    )}
+                        {(() => {
+                          const rawUrl = report.fileUrl || report.filePath || '';
+                          const downloadUrl = rawUrl && /^https?:\/\//i.test(rawUrl) ? rawUrl : (rawUrl ? `${window.location.origin}${rawUrl}` : '');
+                          return (downloadUrl && report.status === 'completed') ? (
+                            <a
+                              href={downloadUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline text-xs flex items-center gap-1"
+                            >
+                              <FaDownload size={12} /> Download
+                            </a>
+                          ) : null;
+                        })()}
                     <button
                       onClick={() => handleDeleteReport(report._id)}
                       className="text-red-600 hover:text-red-800 text-xs px-2 py-1 rounded border border-red-300 hover:bg-red-50"
@@ -283,8 +350,8 @@ export default function ProgressReports() {
                     <span className={`px-2 py-1 text-xs rounded ${report.includeIssues ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'}`}>
                       {report.includeIssues ? '✓' : '✗'} Issues
                     </span>
-                    <span className={`px-2 py-1 text-xs rounded ${report.includeResourceUsage ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                      {report.includeResourceUsage ? '✓' : '✗'} Resources
+                    <span className={`px-2 py-1 text-xs rounded ${report.includeMaterialList ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                      {report.includeMaterialList ? '✓' : '✗'} Material List
                     </span>
                   </div>
                 </div>

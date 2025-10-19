@@ -68,8 +68,8 @@ function RateSupplier() {
     return () => clearTimeout(emergencyTimer);
   }, [loading]);
 
-  // Resolve API base (backend actually running on 4000 by default)
-  const API_BASE = import.meta.env?.VITE_API_BASE || import.meta.env?.REACT_APP_API_BASE || "http://localhost:4000";
+  // Resolve API base (use empty string for relative paths in production)
+  const API_BASE = import.meta.env?.VITE_API_BASE || import.meta.env?.REACT_APP_API_BASE || "";
 
   // Fetch data based on user role
   useEffect(() => {

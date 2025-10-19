@@ -4,7 +4,7 @@ import "./Order_details_sup.css";
 import { Link, useNavigate } from "react-router-dom";
 import { FaBell, FaSearch, FaClipboardList, FaCheckCircle, FaTimesCircle, FaBox, FaSyncAlt, FaHourglassHalf, FaFileAlt, FaTimes, FaUserTie, FaTruck } from 'react-icons/fa';
 
-const API_BASE = "http://localhost:4000/api/purchase-orders"; // correct backend port
+const API_BASE = "/api/purchase-orders"; // correct backend port
 
 function OrderDetailsSup() {
   const [orders, setOrders] = useState([]);
@@ -485,3 +485,4 @@ function OrderDetailsSup() {
   );
 }
 export default OrderDetailsSup;
+

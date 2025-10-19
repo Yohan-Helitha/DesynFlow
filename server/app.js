@@ -26,11 +26,14 @@ import './modules/project/model/milestone.model.js';
 import './modules/project/model/material.model.js';
 import './modules/project/model/meeting.model.js';
 import './modules/project/model/progressupdate.model.js';
+import './modules/project/model/notification.model.js';
 
 //Routes
 import projectRoutes from './modules/project/routes/project.routes.js';
 import taskRoutes from './modules/project/routes/task.routes.js';
 import teamRoutes from './modules/project/routes/team.routes.js';
+import progressUpdateRoutes from './modules/project/routes/progressupdate.routes.js';
+import personalFileRoutes from './modules/project/routes/personalfile.routes.js';
 import kpiRoutes from './modules/project/routes/kpi.routes.js';
 import viewReportRoutes from './modules/project/routes/viewReport.routes.js';
 import downloadReportRoutes from './modules/project/routes/downloadReport.routes.js';
@@ -39,8 +42,13 @@ import milestoneTimelineRoutes from './modules/project/routes/milestoneTimeline.
 import attendanceRoutes from './modules/project/routes/attendance.routes.js';
 import materialRequestRoutes from './modules/project/routes/materialRequest.routes.js';
 import reportRoutes from './modules/project/routes/report.routes.js';
+import inspectionReportRoutes from './modules/project/routes/inspectionReport.routes.js';
+import budgetManagementRoutes from './modules/project/routes/budgetManagement.routes.js';
+import quotationManagementRoutes from './modules/project/routes/quotationManagement.routes.js';
 import fileRoutes from './modules/project/routes/file.routes.js';
 import meetingRoutes from './modules/project/routes/meeting.routes.js';
+import threeDModelRoutes from './modules/project/routes/threeDModel.routes.js';
+import notificationRoutes from './modules/project/routes/notificationRoutes.js';
 import fileServeRoutes from './routes/fileServe.js';
 import uploadRoutes from './routes/upload.routes.js';
 
@@ -53,6 +61,7 @@ import assignmentRoutes from "./modules/auth/routes/assignmentRoutes.js";
 import authReportRoutes from "./modules/auth/routes/reportRoutes.js";
 import inspectionRequestRoutes from "./modules/auth/routes/inspectionRequestRoutes.js";
 import inspectionFormRoutes from "./modules/auth/routes/inspectionFormRoutes.js";
+import pmNotificationRoutes from "./modules/auth/routes/pmNotificationRoutes.js";
 
 // Warehouse routes
 import manuProductsRoute from "./modules/warehouse-manager/routes/manuProductsRoute.js";
@@ -64,6 +73,8 @@ import sReorderRequestsRoute from "./modules/warehouse-manager/routes/sReorderRe
 import disposalMaterialsRoute from "./modules/warehouse-manager/routes/disposalMaterialsRoute.js";
 import auditLogRoute from "./modules/warehouse-manager/routes/auditLogRoute.js";
 import thresholdAlertRoute from "./modules/warehouse-manager/routes/thresholdAlertRoute.js";
+import warrantyClaimsRoute from "./modules/warehouse-manager/routes/warrantyClaimsRoute.js";
+import submitReportsRoute from "./modules/warehouse-manager/routes/submitReportsRoute.js";
 
 //finane routes
 
@@ -124,11 +135,15 @@ app.use("/api/assignment", assignmentRoutes);
 app.use("/api/auth-reports", authReportRoutes);
 app.use("/api/inspection-request", inspectionRequestRoutes);
 app.use("/api/inspectorForms", inspectionFormRoutes);
+app.use("/api/pm-notifications", pmNotificationRoutes);
 
 // Mount project routes
 app.use('/api', projectRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', teamRoutes);
+app.use('/api', progressUpdateRoutes);
+app.use('/api', personalFileRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api', kpiRoutes);
 app.use('/api', viewReportRoutes);
 app.use('/api', downloadReportRoutes);
@@ -137,6 +152,10 @@ app.use('/api', milestoneTimelineRoutes);
 app.use('/api', attendanceRoutes);
 app.use('/api', materialRequestRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/project', inspectionReportRoutes);
+app.use('/api/project', budgetManagementRoutes);
+app.use('/api/project', quotationManagementRoutes);
+app.use('/api/project', threeDModelRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);
@@ -152,6 +171,8 @@ app.use("/api/warehouse/s_reorder_requests", sReorderRequestsRoute);
 app.use("/api/warehouse/disposal_materials", disposalMaterialsRoute);
 app.use("/api/warehouse/audit_log", auditLogRoute);
 app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
+app.use("/api/warehouse/warranty_claims", warrantyClaimsRoute);
+app.use("/api/warehouse/submit-reports", submitReportsRoute);
 
 //finance module routes
 

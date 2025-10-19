@@ -25,7 +25,11 @@ import UpdateSReorderRequestForm from './forms/updateSReorderRequestForm.jsx';
 import AuditLogs from './pages/auditLog.jsx';
 import Notifications from './pages/notifications.jsx';
 import ThresholdAlerts from './pages/thresholdAlerts.jsx';
+import WarrantyClaims from './pages/warrantyClaims.jsx';
 import { NotificationsProvider } from './context/notificationContext.jsx';
+import UpdateWarrantyClaimForm from './forms/updateWarrantyClaimsForm.jsx'; 
+import SubmitReports from './pages/submitReports.jsx';
+import AddSubmitReportsForm from './forms/addSubmitReportsForm.jsx';
 
 const WarehouseDashboard = () => {
   return (
@@ -57,6 +61,10 @@ const WarehouseDashboard = () => {
           <Route path="/audit-logs" element={<AuditLogs />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/threshold-alerts" element={<ThresholdAlerts />} />
+          <Route path="/warranty-claims" element={<WarrantyClaims />} />
+          <Route path="/reorder-request/update/:id" element={<UpdateWarrantyClaimForm />} />
+          <Route path="/submit-reports" element={<SubmitReports />} />
+          <Route path="/submit-reports/add" element={<AddSubmitReportsForm />} />
         </Routes>
       </NotificationsProvider>
     </div>

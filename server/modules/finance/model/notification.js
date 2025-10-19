@@ -9,4 +9,4 @@ const NotificationSchema = new Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.model('Notification', NotificationSchema);
+export default mongoose.model('FinanceNotificationGeneral', NotificationSchema);

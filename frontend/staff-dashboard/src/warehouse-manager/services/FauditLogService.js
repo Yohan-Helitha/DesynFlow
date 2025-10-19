@@ -1,7 +1,7 @@
 // src/services/FauditLogService.js
 export const fetchAuditLogs = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/audit_log"); 
+    const res = await fetch("/api/warehouse/audit_log"); 
     if (!res.ok) throw new Error("Failed to fetch audit logs");
 
     const data = await res.json();
@@ -14,7 +14,7 @@ export const fetchAuditLogs = async () => {
 
 export const deleteAuditLog = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/audit_log/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/warehouse/audit_log/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Failed to delete audit log");
     return true;
   } catch (err) {
@@ -22,3 +22,4 @@ export const deleteAuditLog = async (id) => {
     throw err;
   }
 };
+

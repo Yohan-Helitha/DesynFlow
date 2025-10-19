@@ -8,12 +8,12 @@ export default function TeamAttendance() {
     async function fetchAttendance() {
       try {
         // Get first team for demo
-        const teamRes = await fetch(`http://localhost:4000/api/teams`);
+        const teamRes = await fetch(`/api/teams`);
         const teams = await teamRes.json();
         const firstTeam = teams[0];
         
         if (firstTeam) {
-          const attRes = await fetch(`http://localhost:4000/api/team/${firstTeam._id}`);
+          const attRes = await fetch(`/api/team/${firstTeam._id}`);
           const attData = await attRes.json();
           setAttendance(attData);
         }

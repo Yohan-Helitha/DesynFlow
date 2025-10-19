@@ -1,7 +1,7 @@
 import Navbar from "../component/navbar";
 import React from 'react'
 import { fetchManuProducts, deleteManuProduct } from "../services/FmanuProductsService.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Edit2, Trash2,Filter,Search,Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { generatePDF } from "../utils/pdfGenerator.js";
@@ -14,6 +14,7 @@ const ManuProducts = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterBy, setFilterBy] = useState("all");
     const [showFilter, setShowFilter] = useState(false);
+    const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
 
 
     // Function to fetch products from backend
@@ -88,8 +89,40 @@ const ManuProducts = () => {
     });
     
     //pdf function
-  const handleDownloadPDF = () => {
-    console.log("Downloading PDF...");
+  const handleDownloadPDF = (timeFilter = 'all') => {
+    console.log("Downloading PDF for:", timeFilter);
+
+    let dataToDownload = filteredProducts;
+    
+    // Filter data based on time selection
+    if (timeFilter !== 'all') {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1; // JavaScript months are 0-indexed
+      
+      dataToDownload = filteredProducts.filter(product => {
+        const productDate = new Date(product.createdAt);
+        const productYear = productDate.getFullYear();
+        const productMonth = productDate.getMonth() + 1;
+        
+        switch (timeFilter) {
+          case 'thisMonth':
+            return productYear === currentYear && productMonth === currentMonth;
+          case 'previousMonth':
+            const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+            const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+            return productYear === prevYear && productMonth === prevMonth;
+          case 'thisYear':
+            return productYear === currentYear;
+          default:
+            // Handle specific months (1-12)
+            if (typeof timeFilter === 'number' && timeFilter >= 1 && timeFilter <= 12) {
+              return productYear === currentYear && productMonth === timeFilter;
+            }
+            return true;
+        }
+      });
+    }
 
     const columns = [
     "ID", "Name", "Category", "Type", "Unit", "Restock Level", 
@@ -97,7 +130,7 @@ const ManuProducts = () => {
     "Inventory Name", "Created By", "Month", "Year", "Created At"
     ];
 
-    const rows = filteredProducts.map(product => [
+    const rows = dataToDownload.map(product => [
       product.materialId,
       product.materialName,
       product.category,
@@ -114,18 +147,27 @@ const ManuProducts = () => {
       new Date(product.createdAt).toLocaleString()
     ]);
 
-    generatePDF(columns, rows, "Manufactured Products Report");
+    const timeFilterName = timeFilter === 'all' ? 'All Records' : 
+                          timeFilter === 'thisMonth' ? 'This Month' :
+                          timeFilter === 'previousMonth' ? 'Previous Month' :
+                          timeFilter === 'thisYear' ? 'This Year' :
+                          typeof timeFilter === 'number' ? new Date(2024, timeFilter - 1).toLocaleString('default', { month: 'long' }) :
+                          'Filtered';
 
+    generatePDF(columns, rows, `Manufactured Products Report - ${timeFilterName}`);
+    setShowDownloadDropdown(false);
   };
 
-  const chartData = products.reduce((acc, product) => {
-    const key = `${product.month}-${product.year}`;
-    if (!acc[key]) {
-      acc[key] = { monthYear: `${product.month}/${product.year}`, count: 0 };
-    }
-    acc[key].count += 1;
-    return acc;
-  }, {});
+  const chartData = useMemo(() => {
+    return products.reduce((acc, product) => {
+      const key = `${product.month}-${product.year}`;
+      if (!acc[key]) {
+        acc[key] = { monthYear: `${product.month}/${product.year}`, count: 0 };
+      }
+      acc[key].count += 1;
+      return acc;
+    }, {});
+  }, [products]);
 
   const chartArray = Object.values(chartData);
     
@@ -232,13 +274,62 @@ const ManuProducts = () => {
             )}
           </div>
 
-          <button
-            onClick={handleDownloadPDF}
-            className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
-            title="Download PDF"
-          >
-            <Download className="w-5 h-5 text-gray-700" />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowDownloadDropdown(!showDownloadDropdown)}
+              className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
+              title="Download PDF"
+            >
+              <Download className="w-5 h-5 text-gray-700" />
+            </button>
+
+            {/* Download Dropdown */}
+            {showDownloadDropdown && (
+              <div className="absolute right-0 top-full mt-2 bg-white border border-gray-300 rounded shadow-md w-48 z-50">
+                <ul className="text-sm">
+                  <li
+                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                    onClick={() => handleDownloadPDF('thisMonth')}
+                  >
+                    This Month
+                  </li>
+                  <li
+                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                    onClick={() => handleDownloadPDF('previousMonth')}
+                  >
+                    Previous Month
+                  </li>
+                  <li
+                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                    onClick={() => handleDownloadPDF('thisYear')}
+                  >
+                    This Year
+                  </li>
+                  <li className="px-4 py-2 text-gray-500 font-medium border-b border-gray-200">
+                    Select Month:
+                  </li>
+                  {[
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                  ].map((month, index) => (
+                    <li
+                      key={month}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleDownloadPDF(index + 1)}
+                    >
+                      {month}
+                    </li>
+                  ))}
+                  <li
+                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-t border-gray-200 font-medium"
+                    onClick={() => handleDownloadPDF('all')}
+                  >
+                    All Records
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         
 
         </div>

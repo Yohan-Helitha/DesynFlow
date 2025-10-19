@@ -11,9 +11,9 @@ export const createProject = async (req, res) => {
         // Simple project creation with inspection report
         const { projectName, clientId, assignedTeamId, startDate, dueDate, inspectionReportPath } = req.body;
 
-        // Basic validation
-        if (!projectName || !clientId || !assignedTeamId || !startDate || !dueDate) {
-            return res.status(400).json({ error: 'All fields are required' });
+        // Basic validation (assignedTeamId is optional)
+        if (!projectName || !clientId || !startDate || !dueDate) {
+            return res.status(400).json({ error: 'Project name, client, start date, and due date are required' });
         }
 
         // Look up client by email if clientId is an email
@@ -40,7 +40,6 @@ export const createProject = async (req, res) => {
         const projectData = {
             projectName,
             clientId: actualClientId,
-            assignedTeamId,
             status,
             startDate: new Date(startDate),
             dueDate: new Date(dueDate),
@@ -49,6 +48,11 @@ export const createProject = async (req, res) => {
                 { name: 'Due', date: new Date(dueDate), description: 'Project due date' }
             ]
         };
+
+        // Only add assignedTeamId if a team is actually assigned
+        if (assignedTeamId) {
+            projectData.assignedTeamId = assignedTeamId;
+        }
 
 
         // Add inspection report if provided
@@ -126,10 +130,11 @@ export const updateProject = async (req, res) => {
             updateData.clientId = client._id;
         }
 
-        if(updateData.assignedTeamId){
+        if(updateData.assignedTeamId && updateData.assignedTeamId.trim() !== ''){
             updateData.status = 'Active'; //if team assigned, set status to Active
         }else{
             updateData.status = 'On Hold'; //if no team assigned, set status to On Hold
+            updateData.assignedTeamId = null; // Explicitly remove team assignment
         }
 
         // Handle attachment updates if provided

@@ -26,9 +26,17 @@ const assignmentSchema = new mongoose.Schema({
   
   status: { 
     type: String, 
-    enum: ['assigned', 'in-progress', 'completed'], 
+    enum: ['assigned', 'in-progress', 'paused', 'completed', 'declined'], 
     default: 'assigned' 
   },
+  
+  // Inspection timing
+  inspection_start_time: { type: Date },
+  inspection_end_time: { type: Date },
+  
+  // Action tracking
+  decline_reason: { type: String },
+  action_notes: { type: String },
   
   // Keep validation features as requested
   verifiedToken: { type: String },

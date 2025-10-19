@@ -17,7 +17,7 @@ body {
   position: relative;
 }
 
-.dashboard-page::before {
+/* .dashboard-page::before {
   content: "";
   position: fixed;
   top: 0;
@@ -30,7 +30,7 @@ body {
     radial-gradient(circle at 40% 80%, rgba(255, 248, 232, 0.8) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
-}
+} */
 
 /* ===== Sidebar ===== */
 .sidebar {

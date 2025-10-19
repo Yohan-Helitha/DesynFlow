@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
 import { FaBuilding, FaPlus, FaEdit, FaTrash, FaPhone, FaEnvelope, FaMapMarkerAlt, FaBox } from 'react-icons/fa';
 
-const API_BASE = "http://localhost:4000/api/suppliers"; // your backend
+const API_BASE = "/api/suppliers"; // your backend
 
 function Update_delete_suppliers() {
   const [suppliers, setSuppliers] = useState([]);
@@ -413,3 +413,4 @@ function Update_delete_suppliers() {
 }
 
 export default Update_delete_suppliers;
+

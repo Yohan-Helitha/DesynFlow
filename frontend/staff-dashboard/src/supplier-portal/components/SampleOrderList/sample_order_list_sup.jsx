@@ -37,7 +37,7 @@ function SampleOrderListSup() {
       }
 
       // Fetch all suppliers and find the one matching the logged-in user's email
-      const suppliersResponse = await axios.get("http://localhost:4000/api/suppliers");
+      const suppliersResponse = await axios.get("/api/suppliers");
       const suppliers = suppliersResponse.data;
       console.log("All suppliers:", suppliers);
 
@@ -51,7 +51,7 @@ function SampleOrderListSup() {
         
         // For now, show all samples if no specific supplier is found (like Dashboard_sup does)
         console.log("Showing all samples since no specific supplier found");
-        const allSamplesResponse = await axios.get("http://localhost:4000/api/samples/all");
+        const allSamplesResponse = await axios.get("/api/samples/all");
         setSampleOrders(allSamplesResponse.data);
         setLoading(false);
         return;
@@ -60,7 +60,7 @@ function SampleOrderListSup() {
       console.log("Fetching samples for supplier ID:", supplier._id);
 
       // Fetch sample orders for this supplier
-      const response = await axios.get(`http://localhost:4000/api/samples/${supplier._id}`);
+      const response = await axios.get(`/api/samples/${supplier._id}`);
       console.log("Sample orders response:", response.data);
 
       // Show ALL sample orders (Requested, Approved, Rejected, Dispatched)
@@ -82,7 +82,7 @@ function SampleOrderListSup() {
   const handleApprove = async (orderId) => {
     try {
       setProcessingId(orderId);
-      await axios.patch(`http://localhost:4000/api/samples/${orderId}/review`, { 
+      await axios.patch(`/api/samples/${orderId}/review`, { 
         status: "Approved",
         reviewNote: "Sample approved by supplier"
       });
@@ -104,7 +104,7 @@ function SampleOrderListSup() {
   const handleDispatch = async (orderId) => {
     try {
       setProcessingId(orderId);
-      await axios.patch(`http://localhost:4000/api/samples/${orderId}/review`, { 
+      await axios.patch(`/api/samples/${orderId}/review`, { 
         status: "Dispatched",
         reviewNote: "Sample dispatched by supplier"
       });
@@ -137,7 +137,7 @@ function SampleOrderListSup() {
 
     try {
       setProcessingId(selectedOrderId);
-      await axios.patch(`http://localhost:4000/api/samples/${selectedOrderId}/review`, { 
+      await axios.patch(`/api/samples/${selectedOrderId}/review`, { 
         status: "Rejected",
         reviewNote: rejectReason
       });
@@ -534,3 +534,4 @@ function SampleOrderListSup() {
 }
 
 export default SampleOrderListSup;
+

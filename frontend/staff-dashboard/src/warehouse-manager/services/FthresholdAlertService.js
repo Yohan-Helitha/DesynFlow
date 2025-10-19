@@ -1,7 +1,7 @@
 // src/services/FthresholdAlertService.js
 export const fetchThresholdAlerts = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/threshold_alert"); 
+    const res = await fetch("/api/warehouse/threshold_alert"); 
     if (!res.ok) throw new Error("Failed to fetch threshold alerts");
 
     const data = await res.json();
@@ -14,7 +14,7 @@ export const fetchThresholdAlerts = async () => {
 
 export const deleteThresholdAlert = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/threshold_alert/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/warehouse/threshold_alert/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Failed to delete threshold alert");
     return true;
   } catch (err) {
@@ -22,3 +22,4 @@ export const deleteThresholdAlert = async (id) => {
     throw err;
   }
 };
+

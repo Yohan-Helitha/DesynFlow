@@ -3,12 +3,15 @@ import Layout from "./components/Layout";
 import LeaderDashboard from "./leaderDashboard";
 import TaskBoard from "./components/task";
 import TeamAttendance from "./components/TeamAttendance";
+import PersonalFilesTab from './components/PersonalFilesTab';
 import ResourceRequests from "./components/ResourceRequests";
+import FlaggedIssuesPanel from "./components/FlaggedIssuesPanel";
 import ProgressReports from "./components/ProgressReports";
 
 export default function TeamLeaderMainDashboard() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [project, setProject] = useState(null);
+  const [teamData, setTeamData] = useState(null);
   
   // Get leader ID from logged-in user
   const getLeaderId = () => {
@@ -25,7 +28,7 @@ export default function TeamLeaderMainDashboard() {
       
       try {
         // Get team data first
-        const teamRes = await fetch(`http://localhost:4000/api/teams`);
+        const teamRes = await fetch(`/api/teams`);
         const teamData = await teamRes.json();
         console.log('All teams:', teamData);
         
@@ -38,10 +41,11 @@ export default function TeamLeaderMainDashboard() {
           : null;
         
         console.log('Found team for leader:', teamObj);
+        setTeamData(teamObj); // Store team data for flagged issues
 
         if (teamObj) {
           // Get projects for this team
-          const projRes = await fetch(`http://localhost:4000/api/projects`);
+          const projRes = await fetch(`/api/projects`);
           const projData = await projRes.json();
           console.log('All projects:', projData);
           
@@ -76,10 +80,13 @@ export default function TeamLeaderMainDashboard() {
       case 1:
         return <TaskBoard />;
       case 2:
-        return <TeamAttendance />;
+        // Replace attendance management with Personal Files view for team leader
+        return <PersonalFilesTab />;
       case 3:
         return <ResourceRequests project={project} leaderId={leaderId} />;
       case 4:
+        return <FlaggedIssuesPanel teamId={teamData?._id} projectId={project?._id} />;
+      case 5:
         return <ProgressReports />;
       default:
         return <LeaderDashboard />;

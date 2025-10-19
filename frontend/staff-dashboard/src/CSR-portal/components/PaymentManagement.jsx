@@ -10,12 +10,21 @@ const PaymentManagement = () => {
   const fetchPayments = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:4000/api/payment-receipt/all', {
+      
+      // Simple check: if no token, don't make API call
+      if (!token) {
+        setPayments([]);
+        setLoading(false);
+        return;
+      }
+      
+      const response = await axios.get('/api/payment-receipt/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPayments(response.data);
     } catch (error) {
       console.error('Error fetching payments:', error);
+      setPayments([]); // Set empty array - will show "No Payment Details Available"
     } finally {
       setLoading(false);
     }
@@ -30,7 +39,7 @@ const PaymentManagement = () => {
     try {
       const token = localStorage.getItem('authToken');
       await axios.post(
-        `http://localhost:4000/api/payment-receipt/send-email/${payment._id}`,
+        `/api/payment-receipt/send-email/${payment._id}`,
         {
           clientEmail: payment.clientEmail || payment.client?.email,
           clientName: payment.clientName || payment.client?.name,
@@ -53,7 +62,7 @@ const PaymentManagement = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary"></div>
       </div>
     );
   }
@@ -62,8 +71,8 @@ const PaymentManagement = () => {
     <div className="space-y-6">
       {/* Section Description */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Payment Management</h2>
-        <p className="text-gray-600">View inspection costs and payment details from finance manager. Send payment details to clients via email.</p>
+        <h2 className="text-2xl font-bold text-dark-brown mb-2">Payment Management</h2>
+        <p className="text-brown-600">View inspection costs and payment details from finance manager. Send payment details to clients via email.</p>
       </div>
       
       {/* Payment Cards */}
@@ -71,27 +80,27 @@ const PaymentManagement = () => {
         {payments.map((payment) => (
           <div 
             key={payment._id} 
-            className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+            className="bg-white rounded-xl shadow-lg border border-cream-primary p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
           >
             {/* Card Header with Cost */}
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-xs font-medium text-green-600 uppercase tracking-wide">Payment</span>
+                <div className="w-3 h-3 bg-brown-primary rounded-full"></div>
+                <span className="text-xs font-medium text-brown-primary uppercase tracking-wide">Payment</span>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-dark-brown">
                   ${payment.inspectionCost || payment.calculatedAmount || 'N/A'}
                 </div>
-                <div className="text-xs text-gray-500">Inspection Cost</div>
+                <div className="text-xs text-brown-500">Inspection Cost</div>
               </div>
             </div>
 
             {/* Payment Details */}
             <div className="space-y-4 mb-6">
               {/* Client Name */}
-              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                <label className="text-xs font-semibold text-blue-800 uppercase tracking-wide block mb-1">
+              <div className="bg-cream-primary rounded-lg p-3 border border-brown-primary">
+                <label className="text-xs font-semibold text-dark-brown uppercase tracking-wide block mb-1">
                   👤 Client Name
                 </label>
                 <p className="text-gray-900 font-semibold">
@@ -100,8 +109,8 @@ const PaymentManagement = () => {
               </div>
               
               {/* Property Address */}
-              <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
-                <label className="text-xs font-semibold text-purple-800 uppercase tracking-wide block mb-1">
+              <div className="bg-cream-primary rounded-lg p-3 border border-brown-primary">
+                <label className="text-xs font-semibold text-dark-brown uppercase tracking-wide block mb-1">
                   📍 Property Address
                 </label>
                 <p className="text-gray-800 text-sm">
@@ -110,8 +119,8 @@ const PaymentManagement = () => {
               </div>
               
               {/* Client Email */}
-              <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
-                <label className="text-xs font-semibold text-indigo-800 uppercase tracking-wide block mb-1">
+              <div className="bg-cream-primary rounded-lg p-3 border border-brown-primary">
+                <label className="text-xs font-semibold text-dark-brown uppercase tracking-wide block mb-1">
                   📧 Client Email
                 </label>
                 <p className="text-gray-800 text-sm break-all">
@@ -121,8 +130,8 @@ const PaymentManagement = () => {
               
               {/* Due Date & Status Row */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
-                  <label className="text-xs font-semibold text-orange-800 uppercase tracking-wide block mb-1">
+                <div className="bg-cream-primary rounded-lg p-3 border border-brown-primary">
+                  <label className="text-xs font-semibold text-dark-brown uppercase tracking-wide block mb-1">
                     📅 Due Date
                   </label>
                   <p className="text-gray-800 text-xs">
@@ -133,8 +142,8 @@ const PaymentManagement = () => {
                   </p>
                 </div>
                 
-                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                  <label className="text-xs font-semibold text-gray-800 uppercase tracking-wide block mb-1">
+                <div className="bg-cream-primary rounded-lg p-3 border border-brown-primary">
+                  <label className="text-xs font-semibold text-dark-brown uppercase tracking-wide block mb-1">
                     📊 Status
                   </label>
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold capitalize ${
@@ -157,7 +166,7 @@ const PaymentManagement = () => {
               className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 transform focus:outline-none focus:ring-4 ${
                 sendingEmail === payment._id
                   ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 hover:scale-[1.02] focus:ring-green-300'
+                  : 'bg-gradient-to-r from-brown-primary to-dark-brown text-white hover:from-dark-brown hover:to-brown-primary hover:scale-[1.02] focus:ring-brown-primary/50'
               }`}
             >
               {sendingEmail === payment._id ? (
@@ -178,38 +187,20 @@ const PaymentManagement = () => {
       
       {/* Empty State */}
       {payments.length === 0 && !loading && (
-        <div className="text-center py-16 bg-gradient-to-br from-green-50 to-blue-50 rounded-xl border-2 border-dashed border-green-300">
+        <div className="text-center py-16 bg-gradient-to-br from-cream-primary to-white rounded-xl border-2 border-dashed border-brown-primary">
           <div className="text-6xl mb-4">💰</div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">No Payment Details Available</h3>
-          <p className="text-gray-500 mb-4">Payment details from finance manager will appear here</p>
-          <div className="bg-white rounded-lg p-4 max-w-md mx-auto border border-green-200">
-            <p className="text-sm text-green-700">
+          <h3 className="text-lg font-semibold text-dark-brown mb-2">No Payment Details Available</h3>
+          <p className="text-brown-600 mb-4">Payment details from finance manager will appear here</p>
+          <div className="bg-white rounded-lg p-4 max-w-md mx-auto border border-brown-primary">
+            <p className="text-sm text-brown-700">
               <strong>Note:</strong> Finance managers create payment records with inspection costs that appear as cards here.
             </p>
           </div>
         </div>
       )}
-
-      {/* Info Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-6 border border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-800 mb-3">💡 How Payment Management Works</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div className="bg-white rounded-lg p-3 border border-blue-200">
-            <div className="text-blue-600 font-semibold mb-1">1. Finance Creates</div>
-            <div className="text-gray-700">Finance manager creates payment records with inspection costs</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 border border-green-200">
-            <div className="text-green-600 font-semibold mb-1">2. CSR Reviews</div>
-            <div className="text-gray-700">Payment details appear as cards with client information</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 border border-purple-200">
-            <div className="text-purple-600 font-semibold mb-1">3. Email Client</div>
-            <div className="text-gray-700">Send payment details to client via email with one click</div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
 export default PaymentManagement;
+

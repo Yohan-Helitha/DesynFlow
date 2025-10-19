@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_BASE_URL = "http://localhost:4000/api"; // Adjust this to match your backend URL
+const API_BASE_URL = "/api"; // Adjust this to match your backend URL
 
 export default function TeamManagement() {
   const [teams, setTeams] = useState([]);
@@ -22,7 +22,7 @@ export default function TeamManagement() {
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/teams`);
+      const response = await fetch(`${API_BASE_URL}/teams/populated`);
       if (!response.ok) throw new Error('Failed to fetch teams');
       const data = await response.json();
       setTeams(data);

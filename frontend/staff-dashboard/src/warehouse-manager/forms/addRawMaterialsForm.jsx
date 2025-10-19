@@ -200,24 +200,26 @@ const AddRawMaterialsForm = ({ loggedInUserId }) => {
   return (
     <div>
       <Navbar />
-      <div className="m-6">
-        <div className="border-2 border-gray-300 m-auto p-8 w-xl shadow bg-[#FFF8E8]">
+  <div className="m-6 flex justify-center">
+  <div className="border-2 border-brown-primary-300 w-full max-w-4xl p-8 shadow bg-cream-primary rounded">
           <h1 className="text-2xl font-bold mb-6">Add Raw Material</h1>
 
           {errors.general && (
             <p className="text-red-600 font-semibold mb-4">{errors.general}</p>
           )}
 
-          <div className="mb-4">
-            <label className="mr-4 font-medium">Product Type:</label>
-            <label className="mr-8">
-              <input type="radio" value="new" checked={productType==='new'} onChange={() => handleProductTypeChange('new')} />
-              New Material
-            </label>
-            <label>
-              <input type="radio" value="existing" checked={productType==='existing'} onChange={() => handleProductTypeChange('existing')} />
-              Existing Material
-            </label>
+          <div className="mb-6">
+            <div className="font-medium mb-2">Product Type:</div>
+            <div className="flex items-center space-x-6">
+              <label className="flex items-center space-x-2">
+                <input type="radio" value="new" checked={productType==='new'} onChange={() => handleProductTypeChange('new')} className="h-4 w-4" />
+                <span>New Material</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input type="radio" value="existing" checked={productType==='existing'} onChange={() => handleProductTypeChange('existing')} className="h-4 w-4" />
+                <span>Existing Material</span>
+              </label>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 max-w-3xl text-sm">

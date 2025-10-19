@@ -4,7 +4,8 @@ import {
   updateMaterialRequest,
   deleteMaterialRequest,
   getMaterialRequestsByProject,
-  getMaterialRequestById
+  getMaterialRequestById,
+  getAllPendingRequests
 } from '../controller/materialRequest.controller.js';
 
 const router = express.Router();
@@ -14,6 +15,9 @@ router.post('/material-requests', createMaterialRequest);
 
 // Get all requests for a project
 router.get('/material-requests/project/:projectId', getMaterialRequestsByProject);
+
+// Get all pending requests (for warehouse manager)
+router.get('/material-requests/warehouse/pending', getAllPendingRequests);
 
 // Get a single material request by ID
 router.get('/material-requests/:id', getMaterialRequestById);

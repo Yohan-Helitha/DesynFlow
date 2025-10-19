@@ -17,7 +17,7 @@ function Sample_order() {
 
   // Fetch suppliers from backend
   useEffect(() => {
-    fetch("http://localhost:4000/api/suppliers")
+    fetch("/api/suppliers")
       .then((res) => res.json())
       .then((data) => {
         // Sort suppliers by creation date - newest first
@@ -37,7 +37,7 @@ function Sample_order() {
       console.log('Fetching materials for supplier:', formData.supplierId);
       
       // First try to fetch from MaterialCatalog (materials with pricing from specific supplier)
-      fetch(`http://localhost:4000/api/materials?supplierId=${formData.supplierId}`)
+      fetch(`/api/materials?supplierId=${formData.supplierId}`)
         .then(res => res.json())
         .then(data => {
           console.log('MaterialCatalog response:', data);
@@ -134,7 +134,7 @@ function Sample_order() {
     
     console.log('Submitting sample order payload:', payload);
     
-    fetch("http://localhost:4000/api/samples/upload", {
+    fetch("/api/samples/upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -265,3 +265,4 @@ function Sample_order() {
 }
 
 export default Sample_order;
+

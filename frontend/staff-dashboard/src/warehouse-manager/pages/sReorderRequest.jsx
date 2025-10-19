@@ -13,6 +13,7 @@ const SReorderRequest = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBy, setFilterBy] = useState("all");
   const [showFilter, setShowFilter] = useState(false);
+  const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
 
   // Fetch stock reorder requests
   const getRequests = async () => {
@@ -92,8 +93,39 @@ const SReorderRequest = () => {
   });
 
   //pdf function
-    const handleDownloadPDF = () => {
-      console.log("Downloading PDF...");
+    const handleDownloadPDF = (timeFilter = 'all') => {
+      console.log("Downloading PDF for:", timeFilter);
+
+      let dataToDownload = filteredRequests;
+      
+      // Filter data based on time selection
+      if (timeFilter !== 'all') {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        
+        dataToDownload = filteredRequests.filter(request => {
+          const requestDate = new Date(request.createdAt);
+          const requestYear = requestDate.getFullYear();
+          const requestMonth = requestDate.getMonth() + 1;
+          
+          switch (timeFilter) {
+            case 'thisMonth':
+              return requestYear === currentYear && requestMonth === currentMonth;
+            case 'previousMonth':
+              const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+              const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+              return requestYear === prevYear && requestMonth === prevMonth;
+            case 'thisYear':
+              return requestYear === currentYear;
+            default:
+              if (typeof timeFilter === 'number' && timeFilter >= 1 && timeFilter <= 12) {
+                return requestYear === currentYear && requestMonth === timeFilter;
+              }
+              return true;
+          }
+        });
+      }
   
       const columns = [
       "ID", "Inventory ID", "Inventory Name", "Inventory Address", "Inventory Contact", "Material ID", 
@@ -101,7 +133,7 @@ const SReorderRequest = () => {
       "Unit", "Expected By", "Warehouse Manager Name", "Created At", "Status"
       ];
   
-      const rows = filteredRequests.map(request => [
+      const rows = dataToDownload.map(request => [
         request.stockReorderRequestId,
         request.inventoryId,
         request.inventoryName,
@@ -117,40 +149,48 @@ const SReorderRequest = () => {
         new Date(request.createdAt).toLocaleString(),
         request.status
       ]);
+
+      const timeFilterName = timeFilter === 'all' ? 'All Records' : 
+                            timeFilter === 'thisMonth' ? 'This Month' :
+                            timeFilter === 'previousMonth' ? 'Previous Month' :
+                            timeFilter === 'thisYear' ? 'This Year' :
+                            typeof timeFilter === 'number' ? new Date(2024, timeFilter - 1).toLocaleString('default', { month: 'long' }) :
+                            'Filtered';
   
-      generatePDF(columns, rows, "Stock Reorder Request Report");
-  
+      generatePDF(columns, rows, `Stock Reorder Request Report - ${timeFilterName}`);
+      setShowDownloadDropdown(false);
     };
 
-    const requestsPerMonth = filteredRequests.reduce((acc, request) => {
-      const date = request.createdAt ? new Date(request.createdAt) : null;
-      if (!date) return acc;
+    // Chart data calculation - always uses full 'requests' array (not filtered)
+    const requestsPerMonth = requests.reduce((acc, request) => {
+  const date = request.createdAt ? new Date(request.createdAt) : null;
+  if (!date) return acc;
 
-      const monthYear = date.toLocaleString("default", { month: "short", year: "numeric" }); // e.g., "Sep 2025"
+  const monthYear = date.toLocaleString("default", { month: "short", year: "numeric" });
 
-      if (!acc[monthYear]) {
-        acc[monthYear] = { total: 0, pending: 0, checked: 0 };
-      }
+  if (!acc[monthYear]) {
+    acc[monthYear] = { total: 0, pending: 0, checked: 0 };
+  }
 
-      acc[monthYear].total += 1;
+  acc[monthYear].total += 1;
 
-      if (request.status?.toLowerCase() === "pending") {
-        acc[monthYear].pending += 1;
-      } else if (request.status?.toLowerCase() === "checked") {
-        acc[monthYear].checked += 1;
-      }
+  if (request.status?.toLowerCase() === "pending") {
+    acc[monthYear].pending += 1;
+  } else if (request.status?.toLowerCase() === "checked") {
+    acc[monthYear].checked += 1;
+  }
 
-      return acc;
-    }, {});
+  return acc;
+}, {});
 
-  const chartData = Object.keys(requestsPerMonth)
-    .sort((a, b) => new Date(a) - new Date(b))
-    .map(month => ({
-      month,
-      total: requestsPerMonth[month].total,
-      pending: requestsPerMonth[month].pending,
-      checked: requestsPerMonth[month].checked
-  }));
+const chartData = Object.keys(requestsPerMonth)
+  .sort((a, b) => new Date(a) - new Date(b))
+  .map(month => ({
+    month,
+    total: requestsPerMonth[month].total,
+    pending: requestsPerMonth[month].pending,
+    checked: requestsPerMonth[month].checked
+}));
 
 
   return (
@@ -174,9 +214,9 @@ const SReorderRequest = () => {
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="total" name="Total Requests" stroke="#674636" strokeWidth={2} />
-            <Line type="monotone" dataKey="pending" name="Pending Requests" stroke="#AAB396" strokeWidth={2} />
-            <Line type="monotone" dataKey="checked" name="Checked Requests" stroke="#FF6F00" strokeWidth={2} />
+            <Line type="monotone" dataKey="total" name="Total Requests" stroke="#4CAF50" strokeWidth={2} />
+            <Line type="monotone" dataKey="pending" name="Pending Requests" stroke="#FFA500" strokeWidth={2} />
+            <Line type="monotone" dataKey="checked" name="Checked Requests" stroke="#2196F3" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
 
@@ -186,7 +226,7 @@ const SReorderRequest = () => {
             <input
             type="text"
             placeholder="Search..."
-            className="border border-gray-400 px-4 py-2 bg-white rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="border border-gray-400 px-4 py-2 rounded w-6xl focus:outline-none focus:ring-2 focus:ring-amber-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -269,34 +309,83 @@ const SReorderRequest = () => {
                 )}
               </div>  
 
-            <button
-              onClick={handleDownloadPDF}
-              className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
-              title="Download PDF"
-            >
-              <Download className="w-5 h-5 text-gray-700" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowDownloadDropdown(!showDownloadDropdown)}
+                className="p-2 border border-gray-400 rounded bg-white hover:bg-gray-100 focus:ring-2 focus:ring-amber-500"
+                title="Download PDF"
+              >
+                <Download className="w-5 h-5 text-gray-700" />
+              </button>
+
+              {/* Download Dropdown */}
+              {showDownloadDropdown && (
+                <div className="absolute right-0 top-full mt-2 bg-white border border-gray-300 rounded shadow-md w-48 z-50">
+                  <ul className="text-sm">
+                    <li
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                      onClick={() => handleDownloadPDF('thisMonth')}
+                    >
+                      This Month
+                    </li>
+                    <li
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                      onClick={() => handleDownloadPDF('previousMonth')}
+                    >
+                      Previous Month
+                    </li>
+                    <li
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200"
+                      onClick={() => handleDownloadPDF('thisYear')}
+                    >
+                      This Year
+                    </li>
+                    <li className="px-4 py-2 text-gray-500 font-medium border-b border-gray-200">
+                      Select Month:
+                    </li>
+                    {[
+                      'January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'
+                    ].map((month, index) => (
+                      <li
+                        key={month}
+                        className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleDownloadPDF(index + 1)}
+                      >
+                        {month}
+                      </li>
+                    ))}
+                    <li
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-t border-gray-200 font-medium"
+                      onClick={() => handleDownloadPDF('all')}
+                    >
+                      All Records
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
 
         </div>
 
         <div className="overflow-x-auto text-xs">
           <table className="min-w-max border-collapse border border-gray-300">
             <thead>
-              <tr style={{ background: "#674636", color:"#FFFFFF" }}>
-                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-gray-200 z-40 relative" style={{ background: "#674636" }}>Actions</th>
-                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-gray-200 z-40 relative" style={{ background: "#674636" }}>Request ID</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Inventory Name</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Inventory Address</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Inventory Contact</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Material Name</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Material ID</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Quantity</th>
-                <th className="border border-gray-300 px-4 py-2 w-48">Type</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Unit</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Expected Date</th>
-                <th className="border border-gray-300 px-4 py-2 w-32">Warehouse Manager</th>
-                <th className="border border-gray-300 px-4 py-2 w-16">Status</th>
-                <th className="border border-gray-300 px-4 py-2 w-32">Created At</th>
+              <tr>
+                <th className="border border-gray-300 px-4 py-2 sticky left-0 w-32 bg-brown-primary text-cream-primary z-40 relative">Actions</th>
+                <th className="border border-gray-300 px-4 py-2 sticky left-32 w-32 bg-brown-primary text-cream-primary z-40 relative">Request ID</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Inventory Name</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Inventory Address</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Inventory Contact</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Material Name</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Material ID</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Quantity</th>
+                <th className="border border-gray-300 px-4 py-2 w-48 bg-brown-primary text-cream-primary">Type</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Unit</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Expected Date</th>
+                <th className="border border-gray-300 px-4 py-2 w-32 bg-brown-primary text-cream-primary">Warehouse Manager</th>
+                <th className="border border-gray-300 px-4 py-2 w-16 bg-brown-primary text-cream-primary">Status</th>
+                <th className="border border-gray-300 px-4 py-2 w-32 bg-brown-primary text-cream-primary">Created At</th>
               </tr>
             </thead>
             <tbody className="align-middle text-center text-xs">
@@ -305,20 +394,16 @@ const SReorderRequest = () => {
                   const createdDate = request.createdAt ? new Date(request.createdAt) : null;
                   const expectedDate = request.expectedDate ? new Date(request.expectedDate) : null;
 
-                  let rowColor = "bg-[#FFF8E8]"; // default normal color
-
-                  if (
-                    request.status?.toLowerCase() === "pending" &&
-                    expectedDate
-                  ) {
+                  let rowColor = "bg-white"; // default
+                  if (expectedDate) {
                     const today = new Date();
                     const diffTime = expectedDate - today;
                     const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-                    // Highlight if expected date is within 7 days from today and not passed
                     if (diffDays >= 0 && diffDays <= 7) {
-                      rowColor = "bg-[#AAB396]"; // highlight color
+                      rowColor = "bg-red-100"; // 🔴 highlight if expected within next 7 days
                     }
+                    // else it stays white automatically
                   }
 
               
@@ -330,15 +415,15 @@ const SReorderRequest = () => {
                         <div className="flex items-center justify-center gap-6">
                           <div
                             className="group relative cursor-pointer"
-                            onClick={() => navigate(`/reorder-request/update/${request._id}`)}
+                            onClick={() => navigate(`/warehouse-manager/reorder-request/update/${request._id}`)}
                           >
-                            <Edit2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
+                            <Edit2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
                           </div>
                           <div
                             className="group relative cursor-pointer"
                             onClick={() => handleDelete(request._id)}
                           >
-                            <Trash2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" />
+                            <Trash2 className="w-5 h-5 text-amber-500 hover:text-amber-600" />
                           </div>
                         </div>
                       </td>

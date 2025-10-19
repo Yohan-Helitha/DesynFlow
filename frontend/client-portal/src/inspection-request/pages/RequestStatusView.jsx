@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import ProgressBar from "./ProgressBar"; // Import the reusable component
+import ProgressBar from "./ProgressBar"; 
 
 const RequestStatusView = () => {
   const [requests, setRequests] = useState([]);

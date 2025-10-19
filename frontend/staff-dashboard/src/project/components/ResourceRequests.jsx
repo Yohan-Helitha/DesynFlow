@@ -15,7 +15,7 @@ export default function ResourceRequests({ project, leaderId }) {
     
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:4000/api/material-requests/project/${project._id}`);
+      const response = await fetch(`/api/material-requests/project/${project._id}`);
       if (response.ok) {
         const data = await response.json();
         setRequests(Array.isArray(data) ? data : []);
@@ -59,7 +59,7 @@ export default function ResourceRequests({ project, leaderId }) {
     if (!confirm('Are you sure you want to delete this request?')) return;
     
     try {
-      const response = await fetch(`http://localhost:4000/api/material-requests/${requestId}`, {
+      const response = await fetch(`/api/material-requests/${requestId}`, {
         method: 'DELETE'
       });
       

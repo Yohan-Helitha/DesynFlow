@@ -116,7 +116,7 @@ if (country && inventoryContact) {
     try {
       await addInvLocation(payload);
       alert('Inventory added successfully!');
-      navigate('/inventory-locations');
+      navigate('/warehouse-manager/inventory-locations');
     } catch (err) {
       console.error(err);
       alert('Failed to add inventory');
@@ -130,7 +130,7 @@ if (country && inventoryContact) {
   return (
     <div>
       <Navbar />
-      <div className="m-6">
+  <div className="m-6 flex justify-center">
         <div className="border-2 border-gray-300 m-auto p-8 w-xl  shadow bg-[#FFF8E8]">
           <h1 className="text-2xl font-bold mb-6">Add Inventory</h1>
 
@@ -198,7 +198,7 @@ if (country && inventoryContact) {
             {/* Buttons */}
             <div className="flex gap-4 pt-6">
               <button type="submit" className="bg-amber-900 hover:bg-amber-800 text-white font-semibold py-2 px-6 rounded-md">Add Inventory</button>
-              <button type="button" onClick={() => navigate('/inventory-locations')} className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md">Cancel</button>
+              <button type="button" onClick={() => navigate('/warehouse-manager/inventory-locations')} className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-md">Cancel</button>
             </div>
 
           </form>

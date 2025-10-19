@@ -10,17 +10,17 @@ import {
   deleteInspectorForm,
   submitInspectorForm,
   generateReportFromForm,
-  getMyInspectorForms
+  getMyInspectorForms,
+  submitAndGenerateReport
 } from '../controller/inspectorFormController.js';
 
 const router = express.Router();
 
-// Create a new inspection form (inspector) with optional photo uploads
+// Create a new inspection form (inspector)
 router.post(
   '/',
   authMiddleware,
   roleMiddleware(['inspector']),
-  uploadMiddleware.array('room_photo', 5), // accept up to 5 files
   createInspectorForm
 );
 
@@ -30,6 +30,14 @@ router.get(
   authMiddleware,
   roleMiddleware(['admin', 'csr', 'finance', 'inspector']),
   getInspectorForms
+);
+
+// Get logged-in inspector's own forms (MUST be before /:formId route)
+router.get(
+  '/my',
+  authMiddleware,
+  roleMiddleware(['inspector']),
+  getMyInspectorForms
 );
 
 // Get a single inspection form by ID (all roles)
@@ -44,7 +52,6 @@ router.patch(
   '/:formId',
   authMiddleware,
   roleMiddleware(['inspector']),
-  uploadMiddleware.array('room_photo', 5), // allow updating photos
   updateInspectorForm
 );
 
@@ -72,12 +79,12 @@ router.post(
   generateReportFromForm
 );
 
-// Get logged-in inspector's own forms
-router.get(
-  '/my',
+// 🔥 NEW: Submit form and generate report in one action
+router.post(
+  '/submit-and-generate/:formId',
   authMiddleware,
   roleMiddleware(['inspector']),
-  getMyInspectorForms
+  submitAndGenerateReport
 );
 
 export default router;

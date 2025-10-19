@@ -29,7 +29,7 @@ export default function AssignTeams() {
       try {
         setTeamLoading(true);
         setTeamError(null);
-        const res = await fetch("http://localhost:4000/api/teams");
+        const res = await fetch("/api/teams");
         if (!res.ok) throw new Error("Failed to fetch teams");
         const data = await res.json();
         setTeams(data.filter(t => t.active));
@@ -66,7 +66,7 @@ export default function AssignTeams() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("http://localhost:4000/api/projects");
+        const res = await fetch("/api/projects");
         if (!res.ok) throw new Error("Failed to fetch projects");
         const data = await res.json();
         console.log('Fetched projects:', data);
@@ -113,7 +113,7 @@ export default function AssignTeams() {
     }
     
     try {
-      const res = await fetch(`http://localhost:4000/api/projects/${id}`, {
+      const res = await fetch(`/api/projects/${id}`, {
         method: "DELETE"
       });
       
@@ -162,7 +162,7 @@ export default function AssignTeams() {
         const formData = new FormData();
         formData.append('file', form.inspectionReport);
 
-        const uploadRes = await fetch("http://localhost:4000/api/upload", {
+        const uploadRes = await fetch("/api/upload", {
           method: "POST",
           body: formData
         });
@@ -190,17 +190,13 @@ export default function AssignTeams() {
         startDate: form.startDate,
         dueDate: form.dueDate,
         inspectionReportPath,
-        inspectionReportOriginalName
+        inspectionReportOriginalName,
+        assignedTeamId: form.teamId || null // Always include assignedTeamId, null if no team selected
       };
-
-      // Only add assignedTeamId if a team is selected
-      if (form.teamId) {
-        projectData.assignedTeamId = form.teamId;
-      }
 
       if (editProjectId) {
         // Update existing project
-        const res = await fetch(`http://localhost:4000/api/projects/${editProjectId}`, {
+        const res = await fetch(`/api/projects/${editProjectId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(projectData)
@@ -218,7 +214,7 @@ export default function AssignTeams() {
         // Auto refresh to get populated data
         setTimeout(async () => {
           try {
-            const refreshRes = await fetch("http://localhost:4000/api/projects");
+            const refreshRes = await fetch("/api/projects");
             if (refreshRes.ok) {
               const refreshedData = await refreshRes.json();
               setProjects(Array.isArray(refreshedData) ? refreshedData : []);
@@ -229,7 +225,7 @@ export default function AssignTeams() {
         }, 500);
       } else {
         // Create new project
-        const res = await fetch("http://localhost:4000/api/projects", {
+        const res = await fetch("/api/projects", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(projectData)
@@ -247,7 +243,7 @@ export default function AssignTeams() {
         // Auto refresh to get populated data
         setTimeout(async () => {
           try {
-            const refreshRes = await fetch("http://localhost:4000/api/projects");
+            const refreshRes = await fetch("/api/projects");
             if (refreshRes.ok) {
               const refreshedData = await refreshRes.json();
               setProjects(Array.isArray(refreshedData) ? refreshedData : []);
@@ -337,6 +333,8 @@ export default function AssignTeams() {
                         ? "bg-green-100 text-green-700"
                         : project.status === "In Progress"
                         ? "bg-blue-100 text-blue-700"
+                        : project.status === "Completed"
+                        ? "bg-purple-100 text-purple-700"
                         : project.status === "On Hold"
                         ? "bg-yellow-100 text-yellow-700"
                         : project.status === "Pending"
@@ -360,16 +358,20 @@ export default function AssignTeams() {
                     <div><span className="font-semibold">Due Date:</span> {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : "N/A"}</div>
                     <div><span className="font-semibold">Assigned Team:</span> {project.assignedTeamId?.teamName || "No Team Assigned"}</div>
                   </div>
-                  {project.status === "In Progress" && (
+                  {(project.status === "In Progress" || project.status === "Completed") && (
                     <div className="mb-2">
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-gray-600">Progress</span>
-                        <span className="text-gray-600">{project.progress}%</span>
+                        <span className="text-gray-600">{project.progress || 0}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div
-                          className="bg-brown-primary h-2.5 rounded-full"
-                          style={{ width: `${project.progress}%` }}
+                          className={`h-2.5 rounded-full ${
+                            project.status === "Completed" 
+                              ? "bg-purple-500" 
+                              : "bg-brown-primary"
+                          }`}
+                          style={{ width: `${project.progress || 0}%` }}
                         ></div>
                       </div>
                     </div>
@@ -403,7 +405,7 @@ export default function AssignTeams() {
 
           {modalOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-8 w-full max-w-lg shadow-lg">
+                <div className="bg-cream-light rounded-lg p-8 w-full max-w-lg shadow-lg border border-brown-100">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-brown-primary">{editProjectId ? "Edit Project" : "Create New Project"}</h3>
                   <button className="text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => { setModalOpen(false); setForm({ name: "", client: "", team: "", teamId: "", dueDate: "", startDate: "", inspectionReport: null }); setEditProjectId(null); }}>&times;</button>
@@ -413,7 +415,7 @@ export default function AssignTeams() {
                     <label className="block text-brown-primary font-semibold mb-1">Project Name *</label>
                     <input
                       type="text"
-                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
                       value={form.name}
                       onChange={e => setForm({ ...form, name: e.target.value })}
                       placeholder="Enter project name"
@@ -423,7 +425,7 @@ export default function AssignTeams() {
                     <label className="block text-brown-primary font-semibold mb-1">Client Email *</label>
                     <input
                       type="email"
-                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
                       value={form.client}
                       onChange={e => setForm({ ...form, client: e.target.value })}
                       placeholder="Enter client email address"
@@ -483,16 +485,16 @@ export default function AssignTeams() {
                   <div>
                     <label className="block text-brown-primary font-semibold mb-1">Inspection Report (PDF) *</label>
                     {editProjectId && projects.find(p => p._id === editProjectId)?.attachments?.length > 0 && (
-                      <div className="mb-2 p-2 bg-blue-50 rounded border">
-                        <div className="text-sm text-blue-700 font-medium">Current file:</div>
+                      <div className="mb-2 p-2 bg-cream-light rounded border border-brown-100">
+                        <div className="text-sm text-brown-primary font-medium">Current file:</div>
                         {projects.find(p => p._id === editProjectId)?.attachments?.map((attachment, i) => (
-                          <div key={i} className="text-xs text-blue-600 mt-1">
+                          <div key={i} className="text-xs text-brown-secondary mt-1">
                             📄 {attachment.originalName || attachment.filename || 'Inspection Report'}
                             <a 
-                              href={`http://localhost:4000${attachment.path}`} 
+                              href={`${attachment.path}`} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="ml-2 underline hover:text-blue-800"
+                              className="ml-2 underline text-brown-primary hover:text-brown-secondary"
                             >
                               View
                             </a>
@@ -511,13 +513,13 @@ export default function AssignTeams() {
                       }}
                     />
                     {form.inspectionReport && (
-                      <div className="text-xs text-green-700 mt-1">Selected: {form.inspectionReport.name}</div>
+                      <div className="text-xs text-green-primary mt-1">Selected: {form.inspectionReport.name}</div>
                     )}
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 mt-8">
                   <button
-                    className="px-4 py-2 rounded bg-gray-200 text-brown-primary font-semibold hover:bg-gray-300"
+                    className="px-4 py-2 rounded bg-cream-primary text-brown-primary font-semibold hover:bg-cream-light border border-brown-100"
                     onClick={() => {
                       setModalOpen(false);
                       setForm({ name: "", client: "", team: "", dueDate: "" });
@@ -527,7 +529,7 @@ export default function AssignTeams() {
                     Cancel
                   </button>
                   <button
-                    className="px-4 py-2 rounded bg-brown-primary text-white font-semibold hover:bg-opacity-90"
+                    className="px-4 py-2 rounded bg-brown-primary text-white font-semibold hover:bg-brown-primary-300 disabled:opacity-60"
                     onClick={handleSave}
                     disabled={(() => {
                       const isEditing = !!editProjectId;

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import InspectionRequests from '../components/InspectionRequests';
 import PaymentManagement from '../components/PaymentManagement';
 import InspectorAssignment from '../components/InspectorAssignment';
+import AssignmentStatusManager from '../components/AssignmentStatusManager';
+import AssignmentHistory from '../components/AssignmentHistory';
 import CSRSidebar from '../components/CSRSidebar';
 
 const CSRDashboard = () => {
@@ -15,6 +17,10 @@ const CSRDashboard = () => {
         return <PaymentManagement />;
       case 'assign':
         return <InspectorAssignment />;
+      case 'status':
+        return <AssignmentStatusManager />;
+      case 'history':
+        return <AssignmentHistory />;
       default:
         return <InspectionRequests />;
     }
@@ -26,7 +32,7 @@ const CSRDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-cream-light">
       {/* Sidebar */}
       <CSRSidebar
         activeSection={activeSection}
@@ -39,38 +45,48 @@ const CSRDashboard = () => {
         {/* Section Header */}
         <div className="mb-6">
           {activeSection === 'requests' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h2 className="text-2xl font-bold text-blue-800 mb-2">📋 Inspection Requests</h2>
-              <p className="text-blue-700">
-                View and manage client inspection requests. Each request shows client details, 
-                property location, and preferred inspection date.
-              </p>
+            <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
+              <h2 className="text-2xl font-bold text-dark-brown mb-2">
+                📋 Inspection Requests
+              </h2>
             </div>
           )}
           
           {activeSection === 'payments' && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h2 className="text-2xl font-bold text-green-800 mb-2">💰 Payment Management</h2>
-              <p className="text-green-700">
-                Handle inspection costs and payment details from finance manager. 
-                Send payment information to clients via email.
-              </p>
+            <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
+              <h2 className="text-2xl font-bold text-dark-brown mb-2">
+                💰 Payment Management
+              </h2>        
             </div>
           )}
           
           {activeSection === 'assign' && (
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <h2 className="text-2xl font-bold text-purple-800 mb-2">👨‍🔧 Inspector Assignment</h2>
-              <p className="text-purple-700">
-                Assign available inspectors to client requests. View inspector locations 
-                and manage assignments efficiently.
-              </p>
+            <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
+              <h2 className="text-2xl font-bold text-dark-brown mb-2">
+                👨‍🔧 Inspector Assignment
+              </h2>
+            </div>
+          )}
+          
+          {activeSection === 'status' && (
+            <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
+              <h2 className="text-2xl font-bold text-dark-brown mb-2">
+                📊 Assignment Status
+              </h2>
+            </div>
+          )}
+          
+          {activeSection === 'history' && (
+            <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
+              <h2 className="text-2xl font-bold text-dark-brown mb-2">
+                📚 Assignment History
+              </h2>
             </div>
           )}
         </div>
 
         {/* Content Area */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-lg border border-cream-light p-6">
           {renderContent()}
         </div>
       </div>

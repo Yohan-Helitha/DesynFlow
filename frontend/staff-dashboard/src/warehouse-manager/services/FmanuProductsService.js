@@ -1,7 +1,7 @@
 // src/services/FmanuProductsService.js
 export const fetchManuProducts = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/manu_products");
+    const res = await fetch("/api/warehouse/manu_products");
     if (!res.ok) throw new Error("Failed to fetch manufactured products");
     const data = await res.json();
     return data.manu_products;
@@ -14,7 +14,7 @@ export const fetchManuProducts = async () => {
 // Add new product
 export const addManuProduct = async (productData) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/manu_products`, {
+    const res = await fetch(`/api/warehouse/manu_products`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -39,7 +39,7 @@ export const addManuProduct = async (productData) => {
 
 export const fetchManuProductById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/manu_products/${id}`);
+    const res = await fetch(`/api/warehouse/manu_products/${id}`);
     if (!res.ok) throw new Error("Failed to fetch product");
     const data = await res.json();
     console.log("Fetched product:", data); // debug
@@ -52,7 +52,7 @@ export const fetchManuProductById = async (id) => {
 
 export const updateManuProduct = async (id, data) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/manu_products/${id}`, {
+    const res = await fetch(`/api/warehouse/manu_products/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -77,7 +77,7 @@ export const updateManuProduct = async (id, data) => {
 // Delete product
 export const deleteManuProduct = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/manu_products/${id}`, {
+    const res = await fetch(`/api/warehouse/manu_products/${id}`, {
       method: "DELETE"
     });
 
@@ -92,3 +92,4 @@ export const deleteManuProduct = async (id) => {
     throw err;
   }
 };
+

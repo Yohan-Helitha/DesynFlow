@@ -83,3 +83,13 @@ export const getMaterialRequestById = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+// Get all pending material requests across all projects (for warehouse manager)
+export const getAllPendingRequests = async (req, res) => {
+  try {
+    const requests = await MaterialRequestService.getAllPendingRequests();
+    res.json(requests);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};

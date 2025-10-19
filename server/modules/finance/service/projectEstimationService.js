@@ -54,12 +54,40 @@ async function createOrUpdateEstimate({ projectId, laborCost, materialCost, serv
   return estimate;
 }
 
-async function setStatus(estimateId, status) {
+async function setStatus(estimateId, status, remarks, userId) {
   const allowed = ['Pending', 'Approved', 'Rejected'];
   if (!allowed.includes(status)) throw new Error('Invalid status');
+  
+  // Prepare update object
+  const updateData = { status };
+  
+  // Add audit trail fields based on status
+  if (status === 'Approved') {
+    updateData.approvedBy = userId;
+    updateData.approvedAt = new Date();
+    if (remarks) updateData.remarks = remarks;
+    // Clear rejection fields if re-approving
+    updateData.rejectedBy = undefined;
+    updateData.rejectedAt = undefined;
+  } else if (status === 'Rejected') {
+    updateData.rejectedBy = userId;
+    updateData.rejectedAt = new Date();
+    if (remarks) updateData.remarks = remarks;
+    // Clear approval fields if re-rejecting
+    updateData.approvedBy = undefined;
+    updateData.approvedAt = undefined;
+  } else if (status === 'Pending') {
+    // Clear all approval/rejection data when resetting to pending
+    updateData.approvedBy = undefined;
+    updateData.rejectedBy = undefined;
+    updateData.approvedAt = undefined;
+    updateData.rejectedAt = undefined;
+    updateData.remarks = undefined;
+  }
+  
   const estimate = await ProjectEstimation.findByIdAndUpdate(
     estimateId,
-    { status },
+    updateData,
     { new: true }
   );
   return estimate;

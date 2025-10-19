@@ -68,7 +68,7 @@ export default function DashboardOverview() {
         // Fetch recent reports for these projects
         Promise.all(
           sorted.slice(0, 3).map(project =>
-            fetch(`http://localhost:4000/api/reports/project/${project._id}`)
+            fetch(`/api/reports/project/${project._id}`)
               .then(res => res.json())
               .then(reports => reports.map(r => ({ ...r, projectName: project.projectName })))
               .catch(() => [])
@@ -91,7 +91,7 @@ export default function DashboardOverview() {
   const [loadingTeams, setLoadingTeams] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/teams/populated')
+    fetch('/api/teams/populated')
       .then(res => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -107,7 +107,7 @@ export default function DashboardOverview() {
         console.error('Error fetching teams:', err);
         setLoadingTeams(false);
         // Fallback to regular teams endpoint
-        fetch('http://localhost:4000/api/teams')
+        fetch('/api/teams')
           .then(res => res.json())
           .then(data => {
             console.log('Fallback teams data:', data);
