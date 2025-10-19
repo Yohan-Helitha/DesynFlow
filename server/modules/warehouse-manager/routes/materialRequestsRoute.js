@@ -9,11 +9,17 @@ import {
   updateMaterialRequest,
 } from "../controller/materialRequestsController.js";
 
+// Import middleware for validation (if you have them)
+import { 
+  validateMaterialRequestUpdateMW
+} from "../middleware/materialRequestsMiddleware.js";
 
 // Routes
 route.get("/", getAllMaterialRequests);
 route.get("/:id", getMaterialRequestById);
+
 route.put("/:id",
+  validateMaterialRequestUpdateMW,
   updateMaterialRequest
 );
 

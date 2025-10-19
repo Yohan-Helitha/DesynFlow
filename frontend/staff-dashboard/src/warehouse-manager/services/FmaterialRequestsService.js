@@ -1,76 +1,41 @@
-// src/services/FmaterialRequestsService.js
-
-const BASE_URL = "http://localhost:4000/api/material-requests";
-
-/**
- * Fetch all material requests
- */
+// Fetch all material requests
 export const fetchMaterialRequests = async () => {
   try {
-    console.log("Fetching material requests from:", BASE_URL);
-    const res = await fetch(BASE_URL);
-    console.log("Response status:", res.status);
+    const res = await fetch("/api/warehouse/material-requests");
     if (!res.ok) throw new Error("Failed to fetch material requests");
     const data = await res.json();
-    console.log("Received data:", data);
-    return Array.isArray(data) ? data : [];
+    return data.materialRequests || []; // match backend response key
   } catch (err) {
-    console.error("Fetch material requests error:", err);
+    console.error(err);
     return [];
   }
 };
 
-/**
- * Fetch material requests by project ID
- */
-export const fetchRequestsByProject = async (projectId) => {
+// Fetch a single material request by ID
+export const fetchMaterialRequestById = async (id) => {
   try {
-    const res = await fetch(`${BASE_URL}/project/${projectId}`);
-    if (!res.ok) throw new Error(`Failed to fetch requests for project ${projectId}`);
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (err) {
-    console.error("Fetch requests by project error:", err);
-    return [];
-  }
-};
-
-/**
- * Fetch a single request by ID
- */
-export const fetchRequestById = async (id) => {
-  try {
-    const res = await fetch(`${BASE_URL}/${id}`);
+    const res = await fetch(`/api/warehouse/material-requests/${id}`);
     if (!res.ok) throw new Error("Failed to fetch material request");
     const data = await res.json();
-    console.log("Fetched material request:", data);
     return data;
   } catch (err) {
-    console.error("Fetch request by ID error:", err);
+    console.error(err);
     return null;
   }
 };
 
-
-//Update material request
-export const updateRequest = async (id, requestData) => {
+export const updateMaterialRequest = async (id, updatedFields) => {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "PUT",
+    const res = await fetch(`/api/warehouse/material-requests/${id}`, {
+      method: "PUT", // PATCH for partial updates
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestData)
+      body: JSON.stringify(updatedFields),
     });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw data;
-    }
-
-    return data;
-  } catch (err) {
-    console.error("Update material request error:", err);
-    throw err;
+    if (!res.ok) throw new Error("Failed to update material request");
+    return await res.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 };
 
