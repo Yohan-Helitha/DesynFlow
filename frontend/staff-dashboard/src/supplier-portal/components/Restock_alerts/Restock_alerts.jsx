@@ -1,75 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import './Restock_alerts.css';
 import { Link, useNavigate } from 'react-router-dom';
-// Removed toast import as it is no longer used
-import { FaTimes, FaClipboardList, FaExclamationTriangle, FaBox, FaClock, FaArrowUp } from 'react-icons/fa';
+import { FaTimes, FaClipboardList, FaExclamationTriangle, FaBox, FaClock, FaArrowUp, FaCheckCircle, FaWarehouse, FaUser, FaCalendarAlt } from 'react-icons/fa';
 import Sidebar from '../Sidebar/Sidebar';
-// Use existing service used by warehouse pages to fetch threshold alerts
-import { fetchThresholdAlerts } from '../../../warehouse-manager/services/FthresholdAlertService.js';
-import { FaCheckCircle } from 'react-icons/fa';
+// Use existing service to fetch reorder requests
+import { fetchSReorderRequests } from '../../../warehouse-manager/services/FsReorderRequestService.js';
 
 function RestockAlerts() {
   const navigate = useNavigate();
-  const [alerts, setAlerts] = useState([]);
-  const [filteredAlerts, setFilteredAlerts] = useState([]);
+  const [reorderRequests, setReorderRequests] = useState([]);
+  const [filteredRequests, setFilteredRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [selectedAlert, setSelectedAlert] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
-  // Map backend threshold alerts to this UI's shape
-  const mapToUiAlert = (ta) => {
-    const current = Number(ta.currentLevel ?? 0);
-    const min = Number(ta.restockLevel ?? 0);
-    const ratio = min > 0 ? current / min : 0;
-    let priority = 'low';
-    if (ratio <= 0.25) priority = 'critical';
-    else if (ratio <= 0.5) priority = 'high';
-    else if (ratio <= 0.8) priority = 'medium';
+  // Helper function to get status priority for sorting and filtering
+  const getStatusPriority = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'urgent': return 'critical';
+      case 'pending': return 'high';
+      case 'approved': return 'medium';
+      case 'completed': return 'low';
+      default: return 'medium';
+    }
+  };
 
-    const suggested = Math.max(min - current, 0);
+  // Helper function to format dates
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
-    return {
-      id: ta.alertId || ta._id,
-      docId: ta._id, // keep original _id for API operations like delete
-      materialName: ta.materialName || 'Unknown material',
-      category: ta.category || '-',
-      currentStock: current,
-      minThreshold: min,
-      maxThreshold: ta.maxThreshold || min * 3 || 0,
-      priority,
-      supplier: ta.supplier || '-',
-      estimatedRunOut: '-',
-      suggestedReorder: suggested,
-      unitPrice: ta.unitPrice || 0,
-      avgConsumption: ta.avgConsumption || 0,
-      lastOrderDate: ta.alertDate ? new Date(ta.alertDate).toLocaleDateString() : '-',
-      location: ta.inventoryName || '-'
-    };
+  // Helper function to check if request is overdue
+  const isOverdue = (expectedDate) => {
+    if (!expectedDate) return false;
+    return new Date(expectedDate) < new Date();
   };
 
   useEffect(() => {
     let isMounted = true;
     let intervalId;
 
-    const load = async () => {
+    const loadReorderRequests = async () => {
       try {
         setLoading(true);
-        const data = await fetchThresholdAlerts();
+        const data = await fetchSReorderRequests();
         if (!isMounted) return;
-        const mapped = Array.isArray(data) ? data.map(mapToUiAlert) : [];
-        setAlerts(mapped);
-        setFilteredAlerts(mapped);
+        
+        // Sort by creation date (newest first) and add priority based on status and dates
+        const processedData = Array.isArray(data) ? data
+          .map(request => ({
+            ...request,
+            priority: getStatusPriority(request.status),
+            isOverdue: isOverdue(request.expectedDate)
+          }))
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
+        
+        setReorderRequests(processedData);
+        setFilteredRequests(processedData);
       } catch (e) {
-        console.error('Failed to load threshold alerts', e);
+        console.error('Failed to load reorder requests', e);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
-    load();
-    // Poll every 20s for dynamic updates
-    intervalId = setInterval(load, 20000);
+    loadReorderRequests();
+    // Poll every 30s for dynamic updates
+    intervalId = setInterval(loadReorderRequests, 30000);
 
     return () => {
       isMounted = false;
@@ -77,78 +80,71 @@ function RestockAlerts() {
     };
   }, []);
 
-  // Filter alerts based on search and priority
+  // Filter requests based on search and status
   useEffect(() => {
-    let filtered = alerts;
+    let filtered = reorderRequests;
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(alert => 
-        (alert.materialName || '').toLowerCase().includes(term) ||
-        (alert.category || '').toLowerCase().includes(term) ||
-        (alert.supplier || '').toLowerCase().includes(term)
+      filtered = filtered.filter(request => 
+        (request.materialName || '').toLowerCase().includes(term) ||
+        (request.inventoryName || '').toLowerCase().includes(term) ||
+        (request.warehouseManagerName || '').toLowerCase().includes(term) ||
+        (request.stockReorderRequestId || '').toLowerCase().includes(term)
       );
     }
 
-    if (priorityFilter !== 'all') {
-      filtered = filtered.filter(alert => alert.priority === priorityFilter);
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(request => request.status?.toLowerCase() === statusFilter.toLowerCase());
     }
 
-    setFilteredAlerts(filtered);
-  }, [searchTerm, priorityFilter, alerts]);
+    setFilteredRequests(filtered);
+  }, [searchTerm, statusFilter, reorderRequests]);
 
-  const getPriorityIcon = (priority) => {
-    switch (priority) {
-      case 'critical': return '●';
-      case 'high': return '●';
-      case 'medium': return '●';
-      case 'low': return '●';
-      default: return '●';
+  const getStatusIcon = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'pending': return <FaClock />;
+      case 'approved': return <FaCheckCircle />;
+      case 'completed': return <FaBox />;
+      case 'urgent': return <FaExclamationTriangle />;
+      default: return <FaClock />;
     }
   };
 
-  const getPriorityClass = (priority) => {
-    return `priority-${priority}`;
+  const getStatusClass = (status, isOverdue) => {
+    if (isOverdue) return 'status-overdue';
+    switch (status?.toLowerCase()) {
+      case 'pending': return 'status-pending';
+      case 'approved': return 'status-approved';
+      case 'completed': return 'status-completed';
+      case 'urgent': return 'status-urgent';
+      default: return 'status-pending';
+    }
   };
 
-  const getStockPercentage = (current, min) => {
-    if (!min || min <= 0) return 0;
-    return Math.max(0, Math.min(100, ((current / min) * 100))).toFixed(0);
+  const getDaysUntilExpected = (expectedDate) => {
+    if (!expectedDate) return null;
+    const days = Math.ceil((new Date(expectedDate) - new Date()) / (1000 * 60 * 60 * 24));
+    return days;
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
-  const handleCreateOrder = (alert) => {
+  const handleCreateOrder = (request) => {
     // Navigate to the existing Order Form route and pass context for potential prefill
     navigate('/procurement-officer/order_form', {
       state: {
-        fromRestockAlert: true,
+        fromReorderRequest: true,
         recommended: {
-          materialName: alert.materialName,
-          suggestedReorder: alert.suggestedReorder,
-          unitPrice: alert.unitPrice,
-          priority: alert.priority
+          materialName: request.materialName,
+          quantity: request.quantity,
+          requestId: request.stockReorderRequestId,
+          inventoryName: request.inventoryName
         }
       }
     });
   };
 
-  const handleMarkResolved = (alertId) => {
-    setAlerts(prev => prev.filter(alert => alert.id !== alertId));
-  };
-
-  const handleMarkReceived = async (alert) => {
-    try {
-      // Use the existing delete API as a resolution/acknowledge action
-    } catch (err) {
-      console.error('Failed to mark as received:', err);
-      toast.error('Failed to mark as received. Please try again.');
-    }
+  const handleViewDetails = (request) => {
+    setSelectedRequest(request);
   };
 
   if (loading) {
@@ -169,20 +165,20 @@ function RestockAlerts() {
       <div className="restock-alerts-container">
         <div className="page-header">
           <div className="header-content">
-            <h2><FaExclamationTriangle /> Restock Alerts</h2>
+            <h2><FaWarehouse /> Reorder Requests</h2>
           </div>
           <div className="header-stats">
-            <div className="stat-card critical">
-              <span className="stat-number">{alerts.filter(a => a.priority === 'critical').length}</span>
-              <span className="stat-label">Critical</span>
+            <div className="stat-card pending">
+              <span className="stat-number">{reorderRequests.filter(r => r.status?.toLowerCase() === 'pending').length}</span>
+              <span className="stat-label">Pending</span>
             </div>
-            <div className="stat-card high">
-              <span className="stat-number">{alerts.filter(a => a.priority === 'high').length}</span>
-              <span className="stat-label">High Priority</span>
+            <div className="stat-card urgent">
+              <span className="stat-number">{reorderRequests.filter(r => r.isOverdue).length}</span>
+              <span className="stat-label">Overdue</span>
             </div>
             <div className="stat-card total">
-              <span className="stat-number">{alerts.length}</span>
-              <span className="stat-label">Total Alerts</span>
+              <span className="stat-number">{reorderRequests.length}</span>
+              <span className="stat-label">Total Requests</span>
             </div>
           </div>
         </div>
@@ -192,93 +188,117 @@ function RestockAlerts() {
             <div className="search-bar">
               <input
                 type="text"
-                placeholder="Search by material, category, or supplier..."
+                placeholder="Search by material, warehouse, manager, or request ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="priority-filter">
+            <div className="status-filter">
               <select
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
               >
-                <option value="all">All Priorities</option>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="completed">Completed</option>
+                <option value="urgent">Urgent</option>
               </select>
             </div>
           </div>
         </div>
 
-        <div className="alerts-table-container">
-          <table className="alerts-table">
+        <div className="requests-table-container">
+          <table className="requests-table">
             <thead>
               <tr>
-                <th>Priority</th>
+                <th>Request ID</th>
                 <th>Material</th>
-                <th>Category</th>
-                <th>Current Stock</th>
-                <th>Min. Threshold</th>
-                <th>Stock Level</th>
-                <th>Supplier</th>
-                <th>Est. Run Out</th>
-                <th>Suggested Reorder</th>
+                <th>Inventory Location</th>
+                <th>Quantity</th>
+                <th>Type & Unit</th>
+                <th>Expected Date</th>
+                <th>Manager</th>
+                <th>Status</th>
+                <th>Created</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredAlerts.length > 0 ? (
-                filteredAlerts.map((alert) => (
-                  <tr key={alert.id} className={`alert-row ${getPriorityClass(alert.priority)}`}>
+              {filteredRequests.length > 0 ? (
+                filteredRequests.map((request) => (
+                  <tr key={request._id} className={`request-row ${getStatusClass(request.status, request.isOverdue)}`}>
                     <td>
-                      <div className="priority-cell">
-                        <span className={`priority-dot priority-${alert.priority}`}>{getPriorityIcon(alert.priority)}</span>
-                        <span className="priority-text">{alert.priority.charAt(0).toUpperCase() + alert.priority.slice(1)}</span>
+                      <div className="request-id-cell">
+                        <span className="request-id">{request.stockReorderRequestId}</span>
+                        {request.isOverdue && <FaExclamationTriangle className="overdue-icon" title="Overdue" />}
                       </div>
                     </td>
                     <td>
                       <div className="material-info">
-                        <span className="material-name">{alert.materialName}</span>
-                        <span className="alert-id">#{alert.id}</span>
+                        <span className="material-name">{request.materialName}</span>
+                        <span className="material-id">ID: {request.materialId}</span>
                       </div>
                     </td>
-                    <td>{alert.category}</td>
-                    <td><span className="stock-number">{alert.currentStock}</span></td>
-                    <td><span className="threshold-number">{alert.minThreshold}</span></td>
                     <td>
-                      <div className="stock-level-cell">
-                        <div className="progress-bar-small">
-                          <div 
-                            className={`progress-fill-small priority-${alert.priority}`}
-                            style={{ width: `${Math.min(getStockPercentage(alert.currentStock, alert.minThreshold), 100)}%` }}
-                          ></div>
-                        </div>
-                        <span className="progress-percentage">{getStockPercentage(alert.currentStock, alert.minThreshold)}%</span>
+                      <div className="inventory-info">
+                        <span className="inventory-name">{request.inventoryName}</span>
+                        <span className="inventory-address">{request.inventoryAddress}</span>
                       </div>
                     </td>
-                    <td>{alert.supplier}</td>
-                    <td><span className="run-out-date">{alert.estimatedRunOut}</span></td>
                     <td>
-                      <div className="reorder-info">
-                        <span className="reorder-qty">{alert.suggestedReorder} units</span>
-                        <span className="reorder-cost">${(alert.suggestedReorder * alert.unitPrice).toFixed(2)}</span>
+                      <span className="quantity-number">{request.quantity}</span>
+                    </td>
+                    <td>
+                      <div className="type-unit-info">
+                        <span className="type">{request.type}</span>
+                        <span className="unit">({request.unit})</span>
                       </div>
+                    </td>
+                    <td>
+                      <div className="date-cell">
+                        <span className={`expected-date ${request.isOverdue ? 'overdue' : ''}`}>
+                          {formatDate(request.expectedDate)}
+                        </span>
+                        {getDaysUntilExpected(request.expectedDate) !== null && (
+                          <span className={`days-info ${getDaysUntilExpected(request.expectedDate) < 0 ? 'overdue' : 'upcoming'}`}>
+                            {getDaysUntilExpected(request.expectedDate) < 0 
+                              ? `${Math.abs(getDaysUntilExpected(request.expectedDate))} days overdue`
+                              : `${getDaysUntilExpected(request.expectedDate)} days left`
+                            }
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="manager-info">
+                        <FaUser className="manager-icon" />
+                        <span>{request.warehouseManagerName}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="status-cell">
+                        <span className={`status-badge ${getStatusClass(request.status, request.isOverdue)}`}>
+                          {getStatusIcon(request.status)}
+                          {request.status}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="created-date">{formatDate(request.createdAt)}</span>
                     </td>
                     <td>
                       <div className="action-buttons-table">
-                        {/* Mark as Received button intentionally not shown here; handled in Orders page */}
                         <button
                           className="btn-create-order"
-                          onClick={() => handleCreateOrder(alert)}
+                          onClick={() => handleCreateOrder(request)}
                           title="Create Order"
                         >
                           Create Order
                         </button>
                         <button
                           className="btn-view-details"
-                          onClick={() => setSelectedAlert(alert)}
+                          onClick={() => handleViewDetails(request)}
                           title="View Details"
                         >
                           Details
@@ -289,10 +309,11 @@ function RestockAlerts() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="10" className="no-alerts">
+                  <td colSpan="10" className="no-requests">
                     <div className="empty-state">
-                      <p>No restock alerts at this time</p>
-                      <small>All inventory levels are within acceptable ranges</small>
+                      <FaBox className="empty-icon" />
+                      <p>No reorder requests found</p>
+                      <small>No active reorder requests match your current filters</small>
                     </div>
                   </td>
                 </tr>
@@ -303,84 +324,104 @@ function RestockAlerts() {
 
 
 
-        {/* Alert Details Modal */}
-        {selectedAlert && (
-          <div className="modal-overlay" onClick={() => setSelectedAlert(null)}>
+        {/* Request Details Modal */}
+        {selectedRequest && (
+          <div className="modal-overlay" onClick={() => setSelectedRequest(null)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h3>Alert Details - {selectedAlert.materialName}</h3>
-                <button className="close-btn" onClick={() => setSelectedAlert(null)}><FaTimes /></button>
+                <h3>Reorder Request Details - {selectedRequest.stockReorderRequestId}</h3>
+                <button className="close-btn" onClick={() => setSelectedRequest(null)}><FaTimes /></button>
               </div>
               
               <div className="modal-body">
                 <div className="details-grid">
                   <div className="detail-section">
-                    <h4>Stock Information</h4>
+                    <h4><FaBox /> Material Information</h4>
                     <div className="detail-item">
-                      <span>Current Stock:</span>
-                      <span>{selectedAlert.currentStock} units</span>
+                      <span>Material Name:</span>
+                      <span className="highlight">{selectedRequest.materialName}</span>
                     </div>
                     <div className="detail-item">
-                      <span>Minimum Threshold:</span>
-                      <span>{selectedAlert.minThreshold} units</span>
+                      <span>Material ID:</span>
+                      <span>{selectedRequest.materialId}</span>
                     </div>
                     <div className="detail-item">
-                      <span>Maximum Threshold:</span>
-                      <span>{selectedAlert.maxThreshold} units</span>
+                      <span>Quantity Requested:</span>
+                      <span className="quantity">{selectedRequest.quantity} {selectedRequest.unit}</span>
                     </div>
                     <div className="detail-item">
-                      <span>Average Consumption:</span>
-                      <span>{selectedAlert.avgConsumption} units/week</span>
-                    </div>
-                  </div>
-
-                  <div className="detail-section">
-                    <h4>Supplier Information</h4>
-                    <div className="detail-item">
-                      <span>Supplier:</span>
-                      <span>{selectedAlert.supplier}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span>Last Order Date:</span>
-                      <span>{selectedAlert.lastOrderDate}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span>Unit Price:</span>
-                      <span>{formatCurrency(selectedAlert.unitPrice)}</span>
+                      <span>Type:</span>
+                      <span>{selectedRequest.type}</span>
                     </div>
                   </div>
 
                   <div className="detail-section">
-                    <h4>Reorder Recommendation</h4>
+                    <h4><FaWarehouse /> Inventory Information</h4>
                     <div className="detail-item">
-                      <span>Suggested Quantity:</span>
-                      <span className="highlight">{selectedAlert.suggestedReorder} units</span>
+                      <span>Inventory Name:</span>
+                      <span>{selectedRequest.inventoryName}</span>
                     </div>
                     <div className="detail-item">
-                      <span>Estimated Total Cost:</span>
-                      <span className="cost">{formatCurrency(selectedAlert.suggestedReorder * selectedAlert.unitPrice)}</span>
+                      <span>Location ID:</span>
+                      <span>{selectedRequest.inventoryId}</span>
                     </div>
                     <div className="detail-item">
-                      <span>Estimated Run Out:</span>
-                      <span className="urgency">{selectedAlert.estimatedRunOut}</span>
+                      <span>Address:</span>
+                      <span>{selectedRequest.inventoryAddress}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span>Contact:</span>
+                      <span>{selectedRequest.inventoryContact}</span>
+                    </div>
+                  </div>
+
+                  <div className="detail-section">
+                    <h4><FaCalendarAlt /> Timeline & Management</h4>
+                    <div className="detail-item">
+                      <span>Expected Date:</span>
+                      <span className={`expected-date ${selectedRequest.isOverdue ? 'overdue' : ''}`}>
+                        {formatDate(selectedRequest.expectedDate)}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <span>Created Date:</span>
+                      <span>{formatDate(selectedRequest.createdAt)}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span>Warehouse Manager:</span>
+                      <span><FaUser /> {selectedRequest.warehouseManagerName}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span>Status:</span>
+                      <span className={`status-badge ${getStatusClass(selectedRequest.status, selectedRequest.isOverdue)}`}>
+                        {getStatusIcon(selectedRequest.status)}
+                        {selectedRequest.status}
+                      </span>
                     </div>
                   </div>
                 </div>
+
+                {selectedRequest.isOverdue && (
+                  <div className="alert-banner overdue">
+                    <FaExclamationTriangle />
+                    <span>This request is overdue by {Math.abs(getDaysUntilExpected(selectedRequest.expectedDate))} days</span>
+                  </div>
+                )}
               </div>
 
               <div className="modal-footer">
                 <button 
                   className="btn-primary"
                   onClick={() => {
-                    handleCreateOrder(selectedAlert);
-                    setSelectedAlert(null);
+                    handleCreateOrder(selectedRequest);
+                    setSelectedRequest(null);
                   }}
                 >
                   <FaClipboardList /> Create Purchase Order
                 </button>
                 <button 
                   className="btn-secondary"
-                  onClick={() => setSelectedAlert(null)}
+                  onClick={() => setSelectedRequest(null)}
                 >
                   Close
                 </button>

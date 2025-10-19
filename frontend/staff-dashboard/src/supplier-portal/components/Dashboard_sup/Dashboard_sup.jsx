@@ -793,8 +793,6 @@ function Dashboard_sup() {
         <div className="panel-content">
           {pendingOrders.length === 0 ? (
             <div className="empty-notifications">
-              <span className="empty-icon">✅</span>
-              <FaCheckCircle className="empty-icon" />
               <p>All caught up!</p>
               <small>No new requests require your attention</small>
             </div>
