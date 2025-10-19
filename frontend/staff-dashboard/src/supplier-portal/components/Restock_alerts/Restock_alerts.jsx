@@ -71,8 +71,8 @@ function RestockAlerts() {
     };
 
     loadReorderRequests();
-    // Poll every 30s for dynamic updates
-    intervalId = setInterval(loadReorderRequests, 30000);
+    // Auto-refresh disabled to prevent unwanted page refreshes
+    // intervalId = setInterval(loadReorderRequests, 30000);
 
     return () => {
       isMounted = false;
