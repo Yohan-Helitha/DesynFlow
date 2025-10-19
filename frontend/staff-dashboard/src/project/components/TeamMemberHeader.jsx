@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaBell, FaSignOutAlt } from "react-icons/fa";
 
-export default function TeamMemberHeader({ onLogout }) {
+export default function TeamMemberHeader() {
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
