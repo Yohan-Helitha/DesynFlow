@@ -14,9 +14,10 @@ const ReportSchema = new Schema({
   summary: { type: String },
   includeProgress: { type: Boolean, default: false },
   includeIssues: { type: Boolean, default: false },
-  includeResourceUsage: { type: Boolean, default: false },
+  includeMaterialList: { type: Boolean, default: false },
   attachments: [{ type: String }], // file URLs/paths for supporting files
   filePath: { type: String }, // Path to generated PDF
+  fileUrl: { type: String }, // Public URL to the generated PDF
   fileName: { type: String }, // Generated PDF filename
   status: { type: String, enum: ['draft', 'completed'], default: 'draft' }
 }, { timestamps: true });

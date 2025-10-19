@@ -9,7 +9,9 @@
     "test": "jest --verbose --coverage",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "seed": "node seed/seedUsers.js"
+    "seed": "node seed/seedUsers.js",
+    "fix-puppeteer": "node fix-puppeteer.js",
+    "install-chromium": "node node_modules/puppeteer/install.js"
   },
   "keywords": [],
   "author": "",
