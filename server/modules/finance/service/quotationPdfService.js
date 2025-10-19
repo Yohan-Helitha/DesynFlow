@@ -11,8 +11,11 @@ export async function generateQuotationPdf(quotation) {
   }
 
   const safeProject = String(quotation.projectId);
-  const fileName = `quotation_${safeProject}_${quotation.estimateVersion || 'v0'}_${quotation.version || 1}.pdf`;
+  const ts = Date.now();
+  const fileName = `quotation_${safeProject}_${quotation.estimateVersion || 'v0'}_${quotation.version || 1}_${ts}.pdf`;
   const filePath = path.join(quotesDir, fileName);
+  
+  console.log('[PDF Service] Generating PDF:', fileName);
 
   await new Promise((resolve, reject) => {
     try {
@@ -226,6 +229,7 @@ export async function generateQuotationPdf(quotation) {
   });
 
   const url = `/uploads/quotations/${fileName}`;
+  console.log('[PDF Service] PDF generated successfully:', url);
   return { filePath, url };
 }
 

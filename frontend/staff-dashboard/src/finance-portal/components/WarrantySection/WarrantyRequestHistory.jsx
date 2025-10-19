@@ -99,7 +99,7 @@ export const WarrantyRequestHistory = () => {
 	}
 
 		return (
-		<div>
+		<div className="bg-[#F7EED3] p-4 rounded-md shadow-sm">
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center">
 					<div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
@@ -109,10 +109,10 @@ export const WarrantyRequestHistory = () => {
 				</div>
 				<div className="flex space-x-2">
 					<div className="relative">
-						<input
+			            <input
 							type="text"
 							placeholder="Search resolved claims..."
-							className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396]"
+										className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396] text-[#674636]"
 							value={search}
 							onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
 						/>
@@ -132,7 +132,7 @@ export const WarrantyRequestHistory = () => {
 								{columns.map(col => (
 									<th
 										key={col.key}
-										className="px-4 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
+										className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
 										onClick={() => handleSort(col.key === 'warehouseActionDate' ? 'warehouseAction.shippedAt' : col.key)}
 									>
 										<div className="flex items-center">
@@ -141,24 +141,24 @@ export const WarrantyRequestHistory = () => {
 										</div>
 									</th>
 								))}
-								<th className="px-4 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Actions</th>
+								<th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Actions</th>
 							</tr>
 						</thead>
 						<tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
 							{loading && (
-								<tr><td colSpan={columns.length + 1} className="p-6 text-center text-[#674636]">Loading resolved claims...</td></tr>
+								<tr><td colSpan={columns.length + 1} className="px-6 py-4 text-center text-[#674636]">Loading resolved claims...</td></tr>
 							)}
 							{!loading && pageSlice.length === 0 && (
-								<tr><td colSpan={columns.length + 1} className="p-6 text-center text-[#AAB396]">No resolved claims found</td></tr>
+								<tr><td colSpan={columns.length + 1} className="px-6 py-4 text-center text-[#AAB396]">No resolved claims found</td></tr>
 							)}
 							{!loading && pageSlice.map(row => (
 								<tr key={row._id} className="hover:bg-[#F7EED3]">
 									{columns.map(col => (
-										<td key={col.key} className="px-4 py-3 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+										<td key={col.key} className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
 											{col.render ? col.render(row) : (row[col.key] ?? '')}
 										</td>
 									))}
-									<td className="px-4 py-3 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
+									<td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
 										<button 
 											onClick={() => handleView(row)}
 											className="text-[#674636] hover:text-[#AAB396] bg-[#FFF8E8] px-3 py-1 rounded-md border border-[#AAB396] hover:border-[#674636] transition-colors text-xs font-mono"
@@ -174,7 +174,7 @@ export const WarrantyRequestHistory = () => {
 
 				{/* Pagination */}
 				{!loading && filtered.length > 0 && (
-					<div className="px-4 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#FFF8E8]">
+					<div className="px-6 py-3 flex items-center justify-between border-t border-[#AAB396] bg-[#FFF8E8]">
 						<div className="text-sm text-[#674636]">
 							Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} entries
 						</div>

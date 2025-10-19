@@ -103,8 +103,17 @@ app.use(express.urlencoded({ extended: true })); // Parse urlencoded body
 
 // Static files
 app.use('/reports', express.static('public/reports'));
-// Serve uploaded files (e.g., generated PDFs)
-app.use('/uploads', express.static('uploads'));
+// Serve uploaded files (e.g., generated PDFs) with no-cache headers
+app.use('/uploads', express.static('uploads', {
+  setHeaders: (res, path) => {
+    // Disable caching for PDFs to ensure fresh downloads
+    if (path.endsWith('.pdf')) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+    }
+  }
+}));
 
 // Mount supplier routes
 app.use("/api/suppliers", supplierRouter);

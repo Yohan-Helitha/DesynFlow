@@ -175,7 +175,7 @@ export const EstimationsHistory = () => {
           <input
             type="text"
             placeholder="Search approved estimations..."
-            className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm text-[#674636] focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent"
+            className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm text-[#674636] focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

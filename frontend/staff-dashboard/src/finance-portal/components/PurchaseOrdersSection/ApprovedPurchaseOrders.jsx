@@ -12,6 +12,7 @@ export const ApprovedPurchaseOrders = () => {
   const [sortField, setSortField] = useState('updatedAt')
   const [sortDirection, setSortDirection] = useState('desc')
   const [currentPage, setCurrentPage] = useState(1)
+  const [projectNames, setProjectNames] = useState({})
 
   const fetchOrders = async () => {
     setLoading(true)
@@ -32,6 +33,47 @@ export const ApprovedPurchaseOrders = () => {
   }
 
   useEffect(() => { fetchOrders() }, [])
+
+  // cache project names
+  useEffect(() => {
+    if (!Array.isArray(orders) || orders.length === 0) return;
+    const cache = { ...projectNames };
+    const toFetch = new Set();
+    for (const po of orders) {
+      const p = po.projectId;
+      if (!p) continue;
+      if (typeof p === 'object') {
+        if (p._id && p.projectName) cache[p._id] = p.projectName;
+        else if (p._id && !cache[p._id]) toFetch.add(p._id);
+      } else if (typeof p === 'string') {
+        if (!cache[p]) toFetch.add(p);
+      }
+    }
+    if (toFetch.size === 0) {
+      if (Object.keys(cache).length !== Object.keys(projectNames).length) setProjectNames(cache);
+      return;
+    }
+    Promise.all(Array.from(toFetch).map(async (id) => {
+      try {
+        const res = await fetch(`/api/projects/${id}`);
+        if (!res.ok) return;
+        const proj = await res.json();
+        if (proj && proj._id && proj.projectName) cache[proj._id] = proj.projectName;
+      } catch (_) { /* ignore */ }
+    })).then(() => setProjectNames((prev) => ({ ...prev, ...cache })));
+  }, [orders]);
+
+  const getProjectDisplay = (po) => {
+    const p = po.projectId;
+    if (!p) return '';
+    if (typeof p === 'object') {
+      if (p.projectName) return p.projectName;
+      if (p._id && projectNames[p._id]) return projectNames[p._id];
+      if (p._id) return String(p._id);
+      return '';
+    }
+    return projectNames[p] || p;
+  };
 
   const mapToViewModel = (po) => {
     return {
@@ -88,7 +130,8 @@ export const ApprovedPurchaseOrders = () => {
       return (
         (po.name && String(po.name).toLowerCase().includes(q)) ||
         (po._id && String(po._id).toLowerCase().includes(q)) ||
-        (po.status && String(po.status).toLowerCase().includes(q))
+        (po.status && String(po.status).toLowerCase().includes(q)) ||
+        getProjectDisplay(po).toLowerCase().includes(q)
       )
     })
     .sort((a, b) => {
@@ -137,11 +180,11 @@ export const ApprovedPurchaseOrders = () => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                {[{ key: 'name', label: 'Order Name' }, { key: 'status', label: 'Status' }, { key: 'totalAmount', label: 'Total Amount' }, { key: 'updatedAt', label: 'Updated At' }].map(({ key, label }) => (
+                {[{ key: 'name', label: 'Order Name' }, { key: 'projectName', label: 'Project Name' }, { key: 'status', label: 'Status' }, { key: 'totalAmount', label: 'Total Amount' }, { key: 'updatedAt', label: 'Updated At' }].map(({ key, label }) => (
                   <th
                     key={key}
                     className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort(key)}
+                    onClick={() => handleSort(key === 'projectName' ? 'projectId' : key)}
                   >
                     <div className="flex items-center">
                       {label}
@@ -156,6 +199,7 @@ export const ApprovedPurchaseOrders = () => {
               {paginated.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.name || po._id}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{getProjectDisplay(po)}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.status}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {(Number(po.totalAmount)||0).toLocaleString()}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.updatedAt ? new Date(po.updatedAt).toLocaleString() : '-'}</td>
@@ -166,7 +210,7 @@ export const ApprovedPurchaseOrders = () => {
               ))}
               {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-[#AAB396]">No purchase orders found</td>
+                  <td colSpan={6} className="px-6 py-4 text-center text-[#AAB396]">No purchase orders found</td>
                 </tr>
               )}
             </tbody>

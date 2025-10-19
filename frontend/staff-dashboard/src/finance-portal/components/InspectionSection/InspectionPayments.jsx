@@ -147,6 +147,7 @@ export const InspectionPayments = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Site Location</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Property Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Estimated Cost</th>
+                {/* Status column removed per request */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase">Payment Receipt</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase">Actions</th>
               </tr>
@@ -160,6 +161,7 @@ export const InspectionPayments = () => {
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{[payment.propertyLocation_address, payment.propertyLocation_city].filter(Boolean).join(', ') || payment.siteLocation || '-'}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{payment.propertyType || '-'}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] font-semibold whitespace-pre-line break-words max-w-xs">{payment.estimation && payment.estimation.estimatedCost !== undefined ? `LKR ${payment.estimation.estimatedCost.toLocaleString()}` : '-'}</td>
+                  {/* Status column removed */}
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] underline cursor-pointer whitespace-pre-line break-words max-w-xs">
                     {payment.paymentReceiptUrl || payment.receiptUrl ? (
                       <a href={buildReceiptUrl(payment)} target="_blank" rel="noopener noreferrer" className="hover:text-[#AAB396]">
@@ -181,7 +183,7 @@ export const InspectionPayments = () => {
               ))}
               {paginatedPayments.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-6 py-4 text-center text-[#AAB396]">
+                  <td colSpan={8} className="px-6 py-4 text-center text-[#AAB396]">
                     No pending payments found
                   </td>
                 </tr>

@@ -140,7 +140,7 @@ export const PendingEstimation = () => {
           <input
             type="text"
             placeholder="Search projects..."
-            className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#FFF8E8] text-[#674636]"
+            className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] text-[#674636] placeholder-[#AAB396]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

@@ -30,7 +30,7 @@ export const QuotationsSection = () => {
           }`}
           onClick={() => setActiveTab('approved')}
         >
-          Approved Quotations
+          Quotations History
         </button>
       </div>
 
