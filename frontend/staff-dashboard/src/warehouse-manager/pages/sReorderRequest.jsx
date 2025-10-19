@@ -1077,10 +1077,6 @@ const SReorderRequest = () => {
                 <span className="text-gray-500">ID:</span>
                 <span className="font-semibold ml-1 text-gray-800">{selectedRequest.materialId}</span>
               </div>
-              <div className="col-span-2">
-                <span className="text-gray-500">Manager:</span>
-                <span className="font-semibold ml-1 text-gray-800">{selectedRequest.warehouseManagerName}</span>
-              </div>
             </div>
           </div>
         </div>

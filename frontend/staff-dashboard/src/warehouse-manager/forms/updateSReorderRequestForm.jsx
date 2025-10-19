@@ -554,8 +554,8 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
       setFormData(prev => ({
         ...prev,
         inventoryName: selectedInv.inventoryName || "",
-        inventoryAddress: selectedInv.address || "",
-        inventoryContact: selectedInv.contact || ""
+        inventoryAddress: selectedInv.inventoryAddress || "",
+        inventoryContact: selectedInv.inventoryContact || ""
       }));
     }
   }, [formData.inventoryId, availableInventories]);
