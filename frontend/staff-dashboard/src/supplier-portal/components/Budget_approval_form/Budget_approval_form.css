@@ -13,6 +13,10 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
+.form-wrapper { /* ensure some top spacing from page header */
+  padding-top: 32px;
+}
+
 .budget-form h2 {
   text-align: center;
   margin: 0;
@@ -20,42 +24,59 @@
   color: #674636;
 }
 
+
 /* Back header reused classes from Add_suppliers */
 .header-with-back {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   margin-bottom: 24px;
   position: relative;
+  /* reserve horizontal padding so centered title doesn't overlap the absolute back button */
+  padding: 14px 56px 0 56px;
 }
-
 .back-to-suppliers-btn {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
+  position: fixed;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
+  background: rgba(139, 69, 19, 0.95);
   border: none;
-  color: #8B4513;
+  color: white;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
+  padding: 12px 20px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
   text-decoration: none;
+  z-index: 1000;
 }
 
-.back-to-suppliers-btn:hover {
-  color: #654321;
-  background: rgba(139, 69, 19, 0.1);
-  transform: translateY(-50%) translateX(-2px);
-  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.2);
+/* Nudge the title down slightly so it doesn't visually collide with the button */
+.header-with-back h2 {
+  margin-top: 6px;
 }
 
+/* Responsive: reduce padding on very small screens to avoid horizontal overflow */
+@media (max-width: 480px) {
+  .header-with-back {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .back-to-suppliers-btn {
+    left: 50%;
+    top: 10px;
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+  .budget-form h2 {
+    font-size: 20px;
+  }
+}
 .form-group {
   margin-bottom: 16px;
 }

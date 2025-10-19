@@ -168,7 +168,7 @@ function Budget_approval_form() {
       <form className="budget-form" onSubmit={handleSubmit}>
         <div className="header-with-back">
           <button type="button" className="back-to-suppliers-btn" onClick={() => navigate('/procurement-officer/budget_approval')}>
-            ← Back to Budget Approvals
+            ← Back
           </button>
           <h2>Budget Approval Request</h2>
         </div>
