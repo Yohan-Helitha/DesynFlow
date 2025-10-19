@@ -46,7 +46,7 @@ export const SubmitWarrantyClaimModal = ({ open, onClose, warranty, onSubmitted 
       form.append('description', description);
       if (file) form.append('proofFile', file);
 
-      const res = await axios.post('http://localhost:4000/api/claims', form, {
+      const res = await axios.post('http://localhost:3000/api/claims', form, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
       onSubmitted?.(res.data);
@@ -107,7 +107,7 @@ export const ViewClaimModal = ({ open, onClose, claim }) => {
           <div><span className="text-gray-500">Submitted:</span> {created}</div>
           {claim.proofUrl && (
             <div className="mt-2">
-              <a className="text-blue-600 underline" href={`http://localhost:4000${claim.proofUrl}`} target="_blank" rel="noreferrer">View Proof</a>
+              <a className="text-blue-600 underline" href={`http://localhost:3000${claim.proofUrl}`} target="_blank" rel="noreferrer">View Proof</a>
             </div>
           )}
         </div>
@@ -157,9 +157,9 @@ export default function WarrantySection() {
     setLoading(true); setError('');
     try {
       // get current user id first
-      const me = await axios.get('http://localhost:4000/api/user/me', { headers: { Authorization: `Bearer ${token}` } });
+      const me = await axios.get('http://localhost:3000/api/user/me', { headers: { Authorization: `Bearer ${token}` } });
       const meId = me.data?._id || me.data?.id;
-      const res = await axios.get('http://localhost:4000/api/warranties', { params: { clientId: meId }, headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get('http://localhost:3000/api/warranties', { params: { clientId: meId }, headers: { Authorization: `Bearer ${token}` } });
       setWarranties(res.data || []);
     } catch (e) { setError(e?.response?.data?.error || e?.message || 'Failed to load warranties'); }
     finally { setLoading(false); }
@@ -169,9 +169,9 @@ export default function WarrantySection() {
     setLoading(true); setError('');
     try {
       // get current user id first
-      const me = await axios.get('http://localhost:4000/api/user/me', { headers: { Authorization: `Bearer ${token}` } });
+      const me = await axios.get('http://localhost:3000/api/user/me', { headers: { Authorization: `Bearer ${token}` } });
       const meId = me.data?._id || me.data?.id;
-      const res = await axios.get('http://localhost:4000/api/claims', { params: { clientId: meId }, headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get('http://localhost:3000/api/claims', { params: { clientId: meId }, headers: { Authorization: `Bearer ${token}` } });
       setClaims(res.data || []);
     } catch (e) { setError(e?.response?.data?.error || e?.message || 'Failed to load claims'); }
     finally { setLoading(false); }
