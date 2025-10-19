@@ -2,7 +2,7 @@
 FROM node:22
 
 
-# Install system dependencies for Puppeteer
+# Install system dependencies for Puppeteer and Chrome
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     fonts-liberation \
@@ -41,6 +41,11 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     wget \
     xdg-utils \
+    gnupg2 \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -64,8 +69,10 @@ RUN npm install --include=dev --unsafe-perm
 # Copy source code
 COPY . .
 
-# Set the PORT environment variable explicitly
+# Set environment variables for Puppeteer and the app
 ENV PORT=4000
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 # Expose the port your app runs on
 EXPOSE 4000

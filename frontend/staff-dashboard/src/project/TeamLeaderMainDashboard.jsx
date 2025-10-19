@@ -3,6 +3,7 @@ import Layout from "./components/Layout";
 import LeaderDashboard from "./leaderDashboard";
 import TaskBoard from "./components/task";
 import TeamAttendance from "./components/TeamAttendance";
+import PersonalFilesTab from './components/PersonalFilesTab';
 import ResourceRequests from "./components/ResourceRequests";
 import FlaggedIssuesPanel from "./components/FlaggedIssuesPanel";
 import ProgressReports from "./components/ProgressReports";
@@ -79,7 +80,8 @@ export default function TeamLeaderMainDashboard() {
       case 1:
         return <TaskBoard />;
       case 2:
-        return <TeamAttendance />;
+        // Replace attendance management with Personal Files view for team leader
+        return <PersonalFilesTab />;
       case 3:
         return <ResourceRequests project={project} leaderId={leaderId} />;
       case 4:

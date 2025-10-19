@@ -5,6 +5,9 @@ import MilestoneList from "./components/MilestoneList";
 import ProgressBar from "./components/ProgressBar";
 import DocumentList from "./components/DocumentList";
 import CreateMeetingForm from "./components/CreateMeetingForm";
+import UploadModelModal from "./components/UploadModelModal";
+import ProjectModelViewer from "../common/components/ProjectModelViewer";
+import Project3DModelCard from "./components/Project3DModelCard";
 
 export default function LeaderDashboard() {
   // Get the logged-in user's data and validate role
@@ -37,6 +40,9 @@ export default function LeaderDashboard() {
   const [error, setError] = useState(null);
   const [showMeetingForm, setShowMeetingForm] = useState(false);
   const [editMeeting, setEditMeeting] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [viewModelUrl, setViewModelUrl] = useState(null);
+  const [designRestriction, setDesignRestriction] = useState(false);
 
   // Function to calculate project progress based on completed tasks
   const calculateProjectProgress = (projectTasks) => {
@@ -94,6 +100,17 @@ export default function LeaderDashboard() {
           }
 
           await fetchMeetings(ongoing._id);
+          // load 3D model info for ongoing project
+          try {
+            const projRes2 = await fetch(`/api/projects/${ongoing._id}`);
+            if (projRes2.ok) {
+              const projJson = await projRes2.json();
+              setViewModelUrl(projJson.finalDesign3DUrl || null);
+              setDesignRestriction(!!projJson.designAccessRestriction);
+            }
+          } catch (err) {
+            console.warn('3D model fetch error', err);
+          }
         } else {
           setReports([]);
           setMeetings([]);
@@ -221,7 +238,7 @@ export default function LeaderDashboard() {
         <h3 className="text-lg font-semibold text-brown-primary mb-2">Generated Reports</h3>
         <ul className="space-y-2">
           {reports.map((rep, idx) => (
-            <li key={rep._id || idx} className="bg-white rounded shadow px-4 py-2 flex items-center justify-between">
+            <li key={rep._id || idx} className="bg-cream-light rounded shadow px-4 py-2 flex items-center justify-between">
               <div>
                 <p className="font-semibold text-brown-primary">{rep.reportType || `Report ${idx + 1}`}</p>
                 <p className="text-xs text-gray-500">Created: {new Date(rep.createdAt).toLocaleDateString()}</p>
@@ -245,7 +262,7 @@ export default function LeaderDashboard() {
                     href={`${rep.filePath}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline flex items-center gap-1"
+                    className="text-brown-primary hover:underline flex items-center gap-1"
                   >
                     📄 Download
                   </a>
@@ -262,11 +279,11 @@ export default function LeaderDashboard() {
         <h3 className="text-lg font-semibold text-brown-primary mb-2">Meetings</h3>
         <ul className="space-y-2 mb-4">
           {meetings.map((meet, idx) => (
-            <li key={meet._id || idx} className="bg-white rounded shadow px-4 py-2">
+            <li key={meet._id || idx} className="bg-cream-light rounded shadow px-4 py-2">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{meet.channel}</span>
+                    <span className="text-xs bg-cream-light text-brown-primary px-2 py-1 rounded">{meet.channel}</span>
                     <p className="font-semibold text-brown-primary">{meet.channel} Meeting</p>
                   </div>
                   <p className="text-xs text-gray-500 mb-1">
@@ -278,27 +295,27 @@ export default function LeaderDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   {meet.link && (
-                    <a 
-                      href={meet.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-blue-600 hover:underline text-xs"
+                      <a 
+                        href={meet.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-brown-primary hover:underline text-xs"
+                      >
+                        Join
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleEditMeeting(meet)}
+                      className="text-soft-green hover:text-green-primary text-xs"
                     >
-                      Join
-                    </a>
-                  )}
-                  <button
-                    onClick={() => handleEditMeeting(meet)}
-                    className="text-green-600 hover:text-green-800 text-xs"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteMeeting(meet._id)}
-                    className="text-red-600 hover:text-red-800 text-xs"
-                  >
-                    Delete
-                  </button>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteMeeting(meet._id)}
+                      className="text-red-brown hover:text-dark-brown text-xs"
+                    >
+                      Delete
+                    </button>
                 </div>
               </div>
             </li>
@@ -323,6 +340,38 @@ export default function LeaderDashboard() {
         project={projects[0]} // Use first project for now
         editMeeting={editMeeting}
       />
+
+      {/* Upload 3D Model Modal */}
+      <UploadModelModal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)} projectId={projects[0]?._id} onUploaded={(data) => {
+        setViewModelUrl(data.fileUrl);
+        setDesignRestriction(data.designAccessRestriction);
+        alert('3D model uploaded');
+      }} />
+
+      {/* Viewer modal/simple area: show card and viewer */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold text-brown-primary mb-2">3D Design</h3>
+        {viewModelUrl ? (
+          <>
+            <Project3DModelCard modelUrl={viewModelUrl} restriction={designRestriction} onView={() => {/* open inline viewer below */}} onDelete={async () => {
+              if (!confirm('Delete 3D model?')) return;
+              const token = localStorage.getItem('authToken');
+              const res = await fetch(`/api/project/${projects[0]._id}/3dmodel`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} });
+              if (res.ok) { setViewModelUrl(null); setDesignRestriction(false); alert('Deleted'); } else { alert('Delete failed'); }
+            }} canDelete={true} />
+            <div className="mt-4 bg-cream-light p-4 rounded shadow">
+              <ProjectModelViewer src={viewModelUrl} restriction={designRestriction} />
+            </div>
+          </>
+        ) : (
+          <div className="bg-cream-light p-4 rounded">
+            <p className="text-gray-600">No 3D model uploaded yet.</p>
+            <div className="mt-3">
+              <button onClick={() => setShowUploadModal(true)} className="px-4 py-2 bg-brown-primary text-white rounded">Upload 3D Model</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

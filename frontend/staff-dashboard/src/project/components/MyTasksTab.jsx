@@ -14,6 +14,9 @@ export default function MyTasksTab() {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
   const [timeTracking, setTimeTracking] = useState({ active: false, taskId: null, startTime: null });
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [blockingTask, setBlockingTask] = useState(null);
+  const [blockIssueDescription, setBlockIssueDescription] = useState('');
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -23,6 +26,13 @@ export default function MyTasksTab() {
     dueDate: 'all',
     search: ''
   });
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
 
   // Get logged in team member data
   useEffect(() => {
@@ -159,6 +169,14 @@ export default function MyTasksTab() {
 
   // Update task status
   const updateTaskStatus = async (taskId, status, progressPercentage = null) => {
+    if (status === 'Blocked') {
+      // Show block modal instead of directly blocking
+      const task = tasks.find(t => t._id === taskId);
+      setBlockingTask(task);
+      setShowBlockModal(true);
+      return;
+    }
+
     try {
       const updateData = { 
         status,
@@ -200,6 +218,43 @@ export default function MyTasksTab() {
     }
   };
 
+  // Handle blocking task with issue description
+  const handleBlockTask = async () => {
+    if (!blockIssueDescription.trim()) {
+      alert('Please provide a description for the issue');
+      return;
+    }
+
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const response = await fetch(`/api/tasks/${blockingTask._id}/block`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          issueDescription: blockIssueDescription,
+          blockedBy: currentUser?.id || currentUser?._id
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setTasks(prev => prev.map(task => 
+          task._id === blockingTask._id ? result.task : task
+        ));
+        setShowBlockModal(false);
+        setBlockingTask(null);
+        setBlockIssueDescription('');
+        alert('Task blocked and issue logged successfully for weekly reporting');
+      } else {
+        const error = await response.json();
+        alert(`Error blocking task: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Error blocking task:', error);
+      alert('Error blocking task');
+    }
+  };
+
   // Get priority color
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -215,7 +270,7 @@ export default function MyTasksTab() {
     switch (status) {
       case 'Completed': return 'bg-green-100 text-green-800';
       case 'Done': return 'bg-green-100 text-green-800';
-      case 'In Progress': return 'bg-blue-100 text-blue-800';
+  case 'In Progress': return 'bg-cream-light text-brown-primary';
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
       case 'Blocked': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -259,7 +314,7 @@ export default function MyTasksTab() {
 
   return (
     <div className="bg-cream-light min-h-screen">
-      <TeamMemberHeader />
+      <TeamMemberHeader onLogout={handleLogout} />
       
       <div className="p-8">
         {/* Header */}
@@ -282,7 +337,7 @@ export default function MyTasksTab() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+  <div className="bg-cream-light rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <FaFilter className="text-brown-primary" />
             <span className="font-semibold text-brown-primary">Filters</span>
@@ -380,7 +435,7 @@ export default function MyTasksTab() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleBulkStatusChange('In Progress')}
-                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                  className="bg-brown-primary text-white px-3 py-1 rounded text-sm hover:bg-brown-primary-300"
                 >
                   Start Selected
                 </button>
@@ -403,17 +458,17 @@ export default function MyTasksTab() {
 
         {/* Tasks Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+          <div className="bg-cream-light rounded-lg shadow-md p-4 text-center">
             <div className="text-2xl font-bold text-brown-primary">{filteredTasks.length}</div>
             <div className="text-gray-600">Total Tasks</div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+          <div className="bg-cream-light rounded-lg shadow-md p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">
               {filteredTasks.filter(t => t.status === 'In Progress').length}
             </div>
             <div className="text-gray-600">In Progress</div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
+          <div className="bg-cream-light rounded-lg shadow-md p-4 text-center">
             <div className="text-2xl font-bold text-green-600">
               {filteredTasks.filter(t => t.status === 'Completed' || t.status === 'Done').length}
             </div>
@@ -428,7 +483,7 @@ export default function MyTasksTab() {
         </div>
 
         {/* Tasks List */}
-        <div className="bg-white rounded-lg shadow-md">
+  <div className="bg-cream-light rounded-lg shadow-md">
           {/* Table Header */}
           <div className="border-b border-gray-200 p-4">
             <div className="flex items-center gap-4">
@@ -499,7 +554,7 @@ export default function MyTasksTab() {
                           className={`p-1 rounded ${
                             timeTracking.active && timeTracking.taskId === task._id
                               ? 'bg-red-500 text-white'
-                              : 'bg-blue-500 text-white'
+                              : 'bg-brown-primary text-white'
                           }`}
                           title={timeTracking.active && timeTracking.taskId === task._id ? 'Stop timer' : 'Start timer'}
                         >
@@ -510,7 +565,7 @@ export default function MyTasksTab() {
                           <>
                             <button
                               onClick={() => updateTaskStatus(task._id, 'In Progress', 50)}
-                              className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
+                              className="bg-brown-primary text-white px-2 py-1 rounded text-xs hover:bg-brown-primary-300"
                             >
                               Start
                             </button>
@@ -553,23 +608,7 @@ export default function MyTasksTab() {
         </div>
       </div>
 
-      {/* Task Details Modal - Placeholder for now */}
-      {showTaskModal && selectedTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-brown-primary mb-4">{selectedTask.name}</h2>
-              <p className="text-gray-600 mb-4">Task details modal coming next...</p>
-              <button
-                onClick={() => setShowTaskModal(false)}
-                className="bg-brown-primary text-white px-4 py-2 rounded-lg hover:bg-brown-secondary"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Task Details Modal is rendered below via TaskDetailsModal component */}
 
       {/* Task Details Modal */}
       <TaskDetailsModal
@@ -590,6 +629,58 @@ export default function MyTasksTab() {
         timeTracking={timeTracking}
         onToggleTimeTracking={toggleTimeTracking}
       />
+
+      {/* Block Task Modal */}
+      {showBlockModal && blockingTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-red-brown">Block Task - Report Issue</h3>
+              <button 
+                className="text-gray-500 hover:text-gray-700 text-xl"
+                onClick={() => {
+                  setShowBlockModal(false);
+                  setBlockingTask(null);
+                  setBlockIssueDescription('');
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <p className="text-gray-600 mb-4">
+                Please describe the issue that's blocking this task "{blockingTask.name}". This will be tracked for weekly reports.
+              </p>
+              <textarea
+                value={blockIssueDescription}
+                onChange={(e) => setBlockIssueDescription(e.target.value)}
+                placeholder="Describe the issue in detail..."
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-brown"
+              />
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={handleBlockTask}
+                  disabled={!blockIssueDescription.trim()}
+                  className="flex-1 bg-red-brown text-white px-4 py-2 rounded-lg hover:bg-red-brown transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Block Task
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBlockModal(false);
+                    setBlockingTask(null);
+                    setBlockIssueDescription('');
+                  }}
+                  className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

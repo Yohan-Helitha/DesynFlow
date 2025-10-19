@@ -38,8 +38,9 @@ async function createOrUpdateEstimate(req, res) {
 async function updateEstimateStatus(req, res) {
   try {
     const { estimateId } = req.params;
-    const { status } = req.body;
-    const updated = await projectEstimationService.setStatus(estimateId, status);
+    const { status, remarks } = req.body;
+    const userId = req.user ? req.user._id : null; // Get user from auth middleware
+    const updated = await projectEstimationService.setStatus(estimateId, status, remarks, userId);
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
