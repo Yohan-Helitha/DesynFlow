@@ -29,6 +29,12 @@ const AssignmentHistory = ({ csr, onAuthError }) => {
         assignment => ['completed', 'declined'].includes(assignment.status)
       );
 
+      // Debug: Log assignment data structure
+      if (completedAssignments.length > 0) {
+        console.log('Assignment History Data:', completedAssignments[0]);
+        console.log('Inspection Request Data:', completedAssignments[0].InspectionRequest_ID);
+      }
+
       setHistoryAssignments(completedAssignments);
       setMessage(completedAssignments.length === 0 ? 'No completed assignments found' : '');
     } catch (error) {
@@ -152,22 +158,22 @@ const AssignmentHistory = ({ csr, onAuthError }) => {
         // Refresh assignment history when an assignment is declined
         fetchAssignmentHistory();
       });
-      
-      // Cleanup on unmount
-      return () => {
-        const userId = csr._id || csr.id;
-        socketService.leaveRoom('csr', userId);
-        socketService.disconnect();
-      };
     } else {
       // Fallback: Set up real-time polling if no WebSocket
       const interval = setInterval(fetchAssignmentHistory, 10000); // Poll every 10 seconds
       
-      // Cleanup interval on unmount
-      return () => {
-        clearInterval(interval);
-      };
+      // Cleanup function for polling
+      return () => clearInterval(interval);
     }
+    
+    // Cleanup function for WebSocket connection
+    return () => {
+      if (csr && (csr._id || csr.id)) {
+        const userId = csr._id || csr.id;
+        socketService.leaveRoom('csr', userId);
+        socketService.disconnect();
+      }
+    };
   }, [csr]);
 
   // Show loading state while waiting for csr data or while fetching
@@ -264,7 +270,7 @@ const AssignmentHistory = ({ csr, onAuthError }) => {
                     👤 Client
                   </label>
                   <p className="text-dark-brown font-medium">
-                    {assignment.inspectionRequest?.clientName || 'N/A'}
+                    {assignment.InspectionRequest_ID?.client_name || 'N/A'}
                   </p>
                 </div>
 
@@ -273,7 +279,7 @@ const AssignmentHistory = ({ csr, onAuthError }) => {
                     📍 Property
                   </label>
                   <p className="text-dark-brown text-sm">
-                    {assignment.inspectionRequest?.propertyAddress || 'N/A'}
+                    {assignment.InspectionRequest_ID?.propertyLocation_address || 'N/A'}
                   </p>
                 </div>
 

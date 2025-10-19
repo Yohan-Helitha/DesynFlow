@@ -47,10 +47,81 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
   const [inspectorsWithDistances, setInspectorsWithDistances] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   
   // Inspector management
   const [inspectorActions, setInspectorActions] = useState({}); // Track inspector actions {inspectorId: {action: 'accepted/declined', reason: ''}}
   const [pendingAssignments, setPendingAssignments] = useState([]); // Track assignments waiting for inspector response
+
+  // Get address suggestions from available inspection requests
+  const getAddressSuggestions = (inputValue) => {
+    if (!inputValue || inputValue.length < 2) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const suggestions = inspectionRequests
+      .filter(req => 
+        req.propertyLocation_address?.toLowerCase().includes(inputValue.toLowerCase()) ||
+        req.property_full_address?.toLowerCase().includes(inputValue.toLowerCase())
+      )
+      .map(req => ({
+        address: req.propertyLocation_address,
+        fullAddress: req.property_full_address,
+        city: req.propertyLocation_city,
+        latitude: req.property_latitude,
+        longitude: req.property_longitude
+      }))
+      .slice(0, 5); // Limit to 5 suggestions
+
+    setAddressSuggestions(suggestions);
+    setShowSuggestions(suggestions.length > 0);
+  };
+
+  // Handle address input change
+  const handleAddressInputChange = (e) => {
+    const value = e.target.value;
+    setSearchAddress(value);
+    getAddressSuggestions(value);
+  };
+
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion) => {
+    setSearchAddress(suggestion.address);
+    setShowSuggestions(false);
+    setSearchedProperty({
+      address: suggestion.address,
+      display_name: suggestion.fullAddress || suggestion.address,
+      latitude: suggestion.latitude,
+      longitude: suggestion.longitude,
+      source: 'database'
+    });
+
+    // Calculate distances to all inspectors
+    const inspectorsWithDist = inspectors.map(inspector => {
+      const distance = calculateDistance(
+        suggestion.latitude,
+        suggestion.longitude,
+        inspector.inspector_latitude,
+        inspector.inspector_longitude
+      );
+
+      return {
+        ...inspector,
+        distanceToProperty: distance,
+        withinLimit: distance <= 35 // 35km limit
+      };
+    });
+
+    // Sort by distance (nearest first)
+    inspectorsWithDist.sort((a, b) => a.distanceToProperty - b.distanceToProperty);
+    setInspectorsWithDistances(inspectorsWithDist);
+
+    const nearestInspectors = inspectorsWithDist.filter(i => i.withinLimit);
+    setMessage(`✅ Found property (from database)! ${nearestInspectors.length} inspectors within 35km radius`);
+  };
 
   // Fetch data
   const fetchData = async () => {
@@ -99,6 +170,52 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
     }
   };
 
+  // Search for address in local database first, then fallback to external geocoding
+  const searchPropertyLocation = async (address) => {
+    try {
+      // First, search in local database for existing inspection requests
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      console.log(`🔍 Searching for address: "${address}"`);
+      
+      // Search in database for matching addresses (case-insensitive partial match)
+      const response = await axios.get('/api/inspection-request/all', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const requests = response.data;
+      const matchingRequest = requests.find(req => 
+        req.propertyLocation_address?.toLowerCase().includes(address.toLowerCase()) ||
+        req.property_full_address?.toLowerCase().includes(address.toLowerCase())
+      );
+      
+      if (matchingRequest) {
+        console.log('✅ Found matching address in database:', matchingRequest.propertyLocation_address);
+        return {
+          latitude: matchingRequest.property_latitude,
+          longitude: matchingRequest.property_longitude,
+          display_name: matchingRequest.property_full_address || matchingRequest.propertyLocation_address,
+          address: {
+            city: matchingRequest.propertyLocation_city,
+            country: 'Sri Lanka'
+          },
+          source: 'database'
+        };
+      }
+      
+      // If not found in database, fallback to external geocoding
+      console.log('📡 Address not found in database, trying external geocoding...');
+      return await geocodeAddress(address);
+      
+    } catch (error) {
+      console.error('Property search error:', error);
+      throw error;
+    }
+  };
+
   // Geocode address to coordinates using Nominatim (OpenStreetMap)
   const geocodeAddress = async (address) => {
     try {
@@ -113,7 +230,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
           latitude: parseFloat(location.lat),
           longitude: parseFloat(location.lon),
           display_name: location.display_name,
-          address: location.address
+          address: location.address,
+          source: 'external'
         };
       } else {
         throw new Error('Address not found');
@@ -149,7 +267,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
     setMessage('🔍 Searching for property location...');
 
     try {
-      const location = await geocodeAddress(searchAddress.trim());
+      const location = await searchPropertyLocation(searchAddress.trim());
       
       setSearchedProperty({
         address: searchAddress.trim(),
@@ -180,7 +298,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
       setInspectorsWithDistances(inspectorsWithDist);
 
       const nearestInspectors = inspectorsWithDist.filter(i => i.withinLimit);
-      setMessage(`✅ Found property! ${nearestInspectors.length} inspectors within 35km radius`);
+      const sourceText = location.source === 'database' ? ' (from database)' : ' (from external geocoding)';
+      setMessage(`✅ Found property${sourceText}! ${nearestInspectors.length} inspectors within 35km radius`);
 
     } catch (error) {
       console.error('Property search error:', error);
@@ -371,19 +490,47 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
 
         <div className="space-y-4">
           {/* Search Input */}
-          <div className="flex space-x-3">
-            <input
-              type="text"
-              value={searchAddress}
-              onChange={(e) => setSearchAddress(e.target.value)}
-              placeholder="Enter real address (e.g., Galle Road Colombo, Kandy City Center, etc.)"
-              className="flex-1 border-2 border-brown-light rounded-lg px-4 py-3 focus:outline-none focus:ring-4 focus:ring-soft-green/30 focus:border-soft-green text-dark-brown"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handlePropertySearch();
-                }
-              }}
-            />
+          <div className="relative flex space-x-3">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={searchAddress}
+                onChange={handleAddressInputChange}
+                placeholder="Enter address (e.g., 123 Main Street, Colombo 03)"
+                className="w-full border-2 border-brown-light rounded-lg px-4 py-3 focus:outline-none focus:ring-4 focus:ring-soft-green/30 focus:border-soft-green text-dark-brown"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handlePropertySearch();
+                    setShowSuggestions(false);
+                  }
+                }}
+                onFocus={() => {
+                  if (addressSuggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                onBlur={() => {
+                  // Delay hiding suggestions to allow clicking
+                  setTimeout(() => setShowSuggestions(false), 200);
+                }}
+              />
+              
+              {/* Address Suggestions Dropdown */}
+              {showSuggestions && addressSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-white border-2 border-brown-light rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                  {addressSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="px-4 py-3 hover:bg-brown-light/20 cursor-pointer border-b border-brown-light/30 last:border-b-0"
+                    >
+                      <div className="font-medium text-dark-brown">{suggestion.address}</div>
+                      <div className="text-sm text-gray-600">{suggestion.city}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               onClick={handlePropertySearch}
               disabled={searchLoading || !searchAddress.trim()}
@@ -404,6 +551,34 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
               </button>
             )}
           </div>
+
+          {/* Available Addresses Quick Reference */}
+          {inspectionRequests.length > 0 && (
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-blue-800 mb-3">📋 Available Addresses (click to search):</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                {inspectionRequests.slice(0, 6).map((request, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSearchAddress(request.propertyLocation_address);
+                      handleSuggestionClick({
+                        address: request.propertyLocation_address,
+                        fullAddress: request.property_full_address,
+                        city: request.propertyLocation_city,
+                        latitude: request.property_latitude,
+                        longitude: request.property_longitude
+                      });
+                    }}
+                    className="text-left p-2 bg-white rounded hover:bg-blue-100 transition-colors border border-blue-200"
+                  >
+                    <div className="font-medium text-blue-800">{request.propertyLocation_address}</div>
+                    <div className="text-xs text-blue-600">{request.propertyLocation_city}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Legend */}
           <div className="bg-cream-light rounded-lg p-4">

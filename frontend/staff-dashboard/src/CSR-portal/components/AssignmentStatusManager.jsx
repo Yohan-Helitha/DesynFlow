@@ -148,18 +148,22 @@ const AssignmentStatusManager = ({ csr, onAuthError }) => {
           setMessage('');
         }, 5000);
       });
-      
-      // Cleanup on unmount
-      return () => {
-        const userId = csr._id || csr.id;
-        socketService.leaveRoom('csr', userId);
-        socketService.disconnect();
-      };
     } else {
       // Fallback: Set up real-time polling if no WebSocket
       const interval = setInterval(fetchAssignments, 5000); // Poll every 5 seconds
+      
+      // Cleanup function for polling
       return () => clearInterval(interval);
     }
+    
+    // Cleanup function for WebSocket connection
+    return () => {
+      if (csr && (csr._id || csr.id)) {
+        const userId = csr._id || csr.id;
+        socketService.leaveRoom('csr', userId);
+        socketService.disconnect();
+      }
+    };
   }, [csr]);
 
   if (loading) {

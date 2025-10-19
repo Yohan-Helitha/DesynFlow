@@ -72,14 +72,19 @@ class WebSocketService {
   sendToUser(userId, event, data) {
     const socketId = this.connectedUsers.get(userId);
     if (socketId) {
+      console.log(`📤 Sending "${event}" to user ${userId} (socket: ${socketId})`);
       this.io.to(socketId).emit(event, data);
       return true;
+    } else {
+      console.log(`❌ User ${userId} not found in connected users for event "${event}"`);
+      console.log('Connected users:', Array.from(this.connectedUsers.keys()));
+      return false;
     }
-    return false;
   }
 
   // Send notification to all users with specific role
   sendToRole(role, event, data) {
+    console.log(`📤 Sending "${event}" to all users with role "${role}"`);
     this.io.to(`role_${role}`).emit(event, data);
   }
 
