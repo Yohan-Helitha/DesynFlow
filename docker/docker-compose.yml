@@ -50,17 +50,14 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ../frontend/staff-dashboard/src:/app/src
-      - ../frontend/staff-dashboard/public:/app/public
-      - ../frontend/staff-dashboard/index.html:/app/index.html
-      - ../frontend/staff-dashboard/vite.config.js:/app/vite.config.js
-      - ../frontend/staff-dashboard/tailwind.config.js:/app/tailwind.config.js
-      - ../frontend/staff-dashboard/postcss.config.js:/app/postcss.config.js
+      - ../frontend/staff-dashboard:/app
+      - /app/node_modules
     depends_on:
       - backend
     environment:
       - CHOKIDAR_USEPOLLING=true
       - VITE_API_URL=http://localhost:4000
+    command: sh -c "npm install --include=dev && npm run start"
     restart: unless-stopped
 
 
