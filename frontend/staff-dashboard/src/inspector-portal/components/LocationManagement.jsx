@@ -572,16 +572,7 @@ const LocationManagement = ({ inspector, setMessage }) => {
         <LocationHistory inspector={inspector} key={refreshTrigger} />
       </div>
 
-      {/* Instructions */}
-      <div className="bg-cream-primary rounded-lg p-4 border border-brown-primary-300">
-        <h3 className="text-sm font-semibold text-brown-primary mb-2">💡 How Location Management Works:</h3>
-        <ul className="space-y-1 text-sm text-brown-secondary">
-          <li>• Your location updates automatically when CSR assigns you to properties</li>
-          <li>• Set your availability status (Available/Unavailable)</li>
-          <li>• Status automatically becomes "Busy" when assigned to work</li>
-          <li>• Distance calculations are handled by Finance team for cost tracking</li>
-        </ul>
-      </div>
+     
 
       {/* Real-time Notification System */}
       <NotificationSystem 
