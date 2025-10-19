@@ -34,7 +34,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                 <ClipboardCheck size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Inspection Request ID</span>
-                  <p className="font-medium font-mono text-xs">{inspection.inspectionRequestId || req.inspectionRequestId || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{inspection.inspectionRequestId || req._id || req.inspectionRequestId || 'N/A'}</p>
                 </div>
               </div>
 
@@ -51,8 +51,8 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                 <div>
                   <span className="text-sm text-[#AAB396]">Created Date</span>
                   <p className="font-medium">
-                    {inspection.createdAt ? new Date(inspection.createdAt).toLocaleDateString() : 
-                     (req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 
+                    {inspection.createdAt ? new Date(inspection.createdAt).toLocaleString() : 
+                     (req.createdAt ? new Date(req.createdAt).toLocaleString() : 
                      (inspection.createdDate || inspection.date || 'N/A'))}
                   </p>
                 </div>
@@ -75,7 +75,7 @@ export const ViewInspectionEstimationDetailModal = ({ inspection, onClose }) => 
                 <div>
                   <span className="text-sm text-[#AAB396]">Distance</span>
                   <p className="font-medium">
-                    {inspection.distanceKm || inspection.distance || 'N/A'} km
+                    {inspection.distanceKm ?? inspection.distance ?? 'N/A'} km
                   </p>
                 </div>
               </div>

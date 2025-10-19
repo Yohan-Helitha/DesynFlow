@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Eye,
   Plus,
-  Bell,
   ToggleLeft,
   ToggleRight,
   Loader2,
@@ -58,11 +57,6 @@ export const AllWarranties = () => {
 
   const handleAddWarranty = () => {
     setShowAddModal(true);
-  };
-
-  const handleSendReminder = (warrantyId) => {
-    console.log(`Sending reminder for warranty ${warrantyId}`);
-    // TODO: Implement reminder functionality
   };
 
   const handleSort = (field) => {
@@ -336,20 +330,9 @@ export const AllWarranties = () => {
                       View
                     </button>
                     {showActiveOnly ? (
-                      // Actions for active warranties
-                      warranty.daysRemaining <= 30 && (
-                        <button
-                          onClick={() => handleSendReminder(warranty._id)}
-                          className="text-[#674636] hover:text-[#AAB396] bg-[#F7EED3] px-3 py-1 rounded-md border border-[#AAB396] text-xs font-mono"
-                        >
-                          <Bell size={16} className="inline mr-1" />
-                          Remind
-                        </button>
-                      )
-                    ) : (
-                      // No actions for expired warranties (Renew removed)
+                      // Actions for active warranties: (no remind button)
                       null
-                    )}
+                    ) : null}
                   </td>
                 </tr>
               ))}

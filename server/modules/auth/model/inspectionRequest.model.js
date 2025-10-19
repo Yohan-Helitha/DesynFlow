@@ -28,7 +28,7 @@ const inspectionRequestSchema = new mongoose.Schema({
   inspection_date: { type: Date },
   status: {
     type: String,
-    enum: ['pending', 'assigned', 'in-progress', 'completed', 'cancelled'],
+    enum: ['pending', 'sent', 'verified', 'assigned', 'in-progress', 'completed', 'cancelled'],
     default: 'pending'
   },
   

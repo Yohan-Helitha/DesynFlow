@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./SideBar"; // Import Sidebar - Fixed case sensitivity
+import WarrantySection from "./warranty/WarrantySection";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -218,10 +219,7 @@ const Profile = () => {
 
         {/* Warranty Section */}
         {activeSection === "warranty" && (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Warranty Section</h2>
-            <p className="text-gray-600">Warranty details will go here.</p>
-          </div>
+          <WarrantySection />
         )}
       </div>
     </div>
