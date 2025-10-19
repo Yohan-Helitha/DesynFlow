@@ -19,7 +19,7 @@ const Profile = () => {
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const res = await axios.get("http://localhost:4000/api/user/me", {
+      const res = await axios.get("http://localhost:3000/api/user/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data);
@@ -33,7 +33,7 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("authToken");
       const res = await axios.get(
-        "http://localhost:4000/api/inspection/my-requests",
+        "http://localhost:3000/api/inspection/my-requests",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setInspectionRequests(res.data);
@@ -55,7 +55,7 @@ const Profile = () => {
         address: user.address || "",
       };
       await axios.patch(
-        "http://localhost:4000/api/user/update-profile",
+        "http://localhost:3000/api/user/update-profile",
         updatedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
