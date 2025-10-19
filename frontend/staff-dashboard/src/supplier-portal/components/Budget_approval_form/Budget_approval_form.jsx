@@ -12,6 +12,7 @@ function Budget_approval_form() {
   const [materials, setMaterials] = useState([]);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [requesterName, setRequesterName] = useState('');
 
   // Preselect supplier/material if provided via navigation state
   useEffect(() => {
@@ -102,7 +103,7 @@ function Budget_approval_form() {
     return price * qty;
   }, [selectedMaterial, quantity]);
   // handle form submit
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const materialId = selectedMaterialId;
@@ -111,7 +112,7 @@ function Budget_approval_form() {
     const supplierId = selectedSupplierId;
     const budget = estimatedBudget;
 
-    if (!materialId || !materialName || !quantity || !supplierName || !supplierId) {
+    if (!requesterName || !materialId || !materialName || !quantity || !supplierName || !supplierId) {
       toast.warning('Please fill in all fields before submitting.');
       return;
     }
@@ -121,11 +122,37 @@ function Budget_approval_form() {
       return;
     }
 
-    // TODO: Integrate with backend endpoint when available.
-    // For now, simulate success and navigate back.
-    toast.success('Budget approval request submitted');
-    // e.target.reset();
-    navigate('/procurement-officer/budget_approval');
+    // Create PurchaseOrder from budget approval request
+    const purchaseOrderData = {
+      name: `Budget Request: ${materialName} - ${supplierName}`,
+      requestOrigin: 'BudgetApproval',
+      supplierId: supplierId,
+      requesterName: requesterName,
+      status: 'PendingFinanceApproval',
+      items: [{
+        materialName: materialName,
+        qty: Number(quantity),
+        unitPrice: selectedMaterial?.pricePerUnit || 0,
+        unit: selectedMaterial?.unit || 'piece'
+      }],
+      totalAmount: budget,
+      financeApproval: {
+        status: 'Pending'
+      }
+    };
+
+    try {
+      console.log('Submitting purchase order data:', purchaseOrderData);
+      const response = await axios.post('http://localhost:3000/api/purchase-orders', purchaseOrderData);
+      console.log('Budget approval request created:', response.data);
+      toast.success('Budget approval request submitted successfully and forwarded to Finance');
+      navigate('/procurement-officer/budget_approval');
+    } catch (error) {
+      console.error('Failed to create budget approval request:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMsg = error.response?.data?.error || 'Failed to submit budget approval request. Please try again.';
+      toast.error(errorMsg);
+    }
   }
 
   function handleCancel() {
@@ -144,6 +171,18 @@ function Budget_approval_form() {
             ← Back to Budget Approvals
           </button>
           <h2>Budget Approval Request</h2>
+        </div>
+
+        {/* Requester Name */}
+        <div className="form-group">
+          <label htmlFor="requesterName">Requester Name</label>
+          <input
+            type="text"
+            id="requesterName"
+            placeholder="Enter your name"
+            value={requesterName}
+            onChange={(e) => setRequesterName(e.target.value)}
+          />
         </div>
 
         {/* Supplier Dropdown */}

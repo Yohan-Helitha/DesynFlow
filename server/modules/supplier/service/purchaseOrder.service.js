@@ -48,15 +48,28 @@ const createPurchaseOrder = async (data) => {
     };
   }));
 
-  // Validate required fields
-  if (!data.projectId || !data.supplierId || !data.requestedBy) {
-    throw new Error('Missing required fields: projectId, supplierId, requestedBy');
+  // Handle budget approval requests with flexible validation
+  const orderData = { ...data, items };
+  
+  // For budget approval requests, set request origin and handle missing fields
+  if (data.requesterName && !data.requestedBy) {
+    orderData.requestOrigin = 'BudgetApproval';
   }
 
-  const order = new PurchaseOrder({
-    ...data,
-    items
-  });
+  // Validate required fields based on request type
+  if (orderData.requestOrigin === 'BudgetApproval') {
+    // Budget approval only requires supplierId and name
+    if (!orderData.supplierId) {
+      throw new Error('Missing required field for budget approval: supplierId');
+    }
+  } else {
+    // Regular purchase orders require projectId, supplierId, requestedBy
+    if (!orderData.projectId || !orderData.supplierId || !orderData.requestedBy) {
+      throw new Error('Missing required fields: projectId, supplierId, requestedBy');
+    }
+  }
+
+  const order = new PurchaseOrder(orderData);
   return await order.save();
 };
 
