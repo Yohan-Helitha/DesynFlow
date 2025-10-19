@@ -122,6 +122,33 @@ const InspectionRequests = ({ csr, onAuthError }) => {
                   }
                 </p>
               </div>
+              
+              {/* Status */}
+              <div className="bg-cream-light rounded-lg p-3">
+                <label className="text-xs font-semibold text-brown-primary uppercase tracking-wide block mb-1">
+                  🔄 Status
+                </label>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    request.status === 'pending' ? 'bg-yellow-500' :
+                    request.status === 'assigned' ? 'bg-blue-500' :
+                    request.status === 'in-progress' ? 'bg-orange-500' :
+                    request.status === 'completed' ? 'bg-green-500' :
+                    request.status === 'cancelled' ? 'bg-red-500' :
+                    'bg-gray-400'
+                  }`}></div>
+                  <span className={`text-sm font-medium capitalize ${
+                    request.status === 'pending' ? 'text-yellow-600' :
+                    request.status === 'assigned' ? 'text-blue-600' :
+                    request.status === 'in-progress' ? 'text-orange-600' :
+                    request.status === 'completed' ? 'text-green-600' :
+                    request.status === 'cancelled' ? 'text-red-600' :
+                    'text-gray-600'
+                  }`}>
+                    {request.status || 'Unknown'}
+                  </span>
+                </div>
+              </div>
             </div>
             
             {/* View Details Button */}
@@ -211,16 +238,27 @@ const InspectionRequests = ({ csr, onAuthError }) => {
                 </div>
                 
                 <div className="bg-cream-light rounded-lg p-4 border border-soft-green/30">
-                  <label className="text-sm font-semibold text-soft-green block mb-2">📊 Status</label>
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold capitalize ${
-                    selectedRequest.status === 'pending' 
-                      ? 'bg-warm-brown text-dark-brown'
-                      : selectedRequest.status === 'approved'
-                      ? 'bg-green-primary text-cream-primary'
-                      : 'bg-cream-light text-brown-secondary'
-                  }`}>
-                    {selectedRequest.status}
-                  </span>
+                  <label className="text-sm font-semibold text-soft-green block mb-2">� Request Status</label>
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      selectedRequest.status === 'pending' ? 'bg-yellow-500' :
+                      selectedRequest.status === 'assigned' ? 'bg-blue-500' :
+                      selectedRequest.status === 'in-progress' ? 'bg-orange-500' :
+                      selectedRequest.status === 'completed' ? 'bg-green-500' :
+                      selectedRequest.status === 'cancelled' ? 'bg-red-500' :
+                      'bg-gray-400'
+                    }`}></div>
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold capitalize ${
+                      selectedRequest.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' :
+                      selectedRequest.status === 'assigned' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+                      selectedRequest.status === 'in-progress' ? 'bg-orange-100 text-orange-700 border border-orange-300' :
+                      selectedRequest.status === 'completed' ? 'bg-green-100 text-green-700 border border-green-300' :
+                      selectedRequest.status === 'cancelled' ? 'bg-red-100 text-red-700 border border-red-300' :
+                      'bg-gray-100 text-gray-700 border border-gray-300'
+                    }`}>
+                      {selectedRequest.status || 'Unknown'}
+                    </span>
+                  </div>
                 </div>
               </div>
               

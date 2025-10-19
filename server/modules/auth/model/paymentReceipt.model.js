@@ -23,7 +23,7 @@ const paymentReceiptSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["awaiting_upload", "uploaded", "verified"],
+      enum: ["awaiting_upload", "uploaded", "verified", "rejected"],
       default: "awaiting_upload",
     },
 
