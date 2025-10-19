@@ -77,8 +77,9 @@ const updatePurchaseOrder = async (id, data) => {
   return await PurchaseOrder.findByIdAndUpdate(id, data, { new: true });
 };
 
-const getAllPurchaseOrders = async () => {
-  return await PurchaseOrder.find()
+const getAllPurchaseOrders = async (status) => {
+  const filter = status ? { status } : {};
+  return await PurchaseOrder.find(filter)
     .populate('supplierId', 'companyName')
     .populate('items.materialId', 'materialName unit');
 };

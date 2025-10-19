@@ -27,7 +27,8 @@ export const updatePurchaseOrder = async (req, res) => {
 // Get all material requests
 export const getPurchaseOrders = async (req, res) => {
   try {
-    const orders = await PurchaseOrderService.getAllPurchaseOrders();
+    const { status } = req.query;
+    const orders = await PurchaseOrderService.getAllPurchaseOrders(status);
     res.status(200).json(orders);
   } catch (err) {
     res.status(400).json({ error: err.message });
