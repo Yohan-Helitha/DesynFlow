@@ -74,7 +74,7 @@ const Profile = () => {
   if (!user) return <p className="text-center mt-10">Loading profile...</p>;
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-cream-light">
       {/* Sidebar */}
       <Sidebar
         activeSection={activeSection}
@@ -88,7 +88,7 @@ const Profile = () => {
           <div
             className={`mb-4 p-3 rounded ${
               message.includes("✅")
-                ? "bg-teal-100 text-teal-700"
+                ? "bg-green-100 text-green-700"
                 : "bg-red-100 text-red-700"
             }`}
           >
@@ -99,7 +99,7 @@ const Profile = () => {
         {/* Dashboard */}
         {activeSection === "dashboard" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4 text-[#1E3A8A]">
+            <h2 className="text-2xl font-bold mb-4 text-brown-primary">
               Recent Activities
             </h2>
             <div className="grid grid-cols-2 gap-4">
@@ -114,10 +114,10 @@ const Profile = () => {
               ].map((activity, index) => (
                 <div
                   key={index}
-                  className="bg-[#F3F4F6] shadow-md p-4 rounded border border-gray-200"
+                  className="bg-cream-primary shadow-md p-4 rounded border border-brown-primary-300"
                 >
-                  <h3 className="font-semibold text-[#1E3A8A]">{activity}</h3>
-                  <p className="text-sm text-gray-600">Progress details...</p>
+                  <h3 className="font-semibold text-brown-primary">{activity}</h3>
+                  <p className="text-sm text-brown-secondary">Progress details...</p>
                 </div>
               ))}
             </div>
@@ -128,12 +128,12 @@ const Profile = () => {
         {activeSection === "inspection" && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-[#1E3A8A]">
+              <h2 className="text-2xl font-bold text-brown-primary">
                 Inspection Requests
               </h2>
               <button
                 onClick={handleCreateInspectionRequest}
-                className="bg-[#0D9488] text-white px-4 py-2 rounded hover:bg-[#0B766F]"
+                className="bg-brown-primary text-white px-4 py-2 rounded hover:bg-brown-primary-700"
               >
                 + Create Inspection Request
               </button>
@@ -143,15 +143,15 @@ const Profile = () => {
                 inspectionRequests.map((req, idx) => (
                   <div
                     key={idx}
-                    className="bg-[#F3F4F6] shadow-md p-4 rounded border border-gray-200"
+                    className="bg-cream-primary shadow-md p-4 rounded border border-brown-primary-300"
                   >
-                    <h3 className="font-semibold text-[#1E3A8A]">
+                    <h3 className="font-semibold text-brown-primary">
                       Request #{req._id}
                     </h3>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-brown-secondary">
                       Status: {req.status}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-brown-secondary-400">
                       Date: {new Date(req.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -166,45 +166,45 @@ const Profile = () => {
         {/* Profile Section */}
         {activeSection === "profile" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4 text-[#1E3A8A]">
+            <h2 className="text-2xl font-bold mb-4 text-brown-primary">
               Profile Information
             </h2>
-            <div className="space-y-3 bg-white shadow-md rounded p-6 border border-gray-200">
+            <div className="space-y-3 bg-cream-primary shadow-md rounded p-6 border border-brown-primary-300">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-brown-secondary">
                   Full Name
                 </label>
                 <input
                   type="text"
                   value={user.name}
                   disabled
-                  className="w-full border p-2 rounded bg-gray-100 cursor-not-allowed"
+                  className="w-full border border-brown-primary-300 p-2 rounded bg-cream-light cursor-not-allowed"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-brown-secondary">
                   Email
                 </label>
                 <input
                   type="email"
                   value={user.email}
                   disabled
-                  className="w-full border p-2 rounded bg-gray-100 cursor-not-allowed"
+                  className="w-full border border-brown-primary-300 p-2 rounded bg-cream-light cursor-not-allowed"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-brown-secondary">
                   Phone
                 </label>
                 <input
                   type="text"
                   value={user.phone || ""}
                   onChange={(e) => setUser({ ...user, phone: e.target.value })}
-                  className="w-full border p-2 rounded"
+                  className="w-full border border-brown-primary-300 p-2 rounded bg-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-brown-secondary">
                   Address
                 </label>
                 <input
@@ -213,12 +213,12 @@ const Profile = () => {
                   onChange={(e) =>
                     setUser({ ...user, address: e.target.value })
                   }
-                  className="w-full border p-2 rounded"
+                  className="w-full border border-brown-primary-300 p-2 rounded bg-white"
                 />
               </div>
               <button
                 onClick={handleSaveChanges}
-                className="mt-3 bg-[#1E3A8A] text-white py-2 px-4 rounded hover:bg-[#162F6A]"
+                className="mt-3 bg-brown-primary text-white py-2 px-4 rounded hover:bg-brown-primary-700"
               >
                 Save Changes
               </button>
@@ -229,20 +229,20 @@ const Profile = () => {
         {/* Project Section */}
         {activeSection === "project" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4 text-[#1E3A8A]">
+            <h2 className="text-2xl font-bold mb-4 text-brown-primary">
               Project Section
             </h2>
-            <p className="text-gray-600">Project details will go here.</p>
+            <p className="text-brown-secondary">Project details will go here.</p>
           </div>
         )}
 
         {/* Warranty Section */}
         {activeSection === "warranty" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4 text-[#1E3A8A]">
+            <h2 className="text-2xl font-bold mb-4 text-brown-primary">
               Warranty Section
             </h2>
-            <p className="text-gray-600">Warranty details will go here.</p>
+            <p className="text-brown-secondary">Warranty details will go here.</p>
           </div>
         )}
       </div>
