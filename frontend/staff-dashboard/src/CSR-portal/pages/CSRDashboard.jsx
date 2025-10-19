@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import InspectionRequests from '../components/InspectionRequests';
 import PaymentManagement from '../components/PaymentManagement';
 import InspectorAssignment from '../components/InspectorAssignment';
@@ -8,28 +9,83 @@ import CSRSidebar from '../components/CSRSidebar';
 
 const CSRDashboard = () => {
   const [activeSection, setActiveSection] = useState('requests');
+  const [csr, setCsr] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch CSR profile and validate authentication
+  const fetchCSR = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error('No auth token found - redirecting to login');
+        handleLogout(); // This will redirect to login
+        return;
+      }
+
+      const response = await axios.get('/api/user/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Validate user role
+      if (response.data.role !== 'customer service representative') {
+        console.error('Access denied: User is not a CSR');
+        alert('Access denied. This dashboard is for Customer Service Representatives only.');
+        handleLogout();
+        return;
+      }
+      
+      setCsr(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching CSR profile:', error);
+      if (error.response?.status === 401) {
+        console.error('Authentication failed - token expired or invalid');
+        handleLogout(); // Clear token and redirect to login
+      } else {
+        console.error('Failed to fetch CSR profile:', error.message);
+        // For other errors, still redirect to login for security
+        handleLogout();
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchCSR();
+  }, []);
 
   const renderContent = () => {
     switch (activeSection) {
       case 'requests':
-        return <InspectionRequests />;
+        return <InspectionRequests csr={csr} onAuthError={handleLogout} />;
       case 'payments':
-        return <PaymentManagement />;
+        return <PaymentManagement csr={csr} onAuthError={handleLogout} />;
       case 'assign':
-        return <InspectorAssignment />;
+        return <InspectorAssignment csr={csr} onAuthError={handleLogout} />;
       case 'status':
-        return <AssignmentStatusManager />;
+        return <AssignmentStatusManager csr={csr} onAuthError={handleLogout} />;
       case 'history':
-        return <AssignmentHistory />;
+        return <AssignmentHistory csr={csr} onAuthError={handleLogout} />;
       default:
-        return <InspectionRequests />;
+        return <InspectionRequests csr={csr} onAuthError={handleLogout} />;
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
     window.location.href = '/login';
   };
+
+  if (loading || !csr) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-cream-primary">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary mx-auto mb-4"></div>
+          <p className="text-brown-primary">Loading CSR Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-cream-light">

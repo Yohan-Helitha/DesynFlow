@@ -12,7 +12,7 @@ const InspectionRequestDashboard = () => {
       setError("");
       try {
         const token = localStorage.getItem("authToken");
-        const res = await fetch("http://localhost:4000/api/inspection-request/client", {
+        const res = await fetch("http://localhost:3000/api/inspection-request/client", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

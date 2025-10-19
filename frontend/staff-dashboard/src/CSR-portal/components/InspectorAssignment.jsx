@@ -32,7 +32,7 @@ const markerIcons = {
   selectedInspector: createColoredIcon('green')     // 🟢 Green for selected inspector
 };
 
-const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
+const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthError }) => {
   const [inspectionRequests, setInspectionRequests] = useState([]);
   const [inspectors, setInspectors] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -47,6 +47,81 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
   const [inspectorsWithDistances, setInspectorsWithDistances] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  
+  // Inspector management
+  const [inspectorActions, setInspectorActions] = useState({}); // Track inspector actions {inspectorId: {action: 'accepted/declined', reason: ''}}
+  const [pendingAssignments, setPendingAssignments] = useState([]); // Track assignments waiting for inspector response
+
+  // Get address suggestions from available inspection requests
+  const getAddressSuggestions = (inputValue) => {
+    if (!inputValue || inputValue.length < 2) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const suggestions = inspectionRequests
+      .filter(req => 
+        req.propertyLocation_address?.toLowerCase().includes(inputValue.toLowerCase()) ||
+        req.property_full_address?.toLowerCase().includes(inputValue.toLowerCase())
+      )
+      .map(req => ({
+        address: req.propertyLocation_address,
+        fullAddress: req.property_full_address,
+        city: req.propertyLocation_city,
+        latitude: req.property_latitude,
+        longitude: req.property_longitude
+      }))
+      .slice(0, 5); // Limit to 5 suggestions
+
+    setAddressSuggestions(suggestions);
+    setShowSuggestions(suggestions.length > 0);
+  };
+
+  // Handle address input change
+  const handleAddressInputChange = (e) => {
+    const value = e.target.value;
+    setSearchAddress(value);
+    getAddressSuggestions(value);
+  };
+
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion) => {
+    setSearchAddress(suggestion.address);
+    setShowSuggestions(false);
+    setSearchedProperty({
+      address: suggestion.address,
+      display_name: suggestion.fullAddress || suggestion.address,
+      latitude: suggestion.latitude,
+      longitude: suggestion.longitude,
+      source: 'database'
+    });
+
+    // Calculate distances to all inspectors
+    const inspectorsWithDist = inspectors.map(inspector => {
+      const distance = calculateDistance(
+        suggestion.latitude,
+        suggestion.longitude,
+        inspector.inspector_latitude,
+        inspector.inspector_longitude
+      );
+
+      return {
+        ...inspector,
+        distanceToProperty: distance,
+        withinLimit: distance <= 35 // 35km limit
+      };
+    });
+
+    // Sort by distance (nearest first)
+    inspectorsWithDist.sort((a, b) => a.distanceToProperty - b.distanceToProperty);
+    setInspectorsWithDistances(inspectorsWithDist);
+
+    const nearestInspectors = inspectorsWithDist.filter(i => i.withinLimit);
+    setMessage(`✅ Found property (from database)! ${nearestInspectors.length} inspectors within 35km radius`);
+  };
 
   // Fetch data
   const fetchData = async () => {
@@ -54,10 +129,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
       const token = localStorage.getItem('authToken');
       
       if (!token) {
-        setInspectionRequests([]);
-        setInspectors([]);
-        setAssignments([]);
-        setLoading(false);
+        console.error('No auth token found in InspectorAssignment');
+        if (onAuthError) onAuthError();
         return;
       }
       
@@ -81,11 +154,65 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
       setAssignments(assignmentsRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
+      
+      // Handle authentication errors
+      if (error.response?.status === 401) {
+        console.error('Authentication failed in InspectorAssignment');
+        if (onAuthError) onAuthError();
+        return;
+      }
+      
       setInspectionRequests([]);
       setInspectors([]);
       setAssignments([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Search for address in local database first, then fallback to external geocoding
+  const searchPropertyLocation = async (address) => {
+    try {
+      // First, search in local database for existing inspection requests
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      console.log(`🔍 Searching for address: "${address}"`);
+      
+      // Search in database for matching addresses (case-insensitive partial match)
+      const response = await axios.get('/api/inspection-request/all', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const requests = response.data;
+      const matchingRequest = requests.find(req => 
+        req.propertyLocation_address?.toLowerCase().includes(address.toLowerCase()) ||
+        req.property_full_address?.toLowerCase().includes(address.toLowerCase())
+      );
+      
+      if (matchingRequest) {
+        console.log('✅ Found matching address in database:', matchingRequest.propertyLocation_address);
+        return {
+          latitude: matchingRequest.property_latitude,
+          longitude: matchingRequest.property_longitude,
+          display_name: matchingRequest.property_full_address || matchingRequest.propertyLocation_address,
+          address: {
+            city: matchingRequest.propertyLocation_city,
+            country: 'Sri Lanka'
+          },
+          source: 'database'
+        };
+      }
+      
+      // If not found in database, fallback to external geocoding
+      console.log('📡 Address not found in database, trying external geocoding...');
+      return await geocodeAddress(address);
+      
+    } catch (error) {
+      console.error('Property search error:', error);
+      throw error;
     }
   };
 
@@ -103,7 +230,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
           latitude: parseFloat(location.lat),
           longitude: parseFloat(location.lon),
           display_name: location.display_name,
-          address: location.address
+          address: location.address,
+          source: 'external'
         };
       } else {
         throw new Error('Address not found');
@@ -139,7 +267,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
     setMessage('🔍 Searching for property location...');
 
     try {
-      const location = await geocodeAddress(searchAddress.trim());
+      const location = await searchPropertyLocation(searchAddress.trim());
       
       setSearchedProperty({
         address: searchAddress.trim(),
@@ -170,7 +298,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
       setInspectorsWithDistances(inspectorsWithDist);
 
       const nearestInspectors = inspectorsWithDist.filter(i => i.withinLimit);
-      setMessage(`✅ Found property! ${nearestInspectors.length} inspectors within 35km radius`);
+      const sourceText = location.source === 'database' ? ' (from database)' : ' (from external geocoding)';
+      setMessage(`✅ Found property${sourceText}! ${nearestInspectors.length} inspectors within 35km radius`);
 
     } catch (error) {
       console.error('Property search error:', error);
@@ -197,11 +326,46 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
     setMessage('');
   };
 
+  // ✅ PHASE 1: Simulate inspector responses (for testing)
+  const simulateInspectorAccept = (inspectorId) => {
+    setInspectorActions(prev => ({
+      ...prev,
+      [inspectorId]: {
+        action: 'accepted',
+        reason: '',
+        timestamp: new Date()
+      }
+    }));
+    
+    // ✅ PHASE 1: Update inspector location (simple simulation)
+    // In real implementation, this would come from inspector portal
+    setMessage('✅ Inspector accepted the assignment! Location will be updated.');
+  };
+
+  const simulateInspectorDecline = (inspectorId, reason = 'Schedule conflict') => {
+    setInspectorActions(prev => ({
+      ...prev,
+      [inspectorId]: {
+        action: 'declined',
+        reason: reason,
+        timestamp: new Date()
+      }
+    }));
+    
+    setMessage('❌ Inspector declined the assignment.');
+  };
+
   const handleAssign = async () => {
     const finalInspector = selectedInspectorFromMap || inspectors.find(i => i._id === selectedInspectorFromDropdown);
     
     if (!selectedRequest || !finalInspector) {
       alert('❌ Please select both request and inspector');
+      return;
+    }
+
+    // ✅ PHASE 1: Availability validation
+    if (finalInspector.status === 'busy') {
+      alert('❌ Cannot assign to busy inspector. Please select an available inspector.');
       return;
     }
 
@@ -223,7 +387,27 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      alert('✅ Inspector assigned successfully!');
+      // ✅ PHASE 1: Track pending assignment
+      const newPendingAssignment = {
+        inspectorId: finalInspector._id,
+        requestId: selectedRequest._id,
+        assignedAt: new Date(),
+        status: 'pending'
+      };
+      
+      setPendingAssignments(prev => [...prev, newPendingAssignment]);
+      
+      // Update inspector action status to "Assigned (Waiting)"
+      setInspectorActions(prev => ({
+        ...prev,
+        [finalInspector._id]: {
+          action: 'assigned',
+          reason: 'Waiting for response',
+          timestamp: new Date()
+        }
+      }));
+      
+      alert('✅ Inspector assigned successfully! Waiting for inspector response...');
       setSelectedRequest(null);
       setSelectedInspectorFromMap(null);
       setSelectedInspectorFromDropdown(null);
@@ -231,7 +415,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
       fetchData();
     } catch (error) {
       console.error('Error assigning inspector:', error);
-      alert('❌ Failed to assign inspector');
+      const errorMessage = error.response?.data?.message || error.message;
+      alert(`❌ ${errorMessage}`);
     }
   };
 
@@ -253,9 +438,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
     }
   };
 
-  const handleEditAssignment = (assignment) => {
-    alert(`📝 Edit Assignment:\n\nClient: ${assignment.inspectionRequest?.clientName}\nInspector: ${assignment.inspector?.name}\n\n(Edit functionality can be implemented with a modal)`);
-  };
+
 
   useEffect(() => {
     fetchData();
@@ -305,19 +488,47 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
 
         <div className="space-y-4">
           {/* Search Input */}
-          <div className="flex space-x-3">
-            <input
-              type="text"
-              value={searchAddress}
-              onChange={(e) => setSearchAddress(e.target.value)}
-              placeholder="Enter property address (e.g., 123 Main Street, Colombo)"
-              className="flex-1 border-2 border-brown-light rounded-lg px-4 py-3 focus:outline-none focus:ring-4 focus:ring-soft-green/30 focus:border-soft-green text-dark-brown"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handlePropertySearch();
-                }
-              }}
-            />
+          <div className="relative flex space-x-3">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={searchAddress}
+                onChange={handleAddressInputChange}
+                placeholder="Enter address (e.g., 123 Main Street, Colombo 03)"
+                className="w-full border-2 border-brown-light rounded-lg px-4 py-3 focus:outline-none focus:ring-4 focus:ring-soft-green/30 focus:border-soft-green text-dark-brown"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handlePropertySearch();
+                    setShowSuggestions(false);
+                  }
+                }}
+                onFocus={() => {
+                  if (addressSuggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                onBlur={() => {
+                  // Delay hiding suggestions to allow clicking
+                  setTimeout(() => setShowSuggestions(false), 200);
+                }}
+              />
+              
+              {/* Address Suggestions Dropdown */}
+              {showSuggestions && addressSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-white border-2 border-brown-light rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto">
+                  {addressSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="px-4 py-3 hover:bg-soft-green/10 hover:border-l-4 hover:border-l-soft-green cursor-pointer border-b border-brown-light/30 last:border-b-0 transition-all duration-200"
+                    >
+                      <div className="font-semibold text-dark-brown">{suggestion.address}</div>
+                      <div className="text-sm text-brown-primary/70">{suggestion.city}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               onClick={handlePropertySearch}
               disabled={searchLoading || !searchAddress.trim()}
@@ -338,6 +549,34 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
               </button>
             )}
           </div>
+
+          {/* Available Addresses Quick Reference */}
+          {inspectionRequests.length > 0 && (
+            <div className="bg-cream-light rounded-lg p-4 border-2 border-brown-light/30">
+              <h4 className="text-sm font-semibold text-brown-primary mb-3">📋 Available Addresses (click to search):</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                {inspectionRequests.slice(0, 6).map((request, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSearchAddress(request.propertyLocation_address);
+                      handleSuggestionClick({
+                        address: request.propertyLocation_address,
+                        fullAddress: request.property_full_address,
+                        city: request.propertyLocation_city,
+                        latitude: request.property_latitude,
+                        longitude: request.property_longitude
+                      });
+                    }}
+                    className="text-left p-3 bg-white rounded-lg hover:bg-soft-green/10 hover:border-soft-green transition-all duration-200 border-2 border-brown-light/20 hover:scale-[1.02] hover:shadow-md"
+                  >
+                    <div className="font-semibold text-dark-brown">{request.propertyLocation_address}</div>
+                    <div className="text-xs text-brown-primary/70 mt-1">{request.propertyLocation_city}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Legend */}
           <div className="bg-cream-light rounded-lg p-4">
@@ -420,7 +659,9 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
             <option value="">-- Choose Inspector --</option>
             {inspectors.map(inspector => (
               <option key={inspector._id} value={inspector._id}>
-                {inspector.inspector_ID?.username || 'Inspector'} - {inspector.current_address} ({inspector.status})
+                {inspector.inspector_ID?.username ? 
+                  inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                  : 'Inspector Name Missing'} - {inspector.current_address} ({inspector.status})
               </option>
             ))}
           </select>
@@ -428,7 +669,9 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
           {selectedInspectorFromMap && (
             <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-green-800 text-sm">
-                🟢 <strong>Selected from Map:</strong> {selectedInspectorFromMap.inspector_ID?.username || 'Inspector'} 
+                🟢 <strong>Selected from Map:</strong> {selectedInspectorFromMap.inspector_ID?.username ? 
+                  selectedInspectorFromMap.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                  : 'Inspector Name Missing'}
                 {selectedInspectorFromMap.distanceToProperty && 
                   ` (${selectedInspectorFromMap.distanceToProperty.toFixed(1)}km away)`
                 }
@@ -506,7 +749,9 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
                       <h4 className={`font-bold mb-2 ${
                         inspector.status === 'available' ? 'text-blue-800' : 'text-yellow-800'
                       }`}>
-                        {inspector.status === 'available' ? '🔵' : '🟡'} {inspector.inspector_ID?.username || 'Inspector'}
+                        {inspector.status === 'available' ? '🔵' : '🟡'} {inspector.inspector_ID?.username ? 
+                          inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                          : 'Inspector Name Missing'}
                       </h4>
                       <div className="text-sm space-y-1">
                         <p><strong>Status:</strong> <span className={`font-semibold ${
@@ -588,6 +833,118 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
         </div>
       )}
 
+      {/* Inspector Management Table */}
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-brown-light">
+        <div className="flex items-center space-x-2 mb-6">
+          <div className="w-3 h-3 bg-soft-green rounded-full"></div>
+          <h3 className="text-xl font-semibold text-dark-brown">👨‍🔧 Inspector Management</h3>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-cream-light border-b-2 border-brown-light">
+                <th className="text-left p-4 font-semibold text-dark-brown">Inspector Name</th>
+                <th className="text-left p-4 font-semibold text-dark-brown">Current Location</th>
+                <th className="text-left p-4 font-semibold text-dark-brown">Action</th>
+                <th className="text-left p-4 font-semibold text-dark-brown">Availability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inspectors.length > 0 ? (
+                inspectors.map((inspector, index) => (
+                  <tr key={inspector._id} className={`border-b border-brown-light hover:bg-cream-light/50 ${
+                    selectedInspectorFromMap?._id === inspector._id ? 'bg-green-50 border-green-200' : ''
+                  }`}>
+                    <td className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          inspector.status === 'available' ? 'bg-blue-500' : 'bg-yellow-500'
+                        }`}></div>
+                        <span className="font-semibold text-dark-brown">
+                          {inspector.inspector_ID?.username ? 
+                            inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                            : 'Inspector Name Missing'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-700">
+                      <div>
+                        <p className="font-medium">{inspector.current_address}</p>
+                        <p className="text-sm text-gray-500">{inspector.region}</p>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {inspectorActions[inspector._id] ? (
+                        <div>
+                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            inspectorActions[inspector._id].action === 'accepted' ? 'bg-green-100 text-green-700' :
+                            inspectorActions[inspector._id].action === 'declined' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {inspectorActions[inspector._id].action === 'accepted' ? '✅ Accepted' :
+                             inspectorActions[inspector._id].action === 'declined' ? '❌ Declined' :
+                             '⏳ Assigned (Waiting)'}
+                          </span>
+                          {inspectorActions[inspector._id].reason && inspectorActions[inspector._id].action === 'declined' && (
+                            <p className="text-xs text-red-600 mt-1">
+                              Reason: {inspectorActions[inspector._id].reason}
+                            </p>
+                          )}
+                        </div>
+                      ) : pendingAssignments.includes(inspector._id) ? (
+                        <div>
+                          <span className="px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-700">
+                            📨 Waiting Response
+                          </span>
+                          {/* ✅ PHASE 1: Testing buttons for simulation */}
+                          <div className="mt-2 space-x-1">
+                            <button
+                              onClick={() => simulateInspectorAccept(inspector._id)}
+                              className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                              title="Simulate Accept"
+                            >
+                              ✅ Accept
+                            </button>
+                            <button
+                              onClick={() => simulateInspectorDecline(inspector._id)}
+                              className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                              title="Simulate Decline"
+                            >
+                              ❌ Decline
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                          Ready
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        inspector.status === 'available' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {inspector.status === 'available' ? '✅ Available' : '🟡 Busy'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="p-8 text-center text-gray-500">
+                    <div className="text-4xl mb-2">👨‍🔧</div>
+                    <p>No inspectors found</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Current Assignments */}
       <div className="bg-white rounded-xl shadow-lg p-6 border border-brown-light">
         <div className="flex items-center space-x-2 mb-6">
@@ -606,27 +963,21 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector }) => {
                     </h4>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p><strong>Client:</strong> {assignment.inspectionRequest?.client_name || 'N/A'}</p>
-                        <p><strong>Property:</strong> {assignment.inspectionRequest?.propertyLocation_address || 'N/A'}</p>
+                        <p><strong>Client:</strong> {assignment.InspectionRequest_ID?.client_name || 'N/A'}</p>
+                        <p><strong>Property:</strong> {assignment.InspectionRequest_ID?.propertyLocation_address || 'N/A'}</p>
                       </div>
                       <div>
-                        <p><strong>Inspector:</strong> {assignment.inspector?.username || 'N/A'}</p>
+                        <p><strong>Inspector:</strong> {assignment.inspector_ID?.username || 'N/A'}</p>
                         <p><strong>Status:</strong> <span className={`font-semibold ${
                           assignment.status === 'assigned' ? 'text-green-600' : 'text-orange-600'
                         }`}>{assignment.status}</span></p>
                       </div>
                     </div>
                   </div>
-                  <div className="flex space-x-2 ml-4">
-                    <button
-                      onClick={() => handleEditAssignment(assignment)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                    >
-                      ✏️ Edit
-                    </button>
+                  <div className="flex ml-4">
                     <button
                       onClick={() => handleDeleteAssignment(assignment._id)}
-                      className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                      className="px-3 py-1 bg-red-800 text-white rounded text-sm hover:bg-red-900 transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       🗑️ Delete
                     </button>

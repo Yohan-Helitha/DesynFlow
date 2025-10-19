@@ -30,6 +30,39 @@ module.exports = {
           700: '#334155',
           800: '#1e293b',
           900: '#0f172a',
+        },
+        // Brown/Cream Theme Colors
+        'brown-primary': {
+          50: '#fefdf8',
+          100: '#fefaed',
+          200: '#fcf3d6',
+          300: '#f9e7b3',
+          400: '#f5d180',
+          500: '#d4a574',
+          600: '#b8935a',
+          700: '#8b6914',
+          800: '#6b4f0a',
+          900: '#4a3508',
+          DEFAULT: '#8b6914'
+        },
+        'cream': {
+          'primary': '#fefdf8',
+          'light': '#fefaed',
+          'medium': '#fcf3d6',
+          DEFAULT: '#fefdf8'
+        },
+        'brown-secondary': {
+          50: '#f7f4f0',
+          100: '#ede5d9',
+          200: '#d4c4b0',
+          300: '#b8a082',
+          400: '#9d7f59',
+          500: '#8b6914',
+          600: '#75570f',
+          700: '#5e460c',
+          800: '#473508',
+          900: '#2f2405',
+          DEFAULT: '#75570f'
         }
       },
       fontFamily: {

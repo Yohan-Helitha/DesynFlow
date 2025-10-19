@@ -27,15 +27,34 @@ export const assignInspector = async (req, res) => {
     }
     
     // Check if inspector is available
-    const location = await InspectorLocation.findOne({ inspector_ID: inspectorId, status: 'available' });
+    console.log(`🔍 Checking availability for inspector: ${inspectorId}`);
+    const location = await InspectorLocation.findOne({ inspector_ID: inspectorId });
+    
     if (!location) {
-      return res.status(400).json({ message: 'Inspector not available.' });
+      console.log(`❌ Inspector location not found for ID: ${inspectorId}`);
+      return res.status(400).json({ message: 'Inspector location not found.' });
+    }
+    
+    console.log(`📍 Inspector found: ${location.current_address}, Status: ${location.status}`);
+    
+    if (location.status !== 'available') {
+      console.log(`❌ Inspector not available. Current status: ${location.status}`);
+      return res.status(400).json({ message: `Inspector not available. Current status: ${location.status}` });
     }
     
     // Get property details from inspection request
     const inspectionRequest = await InspectionRequest.findById(inspectionRequestId);
     if (!inspectionRequest) {
       return res.status(404).json({ message: 'Inspection request not found.' });
+    }
+
+    // Check if there's already an assignment for this inspection request
+    const existingAssignment = await Assignment.findOne({ 
+      InspectionRequest_ID: inspectionRequestId,
+      status: { $in: ['assigned', 'in-progress'] }
+    });
+    if (existingAssignment) {
+      return res.status(400).json({ message: 'This inspection request is already assigned to another inspector.' });
     }
 
     // Calculate distance for 35km assignment validation
@@ -259,17 +278,35 @@ export const updateAssignmentStatus = async (req, res) => {
     
     await assignment.save();
     
-    // Update inspector status based on assignment status
+    // Update inspector status and location based on assignment status
     const location = await InspectorLocation.findOne({ inspector_ID: assignment.inspector_ID });
     if (location) {
       switch (status) {
         case 'in-progress':
           location.status = 'busy';
+          
+          // Update inspector's current address to the inspection location
+          const inspectionRequest = await InspectionRequest.findById(assignment.InspectionRequest_ID);
+          if (inspectionRequest) {
+            // Update inspector location to property coordinates and address
+            if (inspectionRequest.property_latitude && inspectionRequest.property_longitude) {
+              location.inspector_latitude = inspectionRequest.property_latitude;
+              location.inspector_longitude = inspectionRequest.property_longitude;
+            }
+            
+            // Set current address to property address
+            if (inspectionRequest.property_full_address) {
+              location.current_address = inspectionRequest.property_full_address;
+            }
+            
+            console.log(`Inspector location updated to property: ${inspectionRequest.property_full_address}`);
+          }
           break;
         case 'completed':
         case 'canceled':
         case 'declined':
           location.status = 'available';
+          // Note: Keep inspector at property location even after completion for tracking
           break;
         case 'paused':
           // Keep current status (usually 'busy')

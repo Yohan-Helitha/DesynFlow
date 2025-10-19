@@ -37,12 +37,56 @@ const sampleUsers = [
     isActive: true
   },
   
-  // Inspector
+  // Inspector 1 - Colombo
   {
     username: 'mike_inspector',
     email: 'mike.inspector@desynflow.com',
     password: 'inspect123',
     phone: '+94703456789',
+    role: 'inspector',
+    isVerified: true,
+    isActive: true
+  },
+  
+  // Inspector 2 - Kandy
+  {
+    username: 'priya_inspector',
+    email: 'priya.inspector@desynflow.com',
+    password: 'inspect123',
+    phone: '+94703456790',
+    role: 'inspector',
+    isVerified: true,
+    isActive: true
+  },
+  
+  // Inspector 3 - Galle
+  {
+    username: 'rajesh_inspector',
+    email: 'rajesh.inspector@desynflow.com',
+    password: 'inspect123',
+    phone: '+94703456791',
+    role: 'inspector',
+    isVerified: true,
+    isActive: true
+  },
+  
+  // Inspector 4 - Negombo
+  {
+    username: 'saman_inspector',
+    email: 'saman.inspector@desynflow.com',
+    password: 'inspect123',
+    phone: '+94703456792',
+    role: 'inspector',
+    isVerified: true,
+    isActive: true
+  },
+  
+  // Inspector 5 - Matara
+  {
+    username: 'nimal_inspector',
+    email: 'nimal.inspector@desynflow.com',
+    password: 'inspect123',
+    phone: '+94703456793',
     role: 'inspector',
     isVerified: true,
     isActive: true
@@ -617,6 +661,7 @@ const seedDatabase = async () => {
     await User.deleteMany({});
     await InspectionRequest.deleteMany({});
     await Assignment.deleteMany({});
+    await InspectorLocation.deleteMany({});
     await Team.deleteMany({});
     await Project.deleteMany({});
     await Task.deleteMany({});
@@ -667,7 +712,7 @@ const createSampleData = async (users) => {
     // Find specific users
     const clientUser = users.find(u => u.email === 'john.client@gmail.com') || users.find(u => u.role === 'client');
     const client2User = users.find(u => u.email === 'jane.client@gmail.com') || users.find(u => u.role === 'client');
-    const inspectorUser = users.find(u => u.email === 'mike.inspector@desynflow.com') || users.find(u => u.role === 'inspector');
+    const inspectorUser = users.find(u => u.username === 'mike_inspector') || users.find(u => u.role === 'inspector');
     
     if (!clientUser || !inspectorUser) {
       console.log('❌ Required users not found for sample data creation');
@@ -753,19 +798,26 @@ const createSampleData = async (users) => {
     // Create sample inspector locations for map visualization
     console.log('\n📍 Creating sample inspector locations for map display...');
     
-    // Sample inspector locations across Sri Lanka (for map visualization only)
+    // Find all inspector users
+    const inspectorUsers = users.filter(u => u.role === 'inspector');
+    
+    if (inspectorUsers.length < 5) {
+      console.log('❌ Not enough inspector users found for location creation');
+      return;
+    }
+    
+    // Sample inspector locations across Sri Lanka with specific inspector assignments
     const sampleInspectorLocations = [
       {
-        inspector_ID: inspectorUser._id, // Mike inspector (real user)
+        inspector_ID: inspectorUsers.find(u => u.username === 'mike_inspector')._id,
         inspector_latitude: 6.9271,
         inspector_longitude: 79.8612,
         current_address: 'Colombo 03, Main Street',
         region: 'Colombo',
         status: 'available'
       },
-      // Additional dummy locations for map visualization (no real user accounts)
       {
-        inspector_ID: new mongoose.Types.ObjectId(), // Dummy ID for visualization
+        inspector_ID: inspectorUsers.find(u => u.username === 'priya_inspector')._id,
         inspector_latitude: 7.2906,
         inspector_longitude: 80.6337,
         current_address: 'Kandy Center, Temple Street',
@@ -773,7 +825,7 @@ const createSampleData = async (users) => {
         status: 'available'
       },
       {
-        inspector_ID: new mongoose.Types.ObjectId(), // Dummy ID for visualization
+        inspector_ID: inspectorUsers.find(u => u.username === 'rajesh_inspector')._id,
         inspector_latitude: 6.0535,
         inspector_longitude: 80.2210,
         current_address: 'Galle Fort, Main Gate',
@@ -781,7 +833,7 @@ const createSampleData = async (users) => {
         status: 'busy'
       },
       {
-        inspector_ID: new mongoose.Types.ObjectId(), // Dummy ID for visualization
+        inspector_ID: inspectorUsers.find(u => u.username === 'saman_inspector')._id,
         inspector_latitude: 7.1644,
         inspector_longitude: 79.9344,
         current_address: 'Negombo Beach Road',
@@ -789,7 +841,7 @@ const createSampleData = async (users) => {
         status: 'available'
       },
       {
-        inspector_ID: new mongoose.Types.ObjectId(), // Dummy ID for visualization
+        inspector_ID: inspectorUsers.find(u => u.username === 'nimal_inspector')._id,
         inspector_latitude: 5.9549,
         inspector_longitude: 80.5550,
         current_address: 'Matara Town Center',

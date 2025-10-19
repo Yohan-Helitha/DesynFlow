@@ -2,16 +2,16 @@ import React from "react";
 
 const Sidebar = ({ activeSection, onSelect, onLogout }) => {
   return (
-    <div className="w-64 bg-white shadow-lg p-6 flex flex-col justify-between">
+    <div className="w-64 bg-cream-primary shadow-lg p-6 flex flex-col justify-between border-r border-brown-primary-300">
       <div>
-        <h2 className="text-xl font-bold mb-6">Dashboard</h2>
+        <h2 className="text-xl font-bold mb-6 text-brown-primary">Dashboard</h2>
         <ul className="space-y-3">
           <li
             onClick={() => onSelect("dashboard")}
             className={`cursor-pointer p-2 rounded ${
               activeSection === "dashboard"
-                ? "bg-yellow-200"
-                : "hover:bg-gray-200"
+                ? "bg-brown-primary-200 text-brown-primary"
+                : "hover:bg-cream-medium text-brown-secondary"
             }`}
           >
             Recent Activities
@@ -20,8 +20,8 @@ const Sidebar = ({ activeSection, onSelect, onLogout }) => {
             onClick={() => onSelect("inspection")}
             className={`cursor-pointer p-2 rounded ${
               activeSection === "inspection"
-                ? "bg-yellow-200"
-                : "hover:bg-gray-200"
+                ? "bg-brown-primary-200 text-brown-primary"
+                : "hover:bg-cream-medium text-brown-secondary"
             }`}
           >
             Inspection
@@ -30,8 +30,8 @@ const Sidebar = ({ activeSection, onSelect, onLogout }) => {
             onClick={() => onSelect("project")}
             className={`cursor-pointer p-2 rounded ${
               activeSection === "project"
-                ? "bg-yellow-200"
-                : "hover:bg-gray-200"
+                ? "bg-brown-primary-200 text-brown-primary"
+                : "hover:bg-cream-medium text-brown-secondary"
             }`}
           >
             Project
@@ -40,8 +40,8 @@ const Sidebar = ({ activeSection, onSelect, onLogout }) => {
             onClick={() => onSelect("warranty")}
             className={`cursor-pointer p-2 rounded ${
               activeSection === "warranty"
-                ? "bg-yellow-200"
-                : "hover:bg-gray-200"
+                ? "bg-brown-primary-200 text-brown-primary"
+                : "hover:bg-cream-medium text-brown-secondary"
             }`}
           >
             Warranty
@@ -50,8 +50,8 @@ const Sidebar = ({ activeSection, onSelect, onLogout }) => {
             onClick={() => onSelect("profile")}
             className={`cursor-pointer p-2 rounded ${
               activeSection === "profile"
-                ? "bg-yellow-200"
-                : "hover:bg-gray-200"
+                ? "bg-brown-primary-200 text-brown-primary"
+                : "hover:bg-cream-medium text-brown-secondary"
             }`}
           >
             Profile
@@ -60,7 +60,7 @@ const Sidebar = ({ activeSection, onSelect, onLogout }) => {
       </div>
       <button
         onClick={onLogout}
-        className="mt-6 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+        className="mt-6 bg-brown-primary text-white py-2 px-4 rounded hover:bg-brown-primary-700"
       >
         Log out
       </button>
