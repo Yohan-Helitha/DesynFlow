@@ -438,9 +438,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
     }
   };
 
-  const handleEditAssignment = (assignment) => {
-    alert(`📝 Edit Assignment:\n\nClient: ${assignment.inspectionRequest?.clientName}\nInspector: ${assignment.inspector?.name}\n\n(Edit functionality can be implemented with a modal)`);
-  };
+
 
   useEffect(() => {
     fetchData();
@@ -517,15 +515,15 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
               
               {/* Address Suggestions Dropdown */}
               {showSuggestions && addressSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border-2 border-brown-light rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 bg-white border-2 border-brown-light rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto">
                   {addressSuggestions.map((suggestion, index) => (
                     <div
                       key={index}
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className="px-4 py-3 hover:bg-brown-light/20 cursor-pointer border-b border-brown-light/30 last:border-b-0"
+                      className="px-4 py-3 hover:bg-soft-green/10 hover:border-l-4 hover:border-l-soft-green cursor-pointer border-b border-brown-light/30 last:border-b-0 transition-all duration-200"
                     >
-                      <div className="font-medium text-dark-brown">{suggestion.address}</div>
-                      <div className="text-sm text-gray-600">{suggestion.city}</div>
+                      <div className="font-semibold text-dark-brown">{suggestion.address}</div>
+                      <div className="text-sm text-brown-primary/70">{suggestion.city}</div>
                     </div>
                   ))}
                 </div>
@@ -554,8 +552,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
 
           {/* Available Addresses Quick Reference */}
           {inspectionRequests.length > 0 && (
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-blue-800 mb-3">📋 Available Addresses (click to search):</h4>
+            <div className="bg-cream-light rounded-lg p-4 border-2 border-brown-light/30">
+              <h4 className="text-sm font-semibold text-brown-primary mb-3">📋 Available Addresses (click to search):</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                 {inspectionRequests.slice(0, 6).map((request, index) => (
                   <button
@@ -570,10 +568,10 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
                         longitude: request.property_longitude
                       });
                     }}
-                    className="text-left p-2 bg-white rounded hover:bg-blue-100 transition-colors border border-blue-200"
+                    className="text-left p-3 bg-white rounded-lg hover:bg-soft-green/10 hover:border-soft-green transition-all duration-200 border-2 border-brown-light/20 hover:scale-[1.02] hover:shadow-md"
                   >
-                    <div className="font-medium text-blue-800">{request.propertyLocation_address}</div>
-                    <div className="text-xs text-blue-600">{request.propertyLocation_city}</div>
+                    <div className="font-semibold text-dark-brown">{request.propertyLocation_address}</div>
+                    <div className="text-xs text-brown-primary/70 mt-1">{request.propertyLocation_city}</div>
                   </button>
                 ))}
               </div>
@@ -976,16 +974,10 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
                       </div>
                     </div>
                   </div>
-                  <div className="flex space-x-2 ml-4">
-                    <button
-                      onClick={() => handleEditAssignment(assignment)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                    >
-                      ✏️ Edit
-                    </button>
+                  <div className="flex ml-4">
                     <button
                       onClick={() => handleDeleteAssignment(assignment._id)}
-                      className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                      className="px-3 py-1 bg-red-800 text-white rounded text-sm hover:bg-red-900 transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                       🗑️ Delete
                     </button>

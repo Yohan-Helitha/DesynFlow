@@ -27,9 +27,19 @@ export const assignInspector = async (req, res) => {
     }
     
     // Check if inspector is available
-    const location = await InspectorLocation.findOne({ inspector_ID: inspectorId, status: 'available' });
+    console.log(`🔍 Checking availability for inspector: ${inspectorId}`);
+    const location = await InspectorLocation.findOne({ inspector_ID: inspectorId });
+    
     if (!location) {
-      return res.status(400).json({ message: 'Inspector not available.' });
+      console.log(`❌ Inspector location not found for ID: ${inspectorId}`);
+      return res.status(400).json({ message: 'Inspector location not found.' });
+    }
+    
+    console.log(`📍 Inspector found: ${location.current_address}, Status: ${location.status}`);
+    
+    if (location.status !== 'available') {
+      console.log(`❌ Inspector not available. Current status: ${location.status}`);
+      return res.status(400).json({ message: `Inspector not available. Current status: ${location.status}` });
     }
     
     // Get property details from inspection request
