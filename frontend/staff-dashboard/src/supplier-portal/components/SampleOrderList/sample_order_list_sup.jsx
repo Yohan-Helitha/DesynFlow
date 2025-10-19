@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaEye, FaTimes, FaCheckCircle, FaTimesCircle, FaInfoCircle, FaClock, FaCheck, FaBan } from "react-icons/fa";
+import { FaEye, FaTimes, FaCheckCircle, FaTimesCircle, FaInfoCircle, FaClock, FaCheck, FaBan, FaBox, FaClipboardList, FaDollarSign, FaRuler, FaCalendarAlt, FaTruck, FaHourglassHalf, FaMapMarkerAlt, FaBuilding } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./sample_order_list_sup.css";
 import "../Dashboard_sup/Dashboard_sup.css";
@@ -265,7 +265,6 @@ function SampleOrderListSup() {
             <thead>
               <tr>
                 <th>Material Name</th>
-                <th>Requested By</th>
                 <th>Request Date</th>
                 <th>Status</th>
                 <th>Review Date</th>
@@ -283,16 +282,6 @@ function SampleOrderListSup() {
                       {order.materialId?.category && (
                         <span className="material-category">{order.materialId.category}</span>
                       )}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="requester-info">
-                      <span className="requester-name">
-                        {order.requestedBy?.name || "Unknown User"}
-                      </span>
-                      <span className="requester-email">
-                        {order.requestedBy?.email || "N/A"}
-                      </span>
                     </div>
                   </td>
                   <td>{new Date(order.createdAt).toLocaleDateString('en-US', { 
@@ -369,14 +358,14 @@ function SampleOrderListSup() {
         </div>
       )}
 
-      {/* Details Modal for Rejected Orders */}
+      {/* Sample Order Details Modal */}
       {showDetailsModal && selectedOrder && (
         <div className="modal-overlay-details" onClick={closeModal}>
           <div className="modal-content-details" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-details">
               <h2>
-                <FaTimesCircle className="modal-icon-rejected" />
-                Rejection Details
+                <FaInfoCircle className="modal-icon-info" />
+                Sample Order Details
               </h2>
               <button className="modal-close-btn" onClick={closeModal}>
                 <FaTimes />
@@ -384,83 +373,103 @@ function SampleOrderListSup() {
             </div>
             
             <div className="modal-body-details">
-              <div className="detail-section">
-                <h3>Order Information</h3>
-                <div className="detail-grid">
-                  <div className="detail-item">
-                    <label>Material Name:</label>
-                    <span className="detail-value">
-                      {selectedOrder.materialId?.materialName || selectedOrder.materialId?.name || "Unknown Material"}
+              {/* Main Details Section */}
+              <div className="details-grid-top">
+                <div className="detail-item-main">
+                  <div className="detail-icon"><FaClipboardList /></div>
+                  <div className="detail-content">
+                    <label>Sample Request ID</label>
+                    <span className="detail-value">{selectedOrder._id?.slice(-8) || 'N/A'}</span>
+                  </div>
+                </div>
+                
+                <div className="detail-item-main">
+                  <div className="detail-icon"><FaInfoCircle /></div>
+                  <div className="detail-content">
+                    <label>Status</label>
+                    <span className="detail-value status-display">
+                      {selectedOrder.status === "Approved" && <><FaCheckCircle /> Approved</>}
+                      {selectedOrder.status === "Dispatched" && <><FaTruck /> Dispatched</>}
+                      {selectedOrder.status === "Rejected" && <><FaTimesCircle /> Rejected</>}
+                      {selectedOrder.status === "Requested" && <><FaHourglassHalf /> Pending</>}
                     </span>
                   </div>
-                  <div className="detail-item">
-                    <label>Category:</label>
-                    <span className="detail-value">
-                      {selectedOrder.materialId?.category || "N/A"}
-                    </span>
+                </div>
+                
+                <div className="detail-item-main">
+                  <div className="detail-icon"><FaRuler /></div>
+                  <div className="detail-content">
+                    <label>Quantity</label>
+                    <span className="detail-value">{selectedOrder.quantity || 'N/A'}</span>
                   </div>
-                  <div className="detail-item">
-                    <label>Requested By:</label>
-                    <span className="detail-value">
-                      {selectedOrder.requestedBy?.name || "Unknown User"}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <label>Email:</label>
-                    <span className="detail-value">
-                      {selectedOrder.requestedBy?.email || "N/A"}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <label>Request Date:</label>
+                </div>
+                
+                <div className="detail-item-main">
+                  <div className="detail-icon"><FaCalendarAlt /></div>
+                  <div className="detail-content">
+                    <label>Created Date</label>
                     <span className="detail-value">
                       {new Date(selectedOrder.createdAt).toLocaleDateString('en-US', { 
                         year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric',
+                        month: '2-digit', 
+                        day: '2-digit',
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
                     </span>
                   </div>
-                  <div className="detail-item">
-                    <label>Rejection Date:</label>
-                    <span className="detail-value">
-                      {selectedOrder.reviewedAt 
-                        ? new Date(selectedOrder.reviewedAt).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })
-                        : "N/A"}
-                    </span>
+                </div>
+              </div>
+
+              {/* Material Information Section */}
+              <div className="client-info-section">
+                <h3>
+                  <FaBox className="section-icon" />
+                  Material Information
+                </h3>
+                <div className="info-grid">
+                  <div className="info-row">
+                    <label>Material Name</label>
+                    <span>{selectedOrder.materialId?.materialName || selectedOrder.materialId?.name || "Unknown Material"}</span>
+                  </div>
+                  <div className="info-row">
+                    <label>Category</label>
+                    <span>{selectedOrder.materialId?.category || "N/A"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="detail-section reason-section">
+              {/* Review Information Section */}
+              <div className="property-details-section">
                 <h3>
                   <FaInfoCircle className="section-icon" />
-                  Rejection Reason
+                  Review Details
                 </h3>
-                <div className="reason-box">
-                  <p>{selectedOrder.reviewNote || "No reason provided"}</p>
-                </div>
-              </div>
-
-              {selectedOrder.quantity && (
-                <div className="detail-section">
-                  <h3>Additional Details</h3>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <label>Quantity Requested:</label>
-                      <span className="detail-value">{selectedOrder.quantity}</span>
+                <div className="property-grid">
+                  <div className="property-row">
+                    <div className="property-item">
+                      <div className="property-icon"><FaMapMarkerAlt /></div>
+                      <div className="property-content">
+                        <label>Review Date</label>
+                        <span>{selectedOrder.reviewedAt 
+                          ? new Date(selectedOrder.reviewedAt).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'short', 
+                              day: 'numeric'
+                            })
+                          : "Not reviewed yet"}</span>
+                      </div>
+                    </div>
+                    <div className="property-item">
+                      <div className="property-icon"><FaBuilding /></div>
+                      <div className="property-content">
+                        <label>Review Note</label>
+                        <span>{selectedOrder.reviewNote || "No notes available"}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="modal-footer-details">
