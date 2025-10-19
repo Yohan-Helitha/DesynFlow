@@ -18,6 +18,13 @@ export default function PersonalFilesTab() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [dragOver, setDragOver] = useState(false);
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user'));
     if (userData?.role === "team member" || userData?.role === "team leader") {
@@ -218,7 +225,7 @@ export default function PersonalFilesTab() {
   if (loading) {
     return (
       <div className="min-h-screen bg-cream-primary">
-        <TeamMemberHeader title="Personal Files" />
+        <TeamMemberHeader title="Personal Files" onLogout={handleLogout} />
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary"></div>
         </div>
@@ -228,7 +235,7 @@ export default function PersonalFilesTab() {
 
   return (
     <div className="min-h-screen bg-cream-primary">
-      <TeamMemberHeader title="Personal Files" />
+      <TeamMemberHeader title="Personal Files" onLogout={handleLogout} />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header Actions */}

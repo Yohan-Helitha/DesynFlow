@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaBell } from "react-icons/fa";
+import { FaBell, FaSignOutAlt } from "react-icons/fa";
 
-export default function TeamMemberHeader() {
+export default function TeamMemberHeader({ onLogout }) {
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
@@ -123,6 +123,15 @@ export default function TeamMemberHeader() {
             <div className="text-sm text-gray-500">Team Member</div>
           </div>
         </div>
+
+        <button
+          onClick={() => onLogout && onLogout()}
+          className="flex items-center space-x-2 px-4 py-2 bg-brown-primary text-cream-primary hover:bg-brown-primary-dark rounded-lg transition-colors duration-200 ml-4"
+          title="Logout"
+        >
+          <FaSignOutAlt />
+          <span className="font-medium">Logout</span>
+        </button>
       </div>
     </header>
   );

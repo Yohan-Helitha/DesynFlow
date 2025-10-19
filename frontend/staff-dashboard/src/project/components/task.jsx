@@ -36,6 +36,9 @@ const TaskBoard = () => {
   });
   
   const [formErrors, setFormErrors] = useState({});
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [blockingTask, setBlockingTask] = useState(null);
+  const [blockIssueDescription, setBlockIssueDescription] = useState('');
 
   // Fetch tasks, team members, and project data
   const fetchTasks = async () => {
@@ -279,6 +282,13 @@ const TaskBoard = () => {
   };
 
   const handleStatusChange = async (task, newStatus) => {
+    if (newStatus === 'Blocked') {
+      // Show block modal instead of directly blocking
+      setBlockingTask(task);
+      setShowBlockModal(true);
+      return;
+    }
+
     try {
       const response = await fetch(`/api/tasks/${task._id}/status`, {
         method: 'PATCH',
@@ -311,6 +321,44 @@ const TaskBoard = () => {
     setEditingTask(task);
     setNewTask(task);
     setShowAddModal(true);
+  };
+
+  const handleBlockTask = async () => {
+    if (!blockIssueDescription.trim()) {
+      alert('Please provide a description for the issue');
+      return;
+    }
+
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const response = await fetch(`/api/tasks/${blockingTask._id}/block`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          issueDescription: blockIssueDescription,
+          blockedBy: currentUser?.id || currentUser?._id
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setTasks(prevTasks => 
+          prevTasks.map(t => 
+            t._id === blockingTask._id ? result.task : t
+          )
+        );
+        setShowBlockModal(false);
+        setBlockingTask(null);
+        setBlockIssueDescription('');
+        alert('Task blocked and issue logged successfully for weekly reporting');
+      } else {
+        const error = await response.json();
+        alert(`Error blocking task: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Error blocking task:', error);
+      alert('Error blocking task');
+    }
   };
 
   const handleDeleteTask = async (task) => {
@@ -837,6 +885,58 @@ const TaskBoard = () => {
               >
                 {editingTask ? 'Update Task' : 'Add Task'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Task Modal */}
+      {showBlockModal && blockingTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-red-brown">Block Task - Report Issue</h3>
+              <button 
+                className="text-gray-500 hover:text-gray-700 text-xl"
+                onClick={() => {
+                  setShowBlockModal(false);
+                  setBlockingTask(null);
+                  setBlockIssueDescription('');
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="p-4">
+              <p className="text-gray-600 mb-4">
+                Please describe the issue that's blocking this task "{blockingTask.name}". This will be tracked for weekly reports.
+              </p>
+              <textarea
+                value={blockIssueDescription}
+                onChange={(e) => setBlockIssueDescription(e.target.value)}
+                placeholder="Describe the issue in detail..."
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-brown"
+              />
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={handleBlockTask}
+                  disabled={!blockIssueDescription.trim()}
+                  className="flex-1 bg-red-brown text-white px-4 py-2 rounded-lg hover:bg-red-brown transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Block Task
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBlockModal(false);
+                    setBlockingTask(null);
+                    setBlockIssueDescription('');
+                  }}
+                  className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

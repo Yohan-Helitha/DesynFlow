@@ -15,6 +15,13 @@ export default function CalendarViewTab() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [hoveredDate, setHoveredDate] = useState(null);
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user'));
     if (userData?.role === "team member") {
@@ -181,7 +188,7 @@ export default function CalendarViewTab() {
   if (loading) {
     return (
       <div className="min-h-screen bg-cream-primary">
-        <TeamMemberHeader title="Calendar View" />
+        <TeamMemberHeader title="Calendar View" onLogout={handleLogout} />
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary"></div>
         </div>
@@ -191,7 +198,7 @@ export default function CalendarViewTab() {
 
   return (
     <div className="min-h-screen bg-cream-primary">
-      <TeamMemberHeader title="Calendar View" />
+      <TeamMemberHeader title="Calendar View" onLogout={handleLogout} />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
   {/* Calendar Header */}
