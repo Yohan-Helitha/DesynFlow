@@ -26,15 +26,18 @@ function Orders() {
   // Function to mark order as received
   const markAsReceived = async (orderId) => {
     try {
-      await axios.put(`/api/purchase-orders/${orderId}/status`, {
-        status: 'Received'
-      });
+      console.log('Marking order as received:', orderId);
+      
+      // Use the new endpoint that handles both order and reorder request updates
+      const response = await axios.put(`/api/purchase-orders/${orderId}/mark-received`);
+      console.log('API response:', response.data);
+
       // Send notification to warehouse manager via supplier notifications API
       try {
         await axios.post('/api/supplier-notifications', {
           type: 'order_update',
           purchaseOrderId: orderId,
-          message: 'Order marked as Received by Procurement. Please update stock accordingly.',
+          message: 'Order marked as Received by Procurement. Stock has been restocked.',
           status: 'New'
         });
       } catch (notifyErr) {
@@ -56,10 +59,16 @@ function Orders() {
           return dateB - dateA; // Newest first
         });
       });
-      toast.success('Order marked as received. Warehouse manager notified.');
+      
+      // Show appropriate success message based on response
+      const message = response.data?.updatedReorderRequest 
+        ? `Order marked as received. Reorder request ${response.data.updatedReorderRequest} updated to Restocked.`
+        : 'Order marked as received.';
+      toast.success(message);
     } catch (error) {
       console.error('Error marking order as received:', error);
-      toast.error('Failed to mark order as received. Please try again.');
+      console.error('Error details:', error.response?.data);
+      toast.error(`Failed to mark order as received: ${error.response?.data?.error || error.message}`);
     }
   };
 

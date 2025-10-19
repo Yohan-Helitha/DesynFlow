@@ -106,6 +106,7 @@ function RestockAlerts() {
       case 'pending': return <FaClock />;
       case 'approved': return <FaCheckCircle />;
       case 'completed': return <FaBox />;
+      case 'restocked': return <FaCheckCircle />;
       case 'urgent': return <FaExclamationTriangle />;
       default: return <FaClock />;
     }
@@ -117,6 +118,7 @@ function RestockAlerts() {
       case 'pending': return 'status-pending';
       case 'approved': return 'status-approved';
       case 'completed': return 'status-completed';
+      case 'restocked': return 'status-restocked';
       case 'urgent': return 'status-urgent';
       default: return 'status-pending';
     }
@@ -202,6 +204,7 @@ function RestockAlerts() {
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
                 <option value="completed">Completed</option>
+                <option value="restocked">Restocked</option>
                 <option value="urgent">Urgent</option>
               </select>
             </div>
