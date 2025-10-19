@@ -124,14 +124,7 @@ export default function TeamMemberHeader() {
           </div>
         </div>
 
-        <button
-          onClick={() => onLogout && onLogout()}
-          className="flex items-center space-x-2 px-4 py-2 bg-brown-primary text-cream-primary hover:bg-brown-primary-dark rounded-lg transition-colors duration-200 ml-4"
-          title="Logout"
-        >
-          <FaSignOutAlt />
-          <span className="font-medium">Logout</span>
-        </button>
+        {/* Logout moved to sidebar for team members */}
       </div>
     </header>
   );

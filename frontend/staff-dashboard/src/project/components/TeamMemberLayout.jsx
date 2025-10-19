@@ -65,6 +65,24 @@ export default function TeamMemberLayout({ activeIndex, setActiveIndex, children
               <div className="text-xs text-cream-secondary">Active</div>
             </div>
           </div>
+
+          {/* Logout button (moved here from header) - copied style/behavior from SidebarDynamic.jsx */}
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                // match other dashboards: clear auth token and redirect to login
+                localStorage.removeItem('authToken');
+                window.location.href = '/login';
+              }}
+              className="w-full flex items-center justify-center space-x-2 p-3 bg-red-brown text-white hover:bg-dark-brown rounded-lg transition-colors duration-200"
+            >
+              <svg className="w-4 h-4" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3 4a1 1 0 011-1h6a1 1 0 110 2H5v10h5a1 1 0 110 2H4a1 1 0 01-1-1V4z" />
+                <path d="M12.293 7.293a1 1 0 011.414 0L17 10.586a2 2 0 010 2.828l-3.293 3.293a1 1 0 01-1.414-1.414L14.586 13H9a1 1 0 110-2h5.586l-2.293-2.293a1 1 0 010-1.414z" />
+              </svg>
+              <span className="font-medium">Logout</span>
+            </button>
+          </div>
         </div>
       </div>
 
