@@ -12,6 +12,7 @@ import User from '../../auth/model/user.model.js';
 import { sendEmail } from '../../../utils/emailService.js';
 import * as notificationService from '../service/financeNotificationService.js';
 import Project from '../../project/model/project.model.js';
+import Payment from '../model/payment.js';
 
 // Display all pending payments
 export async function getPendingPayments(req, res) {
@@ -27,6 +28,55 @@ export async function getPendingPayments(req, res) {
 export async function getProcessedPayments(req, res) {
   try {
     const payments = await paymentService.getPaymentsByStatuses(['Approved', 'Rejected']);
+    res.json(payments);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// Client creates a payment (pending review)
+export async function createClientPayment(req, res) {
+  try {
+    const clientId = req.user?._id;
+    const { projectId, amount, type, receiptUrl, method } = req.body;
+    if (!projectId || typeof type === 'undefined') {
+      return res.status(400).json({ error: 'projectId and type are required' });
+    }
+    const numAmount = Number(amount);
+    if (!Number.isFinite(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ error: 'amount must be a positive number (is a quotation available?)' });
+    }
+    if (!['Advance', 'Final'].includes(type)) {
+      return res.status(400).json({ error: 'type must be Advance or Final' });
+    }
+    // Validate project exists and belongs to client
+    const proj = await Project.findById(projectId).select('clientId projectName');
+    if (!proj) return res.status(404).json({ error: 'Project not found' });
+    if (String(proj.clientId) !== String(clientId)) {
+      return res.status(403).json({ error: 'You are not allowed to submit payments for this project' });
+    }
+    const payment = await Payment.create({
+      projectId,
+      clientId,
+      amount: numAmount,
+      type,
+      method: method || 'Online',
+      receiptUrl: receiptUrl || null,
+      status: 'Pending'
+    });
+    return res.status(201).json(payment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// Client lists own payments (both pending and processed)
+export async function getMyPayments(req, res) {
+  try {
+    const clientId = req.user?._id;
+    const payments = await Payment.find({ clientId })
+      .sort({ createdAt: -1 })
+      .populate({ path: 'projectId', select: 'projectName status' });
     res.json(payments);
   } catch (err) {
     res.status(500).json({ error: err.message });
