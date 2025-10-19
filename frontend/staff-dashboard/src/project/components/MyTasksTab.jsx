@@ -553,23 +553,7 @@ export default function MyTasksTab() {
         </div>
       </div>
 
-      {/* Task Details Modal - Placeholder for now */}
-      {showTaskModal && selectedTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-cream-light rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-brown-primary mb-4">{selectedTask.name}</h2>
-              <p className="text-gray-600 mb-4">Task details modal coming next...</p>
-              <button
-                onClick={() => setShowTaskModal(false)}
-                className="bg-brown-primary text-white px-4 py-2 rounded-lg hover:bg-brown-secondary"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Task Details Modal is rendered below via TaskDetailsModal component */}
 
       {/* Task Details Modal */}
       <TaskDetailsModal

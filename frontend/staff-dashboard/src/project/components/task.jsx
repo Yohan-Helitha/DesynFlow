@@ -4,7 +4,7 @@ import { FaUser, FaCalendarAlt, FaClipboardList, FaBolt, FaCheckCircle, FaBan, F
 const STATUS = {
   PENDING: 'Pending',
   IN_PROGRESS: 'In Progress',
-  COMPLETED: 'Done',
+  COMPLETED: 'Completed',
   BLOCKED: 'Blocked'
 };
 
