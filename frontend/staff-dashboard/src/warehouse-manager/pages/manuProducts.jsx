@@ -608,7 +608,7 @@ const ManuProducts = () => {
   const chartArray = Object.values(chartData);
 
   return (
-    <div>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
       <div className="m-6">
         <div className="flex justify-between items-center">
@@ -1019,7 +1019,7 @@ const ManuProducts = () => {
                 Close
               </button>
               <button
-                className="px-4 py-2 bg-gradient-to-r from-[#674636] to-[#8B5A3C] hover:from-[#8B5A3C] hover:to-[#674636] text-white rounded font-semibold flex items-center gap-1"
+                className="px-4 py-2 bg-brown-primary hover:bg-amber-900 text-white rounded font-semibold flex items-center gap-1"
                 onClick={() => {
                   closeModal();
                   navigate(`/warehouse-manager/manufactured-products/update/${selectedProduct._id}`);

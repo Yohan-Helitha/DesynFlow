@@ -303,7 +303,7 @@ const fetchThresholdAlertsSafely = async () => {
 
 // Enhanced Summary Card with professional styling
 const SummaryCard = ({ title, value, icon, color, trend, subtitle }) => (
-  <div className={`p-6 rounded-2xl shadow-lg border-l-4 ${color} bg-[#FFF8E8] hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group`}>
+  <div className={`p-6 rounded-2xl shadow-lg border-l-4 bg-gradient-to-br from-white to-amber-50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group`}>
     <div className="flex items-start justify-between">
       <div className="flex-1">
         <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{title}</p>
@@ -325,7 +325,7 @@ const SummaryCard = ({ title, value, icon, color, trend, subtitle }) => (
 
 // Professional Chart Container Component
 const ChartContainer = ({ title, icon, children, className = "" }) => (
-  <div className={`bg-[#FFF8E8] p-6 rounded-2xl shadow-lg border border-amber-100 ${className}`}>
+  <div className={`bg-gradient-to-br from-white to-amber-50 p-6 rounded-2xl shadow-lg border border-amber-100 ${className}`}>
     <div className="flex items-center justify-between mb-6">
       <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
       {icon}
@@ -480,7 +480,7 @@ const Home = () => {
     acc[cat] = (acc[cat] || 0) + 1;
     return acc;
   }, {})).map(([name, value], index) => ({ 
-    name: name.length > 12 ? name.substring(0, 12) + '...' : name, 
+    name, 
     value,
     fill: CHART_COLORS[index % CHART_COLORS.length]
   }));
@@ -524,13 +524,13 @@ const Home = () => {
   if(loading) return <LoadingSkeleton />;
 
   return (
-    <div>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
-      <div className="m-6">
+      <div className="m-6 ">
         {/* Professional Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Warehouse Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Warehouse Dashboard</h1>
             <p className="text-gray-600 mt-2">Comprehensive overview of inventory, operations, and performance metrics</p>
           </div>
           <div className="flex items-center gap-4 mt-4 lg:mt-0">
@@ -809,6 +809,8 @@ const Home = () => {
                 data={categoryData}
                 layout="vertical"
                 margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
+                barCategoryGap="20%"
+                barGap={4}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis type="number" stroke="#6b7280" />

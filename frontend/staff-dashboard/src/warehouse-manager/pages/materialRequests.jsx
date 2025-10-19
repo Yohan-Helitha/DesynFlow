@@ -19,7 +19,14 @@ export default function WarehouseMaterialRequests() {
   const getRequests = async () => {
     try {
       const data = await fetchMaterialRequests();
-      setRequests(Array.isArray(data) ? data : []);
+      if (Array.isArray(data)) {
+        const sortedData = data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setRequests(sortedData);
+      } else {
+        setRequests([]);
+      }
     } catch (error) {
       console.error("Error fetching material requests:", error);
       setRequests([]);
@@ -114,10 +121,18 @@ export default function WarehouseMaterialRequests() {
     return filteredRequests.filter((req) => req.status === status);
   };
 
+  // Group requests by created date
+  const groupedByDate = filteredRequests.reduce((groups, req) => {
+    const dateKey = new Date(req.createdAt).toLocaleDateString(); // e.g., "10/19/2025"
+    if (!groups[dateKey]) groups[dateKey] = [];
+    groups[dateKey].push(req);
+    return groups;
+  }, {});
+
   return (
-    <div>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
-      <div className="m-6">
+      <div className="m-6 ">
         <h1 className="text-2xl font-bold mt-6 mb-6">Material Requests</h1>
 
         
@@ -214,115 +229,115 @@ export default function WarehouseMaterialRequests() {
         </div>
 
         {/* Requests Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRequests.length > 0 ? (
-            filteredRequests.map((req) => (
-              <div
-                key={req._id}
-                className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group"
-              >
-                {/* Card Header */}
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-4 border-b border-gray-200">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-bold text-gray-900 mb-1 truncate">
-                        {req.projectName || "Unnamed Project"}
-                      </h3>
-                      <p className="text-xs font-medium text-gray-500">
-                        ID: {displayRequestId(req._id)}
-                      </p>
-                    </div>
-                    <span className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(req.status)}`}>
-                      {req.status}
-                    </span>
-                  </div>
-                </div>
+        {/* Requests Grouped by Date */}
+        <div className="space-y-10">
+          {Object.keys(groupedByDate).length > 0 ? (
+            Object.entries(groupedByDate)
+              .sort((a, b) => new Date(b[0]) - new Date(a[0])) // newest date first
+              .map(([date, requestsForDate]) => (
+                <div key={date}>
+                  {/* Date Header */}
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-amber-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    {date}
+                  </h2>
 
-                {/* Card Body */}
-                <div className="px-5 py-4">
-                  <div className="space-y-3">
-                    {/* Requested By */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 font-medium">Requested By</p>
-                        <p className="text-sm font-semibold text-gray-900 truncate">
-                          {req.requestedByName || "Unknown"}
-                        </p>
-                      </div>
-                    </div>
+                  {/* Cards for This Date */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {requestsForDate.map((req) => (
+                      <div
+                        key={req._id}
+                        className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                      >
+                        {/* Card Header */}
+                        <div className="bg-amber-100 px-5 py-4 border-b border-gray-200">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base font-bold text-gray-900 mb-1 truncate">
+                                {req.projectName || "Unnamed Project"}
+                              </h3>
+                              <p className="text-xs font-medium text-gray-500">
+                                ID: {displayRequestId(req._id)}
+                              </p>
+                            </div>
+                            <span className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(req.status)}`}>
+                              {req.status}
+                            </span>
+                          </div>
+                        </div>
 
-                    {/* Created Date */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 font-medium">Created</p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {new Date(req.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
+                        {/* Card Body */}
+                        <div className="px-5 py-4">
+                          <div className="space-y-3">
+                            {/* Requested By */}
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                  />
+                                </svg>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-gray-500 font-medium">Requested By</p>
+                                <p className="text-sm font-semibold text-gray-900 truncate">
+                                  {req.requestedByName || "Unknown"}
+                                </p>
+                              </div>
+                            </div>
 
-                    {/* Needed By */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 font-medium">Needed By</p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {new Date(req.neededBy).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
+                            {/* Needed By */}
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-gray-500 font-medium">Needed By</p>
+                                <p className="text-sm font-semibold text-gray-900">
+                                  {new Date(req.neededBy).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
 
-                    {/* Items Count */}
-                    {req.items && req.items.length > 0 && (
-                      <div className="pt-2 border-t border-gray-100">
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                          </svg>
-                          <span className="font-medium">{req.items.length} item{req.items.length !== 1 ? 's' : ''} requested</span>
+                        {/* Footer */}
+                        <div className="px-5 py-4 bg-gray-50 border-t border-gray-100">
+                          <button
+                            onClick={() => setSelectedRequest(req)}
+                            className="w-full inline-flex items-center justify-center gap-2 bg-brown-primary hover:bg-amber-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md group-hover:scale-[1.02]"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span>View Details</span>
+                          </button>
                         </div>
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
-
-                {/* Card Footer */}
-                <div className="px-5 py-4 bg-gray-50 border-t border-gray-100">
-                  <button
-                    onClick={() => setSelectedRequest(req)}
-                    className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md group-hover:scale-[1.02]"
-                  >
-                    <Eye className="w-4 h-4" />
-                    <span>View Details</span>
-                  </button>
-                </div>
-              </div>
-            ))
+              ))
           ) : (
             <div className="col-span-full">
               <div className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">No Material Requests Found</h3>
-                <p className="text-sm text-gray-500 max-w-md mx-auto">
-                  There are no material requests available at the moment. Check back later or adjust your filters.
+                <p className="text-sm text-gray-500">
+                  There are no material requests available at the moment.
                 </p>
               </div>
             </div>
@@ -395,8 +410,8 @@ export default function WarehouseMaterialRequests() {
 
               {/* Right Column - Items List */}
               <div className="flex flex-col">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg px-4 py-3 mb-4 flex items-center justify-between">
-                  <h3 className="text-white font-bold text-lg">Requested Items</h3>
+                <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg px-4 py-3 mb-4 flex items-center justify-between">
+                  <h3 className="text-black font-bold text-lg">Requested Items</h3>
                   <span className="bg-white text-blue-700 rounded-full px-3 py-1 text-sm font-bold">
                     {selectedRequest.items?.length || 0} Items
                   </span>
@@ -439,7 +454,7 @@ export default function WarehouseMaterialRequests() {
                     Cancel
                   </button>
                   <button
-                    className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors shadow-sm"
+                    className="px-6 py-2.5 bg-brown-primary hover:bg-amber-900 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors shadow-sm"
                     onClick={async () => {
                       try {
                         await updateMaterialRequest(selectedRequest._id, { status: editedStatus });
@@ -468,7 +483,7 @@ export default function WarehouseMaterialRequests() {
                     Close
                   </button>
                   <button
-                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors shadow-sm"
+                    className="px-6 py-2.5 bg-brown-primary hover:bg-amber-900 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors shadow-sm"
                     onClick={() => {
                       setEditedStatus(selectedRequest.status);
                       setIsEditing(true);

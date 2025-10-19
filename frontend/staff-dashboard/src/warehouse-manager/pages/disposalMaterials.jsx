@@ -590,9 +590,9 @@ const DisposalMaterials = () => {
   const chartArray = Object.values(chartData);
 
   return (
-    <div>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
-      <div className="m-6">
+      <div className="m-6 ">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold mt-6 mb-10">Disposal Materials</h1>
           <button
@@ -924,7 +924,7 @@ const DisposalMaterials = () => {
           Close
         </button>
         <button
-          className="px-4 py-2 bg-[#674636] hover:bg-[#8B5A3C] text-white rounded text-sm font-medium transition-colors flex items-center gap-1"
+          className="px-4 py-2 bg-brown-primary hover:bg-amber-900 text-white rounded text-sm font-medium transition-colors flex items-center gap-1"
           onClick={() => {
             closeModal();
             navigate(`/warehouse-manager/disposal-materials/update/${selectedDisposal._id}`);

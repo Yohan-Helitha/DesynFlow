@@ -207,12 +207,12 @@ const SubmitReportForm = ({ loggedInUserId }) => {
   const sectionClass = "bg-white rounded-xl p-6 shadow-sm border border-gray-200";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Submit Report</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Submit Report</h1>
           <p className="text-gray-600">Upload and submit reports for management review</p>
         </div>
 
@@ -340,7 +340,7 @@ const SubmitReportForm = ({ loggedInUserId }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 flex items-center"
+                  className="bg-brown-primary hover:bg-amber-900 disabled:bg-blue-400 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 flex items-center"
                 >
                   {isSubmitting ? (
                     <>

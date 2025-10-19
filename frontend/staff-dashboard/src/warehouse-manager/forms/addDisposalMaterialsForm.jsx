@@ -363,12 +363,12 @@ const AddDisposalMaterialsForm = ({ loggedInUserId }) => {
   const sectionClass = "bg-white rounded-xl p-6 shadow-sm border border-gray-200";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Add Disposal Material</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Add Disposal Material</h1>
           <p className="text-gray-600">Request disposal of materials from inventory with proper documentation</p>
         </div>
 
@@ -578,9 +578,9 @@ const AddDisposalMaterialsForm = ({ loggedInUserId }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 flex items-center"
+                  className="bg-brown-primary hover:bg-amber-900 disabled:bg-blue-400 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 flex items-center"
                 >
-                  {isSubmitting ? (
+                  {isSubmitting ?  (
                     <>
                       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

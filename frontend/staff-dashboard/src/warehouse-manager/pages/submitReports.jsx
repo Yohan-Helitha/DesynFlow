@@ -53,7 +53,7 @@ const SubmitReports = () => {
   });
 
   return (
-    <div>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
       <div className="m-6">
         <div className="flex justify-between items-center">

@@ -544,9 +544,9 @@ const StockMovement = () => {
   }, [movements]);
 
   return (
-    <div>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
-      <div className="m-6">
+      <div className="m-6 ">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold mt-6 mb-10">Stock Movements</h1>
           <button
@@ -841,7 +841,7 @@ const StockMovement = () => {
             Close
           </button>
           <button
-            className="px-4 py-2 bg-gradient-to-r from-[#674636] to-[#8B5A3C] hover:from-[#8B5A3C] hover:to-[#674636] text-white rounded-lg font-semibold transition-all duration-200 hover:shadow-md text-sm flex items-center gap-1"
+            className="px-4 py-2 bg-brown-primary hover:bg-amber-900 text-white rounded-lg font-semibold transition-all duration-200 hover:shadow-md text-sm flex items-center gap-1"
             onClick={() => {
               closeModal();
               navigate(`/warehouse-manager/stock-movement/update/${selectedMovement._id}`);

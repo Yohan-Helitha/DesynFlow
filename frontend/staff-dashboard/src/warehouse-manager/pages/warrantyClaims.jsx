@@ -412,7 +412,7 @@ const WarrantyClaims = () => {
   }, []);
 
   return (
-    <div>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
       <div className="m-6">
         <div className="flex justify-between items-center">
@@ -422,7 +422,7 @@ const WarrantyClaims = () => {
         {/* Chart */}
         <div className="w-full mb-10 bg-gradient-to-br from-white to-amber-50 rounded-2xl shadow-lg p-6 border border-amber-100">
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-[#674636] mb-1">Warranty Claims Overview</h2>
+            <h2 className="text-2xl font-bold text-[#674636] mb-1">Warranty Claims Overview</h2>
             <p className="text-sm text-gray-600">Claims distribution by status</p>
           </div>
           <div className="w-full h-80">
