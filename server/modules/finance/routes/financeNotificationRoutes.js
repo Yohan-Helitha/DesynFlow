@@ -22,4 +22,7 @@ router.delete('/:notificationId', authMiddleware, notificationController.deleteN
 // Delete all read notifications
 router.delete('/read/all', authMiddleware, notificationController.deleteReadNotifications);
 
+// Create a risk alert notification for finance (and optionally project) stakeholders
+router.post('/risk-alert', authMiddleware, notificationController.sendRiskAlert);
+
 export default router;

@@ -25,6 +25,8 @@ export const ApprovedQuotations = () => {
   const [sortField, setSortField] = useState('createdAt')
   const [sortDirection, setSortDirection] = useState('desc')
   const [currentPage, setCurrentPage] = useState(1)
+  const [showSendConfirm, setShowSendConfirm] = useState(false)
+  const [quotationToSend, setQuotationToSend] = useState(null)
 
   const reload = async () => {
     setLoading(true)
@@ -110,7 +112,6 @@ export const ApprovedQuotations = () => {
   const handleUpdate = async (updated) => {
     try {
       // The modal already saved and returned the updated quotation (with new fileUrl)
-      // Just close and refresh the list to show the new data
       console.log('[QuotationsHistory] Quotation updated:', updated._id, 'new fileUrl:', updated.fileUrl);
       setShowViewModal(false)
       setSelectedQuotation(null)
@@ -118,6 +119,36 @@ export const ApprovedQuotations = () => {
     } catch (err) {
       alert(err.message || 'Failed to update quotation')
     }
+  }
+
+  const handleSendClick = (quotation) => {
+    setQuotationToSend(quotation)
+    setShowSendConfirm(true)
+  }
+
+  const handleSendConfirm = async () => {
+    try {
+      const response = await safeFetchJson(`/api/quotations/${quotationToSend._id}/send`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sentTo: quotationToSend.clientId || quotationToSend.projectId?.clientId })
+      })
+      
+      if (response) {
+        setShowSendConfirm(false)
+        setQuotationToSend(null)
+        await reload()
+        alert('Quotation sent successfully!')
+      }
+    } catch (err) {
+      console.error('[QuotationsHistory] Send error:', err)
+      alert(err.message || 'Failed to send quotation')
+    }
+  }
+
+  const handleSendCancel = () => {
+    setShowSendConfirm(false)
+    setQuotationToSend(null)
   }
 
   const handleSort = (field) => {
@@ -234,7 +265,7 @@ export const ApprovedQuotations = () => {
                   <div className="flex items-center">Status<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer" onClick={() => handleSort('createdAt')}>
-                  <div className="flex items-center">Created Date<ArrowUpDown size={14} className="ml-1" /></div>
+                  <div className="flex items-center">Created Date & Time<ArrowUpDown size={14} className="ml-1" /></div>
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Actions</th>
               </tr>
@@ -248,7 +279,18 @@ export const ApprovedQuotations = () => {
                     <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{projDisp}</td>
                     <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {quotation.grandTotal?.toLocaleString()}</td>
                     <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation.status}</td>
-                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : ''}</td>
+                    <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{
+                      quotation.createdAt
+                        ? new Date(quotation.createdAt).toLocaleString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                          })
+                        : ''
+                    }</td>
                     <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button onClick={() => handleView(quotation)} className="text-[#674636] hover:text-[#FFF8E8] bg-[#F7EED3] hover:bg-[#674636] px-3 py-1 rounded-md flex items-center transition-colors">
@@ -271,6 +313,18 @@ export const ApprovedQuotations = () => {
                             </button>
                           )
                         })()}
+                        <button
+                          onClick={() => handleSendClick(quotation)}
+                          disabled={quotation.status === 'Sent' || quotation.status === 'Confirmed' || quotation.status === 'Locked'}
+                          className={`px-3 py-1 rounded-md flex items-center transition-colors ${
+                            quotation.status === 'Sent' || quotation.status === 'Confirmed' || quotation.status === 'Locked'
+                              ? 'bg-[#AAB396] text-[#FFF8E8] opacity-50 cursor-not-allowed'
+                              : 'bg-[#674636] text-[#FFF8E8] hover:bg-[#AAB396] hover:text-[#674636]'
+                          }`}
+                        >
+                          <Send size={16} className="inline mr-1" />
+                          Send
+                        </button>
                         <button
                           onClick={() => handleDownload(quotation)}
                           className="bg-[#674636] text-[#FFF8E8] hover:bg-[#AAB396] hover:text-[#674636] px-3 py-1 rounded-md flex items-center transition-colors"
@@ -362,6 +416,47 @@ export const ApprovedQuotations = () => {
             onClose={() => setShowViewModal(false)}
           />
         )
+      )}
+
+      {/* Send Confirmation Popup */}
+      {showSendConfirm && quotationToSend && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-[#FFF8E8] rounded-lg shadow-lg p-6 max-w-md w-full mx-4 border-2 border-[#674636]">
+            <div className="flex items-center mb-4">
+              <Send size={24} className="text-[#674636] mr-3" />
+              <h3 className="text-lg font-semibold text-[#674636]">Send Quotation</h3>
+            </div>
+            
+            <p className="text-[#674636] mb-6">
+              Are you sure you want to send this quotation to the client? 
+              The status will be changed to <span className="font-semibold">"Sent"</span>.
+            </p>
+
+            <div className="bg-[#F7EED3] rounded p-3 mb-6 border border-[#AAB396]">
+              <p className="text-sm text-[#674636]">
+                <span className="font-medium">Project:</span> {getProjectDisplay(quotationToSend)}
+              </p>
+              <p className="text-sm text-[#674636] mt-1">
+                <span className="font-medium">Grand Total:</span> LKR {quotationToSend.grandTotal?.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={handleSendCancel}
+                className="px-4 py-2 bg-[#F7EED3] border border-[#AAB396] rounded-md text-sm font-medium text-[#674636] hover:bg-[#AAB396] hover:text-[#FFF8E8] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendConfirm}
+                className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-[#FFF8E8] hover:bg-[#AAB396] transition-colors"
+              >
+                Yes, Send
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
