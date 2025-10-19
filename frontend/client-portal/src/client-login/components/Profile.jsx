@@ -304,12 +304,6 @@ const Profile = () => {
         {/* Warranty Section */}
         {activeSection === "warranty" && (
           <WarrantySection />
-          <div>
-            <h2 className="text-2xl font-bold mb-4 text-brown-primary">
-              Warranty Section
-            </h2>
-            <p className="text-brown-secondary">Warranty details will go here.</p>
-          </div>
         )}
       </div>
     </div>
