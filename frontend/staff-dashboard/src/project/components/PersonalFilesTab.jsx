@@ -20,12 +20,12 @@ export default function PersonalFilesTab() {
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user'));
-    if (userData?.role === "team member") {
+    if (userData?.role === "team member" || userData?.role === "team leader") {
       setUser(userData);
       fetchPersonalFiles(userData._id || userData.id);
       fetchFolders(userData._id || userData.id);
     } else {
-      setError("Access denied. Team member role required.");
+      setError("Access denied. Team member or team leader role required.");
       setLoading(false);
     }
   }, []);

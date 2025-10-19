@@ -4,7 +4,7 @@ import { FaHome, FaTasks, FaCalendarAlt, FaBoxOpen, FaCog, FaChartBar, FaUsers, 
 const teamLeaderNavItems = [
   { label: "Team Overview", icon: <FaHome />, id: "overview" },
   { label: "Tasks", icon: <FaTasks />, id: "tasks" },
-  { label: "Attendance Management", icon: <FaCalendarAlt />, id: "attendance" },
+  { label: "Personal Files", icon: <FaFileAlt />, id: "personal-files" },
   { label: "Resource Requests", icon: <FaBoxOpen />, id: "resources" },
   { label: "Flagged Issues", icon: <FaExclamationTriangle />, id: "flagged-issues" },
   { label: "Progress Report", icon: <FaFileAlt />, id: "progress" },
