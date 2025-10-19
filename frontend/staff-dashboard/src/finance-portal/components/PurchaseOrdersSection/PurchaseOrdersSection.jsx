@@ -30,7 +30,7 @@ export const PurchaseOrdersSection = () => {
           }`}
           onClick={() => setActiveTab('approved')}
         >
-          Approved Purchase Orders
+          Reviewed Purchase Orders
         </button>
       </div>
 

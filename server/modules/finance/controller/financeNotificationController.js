@@ -94,3 +94,60 @@ export const deleteReadNotifications = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Create and dispatch a custom risk alert notification
+export const sendRiskAlert = async (req, res) => {
+  try {
+    const {
+      projectId,
+      projectName,
+      categories = [], // [{ name, percentage, expenses, budget }]
+      message,
+      notify = 'finance-managers', // 'finance-managers' | 'project-managers' | 'both'
+      projectManagerIds = []
+    } = req.body || {};
+
+    if (!projectId || !projectName || !message) {
+      return res.status(400).json({ error: 'projectId, projectName and message are required' });
+    }
+
+    const hasOverBudget = categories.some(c => Number(c.percentage) >= 100);
+    const priority = hasOverBudget ? 'high' : 'medium';
+
+    const title = `Risk: ${projectName} nearing/over budget`;
+    const relatedEntity = { type: 'project', id: projectId };
+    const metadata = { categories };
+
+    const created = [];
+
+    if (notify === 'finance-managers' || notify === 'both') {
+      const notes = await notificationService.notifyFinanceManagers({
+        eventType: 'budget-risk',
+        title,
+        message,
+        relatedEntity,
+        metadata,
+        priority
+      });
+      created.push(...notes);
+    }
+
+    if (notify === 'project-managers' || notify === 'both') {
+      const notes = await notificationService.notifyProjectManagers({
+        eventType: 'budget-risk',
+        title,
+        message,
+        relatedEntity,
+        metadata,
+        priority,
+        projectManagerIds
+      });
+      created.push(...notes);
+    }
+
+    res.status(201).json({ message: 'Risk alert sent', count: created.length });
+  } catch (error) {
+    console.error('Error sending risk alert notification:', error);
+    res.status(500).json({ error: error.message });
+  }
+};

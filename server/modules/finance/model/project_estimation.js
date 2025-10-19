@@ -17,6 +17,12 @@ const ProjectEstimationSchema = new Schema({
     enum: ['Pending', 'Approved', 'Rejected'],
     default: 'Pending'
   },
+  // Project Manager approval/rejection fields (optional, safe additions)
+  remarks: { type: String }, // Optional remarks when approving/rejecting
+  approvedBy: { type: Schema.Types.ObjectId, ref: 'User' }, // PM who approved
+  rejectedBy: { type: Schema.Types.ObjectId, ref: 'User' }, // PM who rejected
+  approvedAt: { type: Date }, // When it was approved
+  rejectedAt: { type: Date }, // When it was rejected
   // Quotation tracking fields
   quotationCreated: { type: Boolean, default: false },
   lastQuotationId: { type: Schema.Types.ObjectId, ref: 'QuotationEstimation' }

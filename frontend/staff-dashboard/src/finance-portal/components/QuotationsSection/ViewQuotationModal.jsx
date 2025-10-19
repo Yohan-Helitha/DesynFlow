@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { X, Download } from 'lucide-react'
 
 export const ViewQuotationModal = ({ quotation, onClose }) => {
@@ -36,6 +36,15 @@ export const ViewQuotationModal = ({ quotation, onClose }) => {
   const totalContingency = Number(quotation?.totalContingency ?? computedContingency)
   const totalTax = Number(quotation?.totalTax ?? computedTax)
   const grandTotal = Number(quotation?.grandTotal ?? (subtotal + totalContingency + totalTax))
+
+  // Compute a cache-busted download URL for the PDF
+  const downloadHref = useMemo(() => {
+    if (!quotation?.fileUrl) return '#';
+    const raw = String(quotation.fileUrl).replace(/\\/g, '/');
+    const base = /^https?:\/\//i.test(raw) ? raw : `/${raw.startsWith('/') ? raw.slice(1) : raw}`;
+    const v = quotation?.updatedAt ? new Date(quotation.updatedAt).getTime() : Date.now();
+    return `${base}${base.includes('?') ? '&' : '?'}v=${v}`;
+  }, [quotation?.fileUrl, quotation?.updatedAt])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -163,7 +172,7 @@ export const ViewQuotationModal = ({ quotation, onClose }) => {
             </button>
             {quotation?.fileUrl && (
               <a
-                href={/^https?:\/\//i.test(quotation.fileUrl) ? quotation.fileUrl : `/${quotation.fileUrl.startsWith('/') ? quotation.fileUrl.slice(1) : quotation.fileUrl}`}
+                href={downloadHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-[#FFF8E8] hover:bg-[#AAB396]"

@@ -7,11 +7,11 @@ export const EstimationsSection = () => {
   const [activeTab, setActiveTab] = useState('pending');
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-[#FFF8E8]">
+    <div className="p-6 max-w-7xl mx-auto">
       <Header title="Estimations Management" />
 
-      {/* Tabs */}
-      <div className="flex border-b border-[#AAB396] mb-6">
+      {/* Tabs (outside of the card) */}
+      <div className="flex border-b border-[#AAB396] mb-4">
         <button
           className={`py-3 px-6 font-medium text-sm ${
             activeTab === 'pending'
@@ -34,8 +34,8 @@ export const EstimationsSection = () => {
         </button>
       </div>
 
-      {/* Content */}
-      <div className="mt-0">
+      {/* Content card */}
+      <div className="bg-[#F7EED3] p-4 rounded-md shadow-sm">
         {activeTab === 'pending' ? <PendingEstimation /> : <EstimationsHistory />}
       </div>
     </div>

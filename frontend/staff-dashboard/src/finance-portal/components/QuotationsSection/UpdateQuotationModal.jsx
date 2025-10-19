@@ -1,16 +1,73 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { X, Download } from 'lucide-react'
 
 // Editable modal for updating a quotation
 const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
   const [editable, setEditable] = useState({
-    remarks: quotation.remarks || '',
     laborItems: [...(quotation.laborItems || [])],
     materialItems: [...(quotation.materialItems || [])],
     serviceItems: [...(quotation.serviceItems || [])],
     contingencyItems: [...(quotation.contingencyItems || [])],
     taxes: [...(quotation.taxes || [])],
   })
+
+  // Track current file URL so the modal reflects newly generated PDFs immediately
+  const [currentFileUrl, setCurrentFileUrl] = useState(quotation.fileUrl || null)
+  const [cacheBust, setCacheBust] = useState(0)
+
+  // Materials catalog for dropdown
+  const [materials, setMaterials] = useState([])
+  const [materialsError, setMaterialsError] = useState(null)
+
+  // Helper to normalize URLs
+  const normalizeUrl = (url) => {
+    if (!url) return null
+    if (/^https?:\/\//i.test(url)) return url
+    const raw = url.startsWith('/') ? url.slice(1) : url
+    return `/${raw}`
+  }
+
+  // Precompute the href for the download link so it's a plain string (not a function)
+  const downloadHref = useMemo(() => {
+    const base = normalizeUrl(currentFileUrl || quotation.fileUrl)
+    if (!base) return '#'
+    return cacheBust ? `${base}${base.includes('?') ? '&' : '?'}v=${cacheBust}` : base
+  }, [currentFileUrl, quotation.fileUrl, cacheBust])
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch('/api/materials/priced')
+        if (!res.ok) throw new Error(`Failed to load materials (${res.status})`)
+        const data = await res.json()
+        const sorted = (data || []).sort((a, b) => (a.materialName || '').localeCompare(b.materialName || ''))
+        if (!cancelled) setMaterials(sorted)
+      } catch (err) {
+        if (!cancelled) setMaterialsError(err.message)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  // If some items only have description but not materialId, try to backfill from catalog
+  useEffect(() => {
+    if (!materials?.length) return
+    setEditable(prev => {
+      const next = { ...prev }
+      next.materialItems = (prev.materialItems || []).map(it => {
+        const hasId = it.materialId && String(it.materialId).length > 0
+        if (hasId || !it.description) return it
+        const match = materials.find(m => (m.materialName || '').toLowerCase() === String(it.description).toLowerCase())
+        if (!match) return it
+        const q = Number(it.quantity || 0)
+        const u = Number(it.unitPrice ?? match.unitPrice ?? 0)
+        return { ...it, materialId: match._id, unitPrice: u, total: q * u }
+      })
+      return next
+    })
+  }, [materials])
 
   const subtotal =
     (editable.laborItems || []).reduce((s, it) => s + (Number(it.total) || (Number(it.hours || 0) * Number(it.rate || 0))), 0) +
@@ -44,6 +101,28 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
     })
   }
 
+  // When a material is selected from dropdown
+  const handleSelectMaterial = (idx, materialId) => {
+    const mat = materials.find(m => String(m._id) === String(materialId))
+    setEditable(prev => {
+      const items = [...(prev.materialItems || [])]
+      const current = { ...items[idx] }
+      current.materialId = materialId
+      if (mat) {
+        current.description = mat.materialName
+        // If there is a priced default, set it; otherwise keep current
+        if (typeof mat.unitPrice === 'number') {
+          current.unitPrice = mat.unitPrice
+        }
+      }
+      const q = Number(current.quantity || 0)
+      const u = Number(current.unitPrice || 0)
+      current.total = q * u
+      items[idx] = current
+      return { ...prev, materialItems: items }
+    })
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-[#FFF8E8] w-full max-w-5xl rounded-lg shadow-lg overflow-hidden">
@@ -55,8 +134,8 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
         </div>
 
         <div className="p-6 max-h-[80vh] overflow-y-auto">
-          {/* Header: meta and remarks */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {/* Header: meta */}
+          <div className="grid grid-cols-1 gap-4 mb-6">
             <div className="bg-[#F7EED3] rounded p-3 border border-[#AAB396] text-[#674636]">
               <div className="space-y-1 text-sm">
                 <div><span className="font-medium">Quotation ID:</span> {quotation._id}</div>
@@ -66,14 +145,19 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
                 <div><span className="font-medium">Status:</span> {quotation.status}</div>
               </div>
             </div>
-            <div className="bg-[#F7EED3] rounded p-3 border border-[#AAB396] text-[#674636]">
-              <label className="text-sm font-medium block mb-1">Remarks</label>
-              <textarea
-                className="w-full text-sm border border-[#AAB396] rounded bg-[#FFF8E8] p-2"
-                value={editable.remarks}
-                onChange={e => setEditable(prev => ({ ...prev, remarks: e.target.value }))}
-              />
-            </div>
+            {/* Remarks (read-only) */}
+            {quotation?.remarks && (
+              <div className="bg-[#F7EED3] rounded p-3 border border-[#AAB396] text-[#674636]">
+                <div className="text-sm font-medium mb-1">Remarks</div>
+                <textarea
+                  className="w-full border border-[#AAB396] rounded px-2 py-1 text-sm bg-[#FFF8E8] text-[#674636]"
+                  value={quotation.remarks}
+                  readOnly
+                  disabled
+                  rows={3}
+                />
+              </div>
+            )}
           </div>
 
           {/* Quick Summary */}
@@ -114,13 +198,28 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
               </div>
               {editable.materialItems.map((it, idx) => (
                 <div key={idx} className="flex gap-2 items-center mb-1">
-                  <input className="border border-[#AAB396] rounded px-2 py-1 text-sm flex-1 bg-[#FFF8E8]" value={it.description} onChange={e => handleChangeItem('materialItems', idx, 'description', e.target.value)} placeholder="Description" />
+                  {/* Material selector */}
+                  <select
+                    className="border border-[#AAB396] rounded px-2 py-1 text-sm flex-1 bg-[#FFF8E8]"
+                    value={typeof it.materialId === 'object' ? (it.materialId?._id || '') : (it.materialId || '')}
+                    onChange={e => handleSelectMaterial(idx, e.target.value)}
+                  >
+                    <option value="">Select material</option>
+                    {materials.map(m => (
+                      <option key={m._id} value={m._id}>
+                        {m.materialName}{typeof m.unitPrice === 'number' && m.unitPrice > 0 ? ` - LKR ${Number(m.unitPrice).toLocaleString()}` : ''}
+                      </option>
+                    ))}
+                  </select>
                   <input type="number" className="border border-[#AAB396] rounded px-2 py-1 text-sm w-20 bg-[#FFF8E8]" value={it.quantity} onChange={e => handleChangeItem('materialItems', idx, 'quantity', Number(e.target.value))} placeholder="Qty" />
                   <input type="number" className="border border-[#AAB396] rounded px-2 py-1 text-sm w-24 bg-[#FFF8E8]" value={it.unitPrice} onChange={e => handleChangeItem('materialItems', idx, 'unitPrice', Number(e.target.value))} placeholder="Unit Price" />
                   <span className="text-xs text-[#674636]">{it.total || 0}</span>
                   <button className="text-xs text-red-600" onClick={() => handleRemoveItem('materialItems', idx)}>Remove</button>
                 </div>
               ))}
+              {materialsError && (
+                <div className="text-xs text-red-600 mt-1">Failed to load materials: {materialsError}</div>
+              )}
             </div>
 
             {/* Services */}
@@ -191,7 +290,36 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
             </button>
             {onSave && (
               <button
-                onClick={() => onSave({ ...quotation, ...editable })}
+                onClick={async () => {
+                  try {
+                    const payload = { ...editable, remarks: quotation.remarks };
+                    console.log('[UpdateQuotationModal] Saving quotation:', quotation._id);
+                    const res = await fetch(`/api/quotations/${quotation._id}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) {
+                      const text = await res.text();
+                      throw new Error(text || `Failed to update quotation (${res.status})`);
+                    }
+                    const updated = await res.json();
+                    console.log('[UpdateQuotationModal] Server response:', updated);
+                    console.log('[UpdateQuotationModal] New fileUrl:', updated.fileUrl);
+                    // Prefer server-returned fileUrl (new PDF location)
+                    const merged = { ...quotation, ...editable, fileUrl: updated.fileUrl };
+                    // Update local link immediately and add cache-busting token so browser fetches the fresh file
+                    if (updated.fileUrl) {
+                      setCurrentFileUrl(updated.fileUrl)
+                      setCacheBust(Date.now())
+                      console.log('[UpdateQuotationModal] Updated local fileUrl and cache-bust');
+                    }
+                    onSave(merged);
+                  } catch (err) {
+                    console.error('Failed to save quotation:', err);
+                    alert(`Failed to save quotation: ${err.message || err}`);
+                  }
+                }}
                 className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-[#FFF8E8] hover:bg-[#AAB396]"
               >
                 Save Changes
@@ -199,7 +327,7 @@ const UpdateQuotationModal = ({ quotation, onClose, onSave }) => {
             )}
             {quotation?.fileUrl && (
               <a
-                href={/^https?:\/\//i.test(quotation.fileUrl) ? quotation.fileUrl : `/${quotation.fileUrl.startsWith('/') ? quotation.fileUrl.slice(1) : quotation.fileUrl}`}
+                href={downloadHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-[#674636] border border-transparent rounded-md text-sm font-medium text-[#FFF8E8] hover:bg-[#AAB396]"

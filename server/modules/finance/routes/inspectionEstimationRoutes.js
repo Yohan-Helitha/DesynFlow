@@ -9,6 +9,8 @@ router.get('/pending', controller.getPendingRequests);
 router.post('/:inspectionRequestId/estimate', controller.generateEstimate);
 //Approve/reject payment
 router.post('/:inspectionRequestId/verify-payment', controller.verifyPayment);
+// Client uploads receipt URL (can be called by client app)
+router.post('/:inspectionRequestId/upload-receipt', controller.uploadReceipt);
 //View inspection requests with status 'PaymentVerified' or 'PaymentRejected'
 router.get('/payment-status/filter', controller.getByPaymentStatus);
 //View inspection requests with status 'PaymentPending'

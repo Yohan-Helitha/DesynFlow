@@ -76,16 +76,16 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-100 border-red-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-100 border-yellow-200';
-      case 'low': return 'text-green-600 bg-green-100 border-green-200';
+      case 'high': return 'text-red-brown bg-red-brown/10 border-red-brown/20';
+      case 'medium': return 'text-brown-primary bg-cream-primary border-brown-100';
+      case 'low': return 'text-green-primary bg-green-primary/10 border-green-primary/20';
       default: return 'text-gray-600 bg-gray-100 border-gray-200';
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-cream-light rounded-lg shadow-lg p-6 border border-brown-100">
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brown-primary"></div>
         </div>
@@ -94,13 +94,13 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-cream-light rounded-lg shadow-lg p-6 border border-brown-100">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-brown-primary flex items-center gap-2">
           <FaExclamationTriangle className="text-red-500" />
           Flagged Issues
           {flaggedIssues.length > 0 && (
-            <span className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">
+            <span className="bg-red-brown/10 text-red-brown px-2 py-1 rounded-full text-sm">
               {flaggedIssues.filter(issue => !issue.resolved).length} unresolved
             </span>
           )}
@@ -110,7 +110,7 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brown-primary"
+            className="border border-brown-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
           >
             <option value="unresolved">Unresolved</option>
             <option value="resolved">Resolved</option>
@@ -148,10 +148,10 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
                         Flagged {getIssueAge(issue.flaggedAt)}
                       </span>
                       {!issue.resolved && days >= 3 && (
-                        <span className="bg-red-500 text-white px-2 py-1 rounded text-xs">
-                          {days >= 7 ? 'Critical' : 'Attention Needed'}
-                        </span>
-                      )}
+                          <span className="bg-red-brown text-white px-2 py-1 rounded text-xs">
+                            {days >= 7 ? 'Critical' : 'Attention Needed'}
+                          </span>
+                        )}
                     </div>
                     
                     <p className="text-gray-700 mb-3">{issue.description}</p>
@@ -172,7 +172,7 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
                     </div>
 
                     {issue.resolved && (
-                      <div className="mt-2 text-sm text-green-600">
+                      <div className="mt-2 text-sm text-green-primary">
                         ✓ Resolved on {new Date(issue.resolvedAt).toLocaleDateString()}
                       </div>
                     )}
@@ -189,7 +189,7 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
                     {!issue.resolved && (
                       <button
                         onClick={() => resolveIssue(issue)}
-                        className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                        className="bg-soft-green text-white px-3 py-1 rounded text-sm hover:bg-green-primary"
                       >
                         Resolve
                       </button>
@@ -198,12 +198,12 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
                 </div>
 
                 {selectedIssue === issue._id && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <h5 className="font-medium text-gray-800 mb-2">Progress Update Context:</h5>
-                      <p className="text-sm text-gray-600 mb-2">{issue.summary}</p>
+                  <div className="mt-4 pt-4 border-t border-brown-100">
+                    <div className="bg-cream-primary rounded-lg p-3">
+                      <h5 className="font-medium text-brown-primary mb-2">Progress Update Context:</h5>
+                      <p className="text-sm text-brown-secondary mb-2">{issue.summary}</p>
                       
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-brown-secondary">
                         <p><strong>Progress Update ID:</strong> {issue.progressUpdateId}</p>
                         <p><strong>Project:</strong> {issue.projectName}</p>
                         <p><strong>Submitted by:</strong> {issue.submittedBy?.username}</p>
@@ -219,12 +219,12 @@ export default function FlaggedIssuesPanel({ teamId, projectId }) {
 
       {/* Weekly Report Integration Notice */}
       {filter === 'unresolved' && flaggedIssues.filter(issue => !issue.resolved).length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mt-6 p-4 bg-cream-primary border border-brown-100 rounded-lg">
           <div className="flex items-start gap-3">
-            <FaFileAlt className="text-blue-600 mt-1" />
+            <FaFileAlt className="text-brown-primary mt-1" />
             <div>
-              <h4 className="font-medium text-blue-800">Weekly Report Integration</h4>
-              <p className="text-sm text-blue-600 mt-1">
+              <h4 className="font-medium text-brown-primary">Weekly Report Integration</h4>
+              <p className="text-sm text-brown-secondary mt-1">
                 These unresolved issues will be automatically included in your weekly team report. 
                 You can decide which issues to escalate to project managers during the report generation.
               </p>

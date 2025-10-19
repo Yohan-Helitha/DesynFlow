@@ -39,6 +39,13 @@ export default function NotificationsTab() {
   });
   const [selectedNotifications, setSelectedNotifications] = useState([]);
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user'));
     if (userData?.role === "team member") {
@@ -252,7 +259,7 @@ export default function NotificationsTab() {
   if (loading) {
     return (
       <div className="min-h-screen bg-cream-primary">
-        <TeamMemberHeader title="Notifications" />
+        <TeamMemberHeader title="Notifications" onLogout={handleLogout} />
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-primary"></div>
         </div>
@@ -262,7 +269,7 @@ export default function NotificationsTab() {
 
   return (
     <div className="min-h-screen bg-cream-primary">
-      <TeamMemberHeader title="Notifications" />
+      <TeamMemberHeader title="Notifications" onLogout={handleLogout} />
       
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Header with Statistics */}

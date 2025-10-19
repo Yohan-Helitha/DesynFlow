@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaBell } from "react-icons/fa";
+import { FaBell, FaSignOutAlt } from "react-icons/fa";
 
 export default function TeamMemberHeader() {
   const [user, setUser] = useState(null);
@@ -123,6 +123,8 @@ export default function TeamMemberHeader() {
             <div className="text-sm text-gray-500">Team Member</div>
           </div>
         </div>
+
+        {/* Logout moved to sidebar for team members */}
       </div>
     </header>
   );

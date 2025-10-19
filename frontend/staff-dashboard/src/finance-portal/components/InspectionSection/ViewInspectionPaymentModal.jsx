@@ -18,22 +18,50 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
     return undefined;
   };
 
-  // Compose site location from address/city if available
+  // Compose site location from address/city if available (support nested inspectionRequest)
   const siteLocation = get(
     payment.propertyLocation_address && payment.propertyLocation_city ? `${payment.propertyLocation_address}, ${payment.propertyLocation_city}` : undefined,
+    (payment.inspectionRequest && payment.inspectionRequest.propertyLocation_address && payment.inspectionRequest.propertyLocation_city)
+      ? `${payment.inspectionRequest.propertyLocation_address}, ${payment.inspectionRequest.propertyLocation_city}`
+      : undefined,
     payment.siteLocation,
     payment.propertyLocation_address,
-    payment.propertyLocation_city
+    payment.propertyLocation_city,
+    payment.inspectionRequest && payment.inspectionRequest.propertyLocation_address,
+    payment.inspectionRequest && payment.inspectionRequest.propertyLocation_city
   );
 
   // Property type
-  const propertyType = get(payment.propertyType, payment.property_type);
+  const propertyType = get(
+    payment.propertyType,
+    payment.property_type,
+    payment.inspectionRequest && payment.inspectionRequest.propertyType
+  );
 
   // Client info
-  const clientName = get(payment.clientName, payment.client_name, payment.client && payment.client.name);
-  const clientId = get(payment.clientId, payment.client_ID, payment.client && payment.client._id);
-  const email = get(payment.email, payment.client && payment.client.email);
-  const phone = get(payment.phone, payment.phone_number, payment.client && payment.client.phone_number);
+  const clientName = get(
+    payment.clientName,
+    payment.client_name,
+    payment.client && payment.client.name,
+    payment.inspectionRequest && payment.inspectionRequest.client_name
+  );
+  const clientId = get(
+    payment.clientId,
+    payment.client_ID,
+    payment.client && payment.client._id,
+    payment.inspectionRequest && payment.inspectionRequest.client_ID
+  );
+  const email = get(
+    payment.email,
+    payment.client && payment.client.email,
+    payment.inspectionRequest && payment.inspectionRequest.email
+  );
+  const phone = get(
+    payment.phone,
+    payment.phone_number,
+    payment.client && payment.client.phone_number,
+    payment.inspectionRequest && payment.inspectionRequest.phone_number
+  );
 
   // Estimated cost
   const estimatedCost = get(
@@ -50,10 +78,35 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
   const notes = get(payment.notes, payment.description);
 
   // Created date
-  const createdAt = get(payment.createdAt, payment.estimation && payment.estimation.createdAt);
+  const createdAt = get(
+    payment.createdAt,
+    payment.estimation && payment.estimation.createdAt,
+    payment.inspectionRequest && payment.inspectionRequest.createdAt
+  );
 
-  // Status
-  const status = get(payment.status, payment.estimation && payment.estimation.status);
+  // Status normalization (prefer estimation.paymentStatus)
+  const rawTopStatus = get(payment.status);
+  const rawPaymentStatus = get(payment.estimation && payment.estimation.paymentStatus);
+  const status = (() => {
+    if (rawPaymentStatus) {
+      switch (String(rawPaymentStatus).toLowerCase()) {
+        case 'verified': return 'Verified';
+        case 'rejected': return 'Rejected';
+        case 'uploaded': return 'Uploaded';
+        case 'pending': return 'Pending';
+        default: return rawPaymentStatus;
+      }
+    }
+    if (rawTopStatus) {
+      const s = String(rawTopStatus).toLowerCase();
+      if (s.includes('verified')) return 'Verified';
+      if (s.includes('rejected')) return 'Rejected';
+      if (s.includes('upload')) return 'Uploaded';
+      if (s.includes('pending')) return 'Pending';
+      return rawTopStatus;
+    }
+    return 'Unknown';
+  })();
 
   // ID
   const inspectionRequestId = get(payment.inspectionRequestId, payment._id, payment.id);
@@ -89,11 +142,11 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
   };
 
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'approved': return 'bg-green-100 text-green-800';
+    switch (String(status || '').toLowerCase()) {
+      case 'verified': return 'bg-green-100 text-green-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'rejected': return 'bg-red-100 text-red-800';
-      case 'paid': return 'bg-blue-100 text-blue-800';
+      case 'uploaded': return 'bg-blue-100 text-blue-800';
       default: return 'bg-[#F7EED3] text-[#674636]';
     }
   };
@@ -126,7 +179,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                 <FileText size={16} className="mr-2 text-[#AAB396]" />
                 <div>
                   <span className="text-sm text-[#AAB396]">Inspection Request ID</span>
-                  <p className="font-medium font-mono text-xs">{inspectionRequestId || 'N/A'}</p>
+                  <p className="font-medium font-mono text-xs">{inspectionRequestId || (payment.inspectionRequest && payment.inspectionRequest._id) || 'N/A'}</p>
                 </div>
               </div>
 
@@ -162,9 +215,7 @@ export const ViewInspectionPaymentModal = ({ payment, onClose }) => {
                   <Calendar size={16} className="mr-2 text-[#AAB396]" />
                   <div>
                     <span className="text-sm text-[#AAB396]">Request Date</span>
-                    <p className="font-medium">
-                      {new Date(createdAt).toLocaleDateString()}
-                    </p>
+                    <p className="font-medium">{new Date(createdAt).toLocaleString()}</p>
                   </div>
                 </div>
               )}

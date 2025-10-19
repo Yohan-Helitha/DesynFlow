@@ -42,8 +42,12 @@ import milestoneTimelineRoutes from './modules/project/routes/milestoneTimeline.
 import attendanceRoutes from './modules/project/routes/attendance.routes.js';
 import materialRequestRoutes from './modules/project/routes/materialRequest.routes.js';
 import reportRoutes from './modules/project/routes/report.routes.js';
+import inspectionReportRoutes from './modules/project/routes/inspectionReport.routes.js';
+import budgetManagementRoutes from './modules/project/routes/budgetManagement.routes.js';
+import quotationManagementRoutes from './modules/project/routes/quotationManagement.routes.js';
 import fileRoutes from './modules/project/routes/file.routes.js';
 import meetingRoutes from './modules/project/routes/meeting.routes.js';
+import threeDModelRoutes from './modules/project/routes/threeDModel.routes.js';
 import notificationRoutes from './modules/project/routes/notificationRoutes.js';
 import fileServeRoutes from './routes/fileServe.js';
 import uploadRoutes from './routes/upload.routes.js';
@@ -99,8 +103,17 @@ app.use(express.urlencoded({ extended: true })); // Parse urlencoded body
 
 // Static files
 app.use('/reports', express.static('public/reports'));
-// Serve uploaded files (e.g., generated PDFs)
-app.use('/uploads', express.static('uploads'));
+// Serve uploaded files (e.g., generated PDFs) with no-cache headers
+app.use('/uploads', express.static('uploads', {
+  setHeaders: (res, path) => {
+    // Disable caching for PDFs to ensure fresh downloads
+    if (path.endsWith('.pdf')) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+    }
+  }
+}));
 
 // Mount supplier routes
 app.use("/api/suppliers", supplierRouter);
@@ -139,6 +152,10 @@ app.use('/api', milestoneTimelineRoutes);
 app.use('/api', attendanceRoutes);
 app.use('/api', materialRequestRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/project', inspectionReportRoutes);
+app.use('/api/project', budgetManagementRoutes);
+app.use('/api/project', quotationManagementRoutes);
+app.use('/api/project', threeDModelRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', meetingRoutes);
 app.use('/api', fileServeRoutes);

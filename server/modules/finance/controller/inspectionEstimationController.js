@@ -1,6 +1,6 @@
 import * as InspectionEstimationService from '../service/inspectionEstimationService.js';
 
-//View inspection requests with status 'PaymentPending'
+//View inspection requests with pending/assigned/in-progress statuses merged with any estimation (treated as payment pending for finance)
 export async function getPaymentPendingRequests(req, res) {
   try {
     const results = await InspectionEstimationService.getPaymentPendingWithEstimation();
@@ -11,10 +11,10 @@ export async function getPaymentPendingRequests(req, res) {
 }
 
 
-//View inspection requests status 'Pending'
+//View inspection requests by status (normalized lower-case)
 export async function getPendingRequests(req, res) {
   try {
-    const requests = await InspectionEstimationService.getRequestsByStatus('Pending');
+    const requests = await InspectionEstimationService.getRequestsByStatus('pending');
     res.json(requests);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -56,21 +56,30 @@ export async function verifyPayment(req, res) {
   }
 }
 
-// 5. View inspection requests status 'PaymentVerified' and 'PaymentRejected'
+// 5. View inspection requests by status list (maps frontend filters to request statuses)
 export async function getByPaymentStatus(req, res) {
   try {
-    // Accept status as a comma-separated list or default to both
-    let { status } = req.query;
-    let statuses = ['PaymentVerified', 'PaymentRejected'];
-    if (status) {
-      statuses = status.split(',').map(s => s.trim()).filter(s => ['PaymentVerified', 'PaymentRejected'].includes(s));
-      if (statuses.length === 0) {
-        return res.status(400).json({ error: 'Invalid status' });
-      }
+    // Accept paymentStatus as comma-separated list of ['verified','rejected']; default to both
+    let { paymentStatus } = req.query;
+    let statuses = undefined;
+    if (paymentStatus) {
+      statuses = paymentStatus.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
     }
-    // Fetch from inspection_request, then for each inspectionRequestId fetch estimation
-    const results = await InspectionEstimationService.getRequestsAndEstimationsByStatuses(statuses);
+    const results = await InspectionEstimationService.getByPaymentStatuses(statuses);
     res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// Upload receipt and set estimation paymentStatus to 'uploaded'
+export async function uploadReceipt(req, res) {
+  try {
+    const { inspectionRequestId } = req.params;
+    const { paymentReceiptUrl } = req.body;
+    if (!paymentReceiptUrl) return res.status(400).json({ error: 'paymentReceiptUrl is required' });
+    const result = await InspectionEstimationService.uploadReceipt(inspectionRequestId, paymentReceiptUrl);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

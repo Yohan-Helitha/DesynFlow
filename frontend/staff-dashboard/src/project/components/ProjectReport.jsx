@@ -4,24 +4,38 @@ import { FaDownload } from "react-icons/fa";
 export default function ReportsManagement() {
   const [activeTab, setActiveTab] = useState("inspection");
   const [teamLeaderReports, setTeamLeaderReports] = useState([]);
+  const [submittedInspectionReports, setSubmittedInspectionReports] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const inspectionReports = [
-    {
-      title: "Initial Site Inspection",
-      date: "2025-09-10",
-      location: "Colombo",
-      client: "John Smith",
-      fileUrl: "/reports/inspection1.pdf",
-    },
-    {
-      title: "Safety Compliance Check",
-      date: "2025-09-15",
-      location: "Kandy",
-      client: "Sarah Lee",
-      fileUrl: "/reports/inspection2.pdf",
-    },
-  ];
+  // Fetch submitted inspection reports from API
+  useEffect(() => {
+    const fetchSubmittedInspectionReports = async () => {
+      if (activeTab !== "inspection") return;
+      
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch('/api/project/submitted-inspection-reports', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        
+        if (response.ok) {
+          const reports = await response.json();
+          setSubmittedInspectionReports(reports);
+        } else {
+          console.error('Failed to fetch submitted inspection reports');
+          setSubmittedInspectionReports([]);
+        }
+      } catch (error) {
+        console.error('Error fetching submitted inspection reports:', error);
+        setSubmittedInspectionReports([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubmittedInspectionReports();
+  }, [activeTab]);
 
   // Fetch team leader reports from API
   useEffect(() => {
@@ -97,12 +111,15 @@ export default function ReportsManagement() {
       </div>
 
       {/* Report Lists */}
-      <div className="bg-white shadow-md rounded-lg p-6">
+  <div className="bg-cream-light shadow-md rounded-lg p-6">
         {activeTab === "inspection" && (
           <div>
             <h3 className="text-lg font-semibold text-brown-primary mb-4">
               Inspection Reports
             </h3>
+            {loading ? (
+              <div className="text-brown-primary p-4">Loading inspection reports...</div>
+            ) : (
               <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-brown-primary text-white">
@@ -110,29 +127,46 @@ export default function ReportsManagement() {
                   <th className="p-3">Date</th>
                   <th className="p-3">Location</th>
                   <th className="p-3">Client</th>
+                  <th className="p-3">Status</th>
                   <th className="p-3">Download</th>
                 </tr>
               </thead>
               <tbody>
-                {inspectionReports.map((report, i) => (
-                  <tr key={i} className="border-b">
+                {/* Submitted inspection reports */}
+                {submittedInspectionReports.map((report, i) => (
+                  <tr key={`submitted-${report._id || i}`} className="border-b">
                     <td className="p-3">{report.title}</td>
                     <td className="p-3">{report.date}</td>
                     <td className="p-3">{report.location}</td>
                     <td className="p-3">{report.client}</td>
                     <td className="p-3">
-                      <a
-                        href={report.fileUrl}
-                        download
-                        className="flex items-center space-x-1 text-green-primary hover:underline"
-                      >
-                        <FaDownload size={18} /> <span>Download</span>
-                      </a>
+                      <span className={`px-2 py-1 text-xs rounded ${
+                        report.status === 'completed' 
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {report.status || 'Completed'}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      {report.fileUrl ? (
+                        <a
+                          href={report.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center space-x-1 text-green-primary hover:underline"
+                        >
+                          <FaDownload size={18} /> <span>View PDF</span>
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Processing...</span>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            )}
           </div>
         )}
 
@@ -180,7 +214,7 @@ export default function ReportsManagement() {
                         <td className="p-3">
                           {report.filePath && report.status === 'completed' ? (
                             <a
-                              href={`${report.filePath}`}
+                              href={`http://localhost:4000${report.filePath}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center space-x-1 text-green-primary hover:underline"
