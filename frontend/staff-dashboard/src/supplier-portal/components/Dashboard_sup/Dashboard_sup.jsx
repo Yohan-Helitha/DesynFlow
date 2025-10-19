@@ -785,10 +785,8 @@ function Dashboard_sup() {
       {/* Pending Approval Results Panel */}
       <div className={`notif-panel ${notifOpen ? "open" : ""}`}>
         <div className="panel-header">
-          <h3>📋 Pending Approval Results</h3>
           <h3><FaClipboardList /> Pending Approval Results</h3>
-          <button className="close-btn" onClick={() => setNotifOpen(false)}>
-            ✕
+          <button className="close-btn" aria-label="Close notifications" onClick={() => setNotifOpen(false)}>
             <FaTimes />
           </button>
         </div>

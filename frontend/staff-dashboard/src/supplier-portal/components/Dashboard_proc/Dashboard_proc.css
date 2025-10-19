@@ -886,9 +886,11 @@ body {
   gap: 10px;
 }
 
-.analytics-section h2::before {
-  content: "📊";
+.analytics-icon {
   font-size: 20px;
+  margin-right: 8px;
+  color: #674636;
+  vertical-align: middle;
 }
 
 .charts-grid {

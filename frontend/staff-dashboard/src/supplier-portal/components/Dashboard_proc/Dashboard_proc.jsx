@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard_proc.css";
 import { Link, useNavigate } from "react-router-dom";
 import NotificationsProc from "../Notifications_proc/Notifications_proc";
-import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser, FaTruck, FaExchangeAlt, FaShoppingCart } from 'react-icons/fa';
+import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser, FaTruck, FaExchangeAlt, FaShoppingCart, FaChartBar } from 'react-icons/fa';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -497,7 +497,7 @@ function Dashboard_proc() {
 
         {/* Analytics Charts */}
         <div className="analytics-section">
-          <h2>Analytics & Insights</h2>
+          <h2><FaChartBar className="analytics-icon" />Analytics & Insights</h2>
           <div className="charts-grid">
             {/* Order Trends Chart */}
             <div className="chart-container">

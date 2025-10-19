@@ -428,16 +428,19 @@ body {
 .notif-panel {
   position: fixed;
   top: 0;
-  right: -450px;
-  width: 420px;
+  right: -420px;
+  width: 400px;
   height: 100vh;
-  background: linear-gradient(180deg, #FFF8E8 0%, #F7EED3 100%);
-  border-left: 1px solid rgba(103, 70, 54, 0.2);
-  z-index: 1000;
+  background: linear-gradient(180deg, #FFF8E8 0%, rgba(247, 238, 211, 0.95) 100%);
+  border-left: 3px solid rgba(103, 70, 54, 0.1);
+  z-index: 999;
   transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: -4px 0 20px rgba(103, 70, 54, 0.1);
+  box-shadow: -6px 0 25px rgba(103, 70, 54, 0.15);
   display: flex;
   flex-direction: column;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  backdrop-filter: blur(12px);
 }
 
 .notif-panel.open {
@@ -448,27 +451,38 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(103, 70, 54, 0.15);
-  background: linear-gradient(135deg, #674636 0%, #8B4513 100%);
-  color: white;
+  padding: 24px 28px;
+  border-bottom: none;
+  background: none;
+  color: #674636;
 }
 
 .panel-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #674636;
 }
 
 .close-btn {
-  background: none;
+  background: transparent;
   border: none;
-  color: white;
+  color: #674636;
   font-size: 20px;
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  border-radius: 50%;
+  transition: opacity 0.2s ease;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+.close-btn:hover { opacity: 0.8; }
 }
 
 .close-btn:hover {
@@ -477,8 +491,9 @@ body {
 
 .panel-content {
   flex: 1;
-  overflow-y: visible;
-  padding: 0;
+  overflow-y: auto;
+  padding: 16px 16px 20px;
+  background: rgba(255, 248, 232, 0.3);
 }
 
 .empty-notifications {
@@ -509,13 +524,19 @@ body {
 }
 
 .notification-card {
-  background: white;
-  border: 1px solid rgba(103, 70, 54, 0.1);
-  border-radius: 12px;
-  padding: 16px;
+  background: linear-gradient(135deg, #FFF8E8 0%, rgba(247, 238, 211, 0.8) 100%);
+  border: 2px solid rgba(103, 70, 54, 0.15);
+  border-radius: 10px;
+  padding: 14px 16px;
   margin-bottom: 12px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(103, 70, 54, 0.05);
+  box-shadow: 0 6px 20px rgba(103, 70, 54, 0.08);
+.notification-card:hover {
+    background: linear-gradient(135deg, #FFF8E8 0%, #F7EED3 100%);
+    border-color: rgba(103, 70, 54, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(103, 70, 54, 0.15);
+}
 }
 
 .notification-card:hover {
@@ -1488,9 +1509,11 @@ body {
   gap: 10px;
 }
 
-.analytics-section h2::before {
-  content: "📊";
+.analytics-icon {
   font-size: 20px;
+  margin-right: 8px;
+  color: #674636;
+  vertical-align: middle;
 }
 
 .charts-grid {
