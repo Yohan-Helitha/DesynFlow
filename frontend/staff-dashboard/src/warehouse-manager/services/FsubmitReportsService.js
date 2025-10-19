@@ -1,12 +1,9 @@
 // src/services/FsubmitReportsService.js
 
-const BASE_URL = "http://localhost:4000/api/warehouse/submit-reports";
-
 // Fetch all submitted reports
 export const fetchReports = async () => {
   try {
-    console.log("Fetching reports from:", BASE_URL);
-    const res = await fetch(BASE_URL);
+    const res = await fetch("/api/warehouse/submit-reports");
     console.log("Response status:", res.status);
     if (!res.ok) throw new Error("Failed to fetch reports");
     const data = await res.json();
@@ -22,7 +19,7 @@ export const fetchReports = async () => {
 // Submit a new report
 export const submitReport = async (reportData) => {
   try {
-    const res = await fetch(BASE_URL, {
+    const res = await fetch(`/api/warehouse/submit-reports`, {
       method: "POST",
       body: reportData // FormData with file
     });
@@ -44,7 +41,7 @@ export const submitReport = async (reportData) => {
 // Fetch single report by ID
 export const fetchReportById = async (id) => {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`);
+    const res = await fetch(`/api/warehouse/submit-reports/${id}`);
     if (!res.ok) throw new Error("Failed to fetch report");
     const data = await res.json();
     console.log("Fetched report:", data); // debug
@@ -58,7 +55,7 @@ export const fetchReportById = async (id) => {
 // Update report by ID
 export const updateReport = async (id, reportData) => {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
+    const res = await fetch(`/api/warehouse/submit-reports/${id}`, {
       method: "PUT",
       body: reportData // FormData if updating file, otherwise JSON
     });
@@ -79,7 +76,7 @@ export const updateReport = async (id, reportData) => {
 // Delete report by ID
 export const deleteReport = async (id) => {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
+    const res = await fetch(`/api/warehouse/submit-reports/${id}`, {
       method: "DELETE"
     });
 

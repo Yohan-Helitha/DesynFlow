@@ -1,7 +1,7 @@
 // src/services/warrantyClaimService.js
 export const fetchWarrantyClaims = async () => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/warranty_claims"); 
+    const res = await fetch("/api/warehouse/warranty_claims"); 
     if (!res.ok) throw new Error("Failed to fetch warranty claims");
 
     const data = await res.json();
@@ -14,7 +14,7 @@ export const fetchWarrantyClaims = async () => {
 
 export const fetchWarrantyClaimById = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/warranty_claims/${id}`);
+    const res = await fetch(`/api/warehouse/warranty_claims/${id}`);
     if (!res.ok) throw new Error("Failed to fetch warranty claim");
 
     const data = await res.json();
@@ -27,7 +27,7 @@ export const fetchWarrantyClaimById = async (id) => {
 
 export const createWarrantyClaim = async (warrantyClaimData) => {
   try {
-    const res = await fetch("http://localhost:4000/api/warehouse/warranty_claims", {
+    const res = await fetch("/api/warehouse/warranty_claims", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(warrantyClaimData),
@@ -43,7 +43,7 @@ export const createWarrantyClaim = async (warrantyClaimData) => {
 
 export const updateWarrantyClaim = async (id, warrantyClaimData) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/warranty_claims/${id}`, {
+    const res = await fetch(`/api/warehouse/warranty_claims/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(warrantyClaimData),
@@ -59,7 +59,7 @@ export const updateWarrantyClaim = async (id, warrantyClaimData) => {
 
 export const deleteWarrantyClaim = async (id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/warehouse/warranty_claims/${id}`, { 
+    const res = await fetch(`/api/warehouse/warranty_claims/${id}`, { 
       method: "DELETE" 
     });
     if (!res.ok) throw new Error("Failed to delete warranty claim");

@@ -550,7 +550,6 @@ const WarrantyClaims = () => {
                 <th className="border border-gray-300 px-4 py-2 w-32">Warranty ID</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Issue Description</th>
                 <th className="border border-gray-300 px-4 py-2 w-32">Status</th>
-                <th className="border border-gray-300 px-4 py-2 w-40">Finance Reviewer</th>
                 <th className="border border-gray-300 px-4 py-2 w-40">Shipped Replacement</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Shipped At</th>
                 <th className="border border-gray-300 px-4 py-2 w-48">Created At</th>
@@ -578,9 +577,7 @@ const WarrantyClaims = () => {
                     <td className="border border-gray-300 px-4 py-2">{claim.warrantyId}</td>
                     <td className="border border-gray-300 px-4 py-2">{claim.issueDescription}</td>
                     <td className="border border-gray-300 px-4 py-2">{claim.status}</td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {claim.financeReviewerId || "-"}
-                    </td>
+                    
                     <td className="border border-gray-300 px-4 py-2">
                       {claim.warehouseAction?.shippedReplacement ? "Yes" : "No"}
                     </td>
@@ -606,129 +603,161 @@ const WarrantyClaims = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && selectedClaim && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl relative max-h-[90vh] overflow-y-auto">
-            {/* Close Button */}
-            <button
-              onClick={closeModal}
-              className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow border border-gray-200 hover:bg-gray-100 transition-all z-10"
-            >
-              <X className="w-4 h-4 text-gray-700" />
-            </button>
+{/* Modal */}
+{showModal && selectedClaim && (
+  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl relative max-h-[90vh] overflow-hidden flex flex-col">
+      {/* Header */}
+      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold text-gray-900">Claim Details</h2>
+            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+              selectedClaim.status === 'approved' ? 'bg-green-100 text-green-800' :
+              selectedClaim.status === 'rejected' ? 'bg-red-100 text-red-800' :
+              selectedClaim.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+              'bg-gray-100 text-gray-800'
+            }`}>
+              {selectedClaim.status?.charAt(0).toUpperCase() + selectedClaim.status?.slice(1)}
+            </span>
+          </div>
+          <button
+            onClick={closeModal}
+            className="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow transition-all border border-gray-200"
+          >
+            <X className="w-3.5 h-3.5 text-gray-600" />
+          </button>
+        </div>
+        <p className="text-gray-500 text-sm mt-1">ID: {selectedClaim.warrantyId}</p>
+      </div>
 
-            {/* Modal Body */}
-            <div className="p-6">
-              {/* Title Section */}
-              <div className="mb-6 pb-4 border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-[#674636]">Warranty Claim Details</h2>
-                <p className="text-sm text-gray-500 mt-1">ID: {selectedClaim.warrantyId}</p>
-              </div>
-
-              {/* Status Badge */}
-              <div className="mb-6">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
-                  selectedClaim.status === 'approved' ? 'bg-green-100 text-green-800' :
-                  selectedClaim.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                  selectedClaim.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  Status: {selectedClaim.status?.toUpperCase()}
-                </span>
-              </div>
-
-              {/* Main Information Grid */}
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                {/* Left Column */}
-                <div className="space-y-4">
-                  <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-[#674636]">
-                    <h3 className="font-semibold text-gray-700 mb-2">Client Information</h3>
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-xs text-gray-500">Client ID</p>
-                        <p className="font-medium">{selectedClaim.clientId}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-[#674636]">
-                    <h3 className="font-semibold text-gray-700 mb-2">Finance Review</h3>
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-xs text-gray-500">Reviewer ID</p>
-                        <p className="font-medium">{selectedClaim.financeReviewerId || "Not assigned"}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-4">
-                  <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-[#674636]">
-                    <h3 className="font-semibold text-gray-700 mb-2">Warehouse Action</h3>
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-xs text-gray-500">Shipped Replacement</p>
-                        <p className="font-medium">
-                          {selectedClaim.warehouseAction?.shippedReplacement ? "Yes" : "No"}
-                        </p>
-                      </div>
-                      {selectedClaim.warehouseAction?.shippedAt && (
-                        <div>
-                          <p className="text-xs text-gray-500">Shipped At</p>
-                          <p className="font-medium">
-                            {new Date(selectedClaim.warehouseAction.shippedAt).toLocaleString()}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Issue Description */}
-              <div className="mb-6">
-                <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-[#674636]">
-                  <h3 className="font-semibold text-gray-700 mb-2">Issue Description</h3>
-                  <p className="text-gray-900 whitespace-pre-wrap">{selectedClaim.issueDescription}</p>
-                </div>
-              </div>
-
-              {/* Timestamps */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-gray-50 rounded p-3">
-                  <p className="text-gray-600 font-semibold mb-1">Created At</p>
-                  <p className="text-gray-900">{new Date(selectedClaim.createdAt).toLocaleString()}</p>
-                </div>
-                <div className="bg-gray-50 rounded p-3">
-                  <p className="text-gray-600 font-semibold mb-1">Updated At</p>
-                  <p className="text-gray-900">{new Date(selectedClaim.updatedAt).toLocaleString()}</p>
-                </div>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {/* Compact Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Client & Finance */}
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-blue-500 rounded"></div>
+                Client Info
+              </h3>
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wide">Client ID</label>
+                <p className="text-gray-900 font-medium text-sm">{selectedClaim.clientId}</p>
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-200">
-              <button
-                className="px-6 py-2 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg font-semibold transition-colors"
-                onClick={closeModal}
-              >
-                Close
-              </button>
-              <button
-                className="px-6 py-2 bg-gradient-to-r from-[#674636] to-[#8B5A3C] hover:from-[#8B5A3C] hover:to-[#674636] text-white rounded-lg font-semibold flex items-center gap-2 transition-all"
-                onClick={() => {
-                  closeModal();
-                  navigate(`/warehouse-manager/warranty-claims/update/${selectedClaim._id}`);
-                }}
-              >
-                <Edit2 className="w-4 h-4" /> Edit Claim
-              </button>
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-green-500 rounded"></div>
+                Finance
+              </h3>
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wide">Reviewer</label>
+                <p className={`font-medium text-sm ${
+                  selectedClaim.financeReviewerId ? 'text-gray-900' : 'text-gray-400'
+                }`}>
+                  {selectedClaim.financeReviewerId || "Not assigned"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Warehouse & Timeline */}
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-purple-500 rounded"></div>
+                Warehouse
+              </h3>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Replacement Shipped</span>
+                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                    selectedClaim.warehouseAction?.shippedReplacement 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {selectedClaim.warehouseAction?.shippedReplacement ? "Yes" : "No"}
+                  </span>
+                </div>
+                {selectedClaim.warehouseAction?.shippedAt && (
+                  <div>
+                    <label className="text-xs text-gray-500">Shipped Date</label>
+                    <p className="text-gray-900 font-medium text-sm">
+                      {new Date(selectedClaim.warehouseAction.shippedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-orange-500 rounded"></div>
+                Timeline
+              </h3>
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-gray-500">Created</label>
+                  <p className="text-gray-900 font-medium text-sm">
+                    {new Date(selectedClaim.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Updated</label>
+                  <p className="text-gray-900 font-medium text-sm">
+                    {new Date(selectedClaim.updatedAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Issue Description */}
+        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="w-1.5 h-4 bg-red-500 rounded"></div>
+            Issue Description
+          </h3>
+          <div className="bg-white rounded border border-gray-200 p-3">
+            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+              {selectedClaim.issueDescription}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="text-xs text-gray-500">
+            Updated: {new Date(selectedClaim.updatedAt).toLocaleDateString()}
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+            <button
+              className="px-4 py-2 bg-amber-900 hover:bg-amber-800 text-white rounded-lg font-medium text-sm flex items-center gap-1.5 transition-colors"
+              onClick={() => {
+                closeModal();
+                navigate(`/warehouse-manager/warranty-claims/update/${selectedClaim._id}`);
+              }}
+            >
+              <Edit2 className="w-3.5 h-3.5" /> Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

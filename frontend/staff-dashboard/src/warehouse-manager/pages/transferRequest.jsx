@@ -1027,28 +1027,7 @@ const TransferRequest = () => {
 
             {/* Right Column */}
             <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  Personnel
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-gray-500 font-medium">Requested By</label>
-                    <p className="text-sm font-semibold text-gray-900">{selectedRequest.requestedBy}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500 font-medium">Approved By</label>
-                    <p className={`text-sm font-semibold ${
-                      selectedRequest.approvedBy ? 'text-gray-900' : 'text-amber-600'
-                    }`}>
-                      {selectedRequest.approvedBy || "Pending Approval"}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              
 
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
