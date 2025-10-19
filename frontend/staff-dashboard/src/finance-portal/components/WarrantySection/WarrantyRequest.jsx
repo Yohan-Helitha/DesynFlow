@@ -105,10 +105,10 @@ export const WarrantyRequest = () => {
 				</div>
 				<div className="flex space-x-2">
 					<div className="relative">
-						<input
+			            <input
 							type="text"
 							placeholder="Search pending claims..."
-							className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396]"
+										className="pl-3 pr-10 py-2 border border-[#AAB396] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#674636] focus:border-transparent bg-[#F7EED3] placeholder-[#AAB396] text-[#674636]"
 							value={search}
 							onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
 						/>
