@@ -1,6 +1,7 @@
 import InspectorForm from '../model/inspectorDynamicForm.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
 import Assignment from '../model/assignment.model.js';
+import InspectorLocation from '../model/inspectorLocation.model.js';
 import AuthInspectionReport from '../model/report.model.js';
 import PMNotification from '../model/notification.model.js';
 import User from '../model/user.model.js';
@@ -161,6 +162,45 @@ export const generateReportFromForm = async (req, res) => {
     form.report_generated = true;
     await form.save();
 
+    // 🔥 CRITICAL FIX: Update assignment status and inspector availability when report is generated
+    try {
+      const assignment = await Assignment.findOne({ 
+        InspectionRequest_ID: form.InspectionRequest_ID,
+        inspector_ID: req.user._id
+      });
+      
+      if (assignment && assignment.status !== 'completed') {
+        assignment.status = 'completed';
+        assignment.inspection_end_time = new Date();
+        assignment.updatedAt = new Date();
+        await assignment.save();
+        console.log(`Assignment ${assignment._id} status updated to completed via report generation`);
+        
+        // Update inspector location status back to 'available'
+        const inspectorLocation = await InspectorLocation.findOne({ inspector_ID: req.user._id });
+        if (inspectorLocation) {
+          inspectorLocation.status = 'available';
+          await inspectorLocation.save();
+          console.log(`Inspector ${req.user._id} status updated to available via report generation`);
+        }
+        
+        // Send real-time notification to CSR about assignment completion
+        const csrUsers = await User.find({ role: 'customer service representative' });
+        for (let csr of csrUsers) {
+          webSocketService.sendToUser(csr._id.toString(), 'assignment_completed', {
+            assignmentId: assignment._id,
+            inspectorName: req.user.username,
+            propertyAddress: inspectionRequest?.propertyLocation_address || 'N/A',
+            clientName: inspectionRequest?.client_name || 'Client',
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+    } catch (assignmentError) {
+      console.error('Error updating assignment status during report generation:', assignmentError);
+      // Continue with the process even if assignment update fails
+    }
+
     // 🔥 NEW: Create notifications for project managers
     try {
       const projectManagers = await User.find({ role: 'project manager' });
@@ -294,6 +334,16 @@ export const submitAndGenerateReport = async (req, res) => {
         assignment.updatedAt = new Date();
         await assignment.save();
         console.log(`Assignment ${assignment._id} status updated to completed`);
+        
+        // 🔥 CRITICAL FIX: Update inspector location status back to 'available'
+        const inspectorLocation = await InspectorLocation.findOne({ inspector_ID: inspector_ID });
+        if (inspectorLocation) {
+          inspectorLocation.status = 'available';
+          // Reset location back to inspector's base location (remove property assignment location)
+          // Keep the current coordinates but update status to available
+          await inspectorLocation.save();
+          console.log(`Inspector ${inspector_ID} status updated to available`);
+        }
         
         // 🔥 Send real-time notification to CSR about assignment completion
         const csrUsers = await User.find({ role: 'customer service representative' });
