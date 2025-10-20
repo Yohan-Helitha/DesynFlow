@@ -5,7 +5,8 @@ const route = express.Router();
 import { 
   getAllWarrantyClaims, 
   getWarrantyClaimById,
-  updateWarrantyClaim, 
+  updateWarrantyClaim,
+  updateShippingInfo,
 } from "../controller/warrantyClaimsController.js";
 
  import { 
@@ -17,6 +18,7 @@ route.get("/:id",getWarrantyClaimById);
 route.put("/:id",
   validateWarrantyClaimsUpdateMW, 
   updateWarrantyClaim);
+route.put("/:id/shipping", updateShippingInfo);
 
 //export
 export default route;

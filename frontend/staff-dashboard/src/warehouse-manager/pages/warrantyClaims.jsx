@@ -26,16 +26,18 @@ const WarrantyClaims = () => {
   // Filtering logic
   const filteredClaims = claims.filter((claim) => {
     const query = searchQuery.toLowerCase();
-    if (filterBy === "warrantyId") return String(claim.warrantyId || "").toLowerCase().includes(query);
-    if (filterBy === "itemId") return String(claim.itemId || "").toLowerCase().includes(query);
+    if (filterBy === "warrantyId") return String(claim.warrantyId?._id || "").toLowerCase().includes(query);
+    if (filterBy === "materialName") return (claim.warrantyId?.itemId?.materialName || "").toLowerCase().includes(query);
+    if (filterBy === "itemId") return String(claim.warrantyId?.itemId?._id || "").toLowerCase().includes(query);
     if (filterBy === "issueDescription") return (claim.issueDescription || "").toLowerCase().includes(query);
     if (filterBy === "status") return (claim.status || "").toLowerCase().includes(query);
     if (filterBy === "createdAt") return new Date(claim.createdAt).toLocaleDateString().toLowerCase().includes(query);
     if (filterBy === "updatedAt") return new Date(claim.updatedAt).toLocaleDateString().toLowerCase().includes(query);
     // default: all fields
     return (
-      String(claim.warrantyId || "").toLowerCase().includes(query) ||
-      String(claim.itemId || "").toLowerCase().includes(query) ||
+      String(claim.warrantyId?._id || "").toLowerCase().includes(query) ||
+      (claim.warrantyId?.itemId?.materialName || "").toLowerCase().includes(query) ||
+      String(claim.warrantyId?.itemId?._id || "").toLowerCase().includes(query) ||
       (claim.issueDescription || "").toLowerCase().includes(query) ||
       (claim.status || "").toLowerCase().includes(query)
     );
@@ -84,8 +86,30 @@ const WarrantyClaims = () => {
     }
   };
 
+  // Handle shipping toggle
+  const handleShippingToggle = async (claimId, shippedReplacement) => {
+    try {
+      const response = await fetch(`/api/warehouse/warranty_claims/${claimId}/shipping`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shippedReplacement })
+      });
+      
+      if (response.ok) {
+        // Refresh the claims list to show updated data
+        getClaims();
+      } else {
+        console.error('Failed to update shipping status');
+        alert('Failed to update shipping status');
+      }
+    } catch (error) {
+      console.error('Error updating shipping status:', error);
+      alert('Error updating shipping status');
+    }
+  };
+
   return (
-    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 min-h-screen">
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 min-h-screen overflow-y-auto">
       <Navbar />
       <div className="m-6">
         <div className="flex justify-between items-center">
@@ -112,7 +136,7 @@ const WarrantyClaims = () => {
             {showFilter && (
               <div className="absolute right-0 top-full mt-2 bg-white border border-gray-300 rounded shadow-md w-40 z-50">
                 <ul className="text-sm">
-                  {["all", "warrantyId", "itemId", "issueDescription", "status", "createdAt", "updatedAt"].map((key) => (
+                  {["all", "warrantyId", "materialName", "itemId", "issueDescription", "status", "createdAt", "updatedAt"].map((key) => (
                     <li
                       key={key}
                       className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === key ? "bg-gray-200" : ""}`}
@@ -139,6 +163,7 @@ const WarrantyClaims = () => {
                 <th className="border border-gray-300 px-4 py-2">Actions</th>
                 <th className="border border-gray-300 px-4 py-2">Warranty ID</th>
                 <th className="border border-gray-300 px-4 py-2">Material ID</th>
+                <th className="border border-gray-300 px-4 py-2">Material Name</th>
                 <th className="border border-gray-300 px-4 py-2">Claim Status</th>
                 <th className="border border-gray-300 px-4 py-2">Shipped Replacement</th>
                 <th className="border border-gray-300 px-4 py-2">Shipped At</th>
@@ -154,10 +179,32 @@ const WarrantyClaims = () => {
                         <Trash2 className="w-5 h-5 cursor-pointer text-[#674636] hover:text-[#A67C52]" onClick={() => handleDelete(claim._id)} title="Delete" />
                       </div>
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">{claim.warrantyId}</td>
-                    <td className="border border-gray-300 px-4 py-2">{claim.itemId ? String(claim.itemId) : (claim.warranty && claim.warranty.itemId ? String(claim.warranty.itemId) : "-")}</td>
-                    <td className="border border-gray-300 px-4 py-2">{claim.status}</td>
-                    <td className="border border-gray-300 px-4 py-2">{claim.warehouseAction?.shippedReplacement ? "Yes" : "No"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{claim.warrantyId?._id ? String(claim.warrantyId._id).slice(-8) : "-"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{claim.warrantyId?.itemId?._id ? String(claim.warrantyId.itemId._id).slice(-8) : "-"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{claim.warrantyId?.itemId?.materialName || "Unknown Material"}</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        claim.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                        claim.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                        claim.status === 'Replaced' ? 'bg-blue-100 text-blue-800' :
+                        claim.status === 'UnderReview' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {claim.status}
+                      </span>
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <button 
+                        onClick={() => handleShippingToggle(claim._id, !claim.warehouseAction?.shippedReplacement)}
+                        className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                          claim.warehouseAction?.shippedReplacement 
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                        }`}
+                      >
+                        {claim.warehouseAction?.shippedReplacement ? "Yes" : "No"}
+                      </button>
+                    </td>
                     <td className="border border-gray-300 px-4 py-2">{claim.warehouseAction?.shippedAt ? new Date(claim.warehouseAction.shippedAt).toLocaleDateString() : "-"}</td>
                   </tr>
                 ))
