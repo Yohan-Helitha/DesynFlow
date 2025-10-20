@@ -221,8 +221,8 @@ export default function ProjectOverview({ projectId, onBack }) {
                 {project.attachments.map((attachment, i) => {
                   // Handle both object and string attachment formats
                   const isObject = typeof attachment === 'object';
-                  const filename = isObject ? attachment.filename || attachment.originalName : attachment.split('/').pop();
-                  const displayName = isObject ? attachment.originalName || filename : filename?.replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
+                  const filename = isObject ? (attachment.originalName || attachment.filename) : attachment.split('/').pop();
+                  const displayName = isObject ? (attachment.originalName || attachment.filename) : filename?.replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
                   const fileExtension = filename?.split('.').pop()?.toUpperCase();
                   const downloadUrl = `${isObject ? attachment.path : attachment}`;
 
@@ -359,6 +359,28 @@ export default function ProjectOverview({ projectId, onBack }) {
             )}
           </ul>
         </div>
+
+        {/* 3D Model Section */}
+        {project.finalDesign3DUrl && (
+          <div className="bg-cream-light rounded-xl shadow-md p-6 md:col-span-2">
+            <h3 className="text-lg font-semibold text-brown-primary mb-3 flex items-center gap-2">
+              <FaBoxOpen /> 3D Model
+            </h3>
+            <div className="bg-cream-primary rounded-lg p-4">
+              <div className="mb-3">
+                <span className="font-semibold text-brown-primary">3D Model</span>
+                <div className="text-xs text-gray-600">{project.finalDesign3DUrl?.split('/').pop()}</div>
+                {project.designAccessRestriction && <div className="text-xs text-red-brown">Screenshots disabled</div>}
+              </div>
+              <ProjectModelViewer 
+                src={project.finalDesign3DUrl} 
+                restriction={project.designAccessRestriction} 
+                width="100%" 
+                height="500px" 
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal viewer overlay */}

@@ -48,7 +48,7 @@ router.post('/upload', (req, res) => {
               
               // Check file type
               const ext = path.extname(originalName).toLowerCase();
-              const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx', '.txt'];
+              const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx', '.txt', '.glb', '.gltf', '.obj', '.fbx', '.usdz'];
               if (!allowedTypes.includes(ext)) {
                 return res.status(400).json({ error: 'File type not allowed' });
               }
@@ -124,7 +124,12 @@ router.get('/uploads/:filename', (req, res) => {
       '.jpeg': 'image/jpeg',
       '.png': 'image/png',
       '.gif': 'image/gif',
-      '.txt': 'text/plain'
+      '.txt': 'text/plain',
+      '.glb': 'model/gltf-binary',
+      '.gltf': 'model/gltf+json',
+      '.obj': 'application/object',
+      '.fbx': 'application/octet-stream',
+      '.usdz': 'model/usd'
     };
     
     const contentType = contentTypes[ext] || 'application/octet-stream';
