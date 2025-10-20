@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Toaster } from 'sonner'
+import { Toaster, toast } from 'sonner'
 import StaffLogin from './staff-login/staffLogin'
+import SupplierLogin from './staff-login/supplierLogin'
 import CSRDashboard from './CSR-portal/pages/CSRDashboard'
 import InspectorDashboard from './inspector-portal/pages/InspectorDashboard'
 import RequestTable from './CSR-portal/component/requestTable'
@@ -33,6 +34,33 @@ import RateSupplier from './supplier-portal/components/Rate_supplier/Rate_suppli
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
 function App() {
+  // Remove all blocking browser alert boxes globally and replace with toasts
+  useEffect(() => {
+    const oldAlert = window.alert;
+    const oldConfirm = window.confirm;
+    const oldPrompt = window.prompt;
+
+    window.alert = (message) => {
+      try { toast.info(String(message ?? '')); } catch (e) { /* noop */ }
+    };
+    window.confirm = (message) => {
+      try { toast.info(`${message ? String(message) + ' — ' : ''}Action auto-confirmed`); } catch (e) { /* noop */ }
+      // Always proceed without showing a blocking dialog
+      return true;
+    };
+    window.prompt = (message, defaultValue = '') => {
+      try { toast.info(`${message ? String(message) + ' — ' : ''}Prompt skipped`); } catch (e) { /* noop */ }
+      // Return default to avoid blocking input dialogs
+      return defaultValue ?? '';
+    };
+
+    return () => {
+      window.alert = oldAlert;
+      window.confirm = oldConfirm;
+      window.prompt = oldPrompt;
+    };
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen">        
@@ -41,6 +69,12 @@ function App() {
             {/* Staff Login as default route */}
             <Route path="/" element={<StaffLogin />} />
             <Route path="/login" element={<StaffLogin />} />
+            
+            {/* Supplier Login Route */}
+            <Route path="/supplier-login" element={<SupplierLogin />} />
+            
+            {/* Supplier Dashboard Route */}
+            <Route path="/supplier-dashboard" element={<DashboardSup />} />
             
             {/* Role-based Dashboard Routes */}
             <Route path="/csr-dashboard" element={<CSRDashboard />} />

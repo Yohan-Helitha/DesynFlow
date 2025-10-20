@@ -370,7 +370,8 @@
 }
 
 .btn-create-order,
-.btn-view-details {
+.btn-view-details,
+.btn-mark-received {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
@@ -401,6 +402,22 @@
 .btn-view-details:hover {
   background: rgba(139, 90, 60, 0.2);
   transform: translateY(-1px);
+}
+
+/* Mark Received button matches palette and size */
+.btn-mark-received {
+  background: #10b981; /* teal/green for received */
+  color: #fefbf3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.btn-mark-received:hover {
+  background: #0ea371;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 /* ===== Empty State ===== */

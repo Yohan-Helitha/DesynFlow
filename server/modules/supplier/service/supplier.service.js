@@ -16,15 +16,31 @@ const createSupplier = async (data) => {
         let materialDoc = await Material.findOne({ materialName: material.name });
         
         if (!materialDoc) {
-          // Create a new material entry with basic info
+          // Create a new material entry with info from frontend
           materialDoc = new Material({
             materialId: `MAT-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             materialName: material.name,
-            category: 'General', // Default category
-            type: 'Raw Material', // Default type
-            unit: 'piece' // Default unit
+            category: material.category || 'General',
+            type: material.type || 'Raw Material',
+            unit: material.unit || 'piece',
+            warrantyPeriod: material.warrantyPeriod || undefined
           });
           materialDoc = await materialDoc.save();
+        } else {
+          // Update existing material with new info if provided
+          if (material.category && material.category !== materialDoc.category) {
+            materialDoc.category = material.category;
+          }
+          if (material.type && material.type !== materialDoc.type) {
+            materialDoc.type = material.type;
+          }
+          if (material.unit && material.unit !== materialDoc.unit) {
+            materialDoc.unit = material.unit;
+          }
+          if (material.warrantyPeriod !== undefined && material.warrantyPeriod !== materialDoc.warrantyPeriod) {
+            materialDoc.warrantyPeriod = material.warrantyPeriod;
+          }
+          await materialDoc.save();
         }
         
         // Create or update catalog entry
@@ -64,15 +80,31 @@ const updateSupplier = async (id, data) => {
         let materialDoc = await Material.findOne({ materialName: material.name });
         
         if (!materialDoc) {
-          // Create a new material entry with basic info
+          // Create a new material entry with info from frontend
           materialDoc = new Material({
             materialId: `MAT-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             materialName: material.name,
-            category: 'General', // Default category
-            type: 'Raw Material', // Default type
-            unit: 'piece' // Default unit
+            category: material.category || 'General',
+            type: material.type || 'Raw Material',
+            unit: material.unit || 'piece',
+            warrantyPeriod: material.warrantyPeriod || undefined
           });
           materialDoc = await materialDoc.save();
+        } else {
+          // Update existing material with new info if provided
+          if (material.category && material.category !== materialDoc.category) {
+            materialDoc.category = material.category;
+          }
+          if (material.type && material.type !== materialDoc.type) {
+            materialDoc.type = material.type;
+          }
+          if (material.unit && material.unit !== materialDoc.unit) {
+            materialDoc.unit = material.unit;
+          }
+          if (material.warrantyPeriod !== undefined && material.warrantyPeriod !== materialDoc.warrantyPeriod) {
+            materialDoc.warrantyPeriod = material.warrantyPeriod;
+          }
+          await materialDoc.save();
         }
         
         // Create catalog entry

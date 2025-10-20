@@ -181,8 +181,21 @@ function OrderForm({ onOrderCreated }) {
       console.warn('Please add at least one valid item with material, unit, and quantity selected.');
       return;
     }
+    // Compute required fields for backend schema
+    const totalAmount = formattedItems.reduce((sum, it) => sum + (Number(it.unitPrice) * Number(it.qty || 0)), 0);
+    const supplierName = suppliers.find(s => s._id === formData.supplierId)?.companyName || 'Supplier';
+    const safeSupplier = supplierName.replace(/\s+/g, '').slice(0, 16) || 'Supplier';
+    const dateTag = new Date().toISOString().slice(0, 10);
+    const orderName = `PO-${safeSupplier}-${dateTag}`;
+    const requestOrigin = (location.state?.fromReorderRequest) ? 'ReorderAlert' : 'Manual';
+    const reorderRequestId = location.state?.recommended?.requestId || null;
+    
     // Add dummy projectId and requestedBy to satisfy backend validation
     const payload = {
+      name: orderName,
+      requestOrigin,
+      reorderRequestId, // Include the reorder request ID when created from restock alert
+      totalAmount,
       supplierId: formData.supplierId,
       projectId: "64f3a9e1b2c3d45678901234", // dummy ObjectId
       requestedBy: "64f3a9e1b2c3d45678901234", // dummy ObjectId

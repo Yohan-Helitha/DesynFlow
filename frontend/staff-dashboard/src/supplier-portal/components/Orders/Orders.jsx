@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Orders.css';
 import axios from "axios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { toast } from 'sonner';
 import { FaClipboardList, FaPlus, FaBox, FaCheckCircle, FaTimesCircle, FaFileAlt, FaStar, FaHourglassHalf, FaRegClock } from 'react-icons/fa';
 import { generateOrderReceiptPDF } from '../../utils/pdfGenerator';
 
@@ -25,9 +26,23 @@ function Orders() {
   // Function to mark order as received
   const markAsReceived = async (orderId) => {
     try {
-      await axios.put(`/api/purchase-orders/${orderId}/status`, {
-        status: 'Received'
-      });
+      console.log('Marking order as received:', orderId);
+      
+      // Use the new endpoint that handles both order and reorder request updates
+      const response = await axios.put(`/api/purchase-orders/${orderId}/mark-received`);
+      console.log('API response:', response.data);
+
+      // Send notification to warehouse manager via supplier notifications API
+      try {
+        await axios.post('/api/supplier-notifications', {
+          type: 'order_update',
+          purchaseOrderId: orderId,
+          message: 'Order marked as Received by Procurement. Stock has been restocked.',
+          status: 'New'
+        });
+      } catch (notifyErr) {
+        console.warn('Notification to warehouse manager failed (non-blocking):', notifyErr?.response?.data || notifyErr.message);
+      }
       
       // Update local state and maintain sorting order
       setOrders(prevOrders => {
@@ -44,9 +59,16 @@ function Orders() {
           return dateB - dateA; // Newest first
         });
       });
+      
+      // Show appropriate success message based on response
+      const message = response.data?.updatedReorderRequest 
+        ? `Order marked as received. Reorder request ${response.data.updatedReorderRequest} updated to Restocked.`
+        : 'Order marked as received.';
+      toast.success(message);
     } catch (error) {
       console.error('Error marking order as received:', error);
-  console.error('Failed to mark order as received. Please try again.');
+      console.error('Error details:', error.response?.data);
+      toast.error(`Failed to mark order as received: ${error.response?.data?.error || error.message}`);
     }
   };
 

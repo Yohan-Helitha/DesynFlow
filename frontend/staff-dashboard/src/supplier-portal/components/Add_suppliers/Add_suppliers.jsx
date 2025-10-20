@@ -6,6 +6,26 @@ import { Link, useNavigate } from "react-router-dom";
 
 function Add_suppliers() {
   const navigate = useNavigate();
+  
+  // Common material types based on construction industry
+  const materialTypes = [
+    "Cement", "Steel", "Wood", "Glass", "Paint", "Tiles", "Bricks", "Sand", 
+    "Gravel", "Concrete", "Plumbing", "Electrical", "Roofing", "Insulation",
+    "Hardware", "Tools", "Doors", "Windows", "Flooring", "Ceiling", "Walls"
+  ];
+  
+  const materialCategories = [
+    "Construction Materials",
+    "Finishing Materials", 
+    "Structural Materials",
+    "Electrical Materials",
+    "Plumbing Materials",
+    "Hardware & Tools"
+  ];
+  
+  const unitOptions = [
+    "kg", "ton", "m²", "m³", "liter", "piece", "bag", "roll", "sheet", "meter", "feet"
+  ];
   const [formData, setFormData] = useState({
     companyName: "",
     contactName: "",
@@ -17,8 +37,13 @@ function Add_suppliers() {
   });
   const [currentMaterial, setCurrentMaterial] = useState({
     name: "",
+    category: "",
+    type: "",
+    unit: "",
+    warrantyPeriod: "",
     pricePerUnit: ""
   });
+  const [materialError, setMaterialError] = useState("");
   const [phoneError, setPhoneError] = useState("");
 
   const handleChange = (e) => {
@@ -65,29 +90,65 @@ function Add_suppliers() {
   };
 
   const addMaterial = () => {
-    if (currentMaterial.name && currentMaterial.pricePerUnit) {
-      const newMaterial = {
-        name: currentMaterial.name.trim(),
-        pricePerUnit: parseFloat(currentMaterial.pricePerUnit)
-      };
-      
-      // Check if material already exists
-      const existingIndex = formData.materials.findIndex(m => m.name.toLowerCase() === newMaterial.name.toLowerCase());
-      if (existingIndex >= 0) {
-        // Update existing material
-        const updatedMaterials = [...formData.materials];
-        updatedMaterials[existingIndex] = newMaterial;
-        setFormData({ ...formData, materials: updatedMaterials });
-      } else {
-        // Add new material
-        setFormData({ 
-          ...formData, 
-          materials: [...formData.materials, newMaterial]
-        });
-      }
-      
-      setCurrentMaterial({ name: "", pricePerUnit: "" });
+    // Clear previous error
+    setMaterialError("");
+    
+    // Validate required fields
+    if (!currentMaterial.name.trim()) {
+      setMaterialError("Material name is required");
+      return;
     }
+    
+    if (!currentMaterial.category) {
+      setMaterialError("Category is required");
+      return;
+    }
+    
+    if (!currentMaterial.type) {
+      setMaterialError("Type is required");
+      return;
+    }
+    
+    if (!currentMaterial.unit) {
+      setMaterialError("Unit is required");
+      return;
+    }
+    
+    if (!currentMaterial.pricePerUnit || isNaN(parseFloat(currentMaterial.pricePerUnit)) || parseFloat(currentMaterial.pricePerUnit) < 0) {
+      setMaterialError("Valid price per unit is required");
+      return;
+    }
+    
+    const newMaterial = {
+      name: currentMaterial.name.trim(),
+      category: currentMaterial.category,
+      type: currentMaterial.type,
+      unit: currentMaterial.unit,
+      warrantyPeriod: currentMaterial.warrantyPeriod ? parseInt(currentMaterial.warrantyPeriod) : null,
+      pricePerUnit: parseFloat(currentMaterial.pricePerUnit)
+    };
+    
+    // Check if material already exists
+    const existingIndex = formData.materials.findIndex(m => m.name.toLowerCase() === newMaterial.name.toLowerCase());
+    if (existingIndex >= 0) {
+      // Update existing material
+      const updatedMaterials = [...formData.materials];
+      updatedMaterials[existingIndex] = newMaterial;
+      setFormData({ ...formData, materials: updatedMaterials });
+      setMaterialError("Material updated successfully!");
+      setTimeout(() => setMaterialError(""), 2000);
+    } else {
+      // Add new material
+      setFormData({ 
+        ...formData, 
+        materials: [...formData.materials, newMaterial]
+      });
+      setMaterialError("Material added successfully!");
+      setTimeout(() => setMaterialError(""), 2000);
+    }
+    
+    // Reset form
+    setCurrentMaterial({ name: "", category: "", type: "", unit: "", warrantyPeriod: "", pricePerUnit: "" });
   };
 
   const removeMaterial = (index) => {
@@ -121,6 +182,7 @@ function Add_suppliers() {
       deliveryRegions: formData.deliveryRegions
         .split(",")
         .map((region) => region.trim()),
+      // Keep the full materials array with all details for backend processing
     };
 
     try {
@@ -227,8 +289,8 @@ function Add_suppliers() {
             backgroundColor: "#f9f9f9"
           }}>
             <h4 style={{ marginTop: 0, color: "#674636" }}>Add Material</h4>
-            <div style={{ display: "flex", gap: "10px", alignItems: "end" }}>
-              <div style={{ flex: 1 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px", marginBottom: "10px" }}>
+              <div>
                 <label style={{ fontSize: "14px", marginBottom: "5px", display: "block" }}>Material Name</label>
                 <input
                   type="text"
@@ -244,7 +306,81 @@ function Add_suppliers() {
                   }}
                 />
               </div>
-              <div style={{ flex: 1 }}>
+              <div>
+                <label style={{ fontSize: "14px", marginBottom: "5px", display: "block" }}>Category</label>
+                <select
+                  name="category"
+                  value={currentMaterial.category}
+                  onChange={handleMaterialChange}
+                  style={{ 
+                    width: "100%", 
+                    padding: "8px", 
+                    border: "1px solid #ccc", 
+                    borderRadius: "4px" 
+                  }}
+                >
+                  <option value="">Select Category</option>
+                  {materialCategories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: "14px", marginBottom: "5px", display: "block" }}>Type</label>
+                <select
+                  name="type"
+                  value={currentMaterial.type}
+                  onChange={handleMaterialChange}
+                  style={{ 
+                    width: "100%", 
+                    padding: "8px", 
+                    border: "1px solid #ccc", 
+                    borderRadius: "4px" 
+                  }}
+                >
+                  <option value="">Select Type</option>
+                  {materialTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: "14px", marginBottom: "5px", display: "block" }}>Unit</label>
+                <select
+                  name="unit"
+                  value={currentMaterial.unit}
+                  onChange={handleMaterialChange}
+                  style={{ 
+                    width: "100%", 
+                    padding: "8px", 
+                    border: "1px solid #ccc", 
+                    borderRadius: "4px" 
+                  }}
+                >
+                  <option value="">Select Unit</option>
+                  {unitOptions.map(unit => (
+                    <option key={unit} value={unit}>{unit}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: "14px", marginBottom: "5px", display: "block" }}>Warranty Period (months)</label>
+                <input
+                  type="number"
+                  name="warrantyPeriod"
+                  value={currentMaterial.warrantyPeriod}
+                  onChange={handleMaterialChange}
+                  placeholder="Optional"
+                  min="0"
+                  style={{ 
+                    width: "100%", 
+                    padding: "8px", 
+                    border: "1px solid #ccc", 
+                    borderRadius: "4px" 
+                  }}
+                />
+              </div>
+              <div>
                 <label style={{ fontSize: "14px", marginBottom: "5px", display: "block" }}>Price per Unit (LKR)</label>
                 <input
                   type="number"
@@ -262,22 +398,34 @@ function Add_suppliers() {
                   }}
                 />
               </div>
-              <button 
-                type="button" 
-                onClick={addMaterial}
-                style={{ 
-                  padding: "8px 16px", 
-                  backgroundColor: "#674636", 
-                  color: "white", 
-                  border: "none", 
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  height: "36px"
-                }}
-              >
-                Add
-              </button>
             </div>
+            <button 
+              type="button" 
+              onClick={addMaterial}
+              style={{ 
+                padding: "8px 16px", 
+                backgroundColor: "#674636", 
+                color: "white", 
+                border: "none", 
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Add Material
+            </button>
+            {materialError && (
+              <div style={{ 
+                marginTop: "10px", 
+                padding: "8px 12px", 
+                borderRadius: "4px",
+                backgroundColor: materialError.includes("successfully") ? "#d4edda" : "#f8d7da",
+                color: materialError.includes("successfully") ? "#155724" : "#721c24",
+                border: `1px solid ${materialError.includes("successfully") ? "#c3e6cb" : "#f5c6cb"}`,
+                fontSize: "14px"
+              }}>
+                {materialError}
+              </div>
+            )}
           </div>
 
           {/* Materials List */}
@@ -285,7 +433,7 @@ function Add_suppliers() {
             <div className="materials-list">
               <h4 style={{ color: "#674636", marginBottom: "10px" }}>Added Materials:</h4>
               <div style={{ 
-                maxHeight: "200px", 
+                maxHeight: "300px", 
                 overflowY: "auto", 
                 border: "1px solid #ddd", 
                 borderRadius: "5px" 
@@ -294,16 +442,19 @@ function Add_suppliers() {
                   <div 
                     key={index} 
                     style={{ 
-                      display: "flex", 
-                      justifyContent: "space-between", 
-                      alignItems: "center",
-                      padding: "10px 15px", 
+                      padding: "15px", 
                       borderBottom: "1px solid #eee",
                       backgroundColor: index % 2 === 0 ? "#f8f8f8" : "white"
                     }}
                   >
-                    <span style={{ fontWeight: "500" }}>{material.name}</span>
-                    <span style={{ color: "#674636" }}>LKR {material.pricePerUnit.toFixed(2)}/unit</span>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "10px", marginBottom: "10px" }}>
+                      <div><strong>Name:</strong> {material.name}</div>
+                      <div><strong>Category:</strong> {material.category}</div>
+                      <div><strong>Type:</strong> {material.type}</div>
+                      <div><strong>Unit:</strong> {material.unit}</div>
+                      <div><strong>Warranty:</strong> {material.warrantyPeriod ? `${material.warrantyPeriod} months` : 'N/A'}</div>
+                      <div><strong>Price:</strong> LKR {material.pricePerUnit.toFixed(2)}/{material.unit}</div>
+                    </div>
                     <button 
                       type="button" 
                       onClick={() => removeMaterial(index)}

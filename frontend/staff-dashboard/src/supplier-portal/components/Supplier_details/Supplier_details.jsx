@@ -89,7 +89,7 @@ function Supplier_details() {
     if (location.state?.justRated && location.state?.ratedSupplierId && (location.state?.averageRating || location.state?.weightedScore)) {
       setSuppliers(prev => prev.map(s => s._id === location.state.ratedSupplierId ? { ...s, rating: location.state.averageRating ?? location.state.weightedScore } : s));
     }
-  }, [suppliers, location.state]);
+  }, [location.state?.justRated, location.state?.ratedSupplierId, location.state?.averageRating, location.state?.weightedScore]);
 
   // Search filter and sort - searches across all columns and sorts by creation date (newest first)
   const filteredSuppliers = suppliers.filter((s) => {

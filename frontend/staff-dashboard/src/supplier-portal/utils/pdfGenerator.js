@@ -54,18 +54,38 @@ export class PDFGenerator {
    * Private method to add PDF header
    */
   _addHeader(doc, title = 'Order Receipt Report') {
-    // Header background
-    doc.setFillColor(this.brandColor.r, this.brandColor.g, this.brandColor.b);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, 'F');
+    // Professional Header Background
+    doc.setFillColor(139, 69, 19); // #8B4513 - Primary brown color
+    doc.rect(0, 0, doc.internal.pageSize.width, 50, 'F');
     
-    // Title
-    doc.setFontSize(20);
+    // Main Company Branding
+    doc.setFontSize(24);
     doc.setTextColor(255, 255, 255);
-    doc.text(title, 20, 25);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DESYNFLOW', 20, 20);
     
-    // Company name
-    doc.setFontSize(12);
-    doc.text('DesynFlow System', doc.internal.pageSize.width - 20, 25, { align: 'right' });
+    // Subtitle
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Professional Interior Design Services', 20, 32);
+    
+    // Company Contact Information (Right aligned)
+    doc.setFontSize(8);
+    doc.text('123 Business Avenue, Colombo 03', doc.internal.pageSize.width - 20, 15, { align: 'right' });
+    doc.text('Tel: +94 11 234 5678', doc.internal.pageSize.width - 20, 22, { align: 'right' });
+    doc.text('Email: info@desynflow.lk', doc.internal.pageSize.width - 20, 29, { align: 'right' });
+    doc.text('Web: www.desynflow.lk', doc.internal.pageSize.width - 20, 36, { align: 'right' });
+    
+    // Document Title
+    doc.setFontSize(18);
+    doc.setTextColor(139, 69, 19); // Brown color for title
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, 20, 65);
+    
+    // Decorative line under title
+    doc.setDrawColor(139, 69, 19);
+    doc.setLineWidth(1);
+    doc.line(20, 70, doc.internal.pageSize.width - 20, 70);
   }
 
   /**
@@ -83,7 +103,7 @@ export class PDFGenerator {
     ];
 
     orderInfo.forEach((info, index) => {
-      doc.text(info, 20, 55 + (index * 10));
+      doc.text(info, 20, 85 + (index * 10));
     });
   }
 
@@ -93,7 +113,7 @@ export class PDFGenerator {
   _addSupplierInfo(doc, order) {
     doc.setFontSize(14);
     doc.setTextColor(this.brandColor.r, this.brandColor.g, this.brandColor.b);
-    doc.text('Supplier Information', 20, 105);
+    doc.text('Supplier Information', 20, 135);
     
     doc.setFontSize(11);
     doc.setTextColor(0, 0, 0);
@@ -106,7 +126,7 @@ export class PDFGenerator {
     ].filter(Boolean);
 
     supplierInfo.forEach((info, index) => {
-      doc.text(info, 25, 120 + (index * 12));
+      doc.text(info, 25, 150 + (index * 12));
     });
   }
 
@@ -116,7 +136,7 @@ export class PDFGenerator {
   _addSupplierProfileInfo(doc, supplier) {
     doc.setFontSize(14);
     doc.setTextColor(this.brandColor.r, this.brandColor.g, this.brandColor.b);
-    doc.text('Company Details', 20, 60);
+    doc.text('Company Details', 20, 90);
     
     doc.setFontSize(11);
     doc.setTextColor(0, 0, 0);
@@ -131,7 +151,7 @@ export class PDFGenerator {
     ];
 
     profileInfo.forEach((info, index) => {
-      doc.text(info, 25, 75 + (index * 12));
+      doc.text(info, 25, 105 + (index * 12));
     });
   }
 
@@ -139,7 +159,7 @@ export class PDFGenerator {
    * Private method to add supplier materials catalog
    */
   _addSupplierMaterials(doc, supplier) {
-    const startY = 160;
+    const startY = 190;
     
     doc.setFontSize(14);
     doc.setTextColor(this.brandColor.r, this.brandColor.g, this.brandColor.b);
@@ -158,7 +178,7 @@ export class PDFGenerator {
     doc.setFillColor(this.brandColor.r, this.brandColor.g, this.brandColor.b);
     doc.rect(20, startY + 10, 170, 10, 'F');
     doc.text('Material Name', 25, startY + 17);
-    doc.text('Price per Unit', 140, startY + 17);
+    doc.text('Price per Unit (LKR)', 140, startY + 17);
 
     // Materials rows
     let currentY = startY + 25;
@@ -172,7 +192,8 @@ export class PDFGenerator {
       }
 
       doc.text(material.name || 'Unknown', 25, currentY);
-      doc.text(`$${material.pricePerUnit || '0.00'}`, 145, currentY);
+      const price = material.pricePerUnit || 0;
+      doc.text(`LKR ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price)}`, 145, currentY);
       currentY += 12;
     });
   }
@@ -181,7 +202,7 @@ export class PDFGenerator {
    * Private method to add order items table
    */
   _addOrderItemsTable(doc, order) {
-    const startY = 170;
+    const startY = 200;
     
     doc.setFontSize(14);
     doc.setTextColor(this.brandColor.r, this.brandColor.g, this.brandColor.b);
@@ -195,8 +216,8 @@ export class PDFGenerator {
     doc.text('#', 25, startY + 17);
     doc.text('Material', 35, startY + 17);
     doc.text('Qty', 120, startY + 17);
-    doc.text('Unit Price', 140, startY + 17);
-    doc.text('Total', 165, startY + 17);
+    doc.text('Unit Price (LKR)', 140, startY + 17);
+    doc.text('Total (LKR)', 165, startY + 17);
     
     // Table rows
     let currentY = startY + 25;
@@ -213,7 +234,7 @@ export class PDFGenerator {
       const materialName = item.materialId?.materialName || item.materialName || 'Unknown Material';
       const quantity = item.qty || item.quantity || 0;
       const unitPrice = item.unitPrice || item.pricePerUnit || 0;
-      const total = (unitPrice * quantity).toFixed(2);
+      const total = (unitPrice * quantity);
       
       // Alternate row colors
       if (index % 2 === 0) {
@@ -224,8 +245,8 @@ export class PDFGenerator {
       doc.text(`${index + 1}`, 25, currentY);
       doc.text(materialName.length > 30 ? materialName.substring(0, 30) + '...' : materialName, 35, currentY);
       doc.text(`${quantity}`, 125, currentY);
-      doc.text(`$${unitPrice}`, 145, currentY);
-      doc.text(`$${total}`, 170, currentY);
+      doc.text(`LKR ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(unitPrice)}`, 145, currentY);
+      doc.text(`LKR ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(total)}`, 170, currentY);
       
       currentY += 12;
     });
@@ -241,7 +262,7 @@ export class PDFGenerator {
       total + ((item.unitPrice || item.pricePerUnit) * (item.qty || item.quantity) || 0), 0
     ) || 0;
     
-    const currentY = 220 + (order.items?.length || 0) * 12;
+    const currentY = 250 + (order.items?.length || 0) * 12;
     
     // Total amount box
     doc.setFillColor(this.lightGray.r, this.lightGray.g, this.lightGray.b);
@@ -251,7 +272,7 @@ export class PDFGenerator {
     
     doc.setFontSize(12);
     doc.setTextColor(this.brandColor.r, this.brandColor.g, this.brandColor.b);
-    doc.text(`Total: $${totalAmount.toFixed(2)}`, 155, currentY + 10, { align: 'center' });
+    doc.text(`Total: LKR ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalAmount)}`, 155, currentY + 10, { align: 'center' });
   }
 
   /**
@@ -260,15 +281,23 @@ export class PDFGenerator {
   _addFooter(doc) {
     const pageHeight = doc.internal.pageSize.height;
     
+    // Footer background
+    doc.setFillColor(139, 69, 19); // #8B4513 - Primary brown color
+    doc.rect(0, pageHeight - 40, doc.internal.pageSize.width, 40, 'F');
+    
     // Footer line
-    doc.setDrawColor(this.brandColor.r, this.brandColor.g, this.brandColor.b);
-    doc.line(20, pageHeight - 30, doc.internal.pageSize.width - 20, pageHeight - 30);
+    doc.setDrawColor(255, 255, 255);
+    doc.line(20, pageHeight - 35, doc.internal.pageSize.width - 20, pageHeight - 35);
     
     // Footer text
     doc.setFontSize(8);
-    doc.setTextColor(this.darkGray.r, this.darkGray.g, this.darkGray.b);
-    doc.text('This document was automatically generated by DesynFlow System', 20, pageHeight - 20);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, doc.internal.pageSize.width - 20, pageHeight - 20, { align: 'right' });
+    doc.setTextColor(255, 255, 255);
+    doc.text('This document was automatically generated by DESYNFLOW System', 20, pageHeight - 25);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, doc.internal.pageSize.width - 20, pageHeight - 25, { align: 'right' });
+    
+    // Additional footer info
+    doc.setFontSize(7);
+    doc.text('Professional Interior Design & Property Services | Tel: +94 11 234 5678 | Email: info@desynflow.lk', 20, pageHeight - 15);
   }
 }
 

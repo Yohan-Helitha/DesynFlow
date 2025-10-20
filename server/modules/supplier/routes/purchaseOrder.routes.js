@@ -5,7 +5,8 @@ import {
   getPurchaseOrders,
   forwardToFinance,
   financeApproval,
-  getApprovalStatus
+  getApprovalStatus,
+  markAsReceivedAndUpdateReorder
 } from '../controller/purchaseOrder.controller.js';
 
 const router = express.Router();
@@ -30,5 +31,8 @@ router.get('/:id/status', getApprovalStatus);
 
 // Update order status
 router.put('/:id/status', updatePurchaseOrder);
+
+// Mark as received and update reorder request
+router.put('/:id/mark-received', markAsReceivedAndUpdateReorder);
 
 export default router;

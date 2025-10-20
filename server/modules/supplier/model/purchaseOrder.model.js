@@ -5,11 +5,13 @@ import PurchaseOrderItemSchema from "./purchaseOrderItem.model.js";
 
 const PurchaseOrderSchema = new Schema({
   name: { type: String, required: true, trim: true },
-  requestOrigin: { type: String, enum: ['ReorderAlert', 'Manual', 'ProjectMR'] },
+  requestOrigin: { type: String, enum: ['ReorderAlert', 'Manual', 'ProjectMR', 'BudgetApproval'] },
+  reorderRequestId: { type: String }, // Store the stockReorderRequestId when created from restock alert
   projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
   supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier' },
   requestedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-  status: { type: String, enum: ['Draft', 'PendingFinanceApproval', 'Approved', 'Rejected', 'SentToSupplier', 'InProgress', 'Delivered', 'Closed'], default: 'Draft' },
+  requesterName: { type: String }, // For budget approvals when user ID not available
+  status: { type: String, enum: ['Draft', 'PendingFinanceApproval', 'Approved', 'Rejected', 'SentToSupplier', 'InProgress', 'Delivered', 'Closed', 'Received', 'Restocked'], default: 'Draft' },
   items: [PurchaseOrderItemSchema],
   totalAmount: { type: Number },
   financeApproval: {
