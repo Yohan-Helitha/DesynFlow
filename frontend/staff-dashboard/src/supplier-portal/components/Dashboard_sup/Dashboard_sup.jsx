@@ -572,6 +572,79 @@ function Dashboard_sup() {
           </div>
         </div>
 
+        {/* Charts Section */}
+        {!loading && supplierData.chartData && (
+          <div className="charts-section">
+            <div className="charts-grid">
+              <div className="chart-card earnings-chart">
+                <h3>Monthly Earnings Trend</h3>
+                <div className="chart-container">
+                  {supplierData.chartData.monthlyEarnings?.labels?.length > 0 ? (
+                    <Line 
+                      data={supplierData.chartData.monthlyEarnings}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { position: 'top' },
+                          title: { display: true, text: 'Monthly Earnings (LKR)' }
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="chart-placeholder">Loading chart data...</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="chart-card orders-chart">
+                <h3>Order Fulfillment Distribution</h3>
+                <div className="chart-container">
+                  {supplierData.chartData.orderFulfillment?.labels?.length > 0 ? (
+                    <Doughnut 
+                      data={supplierData.chartData.orderFulfillment}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { position: 'bottom' },
+                          title: { display: true, text: 'Order Fulfillment' }
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="chart-placeholder">Loading chart data...</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="chart-card performance-chart">
+                <h3>Material Performance</h3>
+                <div className="chart-container">
+                  {supplierData.chartData.materialPerformance?.labels?.length > 0 ? (
+                    <Bar 
+                      data={supplierData.chartData.materialPerformance}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { position: 'top' },
+                          title: { display: true, text: 'Top Materials by Revenue' }
+                        },
+                        scales: {
+                          y: { beginAtZero: true }
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="chart-placeholder">Loading chart data...</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
 
       {/* Pending Approval Results Panel */}
