@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard_proc.css";
 import { Link, useNavigate } from "react-router-dom";
 import NotificationsProc from "../Notifications_proc/Notifications_proc";
-import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser, FaTruck, FaExchangeAlt, FaShoppingCart, FaChartBar } from 'react-icons/fa';
+import { FaBell, FaUserFriends, FaBox, FaMoneyBillWave, FaTrophy, FaStar, FaUser, FaShoppingCart, FaChartBar, FaExchangeAlt } from 'react-icons/fa';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -340,12 +340,6 @@ function Dashboard_proc() {
             <span>Procurement Officer</span>
             
           </div>
-        </div>
-
-        {/* Floating Dashboard Toggle Button */}
-        <div className="floating-toggle-btn" onClick={() => navigate('/procurement-officer/dashboard_sup')}>
-          <FaTruck className="toggle-icon" />
-          <span>Switch to Supplier View</span>
         </div>
 
         {/* Dashboard Stats Cards */}

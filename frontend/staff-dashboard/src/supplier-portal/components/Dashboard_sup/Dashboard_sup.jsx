@@ -15,7 +15,7 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar, FaUserTie, FaTruck } from 'react-icons/fa';
+import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar, FaTruck } from 'react-icons/fa';
 import { fetchCurrentSupplier, normalizeStatus, getMaterialName } from '../../utils/supplierUtils';
 
 ChartJS.register(
@@ -158,6 +158,7 @@ const generateSupplierChartData = (orders, materials, earnings) => {
 };
 
 function Dashboard_sup() {
+  console.log('🏢 Dashboard_sup component loaded');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [requests, setRequests] = useState([]);
   const navigate = useNavigate();
@@ -207,16 +208,31 @@ function Dashboard_sup() {
   // Fetch pending approval orders
   const fetchPendingOrders = async () => {
     try {
+      // Get current supplier first
+      const supplier = await fetchCurrentSupplier();
+      if (!supplier || !supplier._id) {
+        console.error("No supplier found for current user");
+        setPendingOrders([]);
+        return;
+      }
+
       const response = await axios.get("/api/purchase-orders");
       const allOrders = response.data;
       
-      // Sort all orders by creation date - newest first
-      const sortedOrders = allOrders.sort((a, b) => {
+      // Filter orders for this specific supplier only
+      const supplierOrders = allOrders.filter(order => {
+        const orderSupplierId = order.supplierId?._id || order.supplierId;
+        return orderSupplierId && orderSupplierId.toString() === supplier._id.toString();
+      });
+      
+      // Sort supplier's orders by creation date - newest first
+      const sortedOrders = supplierOrders.sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
         const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
         return dateB - dateA; // Newest first
       });
       
+      // Only show Draft status orders in pending approval
       const pending = sortedOrders.filter(order => order.status === "Draft");
       setPendingOrders(pending);
     } catch (error) {
@@ -434,37 +450,15 @@ function Dashboard_sup() {
           </button>
         </div>
 
-        {/* Dashboard Toggle Section */}
-        <div className="dashboard-toggle">
-          <h3>View Mode</h3>
-          <div className="toggle-buttons">
-            <div 
-              onClick={() => navigate('/procurement-officer')}
-              className="toggle-btn"
-              title="Procurement Officer Dashboard"
-            >
-              <FaUserTie />
-              <span>Procurement View</span>
-            </div>
-            <div 
-              className="toggle-btn active"
-              title="Supplier Dashboard View"
-            >
-              <FaTruck />
-              <span>Supplier View</span>
-            </div>
-          </div>
-        </div>
-
         <ul className="nav">
           <li>
-            <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
+            <Link to="/dashboard_sup">Dashboard</Link>
           </li>
           <li>
-            <Link to="/procurement-officer/order_details_sup">My Orders</Link>
+            <Link to="/order_details_sup">My Orders</Link>
           </li>
           <li>
-            <Link to="/procurement-officer/sample_order_list_sup">Sample Orders</Link>
+            <Link to="/sample_order_list_sup">Sample Orders</Link>
           </li>
           <li>
             <span className="profile-settings-disabled">Profile Settings</span>
@@ -508,12 +502,6 @@ function Dashboard_sup() {
               <span className="notif-text">Pending Approvals</span>
             </button>
           </div>
-        </div>
-
-        {/* Floating Dashboard Toggle Button */}
-        <div className="floating-toggle-btn" onClick={() => navigate('/procurement-officer')}>
-          <FaUserTie className="toggle-icon" />
-          <span>Switch to Procurement View</span>
         </div>
 
         {/* Supplier Stats Overview */}

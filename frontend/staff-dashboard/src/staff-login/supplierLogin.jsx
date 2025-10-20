@@ -71,7 +71,7 @@ const LoginPage = () => {
           
           if (userRole === "supplier") {
             console.log('🏢 Redirecting to supplier dashboard...');
-            navigate("/supplier-dashboard");
+            navigate("/dashboard_sup");
           } else {
             // If role doesn't match any staff role, show error
             console.log('❌ Role not recognized:', userRole);

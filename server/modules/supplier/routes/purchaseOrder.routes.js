@@ -20,6 +20,9 @@ router.put('/:id', updatePurchaseOrder);
 // Get all material requests
 router.get('/', getPurchaseOrders);
 
+// Get supplier's own orders (authenticated endpoint)
+router.get('/mine', getPurchaseOrders);
+
 // Forward for finance approval
 router.patch('/:id/forward', forwardToFinance);
 

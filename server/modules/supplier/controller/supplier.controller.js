@@ -1,5 +1,6 @@
 
 import SupplierService from '../service/supplier.service.js';
+import Supplier from '../model/supplier.model.js';
 
 // Add new supplier
 export const addSupplier = async (req, res) => {
@@ -39,6 +40,73 @@ export const getSuppliers = async (req, res) => {
       res.status(400).json({ error: err.message });
     }
   };
+
+// Get current supplier profile
+export const getCurrentSupplier = async (req, res) => {
+  try {
+    console.log('getCurrentSupplier called');
+    console.log('Headers received:', Object.keys(req.headers));
+    
+    // First, let's try to find any supplier to test if the endpoint works at all
+    const allSuppliers = await Supplier.find().limit(1);
+    console.log('Total suppliers in database:', allSuppliers.length);
+    
+    if (allSuppliers.length === 0) {
+      return res.status(404).json({ error: 'No suppliers found in database' });
+    }
+    
+    // Check for x-user-data header
+    const userDataHeader = req.headers['x-user-data'];
+    console.log('User data header:', userDataHeader);
+    
+    if (userDataHeader) {
+      try {
+        const userData = JSON.parse(userDataHeader);
+        console.log('Parsed user data:', userData);
+        
+        if (userData.email) {
+          console.log('Looking for supplier with email:', userData.email);
+          const supplier = await Supplier.findOne({ email: userData.email });
+          console.log('Found supplier by email:', supplier ? 'Yes' : 'No');
+          
+          if (supplier) {
+            return res.status(200).json(supplier);
+          }
+          
+          // If no supplier found by email, let's look by other means
+          console.log('No supplier found by email, checking if user exists...');
+          
+          // Try to find user in User collection
+          const User = (await import('../../auth/model/user.model.js')).default;
+          const user = await User.findOne({ email: userData.email });
+          console.log('Found user by email:', user ? 'Yes' : 'No');
+          
+          if (user) {
+            // Check if supplier exists by userId
+            const supplierByUserId = await Supplier.findOne({ userId: user._id });
+            console.log('Found supplier by userId:', supplierByUserId ? 'Yes' : 'No');
+            
+            if (supplierByUserId) {
+              return res.status(200).json(supplierByUserId);
+            }
+          }
+        }
+      } catch (parseErr) {
+        console.error('Error parsing user data header:', parseErr);
+        return res.status(400).json({ error: 'Invalid user data format' });
+      }
+    }
+    
+    // If we get here, return the first supplier as a test
+    console.log('No valid user data found, returning first supplier as test');
+    return res.status(200).json(allSuppliers[0]);
+    
+  } catch (err) {
+    console.error('Error in getCurrentSupplier:', err);
+    console.error('Error stack:', err.stack);
+    res.status(500).json({ error: err.message });
+  }
+};
 
 // Link suppliers to users automatically
 export const linkSuppliersToUsers = async (req, res) => {

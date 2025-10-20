@@ -3,8 +3,41 @@ import axios from 'axios';
 // Fetch the supplier object for the currently authenticated user.
 // The backend should infer the supplier from the auth token/session.
 export async function fetchCurrentSupplier() {
-  const res = await axios.get('/api/suppliers/me');
-  return res.data;
+  try {
+    // Get user from localStorage
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    console.log('fetchCurrentSupplier - userData from localStorage:', userData);
+    
+    if (!userData.id && !userData.email) {
+      console.error('No user data found in localStorage:', userData);
+      throw new Error('No authenticated user found');
+    }
+    
+    // Send user data in headers for backend to identify supplier
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (userData.email) {
+      headers['x-user-data'] = JSON.stringify(userData);
+    }
+    
+    console.log('Making request to /api/suppliers/me with headers:', headers);
+    
+    const res = await axios.get('/api/suppliers/me', { headers });
+    console.log('fetchCurrentSupplier - response:', res.data);
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching current supplier:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url
+    });
+    throw error;
+  }
 }
 
 // Normalize status strings for consistent comparisons across the UI.
