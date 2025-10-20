@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import ManuProducts from '../model/manuProductsModel.js';
 import AuditLog from '../model/auditLogModel.js';
 import ThresholdAlert from '../model/thresholdAlertModel.js';
+import { notifyThresholdAlert } from './FnotificationService.js';
 import { validateManuProductUpdate } from '../validators/manuProductsValidator.js';
 
 // Get all manufactured products
@@ -119,8 +120,8 @@ const keyInfo = {
     createdBy: userId || "WM001"
   });
 
-  // Auto-create threshold alert if needed
-  if (data.currentLevel <= manu_product.restockLevel) {
+  // Auto-create threshold alert if needed (compare against reorderLevel)
+  if (typeof data.currentLevel !== 'undefined' && data.currentLevel <= manu_product.reorderLevel) {
     const existingAlert = await ThresholdAlert.findOne({
       materialId: manu_product.materialId,
       inventoryId: manu_product.inventoryId,
@@ -136,6 +137,19 @@ const keyInfo = {
         inventoryId: manu_product.inventoryId,
         inventoryName: manu_product.inventoryName || "Unknown"
       });
+      // Create a warehouse notification for threshold
+      try {
+        await notifyThresholdAlert({
+          materialId: manu_product.materialId,
+          materialName: manu_product.materialName,
+          currentLevel: manu_product.currentLevel,
+          reorderLevel: manu_product.reorderLevel,
+          inventoryId: manu_product.inventoryId,
+          inventoryName: manu_product.inventoryName
+        });
+      } catch (err) {
+        console.error('Failed to create threshold notification', err);
+      }
     }
   }
 

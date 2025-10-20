@@ -153,7 +153,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../component/navbar.jsx";
 import { useNavigate } from "react-router-dom";
-import { Eye, Search, Filter, Calendar, User, FileText } from "lucide-react";
+import { Eye, Search, Filter, Calendar, User, FileText,Download } from "lucide-react";
 import { fetchReports } from "../services/FsubmitReportsService.js";
 
 const SubmitReports = () => {
@@ -260,14 +260,14 @@ const SubmitReports = () => {
             <div key={r._id} className="bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-amber-200 overflow-hidden">
               
               {/* Card Header */}
-              <div className="bg-amber-800 p-4">
+              <div className="bg-amber-100 p-4">
                 <div className="flex items-center gap-3">
                   <div className="bg-white/20 p-2 rounded-lg">
-                    <FileText className="w-5 h-5 text-white" />
+                    <FileText className="w-5 h-5 text-black" />
                   </div>
-                  <h3 className="text-lg font-bold text-white line-clamp-2 flex-1">
+                  <h5 className="text-lg font-bold text-black line-clamp-2 flex-1">
                     {r.reportTitle}
-                  </h3>
+                  </h5>
                 </div>
               </div>
               
@@ -309,26 +309,34 @@ const SubmitReports = () => {
                 </div>
                 
                 {/* Action Button */}
-                <div className="flex justify-center">
-                  <a
-                    href={getFileUrl(r.reportFileUrl)}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => {
-                      // open via window.open as a reliable fallback. Build full URL using current origin.
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
                       const path = getFileUrl(r.reportFileUrl);
                       const fullUrl = `${window.location.origin}${path}`;
-                      try {
-                        window.open(fullUrl, '_blank');
-                      } catch (err) {
-                        console.error('window.open failed', err);
-                      }
+                      window.open(fullUrl, '_blank');
                     }}
-                    className="w-full flex items-center justify-center gap-2 bg-amber-900 hover:bg-amber-800 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-colors duration-200 shadow-sm hover:shadow-md"
+                    className="flex-1 bg-gradient-to-r from-amber-900 to-amber-800 hover:from-amber-800 hover:to-amber-700 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group/btn"
                   >
-                    <Eye className="w-4 h-4" />
-                    View Report
-                  </a>
+                    <Eye className="w-4 h-4 transition-transform duration-300 group-hover/btn:scale-110" />
+                    <span>View Report</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      const path = getFileUrl(r.reportFileUrl);
+                      const fullUrl = `${window.location.origin}${path}`;
+                      // Trigger download
+                      const a = document.createElement('a');
+                      a.href = fullUrl;
+                      a.download = r.reportTitle || 'report';
+                      a.click();
+                    }}
+                    className="p-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center justify-center"
+                    title="Download Report"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>

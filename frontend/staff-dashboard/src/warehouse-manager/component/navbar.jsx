@@ -147,7 +147,32 @@ import { useNotifications } from "../context/notificationContext.jsx";
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { unread, unreadCount } = useNotifications();
+  const { unread, unreadCount, notifications } = useNotifications();
+
+  const getReadIds = () => {
+    try {
+      return JSON.parse(localStorage.getItem("readNotifications")) || [];
+    } catch {
+      return [];
+    }
+  };
+
+  // Compute badge count from the notifications currently provided and persisted read IDs.
+  const badgeCount = (() => {
+    try {
+      const reads = getReadIds();
+      const notifs = notifications || [];
+      const getBaseId = (id) => (id && id.toString().split("_")[0]) || id;
+      const isRead = (notifId) => {
+        if (reads.includes(notifId)) return true;
+        const base = getBaseId(notifId);
+        return reads.includes(base);
+      };
+      return notifs.filter(n => !isRead(n.id)).length;
+    } catch {
+      return unreadCount || 0;
+    }
+  })();
 
   // Professional set with shortened labels for display, but full names for tooltips
   const professionalIcons = [
@@ -204,14 +229,14 @@ const Navbar = () => {
                 <IconComponent className="w-5 h-5" />
 
                 {/* Numeric badge for unread notifications */}
-                {item.fullLabel === "Notifications" && unreadCount > 0 && (
+                {item.fullLabel === "Notifications" && badgeCount > 0 && (
                   <span
                     className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex items-center justify-center text-xs font-semibold text-white bg-red-500 rounded-full"
                     style={{ width: 18, height: 18 }}
-                    aria-label={`${unreadCount} unread notifications`}
-                    title={`${unreadCount} unread notifications`}
+                    aria-label={`${badgeCount} unread notifications`}
+                    title={`${badgeCount} unread notifications`}
                   >
-                    {unreadCount > 9 ? '9+' : unreadCount}
+                    {badgeCount > 9 ? '9+' : badgeCount}
                   </span>
                 )}
 

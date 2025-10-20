@@ -67,7 +67,7 @@ export default function WarehouseMaterialRequests() {
   // Status badge colors
   const getStatusColor = (status) => {
     switch (status) {
-      case "Pending": return "bg-yellow-100 text-yellow-800";
+      case "Pending": return "bg-stone-100 text-stone-700 border border-stone-300";
       case "Approved": return "bg-green-100 text-green-800";
       case "Rejected": return "bg-red-100 text-red-800";
       case "PartiallyApproved": return "bg-blue-100 text-blue-800";
