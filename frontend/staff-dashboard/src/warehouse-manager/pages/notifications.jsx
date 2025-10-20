@@ -596,21 +596,6 @@ const Notifications = () => {
                 )}
               </button>
               <button
-                onClick={() => setActiveTab("transfers")}
-                className={`flex items-center px-4 py-3 font-medium border-b-2 transition-colors ${
-                  activeTab === "transfers"
-                    ? "border-blue-500 text-blue-600 bg-blue-50"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                Transfer Requests
-                {transferRequests.filter(n => !isNotificationRead(n.id)).length > 0 && (
-                  <span className="ml-2 bg-blue-500 text-white px-2 py-0.5 rounded-full text-xs">
-                    {transferRequests.filter(n => !isNotificationRead(n.id)).length}
-                  </span>
-                )}
-              </button>
-              <button
                 onClick={() => setActiveTab("reorders")}
                 className={`flex items-center px-4 py-3 font-medium border-b-2 transition-colors ${
                   activeTab === "reorders"

@@ -147,7 +147,7 @@ import { useNotifications } from "../context/notificationContext.jsx";
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { unread } = useNotifications();
+  const { unread, unreadCount } = useNotifications();
 
   // Professional set with shortened labels for display, but full names for tooltips
   const professionalIcons = [
@@ -203,9 +203,16 @@ const Navbar = () => {
               >
                 <IconComponent className="w-5 h-5" />
 
-                {/* Red dot for unread notifications */}
-                {item.fullLabel === "Notifications" && unread && (
-                  <span className="absolute top-0 right-2 block w-2 h-2 rounded-full bg-red-500"></span>
+                {/* Numeric badge for unread notifications */}
+                {item.fullLabel === "Notifications" && unreadCount > 0 && (
+                  <span
+                    className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex items-center justify-center text-xs font-semibold text-white bg-red-500 rounded-full"
+                    style={{ width: 18, height: 18 }}
+                    aria-label={`${unreadCount} unread notifications`}
+                    title={`${unreadCount} unread notifications`}
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
                 )}
 
                 {/* Show shortened label when active */}
