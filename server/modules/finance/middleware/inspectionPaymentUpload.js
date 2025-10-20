@@ -21,12 +21,21 @@ const storage = multer.diskStorage({
 
 // File filter (accept documents and images)
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp|pdf|doc|docx/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype) || 
-                    file.mimetype === 'application/pdf' ||
-                    file.mimetype === 'application/msword' ||
-                    file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    const allowedExtensions = /jpeg|jpg|png|gif|webp|pdf|doc|docx/;
+    const extname = allowedExtensions.test(path.extname(file.originalname).toLowerCase());
+    
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    
+    const mimetype = allowedMimeTypes.includes(file.mimetype);
 
     if (mimetype && extname) {
         return cb(null, true);

@@ -70,6 +70,45 @@ export async function createClientPayment(req, res) {
   }
 }
 
+// Client updates payment with receipt
+export async function updateClientPayment(req, res) {
+  try {
+    const clientId = req.user?._id;
+    const { paymentId } = req.params;
+    const { receiptUrl, amount } = req.body;
+    
+    // Find payment and verify ownership
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+    
+    if (String(payment.clientId) !== String(clientId)) {
+      return res.status(403).json({ error: 'You are not allowed to update this payment' });
+    }
+    
+    // Only allow updates if payment is still pending
+    if (payment.status !== 'Pending') {
+      return res.status(400).json({ error: 'Cannot update payment that has already been processed' });
+    }
+    
+    // Update payment
+    const updateData = {};
+    if (receiptUrl) updateData.receiptUrl = receiptUrl;
+    if (amount) updateData.amount = Number(amount);
+    
+    const updatedPayment = await Payment.findByIdAndUpdate(
+      paymentId,
+      updateData,
+      { new: true }
+    );
+    
+    return res.json(updatedPayment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 // Client lists own payments (both pending and processed)
 export async function getMyPayments(req, res) {
   try {
