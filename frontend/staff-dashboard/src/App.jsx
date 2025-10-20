@@ -92,7 +92,7 @@ function App() {
             {/* Warehouse Manager routes */}
             <Route path="/warehouse-manager/*" element={<WarehouseDashboard />} />
             
-            {/* Procurement Officer route (maps to supplier portal) */}
+            {/* Procurement Officer route (completely independent) */}
             <Route path="/procurement-officer/*" element={<SupplierDashboard />}>
               <Route index element={<DashboardProc />} />
               <Route path="dashboard" element={<DashboardProc />} />
@@ -106,13 +106,15 @@ function App() {
               <Route path="add_suppliers" element={<AddSuppliers />} />
               <Route path="notifications_proc" element={<NotificationsProc />} />
               <Route path="sample_order" element={<SampleOrder />} />
-              <Route path="dashboard_sup" element={<DashboardSup />} />
-              <Route path="order_details_sup" element={<OrderDetailsSup />} />
               <Route path="sample_order_list" element={<SampleOrderList />} />
-              <Route path="sample_order_list_sup" element={<SampleOrderListSup />} />
               <Route path="sample_order_details/:id" element={<SampleOrderDetails />} />
               <Route path="rate_supplier" element={<RateSupplier />} />
             </Route>
+            
+            {/* Supplier Dashboard - Completely independent route */}
+            <Route path="/dashboard_sup" element={<DashboardSup />} />
+            <Route path="/order_details_sup" element={<OrderDetailsSup />} />
+            <Route path="/sample_order_list_sup" element={<SampleOrderListSup />} />
 
             {/* Finance Manager route */}
             <Route path="/finance-manager/*" element={<FinanceDashboard />} />

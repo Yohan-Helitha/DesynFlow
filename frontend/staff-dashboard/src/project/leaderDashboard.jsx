@@ -72,8 +72,16 @@ export default function LeaderDashboard() {
         // 1. Get all teams with populated member data
         const teamRes = await fetch(`/api/teams/populated`);
         const teamData = await teamRes.json();
+        console.log('Team data received:', teamData);
+        console.log('Looking for leader ID:', leaderId);
+        
         const teamObj = Array.isArray(teamData)
-          ? teamData.find(t => t.leaderId === leaderId || t.leaderId._id === leaderId)
+          ? teamData.find(t => {
+              console.log('Checking team:', t.teamName, 'leaderId:', t.leaderId);
+              // Handle both populated (object) and non-populated (string) leaderId
+              const teamLeaderId = t.leaderId?._id || t.leaderId;
+              return teamLeaderId === leaderId;
+            })
           : null;
         setTeam(teamObj);
         if (!teamObj) throw new Error("No team found for this leader");
@@ -81,9 +89,18 @@ export default function LeaderDashboard() {
         // 2. Get all projects for this team
         const projRes = await fetch(`/api/projects`);
         const projData = await projRes.json();
-        const teamProjects = projData.filter(
-          p => p.assignedTeamId._id === teamObj._id
-        );
+        console.log('All projects:', projData);
+        console.log('Team ID to match:', teamObj._id);
+        
+        const teamProjects = projData.filter(p => {
+          console.log('Checking project:', p.projectName, 'assignedTeamId:', p.assignedTeamId);
+          // Handle both populated (object) and non-populated (string) assignedTeamId
+          if (!p.assignedTeamId) return false;
+          const projectTeamId = p.assignedTeamId._id || p.assignedTeamId;
+          return projectTeamId === teamObj._id;
+        });
+        
+        console.log('Filtered projects for team:', teamProjects);
         setProjects(teamProjects);
 
         // 3. Get reports, meetings, and tasks for the first ongoing project (optional)

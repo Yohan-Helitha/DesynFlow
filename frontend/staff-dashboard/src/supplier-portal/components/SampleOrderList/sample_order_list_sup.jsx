@@ -181,13 +181,13 @@ function SampleOrderListSup() {
 
         <ul className="nav">
           <li>
-            <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
+            <Link to="/dashboard_sup">Dashboard</Link>
           </li>
           <li>
-            <Link to="/procurement-officer/order_details_sup">My Orders</Link>
+            <Link to="/order_details_sup">My Orders</Link>
           </li>
           <li>
-            <Link to="/procurement-officer/sample_order_list_sup" className="active">Sample Orders</Link>
+            <Link to="/sample_order_list_sup" className="active">Sample Orders</Link>
           </li>
           <li>
             <span className="profile-settings-disabled">Profile Settings</span>

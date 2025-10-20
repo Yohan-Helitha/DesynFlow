@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Order_details_sup.css";
 import { Link, useNavigate } from "react-router-dom";
-import { FaBell, FaSearch, FaClipboardList, FaCheckCircle, FaTimesCircle, FaBox, FaSyncAlt, FaHourglassHalf, FaFileAlt, FaTimes, FaUserTie, FaTruck } from 'react-icons/fa';
+import { FaBell, FaSearch, FaClipboardList, FaCheckCircle, FaTimesCircle, FaBox, FaSyncAlt, FaHourglassHalf, FaFileAlt, FaTimes } from 'react-icons/fa';
+import { fetchCurrentSupplier, normalizeStatus, getMaterialName } from '../../utils/supplierUtils';
 
 const API_BASE = "/api/purchase-orders"; // correct backend port
-import { fetchCurrentSupplier, normalizeStatus, getMaterialName } from '../../utils/supplierUtils';
 
 function OrderDetailsSup() {
   const [orders, setOrders] = useState([]);
@@ -47,9 +47,19 @@ function OrderDetailsSup() {
         return;
       }
 
+      // Get user data from localStorage to send with request
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      
       // Use supplier-scoped endpoint. Backend should return orders for authenticated supplier.
-      // We prefer a dedicated "mine" endpoint that infers supplier from auth token.
-      const res = await axios.get(`${API_BASE}/mine`);
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (userData.email) {
+        headers['x-user-data'] = JSON.stringify(userData);
+      }
+      
+      const res = await axios.get(`${API_BASE}/mine`, { headers });
       setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error fetching orders:", err);
@@ -177,34 +187,15 @@ function OrderDetailsSup() {
           </button>
         </div>
 
-        {/* Dashboard Toggle Section */}
-        <div className="dashboard-toggle">
-          <h3>View Mode</h3>
-          <div className="toggle-buttons">
-            <div 
-              onClick={() => navigate('/procurement-officer')}
-              className="toggle-btn"
-              title="Procurement Officer Dashboard"
-            >
-              <FaUserTie />
-              <span>Procurement Officer</span>
-            </div>
-            <div className="toggle-btn active" title="Supplier Dashboard">
-              <FaTruck />
-              <span>Supplier Portal</span>
-            </div>
-          </div>
-        </div>
-
         <ul className="sidebar-nav">
           <li>
-            <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
+            <Link to="/dashboard_sup">Dashboard</Link>
           </li>
           <li className="active">
-            <Link to="/procurement-officer/order_details_sup">My Orders</Link>
+            <Link to="/order_details_sup">My Orders</Link>
           </li>
           <li>
-            <Link to="/procurement-officer/sample_order_list_sup">Sample Orders</Link>
+            <Link to="/sample_order_list_sup">Sample Orders</Link>
           </li>
           <li>
             <span className="profile-settings-disabled">Profile Settings</span>

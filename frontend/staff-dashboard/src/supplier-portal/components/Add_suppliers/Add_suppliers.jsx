@@ -31,6 +31,8 @@ function Add_suppliers() {
     contactName: "",
     email: "",
     phone: "",
+    password: "",
+    confirmPassword: "",
     materialTypes: "",
     deliveryRegions: "",
     materials: []
@@ -45,10 +47,40 @@ function Add_suppliers() {
   });
   const [materialError, setMaterialError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Clear previous errors
+    setPasswordError("");
+    
+    // Validate password strength
+    if (name === "password" && value) {
+      if (value.length < 8) {
+        setPasswordError("Password must be at least 8 characters long");
+      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
+        setPasswordError("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+      }
+    }
+    
+    // Validate password confirmation
+    if (name === "confirmPassword" && value) {
+      if (value !== formData.password) {
+        setPasswordError("Passwords do not match");
+      }
+    }
+    
+    // Check if passwords match when password is changed
+    if (name === "password" && formData.confirmPassword && value !== formData.confirmPassword) {
+      setPasswordError("Passwords do not match");
+    }
   };
 
   const handlePhoneChange = (e) => {
@@ -170,14 +202,36 @@ function Add_suppliers() {
       return;
     }
 
+    // Validate password
+    if (!formData.password) {
+      setPasswordError('Password is required');
+      return;
+    }
+    
+    if (formData.password.length < 8) {
+      setPasswordError('Password must be at least 8 characters long');
+      return;
+    }
+    
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      setPasswordError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+      return;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
     if (formData.materials.length === 0) {
-        console.log("Please add at least one material with its price.");
+      setMaterialError("Please add at least one material with its price.");
       return;
     }
 
     // Convert comma-separated fields into arrays for schema
+    const { confirmPassword, ...supplierData } = formData;
     const formattedData = {
-      ...formData,
+      ...supplierData,
       materialTypes: formData.materials.map(m => m.name), // Use material names from the materials array
       deliveryRegions: formData.deliveryRegions
         .split(",")
@@ -186,8 +240,10 @@ function Add_suppliers() {
     };
 
     try {
+      console.log("Sending supplier data:", formattedData);
       const response = await axios.post("/api/suppliers", formattedData);
-      console.log(`Supplier "${formData.companyName}" has been added successfully!`);
+      console.log("Supplier creation response:", response.data);
+      alert(`Supplier "${formData.companyName}" has been added successfully!`);
       
       // Navigate to supplier details page after successful addition
       navigate('/procurement-officer/supplier_details', {
@@ -199,7 +255,8 @@ function Add_suppliers() {
       });
     } catch (err) {
       console.error("Error adding supplier:", err);
-        console.error("Failed to add supplier. Please try again.");
+      console.error("Error response:", err.response?.data);
+      alert(`Failed to add supplier: ${err.response?.data?.error || err.message || 'Please try again.'}`);
     }
   };
 
@@ -274,6 +331,42 @@ function Add_suppliers() {
               {phoneError}
             </div>
           )}
+        </div>
+
+        {/* Password */}
+        <div className="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handlePasswordChange}
+            placeholder="Enter password (min. 8 characters)"
+            required
+            className={passwordError ? 'phone-input-error' : 'phone-input-normal'}
+          />
+          <small style={{ color: "#666", fontSize: "12px", display: "block", marginTop: "5px" }}>
+            Password must be at least 8 characters with uppercase, lowercase, and number
+          </small>
+          {passwordError && (
+            <div className="phone-error-message">
+              {passwordError}
+            </div>
+          )}
+        </div>
+
+        {/* Confirm Password */}
+        <div className="form-group">
+          <label>Confirm Password</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handlePasswordChange}
+            placeholder="Confirm password"
+            required
+            className={passwordError && passwordError.includes("match") ? 'phone-input-error' : 'phone-input-normal'}
+          />
         </div>
 
         {/* Materials with Pricing */}

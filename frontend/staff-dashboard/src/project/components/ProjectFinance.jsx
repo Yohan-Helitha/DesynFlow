@@ -28,13 +28,24 @@ export default function ProjectFinance() {
     setLoading(true);
     try {
       const token = localStorage.getItem('authToken');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      console.log('🔑 Auth Debug - Token:', token ? 'Present' : 'Missing');
+      console.log('👤 Auth Debug - User:', user);
+      console.log('🎭 Auth Debug - User Role:', user.role);
+      
       const response = await fetch("/api/project/estimations", {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
+      
+      console.log('📡 API Response Status:', response.status);
+      console.log('📡 API Response OK:', response.ok);
+      
       if (response.ok) {
         const data = await response.json();
         setEstimations(Array.isArray(data) ? data : []);
       } else {
+        console.error('❌ API Error:', response.status, response.statusText);
         setEstimations([]);
       }
     } catch (err) {
@@ -48,13 +59,19 @@ export default function ProjectFinance() {
   const fetchQuotations = async () => {
     try {
       const token = localStorage.getItem('authToken');
+      console.log('🔑 Quotations Debug - Token:', token ? 'Present' : 'Missing');
+      
       const response = await fetch("/api/project/quotations", {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
+      
+      console.log('📡 Quotations Response Status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
         setQuotations(Array.isArray(data) ? data : []);
       } else {
+        console.error('❌ Quotations API Error:', response.status, response.statusText);
         setQuotations([]);
       }
     } catch (err) {

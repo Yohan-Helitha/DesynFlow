@@ -87,7 +87,8 @@ const LoginPage = () => {
           } else if (userRole === "finance manager") {
             navigate("/finance-manager");
           } else if (userRole === "supplier") {
-            navigate("/dashboard_sup");
+            // Suppliers should use the supplier login portal
+            setError("Please use the supplier login portal to access your account.");
           } else {
             // If role doesn't match any staff role, show error
             console.log('❌ Role not recognized:', userRole);

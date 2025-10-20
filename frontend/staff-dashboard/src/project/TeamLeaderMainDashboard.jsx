@@ -49,9 +49,12 @@ export default function TeamLeaderMainDashboard() {
           const projData = await projRes.json();
           console.log('All projects:', projData);
           
-          const teamProjects = projData.filter(
-            p => p.assignedTeamId._id === teamObj._id
-          );
+          const teamProjects = projData.filter(p => {
+            // Handle both populated (object) and non-populated (string) assignedTeamId
+            if (!p.assignedTeamId) return false;
+            const projectTeamId = p.assignedTeamId._id || p.assignedTeamId;
+            return projectTeamId === teamObj._id;
+          });
           
           console.log('Filtered projects for team:', teamProjects);
           

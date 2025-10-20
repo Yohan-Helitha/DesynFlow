@@ -77,11 +77,21 @@ const updatePurchaseOrder = async (id, data) => {
   return await PurchaseOrder.findByIdAndUpdate(id, data, { new: true });
 };
 
-const getAllPurchaseOrders = async (status) => {
-  const filter = status ? { status } : {};
+const getAllPurchaseOrders = async (status, supplierId = null) => {
+  const filter = {};
+  
+  if (status) {
+    filter.status = status;
+  }
+  
+  if (supplierId) {
+    filter.supplierId = supplierId;
+  }
+  
   return await PurchaseOrder.find(filter)
-    .populate('supplierId', 'companyName')
-    .populate('items.materialId', 'materialName unit');
+    .populate('supplierId', 'companyName email')
+    .populate('items.materialId', 'materialName unit')
+    .sort({ createdAt: -1 }); // Show newest first
 };
 
 const forwardToFinance = async (id) => {
