@@ -144,7 +144,10 @@ export const AddWarrantyModal = ({ onClose, onCreated }) => {
         params: { projectId },
         headers: { Authorization: `Bearer ${token}` },
       });
-      const list = Array.isArray(res.data) ? res.data : [];
+      const list = Array.isArray(res.data) ? res.data.slice() : [];
+      if (list.some((it) => it && (it.createdAt || it.createdDate))) {
+        list.sort((a, b) => new Date(b.createdAt || b.createdDate || 0) - new Date(a.createdAt || a.createdDate || 0));
+      }
       const ids = new Set(
         list
           .map((w) => {

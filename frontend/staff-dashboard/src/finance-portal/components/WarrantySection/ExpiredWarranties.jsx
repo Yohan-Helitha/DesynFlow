@@ -37,7 +37,15 @@ export const ExpiredWarranties = () => {
     }
   };
 
-  const filteredWarranties = expiredWarranties
+  const sourceExpired = (() => {
+    const arr = Array.isArray(expiredWarranties) ? expiredWarranties.slice() : [];
+    if (arr.some((it) => it && (it.createdAt || it.createdDate))) {
+      arr.sort((a, b) => new Date(b.createdAt || b.createdDate || 0) - new Date(a.createdAt || a.createdDate || 0));
+    }
+    return arr;
+  })();
+
+  const filteredWarranties = sourceExpired
     .filter(
       (w) =>
         w.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,8 +53,10 @@ export const ExpiredWarranties = () => {
         w.clientName.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
-      if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
-      if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
+      const aVal = a[sortField];
+      const bVal = b[sortField];
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
 

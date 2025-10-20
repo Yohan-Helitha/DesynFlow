@@ -8,6 +8,7 @@ export const WarrantyRequestHistory = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [search, setSearch] = useState('');
+	// default to newest-first (resolved newest first)
 	const [sortField, setSortField] = useState('updatedAt');
 	const [sortDirection, setSortDirection] = useState('desc');
 	const [currentPage, setCurrentPage] = useState(1);
@@ -26,7 +27,11 @@ export const WarrantyRequestHistory = () => {
 			const resp = await fetch('/api/claims/resolved');
 			if (!resp.ok) throw new Error('Failed to load resolved warranty claims');
 			const data = await resp.json();
-			setClaims(Array.isArray(data) ? data : []);
+			const arr = Array.isArray(data) ? data.slice() : [];
+			if (arr.some((it) => it && (it.updatedAt || it.createdAt || it.createdDate))) {
+				arr.sort((a, b) => new Date(b.updatedAt || b.createdAt || b.createdDate || 0) - new Date(a.updatedAt || a.createdAt || a.createdDate || 0));
+			}
+			setClaims(arr);
 		} catch (e) {
 			setError(e.message);
 		} finally {

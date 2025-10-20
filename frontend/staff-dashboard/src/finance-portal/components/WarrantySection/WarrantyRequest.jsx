@@ -8,6 +8,7 @@ export const WarrantyRequest = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [search, setSearch] = useState('');
+	// default to newest-first
 	const [sortField, setSortField] = useState('createdAt');
 	const [sortDirection, setSortDirection] = useState('desc');
 	const [currentPage, setCurrentPage] = useState(1);
@@ -26,7 +27,12 @@ export const WarrantyRequest = () => {
 			const resp = await fetch('/api/claims/pending');
 			if (!resp.ok) throw new Error('Failed to load pending warranty claims');
 			const data = await resp.json();
-			setClaims(Array.isArray(data) ? data : []);
+			// Sort newest-first if createdAt/createdDate present
+			const arr = Array.isArray(data) ? data.slice() : [];
+			if (arr.some((it) => it && (it.createdAt || it.createdDate))) {
+				arr.sort((a, b) => new Date(b.createdAt || b.createdDate || 0) - new Date(a.createdAt || a.createdDate || 0));
+			}
+			setClaims(arr);
 		} catch (e) {
 			setError(e.message);
 		} finally {

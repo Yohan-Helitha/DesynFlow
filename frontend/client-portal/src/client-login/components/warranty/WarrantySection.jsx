@@ -217,7 +217,12 @@ export default function WarrantySection() {
       const me = await axios.get('http://localhost:3000/api/user/me', { headers: { Authorization: `Bearer ${token}` } });
       const meId = me.data?._id || me.data?.id;
       const res = await axios.get('http://localhost:3000/api/warranties', { params: { clientId: meId }, headers: { Authorization: `Bearer ${token}` } });
-      setWarranties(res.data || []);
+      // Sort newest-first when possible
+      const arr = Array.isArray(res.data) ? res.data.slice() : [];
+      if (arr.some((it) => it && (it.createdAt || it.createdDate))) {
+        arr.sort((a, b) => new Date(b.createdAt || b.createdDate || 0) - new Date(a.createdAt || a.createdDate || 0));
+      }
+      setWarranties(arr || []);
     } catch (e) { setError(e?.response?.data?.error || e?.message || 'Failed to load warranties'); }
     finally { setLoading(false); }
   };
@@ -228,7 +233,11 @@ export default function WarrantySection() {
       const me = await axios.get('http://localhost:3000/api/user/me', { headers: { Authorization: `Bearer ${token}` } });
       const meId = me.data?._id || me.data?.id;
       const res = await axios.get('http://localhost:3000/api/claims', { params: { clientId: meId }, headers: { Authorization: `Bearer ${token}` } });
-      setClaims(res.data || []);
+      const arr = Array.isArray(res.data) ? res.data.slice() : [];
+      if (arr.some((it) => it && (it.createdAt || it.createdDate))) {
+        arr.sort((a, b) => new Date(b.createdAt || b.createdDate || 0) - new Date(a.createdAt || a.createdDate || 0));
+      }
+      setClaims(arr || []);
     } catch (e) { setError(e?.response?.data?.error || e?.message || 'Failed to load claims'); }
     finally { setLoading(false); }
   };

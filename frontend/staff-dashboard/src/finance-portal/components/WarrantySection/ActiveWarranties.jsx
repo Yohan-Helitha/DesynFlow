@@ -46,8 +46,17 @@ export const ActiveWarranties = () => {
     }
   };
 
-  // Filter + Sort
-  const filteredWarranties = activeWarranties
+  // Prepare source array; if records have createdAt/createdDate prefer newest-first by default
+  const sourceActive = (() => {
+    const arr = Array.isArray(activeWarranties) ? activeWarranties.slice() : [];
+    if (arr.some((it) => it && (it.createdAt || it.createdDate))) {
+      arr.sort((a, b) => new Date(b.createdAt || b.createdDate || 0) - new Date(a.createdAt || a.createdDate || 0));
+    }
+    return arr;
+  })();
+
+  // Filter + Sort (respecting user sort controls)
+  const filteredWarranties = sourceActive
     .filter(
       (warranty) =>
         warranty.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -55,8 +64,10 @@ export const ActiveWarranties = () => {
         warranty.clientName.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
-      if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
-      if (a[sortField] > b[sortField]) return sortDirection === 'asc' ? 1 : -1;
+      const aVal = a[sortField];
+      const bVal = b[sortField];
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
 

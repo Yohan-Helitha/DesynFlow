@@ -19,8 +19,9 @@ export const AllWarranties = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedWarranty, setSelectedWarranty] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState('_id');
-  const [sortDirection, setSortDirection] = useState('asc');
+  // Default to newest-first (createdAt desc)
+  const [sortField, setSortField] = useState('createdAt');
+  const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [allWarranties, setAllWarranties] = useState([]);
@@ -41,7 +42,17 @@ export const AllWarranties = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setAllWarranties(Array.isArray(data) ? data : []);
+      // Ensure newest-first ordering when possible (createdAt or createdDate)
+      const arr = Array.isArray(data) ? data.slice() : [];
+      const hasDates = arr.some((it) => it && (it.createdAt || it.createdDate));
+      if (hasDates) {
+        arr.sort((a, b) => {
+          const da = new Date(a.createdAt || a.createdDate || 0).getTime();
+          const db = new Date(b.createdAt || b.createdDate || 0).getTime();
+          return db - da; // newest first
+        });
+      }
+      setAllWarranties(arr);
     } catch (err) {
       console.error('Error fetching warranties:', err);
       setError('Failed to load warranties. Please try again.');

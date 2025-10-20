@@ -169,7 +169,6 @@ export const PendingPurchaseOrders = () => {
             <thead className="bg-[#F7EED3]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Order Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Project Name</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Action</th>
               </tr>
@@ -178,7 +177,6 @@ export const PendingPurchaseOrders = () => {
               {paginatedPOs.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.name || po._id}</td>
-                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{getProjectDisplay(po)}</td>
                   <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {(Number(po.totalAmount)||0).toLocaleString()}</td>
                   <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
@@ -192,7 +190,7 @@ export const PendingPurchaseOrders = () => {
               ))}
               {paginatedPOs.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-[#AAB396]">
+                  <td colSpan={3} className="px-6 py-4 text-center text-[#AAB396]">
                     No purchase orders found
                   </td>
                 </tr>
