@@ -289,6 +289,7 @@ export default function PaymentSection() {
       const all = (res.data || []).map(it => ({
         ...it,
         _id: it._id || it.inspectionRequestId,
+        inspectionRequestId: it.inspectionRequestId, // Keep the original inspectionRequestId
         propertyLocation: it.inspectionRequest?.propertyLocation_address || it.propertyLocation || '',
         estimatedCost: it.estimatedCost || it.estimate || 0,
         paymentReceiptUrl: it.paymentReceiptUrl || it.paymentReceipt || null,
@@ -372,12 +373,20 @@ export default function PaymentSection() {
           );
         }
       } else {
-        // Inspection payments update
-        await axios.put(
-          `http://localhost:3000/api/payments/${selectedPaymentId}`,
-          { receiptUrl: url },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        // Inspection payments - find the inspection request ID
+        const inspectionPayment = inspectionPayments.find(item => String(item._id) === String(selectedPaymentId));
+        if (inspectionPayment) {
+          // Use the inspectionRequestId from the inspection payment data
+          const inspectionRequestId = inspectionPayment.inspectionRequestId || inspectionPayment._id;
+          console.log('Uploading receipt for inspection request:', inspectionRequestId);
+          await axios.post(
+            `http://localhost:3000/api/inspection-estimation/${inspectionRequestId}/upload-receipt`,
+            { paymentReceiptUrl: url },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } else {
+          console.error('Inspection payment not found for ID:', selectedPaymentId);
+        }
       }
       fetchInspectionPayments();
       fetchProjects();

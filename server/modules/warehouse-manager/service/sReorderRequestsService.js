@@ -1,6 +1,6 @@
 import sReorderRequests from "../model/sReorderRequestsModel.js";
 import AuditLog from "../model/auditLogModel.js";
-import { notifySReorderStatusChange } from './FnotificationService.js';
+import { notifySReorderStatusChange } from './notificationService.js';
 
 // Get all stock reorder requests
 export const getAllsReorderRequestsService = async () => {

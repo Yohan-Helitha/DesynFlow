@@ -102,3 +102,24 @@ export const deleteNotificationService = async (id, deletedBy) => {
 
   return notification;
 };
+
+// Function to notify about sReorder status changes
+export const notifySReorderStatusChange = async (data) => {
+  try {
+    const { stockReorderRequestId, materialId, materialName, status, inventoryId, inventoryName } = data;
+    
+    const notification = {
+      type: 'stock_reorder_status',
+      title: `Stock Reorder Request ${status}`,
+      message: `Stock reorder request for ${materialName} (ID: ${materialId}) has been ${status.toLowerCase()} in inventory ${inventoryName}`,
+      relatedId: stockReorderRequestId,
+      recipient: 'warehouse_manager',
+      isRead: false
+    };
+    
+    return await addNotificationService(notification, 'System');
+  } catch (error) {
+    console.error('Error creating sReorder status notification:', error);
+    throw error;
+  }
+};
