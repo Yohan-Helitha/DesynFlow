@@ -54,6 +54,18 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
   const [inspectorActions, setInspectorActions] = useState({}); // Track inspector actions {inspectorId: {action: 'accepted/declined', reason: ''}}
   const [pendingAssignments, setPendingAssignments] = useState([]); // Track assignments waiting for inspector response
 
+  // Utility function to validate coordinates
+  const isValidCoordinate = (lat, lng) => {
+    return lat !== undefined && 
+           lng !== undefined &&
+           lat !== null && 
+           lng !== null &&
+           !isNaN(lat) && 
+           !isNaN(lng) &&
+           lat >= -90 && lat <= 90 &&
+           lng >= -180 && lng <= 180;
+  };
+
   // Get address suggestions from available inspection requests
   const getAddressSuggestions = (inputValue) => {
     if (!inputValue || inputValue.length < 2) {
@@ -91,36 +103,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
   const handleSuggestionClick = (suggestion) => {
     setSearchAddress(suggestion.address);
     setShowSuggestions(false);
-    setSearchedProperty({
-      address: suggestion.address,
-      display_name: suggestion.fullAddress || suggestion.address,
-      latitude: suggestion.latitude,
-      longitude: suggestion.longitude,
-      source: 'database'
-    });
-
-    // Calculate distances to all inspectors
-    const inspectorsWithDist = inspectors.map(inspector => {
-      const distance = calculateDistance(
-        suggestion.latitude,
-        suggestion.longitude,
-        inspector.inspector_latitude,
-        inspector.inspector_longitude
-      );
-
-      return {
-        ...inspector,
-        distanceToProperty: distance,
-        withinLimit: distance <= 35 // 35km limit
-      };
-    });
-
-    // Sort by distance (nearest first)
-    inspectorsWithDist.sort((a, b) => a.distanceToProperty - b.distanceToProperty);
-    setInspectorsWithDistances(inspectorsWithDist);
-
-    const nearestInspectors = inspectorsWithDist.filter(i => i.withinLimit);
-    setMessage(`✅ Found property (from database)! ${nearestInspectors.length} inspectors within 35km radius`);
+    setMessage('🔍 Click the Search button to find this property on the map.');
   };
 
   // Fetch data
@@ -148,6 +131,10 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
         '/api/assignment/list',
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      console.log('📋 Fetched inspection requests:', requestsRes.data.length);
+      console.log('👨‍🔧 Fetched inspectors:', inspectorsRes.data.length);
+      console.log('📊 Fetched assignments:', assignmentsRes.data.length);
       
       setInspectionRequests(requestsRes.data);
       setInspectors(inspectorsRes.data);
@@ -192,8 +179,8 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
         req.property_full_address?.toLowerCase().includes(address.toLowerCase())
       );
       
-      if (matchingRequest) {
-        console.log('✅ Found matching address in database:', matchingRequest.propertyLocation_address);
+      if (matchingRequest && isValidCoordinate(matchingRequest.property_latitude, matchingRequest.property_longitude)) {
+        console.log('✅ Found matching address in database with valid coordinates:', matchingRequest.propertyLocation_address);
         return {
           latitude: matchingRequest.property_latitude,
           longitude: matchingRequest.property_longitude,
@@ -279,6 +266,15 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
 
       // Calculate distances to all inspectors
       const inspectorsWithDist = inspectors.map(inspector => {
+        // Only calculate distance if inspector has valid coordinates
+        if (!isValidCoordinate(inspector.inspector_latitude, inspector.inspector_longitude)) {
+          return {
+            ...inspector,
+            distanceToProperty: Infinity,
+            withinLimit: false
+          };
+        }
+
         const distance = calculateDistance(
           location.latitude,
           location.longitude,
@@ -458,7 +454,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
 
   // Get map center based on search results
   const getMapCenter = () => {
-    if (searchedProperty) {
+    if (searchedProperty && isValidCoordinate(searchedProperty.latitude, searchedProperty.longitude)) {
       return [searchedProperty.latitude, searchedProperty.longitude];
     }
     return [7.8731, 80.7718]; // Default to Sri Lanka center
@@ -553,28 +549,36 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
           {/* Available Addresses Quick Reference */}
           {inspectionRequests.length > 0 && (
             <div className="bg-cream-light rounded-lg p-4 border-2 border-brown-light/30">
-              <h4 className="text-sm font-semibold text-brown-primary mb-3">📋 Available Addresses (click to search):</h4>
+              <h4 className="text-sm font-semibold text-brown-primary mb-3">📋 Available Addresses (click to search): ({inspectionRequests.length} total)</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                {inspectionRequests.slice(0, 6).map((request, index) => (
+                {inspectionRequests
+                  .filter(request => request.propertyLocation_address) // Show all addresses that have an address
+                  .slice(0, 8).map((request, index) => (
                   <button
                     key={index}
                     onClick={() => {
                       setSearchAddress(request.propertyLocation_address);
-                      handleSuggestionClick({
-                        address: request.propertyLocation_address,
-                        fullAddress: request.property_full_address,
-                        city: request.propertyLocation_city,
-                        latitude: request.property_latitude,
-                        longitude: request.property_longitude
-                      });
+                      setMessage('🔍 Click the Search button to find this property on the map.');
                     }}
                     className="text-left p-3 bg-white rounded-lg hover:bg-soft-green/10 hover:border-soft-green transition-all duration-200 border-2 border-brown-light/20 hover:scale-[1.02] hover:shadow-md"
                   >
-                    <div className="font-semibold text-dark-brown">{request.propertyLocation_address}</div>
+                    <div className="font-semibold text-dark-brown">
+                      {request.propertyLocation_address}
+                    </div>
                     <div className="text-xs text-brown-primary/70 mt-1">{request.propertyLocation_city}</div>
+                    {request.client_name && (
+                      <div className="text-xs text-gray-500">Client: {request.client_name}</div>
+                    )}
                   </button>
                 ))}
               </div>
+              
+              {/* Show count information */}
+              {inspectionRequests.length > 8 && (
+                <div className="mt-2 text-xs text-brown-primary/70">
+                  Showing 8 of {inspectionRequests.length} total addresses
+                </div>
+              )}
             </div>
           )}
 
@@ -701,91 +705,120 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
           <p className="text-sm text-brown-primary">Click on markers to select inspectors or view property details</p>
         </div>
         <div className="h-96">
-          <MapContainer
-            center={getMapCenter()}
-            zoom={getMapZoom()}
-            style={{ height: '100%', width: '100%' }}
-            key={searchedProperty ? `${searchedProperty.latitude}-${searchedProperty.longitude}` : 'default'}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            {/* Searched Property Marker */}
-            {searchedProperty && (
-              <Marker
-                position={[searchedProperty.latitude, searchedProperty.longitude]}
-                icon={markerIcons.searchedProperty}
-              >
-                <Popup>
-                  <div className="text-center p-2 max-w-xs">
-                    <h4 className="font-bold text-red-800 mb-2">🔴 Searched Property</h4>
-                    <p className="text-sm text-gray-700 mb-2">{searchedProperty.address}</p>
-                    <p className="text-xs text-gray-600">{searchedProperty.display_name}</p>
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-
-            {/* Inspector Markers */}
-            {(inspectorsWithDistances.length > 0 ? inspectorsWithDistances : inspectors).map((inspector) => {
-              const isSelected = selectedInspectorFromMap?._id === inspector._id;
-              const icon = isSelected ? markerIcons.selectedInspector :
-                          inspector.status === 'available' ? markerIcons.availableInspector :
-                          markerIcons.busyInspector;
-
+          {/* Map Error Boundary */}
+          {(() => {
+            try {
+              const center = getMapCenter();
+              const zoom = getMapZoom();
+              
               return (
-                <Marker
-                  key={inspector._id}
-                  position={[inspector.inspector_latitude, inspector.inspector_longitude]}
-                  icon={icon}
-                  eventHandlers={{
-                    click: () => handleInspectorClick(inspector),
-                  }}
+                <MapContainer
+                  center={center}
+                  zoom={zoom}
+                  style={{ height: '100%', width: '100%' }}
+                  key={searchedProperty ? `${searchedProperty.latitude}-${searchedProperty.longitude}` : 'default'}
                 >
-                  <Popup>
-                    <div className="text-center p-2 max-w-xs">
-                      <h4 className={`font-bold mb-2 ${
-                        inspector.status === 'available' ? 'text-blue-800' : 'text-yellow-800'
-                      }`}>
-                        {inspector.status === 'available' ? '🔵' : '🟡'} {inspector.inspector_ID?.username ? 
-                          inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
-                          : 'Inspector Name Missing'}
-                      </h4>
-                      <div className="text-sm space-y-1">
-                        <p><strong>Status:</strong> <span className={`font-semibold ${
-                          inspector.status === 'available' ? 'text-green-600' : 'text-orange-600'
-                        }`}>{inspector.status}</span></p>
-                        <p><strong>Location:</strong> {inspector.current_address}</p>
-                        <p><strong>Region:</strong> {inspector.region}</p>
-                        {inspector.distanceToProperty && (
-                          <p><strong>Distance:</strong> <span className={`font-semibold ${
-                            inspector.withinLimit ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {inspector.distanceToProperty.toFixed(1)}km
-                            {!inspector.withinLimit && ' (Outside 35km limit)'}
-                          </span></p>
-                        )}
-                      </div>
-                      <button 
-                        onClick={() => handleInspectorClick(inspector)}
-                        className={`mt-3 w-full py-2 px-3 rounded text-sm font-semibold transition-colors ${
-                          isSelected 
-                            ? 'bg-green-600 text-white' 
-                            : inspector.status === 'available'
-                              ? 'bg-blue-600 text-white hover:bg-blue-700'
-                              : 'bg-yellow-600 text-white hover:bg-yellow-700'
-                        }`}
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+
+                  {/* Searched Property Marker */}
+                  {searchedProperty && isValidCoordinate(searchedProperty.latitude, searchedProperty.longitude) && (
+                    <Marker
+                      position={[searchedProperty.latitude, searchedProperty.longitude]}
+                      icon={markerIcons.searchedProperty}
+                    >
+                      <Popup>
+                        <div className="text-center p-2 max-w-xs">
+                          <h4 className="font-bold text-red-800 mb-2">🔴 Searched Property</h4>
+                          <p className="text-sm text-gray-700 mb-2">{searchedProperty.address}</p>
+                          <p className="text-xs text-gray-600">{searchedProperty.display_name}</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  )}
+
+                  {/* Inspector Markers */}
+                  {(inspectorsWithDistances.length > 0 ? inspectorsWithDistances : inspectors)
+                    .filter(inspector => isValidCoordinate(inspector.inspector_latitude, inspector.inspector_longitude))
+                    .map((inspector) => {
+                    const isSelected = selectedInspectorFromMap?._id === inspector._id;
+                    const icon = isSelected ? markerIcons.selectedInspector :
+                                inspector.status === 'available' ? markerIcons.availableInspector :
+                                markerIcons.busyInspector;
+
+                    return (
+                      <Marker
+                        key={inspector._id}
+                        position={[inspector.inspector_latitude, inspector.inspector_longitude]}
+                        icon={icon}
+                        eventHandlers={{
+                          click: () => handleInspectorClick(inspector),
+                        }}
                       >
-                        {isSelected ? '✅ Selected' : '📍 Select Inspector'}
-                      </button>
-                    </div>
-                  </Popup>
-                </Marker>
+                        <Popup>
+                          <div className="text-center p-2 max-w-xs">
+                            <h4 className={`font-bold mb-2 ${
+                              inspector.status === 'available' ? 'text-blue-800' : 'text-yellow-800'
+                            }`}>
+                              {inspector.status === 'available' ? '🔵' : '🟡'} {inspector.inspector_ID?.username ? 
+                                inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
+                                : 'Inspector Name Missing'}
+                            </h4>
+                            <div className="text-sm space-y-1">
+                              <p><strong>Status:</strong> <span className={`font-semibold ${
+                                inspector.status === 'available' ? 'text-green-600' : 'text-orange-600'
+                              }`}>{inspector.status}</span></p>
+                              <p><strong>Location:</strong> {inspector.current_address}</p>
+                              <p><strong>Region:</strong> {inspector.region}</p>
+                              {inspector.distanceToProperty && inspector.distanceToProperty !== Infinity && (
+                                <p><strong>Distance:</strong> <span className={`font-semibold ${
+                                  inspector.withinLimit ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {inspector.distanceToProperty.toFixed(1)}km
+                                  {!inspector.withinLimit && ' (Outside 35km limit)'}
+                                </span></p>
+                              )}
+                            </div>
+                            <button 
+                              onClick={() => handleInspectorClick(inspector)}
+                              className={`mt-3 w-full py-2 px-3 rounded text-sm font-semibold transition-colors ${
+                                isSelected 
+                                  ? 'bg-green-600 text-white' 
+                                  : inspector.status === 'available'
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                              }`}
+                            >
+                              {isSelected ? '✅ Selected' : '📍 Select Inspector'}
+                            </button>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+                  })}
+                </MapContainer>
               );
-            })}
-          </MapContainer>
+            } catch (error) {
+              console.error('Map rendering error:', error);
+              return (
+                <div className="flex items-center justify-center h-full bg-gray-100 rounded-lg">
+                  <div className="text-center p-8">
+                    <div className="text-4xl mb-4">🗺️</div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Map Loading Error</h3>
+                    <p className="text-sm text-gray-600 mb-4">Unable to load map. Please try refreshing the page.</p>
+                    <button 
+                      onClick={() => window.location.reload()} 
+                      className="px-4 py-2 bg-soft-green text-white rounded-lg hover:bg-green-600"
+                    >
+                      Refresh Page
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+          })()}
         </div>
       </div>
 

@@ -148,10 +148,65 @@ const InspectionForm = ({ selectedAssignment }) => {
         return;
       }
       
+      // Submit the inspection form
       await axios.post(`${API_BASE}/submit/${form._id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert("Form submitted successfully!");
+
+      // Complete the associated assignment if it exists
+      if (form.InspectionRequest_ID) {
+        try {
+          // Get the assignment for this inspection request
+          const assignmentRes = await axios.get('/api/assignment/my', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          const assignments = assignmentRes.data;
+          const relatedAssignment = assignments.find(assignment => 
+            assignment.InspectionRequest_ID && 
+            assignment.InspectionRequest_ID.toString() === form.InspectionRequest_ID.toString()
+          );
+
+          if (relatedAssignment) {
+            // Update assignment status to completed
+            await axios.patch(
+              `/api/assignment/status/${relatedAssignment._id}`,
+              {
+                status: 'completed',
+                inspection_end_time: new Date(),
+                action_notes: 'Inspection completed - report submitted by inspector'
+              },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            // Update inspector status back to available
+            const userRes = await axios.get('/api/auth/me', {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (userRes.data) {
+              await axios.post(
+                '/api/inspector-location/update',
+                {
+                  inspectorId: userRes.data._id,
+                  status: 'available'
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+            }
+            
+            alert("Form submitted successfully! Inspection completed and you are now available for new assignments.");
+          } else {
+            alert("Form submitted successfully!");
+          }
+        } catch (assignmentError) {
+          console.error('Error completing assignment:', assignmentError);
+          alert("Form submitted successfully, but there was an issue completing the assignment. Please contact support.");
+        }
+      } else {
+        alert("Form submitted successfully!");
+      }
+      
       fetchForms();
     } catch (err) {
       console.error(err);

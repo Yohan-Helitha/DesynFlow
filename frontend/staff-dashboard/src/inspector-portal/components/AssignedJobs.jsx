@@ -34,7 +34,14 @@ const AssignedJobs = ({ inspector, onCollectData }) => {
       );
 
       console.log('Assignments Response:', response.data);
-      setAssignments(response.data || []);
+      
+      // Filter assignments to only show non-completed ones
+      const activeAssignments = (response.data || []).filter(assignment => 
+        assignment.status !== 'completed' && assignment.status !== 'cancelled'
+      );
+      
+      console.log('Active (non-completed) assignments:', activeAssignments);
+      setAssignments(activeAssignments);
     } catch (err) {
       console.error('Error fetching assignments:', err);
       if (err.response?.status === 401) {
