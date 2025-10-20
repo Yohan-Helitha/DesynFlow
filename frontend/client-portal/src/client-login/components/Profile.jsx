@@ -102,7 +102,7 @@ const Profile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
-    window.location.href = "/login";
+    navigate("/");
   };
 
   if (!user) return <p className="text-center mt-10">Loading profile...</p>;

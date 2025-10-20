@@ -71,7 +71,7 @@ function App() {
           path="/dashboard" 
           element={
             <ProtectedRoute>
-              <InspectionRequestDashboard />
+              <Profile />
             </ProtectedRoute>
           } 
         />

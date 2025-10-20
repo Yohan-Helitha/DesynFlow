@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -23,9 +24,12 @@ export const Header = () => {
             {['Home', 'Gallery', 'About Us', 'Contact Us'].map(item => <Link key={item} to={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`} className="text-brown-secondary-600 hover:text-brown-primary-700 font-medium transition-colors">
                 {item}
               </Link>)}
-            <Link to="/login" className="bg-brown-primary-700 text-cream px-4 py-2 rounded hover:bg-brown-primary-800 transition-colors flex items-center">
+            <button onClick={() => {
+              const token = localStorage.getItem('authToken');
+              if (token) navigate('/dashboard'); else navigate('/login');
+            }} className="bg-brown-primary-700 text-cream px-4 py-2 rounded hover:bg-brown-primary-800 transition-colors flex items-center">
               Get Started
-            </Link>
+            </button>
           </nav>
           {/* Mobile Menu Button */}
           <button className="md:hidden text-brown-secondary-600" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -40,9 +44,9 @@ export const Header = () => {
               {['Home', 'Gallery', 'About Us', 'Contact Us'].map(item => <Link key={item} to={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`} className="text-brown-secondary-600 hover:text-brown-primary-700 font-medium transition-colors" onClick={() => setIsMenuOpen(false)}>
                   {item}
                 </Link>)}
-              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="bg-brown-primary-700 text-cream px-4 py-2 rounded hover:bg-brown-primary-800 transition-colors w-full mt-2 flex items-center justify-center">
+              <button onClick={() => { setIsMenuOpen(false); const token = localStorage.getItem('authToken'); if (token) navigate('/dashboard'); else navigate('/login'); }} className="bg-brown-primary-700 text-cream px-4 py-2 rounded hover:bg-brown-primary-800 transition-colors w-full mt-2 flex items-center justify-center">
                 Get Started
-              </Link>
+              </button>
             </div>
           </div>}
       </div>

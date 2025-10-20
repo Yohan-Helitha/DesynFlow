@@ -23,8 +23,13 @@ RUN npx tailwindcss init -p || true
 # Copy source code
 COPY . .
 
-# Expose port 3000
-EXPOSE 3000
+# Set environment variables for hot reload
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+ENV FAST_REFRESH=true
 
-# Start development server
+# Expose port 5174 (React's default Vite port)
+EXPOSE 5174
+
+# Start development server with hot reload enabled
 CMD ["npm", "start"]
