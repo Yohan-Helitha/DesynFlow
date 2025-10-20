@@ -405,7 +405,7 @@ export default function AssignTeams() {
 
           {modalOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-8 w-full max-w-lg shadow-lg">
+                <div className="bg-cream-light rounded-lg p-8 w-full max-w-lg shadow-lg border border-brown-100">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-brown-primary">{editProjectId ? "Edit Project" : "Create New Project"}</h3>
                   <button className="text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => { setModalOpen(false); setForm({ name: "", client: "", team: "", teamId: "", dueDate: "", startDate: "", inspectionReport: null }); setEditProjectId(null); }}>&times;</button>
@@ -415,7 +415,7 @@ export default function AssignTeams() {
                     <label className="block text-brown-primary font-semibold mb-1">Project Name *</label>
                     <input
                       type="text"
-                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
                       value={form.name}
                       onChange={e => setForm({ ...form, name: e.target.value })}
                       placeholder="Enter project name"
@@ -425,7 +425,7 @@ export default function AssignTeams() {
                     <label className="block text-brown-primary font-semibold mb-1">Client Email *</label>
                     <input
                       type="email"
-                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
                       value={form.client}
                       onChange={e => setForm({ ...form, client: e.target.value })}
                       placeholder="Enter client email address"
@@ -485,16 +485,16 @@ export default function AssignTeams() {
                   <div>
                     <label className="block text-brown-primary font-semibold mb-1">Inspection Report (PDF) *</label>
                     {editProjectId && projects.find(p => p._id === editProjectId)?.attachments?.length > 0 && (
-                      <div className="mb-2 p-2 bg-blue-50 rounded border">
-                        <div className="text-sm text-blue-700 font-medium">Current file:</div>
+                      <div className="mb-2 p-2 bg-cream-light rounded border border-brown-100">
+                        <div className="text-sm text-brown-primary font-medium">Current file:</div>
                         {projects.find(p => p._id === editProjectId)?.attachments?.map((attachment, i) => (
-                          <div key={i} className="text-xs text-blue-600 mt-1">
+                          <div key={i} className="text-xs text-brown-secondary mt-1">
                             📄 {attachment.originalName || attachment.filename || 'Inspection Report'}
                             <a 
                               href={`${attachment.path}`} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="ml-2 underline hover:text-blue-800"
+                              className="ml-2 underline text-brown-primary hover:text-brown-secondary"
                             >
                               View
                             </a>
@@ -513,13 +513,13 @@ export default function AssignTeams() {
                       }}
                     />
                     {form.inspectionReport && (
-                      <div className="text-xs text-green-700 mt-1">Selected: {form.inspectionReport.name}</div>
+                      <div className="text-xs text-green-primary mt-1">Selected: {form.inspectionReport.name}</div>
                     )}
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 mt-8">
                   <button
-                    className="px-4 py-2 rounded bg-gray-200 text-brown-primary font-semibold hover:bg-gray-300"
+                    className="px-4 py-2 rounded bg-cream-primary text-brown-primary font-semibold hover:bg-cream-light border border-brown-100"
                     onClick={() => {
                       setModalOpen(false);
                       setForm({ name: "", client: "", team: "", dueDate: "" });
@@ -529,7 +529,7 @@ export default function AssignTeams() {
                     Cancel
                   </button>
                   <button
-                    className="px-4 py-2 rounded bg-brown-primary text-white font-semibold hover:bg-opacity-90"
+                    className="px-4 py-2 rounded bg-brown-primary text-white font-semibold hover:bg-brown-primary-300 disabled:opacity-60"
                     onClick={handleSave}
                     disabled={(() => {
                       const isEditing = !!editProjectId;

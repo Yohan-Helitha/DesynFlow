@@ -21,6 +21,7 @@ export const PendingPurchaseOrders = () => {
   const [sortField, setSortField] = useState('createdAt');
   const [sortDirection, setSortDirection] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
+  const [projectNames, setProjectNames] = useState({}); // cache projectId -> projectName
 
   const fetchApprovals = () => {
     setLoading(true);
@@ -45,6 +46,48 @@ export const PendingPurchaseOrders = () => {
     fetchApprovals();
   }, []);
 
+  // Fetch missing project names when list updates
+  useEffect(() => {
+    if (!Array.isArray(pendingPurchaseOrders) || pendingPurchaseOrders.length === 0) return;
+    const cache = { ...projectNames };
+    const toFetch = new Set();
+    for (const po of pendingPurchaseOrders) {
+      const p = po.projectId;
+      if (!p) continue;
+      if (typeof p === 'object') {
+        if (p._id && p.projectName) cache[p._id] = p.projectName;
+        else if (p._id && !cache[p._id]) toFetch.add(p._id);
+      } else if (typeof p === 'string') {
+        if (!cache[p]) toFetch.add(p);
+      }
+    }
+    if (toFetch.size === 0) {
+      if (Object.keys(cache).length !== Object.keys(projectNames).length) setProjectNames(cache);
+      return;
+    }
+    Promise.all(Array.from(toFetch).map(async (id) => {
+      try {
+        const res = await fetch(`/api/projects/${id}`);
+        if (!res.ok) return;
+        const proj = await res.json();
+        if (proj && proj._id && proj.projectName) cache[proj._id] = proj.projectName;
+      } catch (_) { /* ignore */ }
+    })).then(() => setProjectNames((prev) => ({ ...prev, ...cache })));
+  }, [pendingPurchaseOrders]);
+
+  const getProjectDisplay = (po) => {
+    const p = po.projectId;
+    if (!p) return '';
+    if (typeof p === 'object') {
+      if (p.projectName) return p.projectName;
+      if (p._id && projectNames[p._id]) return projectNames[p._id];
+      if (p._id) return String(p._id);
+      return '';
+    }
+    // string id
+    return projectNames[p] || p;
+  };
+
   if (loading) {
     return <div className="p-8 text-center text-[#AAB396]">Loading pending purchase orders...</div>;
   }
@@ -67,12 +110,15 @@ export const PendingPurchaseOrders = () => {
 
   // Filter and sort purchase orders
   const filteredPOs = pendingPurchaseOrders
-    .filter(
-      (po) =>
-        (po.name && po.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (po._id && po._id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (po.projectId && po.projectId.toString().toLowerCase().includes(searchTerm.toLowerCase()))
-    )
+    .filter((po) => {
+      const q = searchTerm.toLowerCase();
+      const proj = getProjectDisplay(po).toLowerCase();
+      return (
+        (po.name && String(po.name).toLowerCase().includes(q)) ||
+        (po._id && String(po._id).toLowerCase().includes(q)) ||
+        proj.includes(q)
+      );
+    })
     .sort((a, b) => {
       if (a[sortField] < b[sortField]) {
         return sortDirection === 'asc' ? -1 : 1;
@@ -123,6 +169,7 @@ export const PendingPurchaseOrders = () => {
             <thead className="bg-[#F7EED3]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Order Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider">Project Name</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-[#674636] uppercase tracking-wider">Action</th>
               </tr>
@@ -131,6 +178,7 @@ export const PendingPurchaseOrders = () => {
               {paginatedPOs.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.name || po._id}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{getProjectDisplay(po)}</td>
                   <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {(Number(po.totalAmount)||0).toLocaleString()}</td>
                   <td className="px-6 py-4 text-xs font-mono text-right text-[#674636] whitespace-pre-line break-words max-w-xs font-medium">
                     <button
@@ -144,7 +192,7 @@ export const PendingPurchaseOrders = () => {
               ))}
               {paginatedPOs.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-[#AAB396]">
+                  <td colSpan={4} className="px-6 py-4 text-center text-[#AAB396]">
                     No purchase orders found
                   </td>
                 </tr>

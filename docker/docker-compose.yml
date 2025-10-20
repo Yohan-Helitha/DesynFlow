@@ -43,7 +43,7 @@ services:
       - backend
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_API_URL=http://localhost:4000
+      - REACT_APP_API_URL=http://localhost:3000
       - PORT=5174
     command: npm start
     restart: unless-stopped

@@ -45,7 +45,7 @@ const InspectionRequestForm = () => {
 
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch("http://localhost:4000/api/inspection-request", {
+      const res = await fetch("http://localhost:3000/api/inspection-request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,9 +57,15 @@ const InspectionRequestForm = () => {
       const data = await res.json();
       if (res.ok) {
         setMessage("Inspection request submitted successfully!");
-        // Navigate to dashboard after successful submission
+        
+        // Set flag to refresh inspection requests and switch section
+        localStorage.setItem('inspection-request-submitted', 'true');
+        
+        // Navigate to profile with inspection section active after successful submission
         setTimeout(() => {
-          navigate("/dashboard");
+          navigate("/profile");
+          // Set inspection section as active when redirecting
+          window.location.hash = "inspection";
         }, 1500); // Show success message for 1.5 seconds before redirecting
       } else {
         setMessage(` ${data.message || "Failed to submit request"}`);
@@ -230,24 +236,27 @@ const InspectionRequestForm = () => {
           </div>
         </div>
 
-        {/* Submit Button - Always Visible */}
+        {/* Submit and Cancel Buttons */}
         <div className="mt-8 pt-4 border-t border-brown-primary-300 bg-white">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-primary text-white p-4 rounded-lg hover:bg-soft-green transition-colors duration-200 font-bold text-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-h-[60px] flex items-center justify-center"
-            style={{ 
-              display: 'block !important', 
-              visibility: 'visible !important', 
-              position: 'relative', 
-              zIndex: 1000,
-              backgroundColor: '#4ade80',
-              color: '#ffffff',
-              border: '2px solid #22c55e'
-            }}
-          >
-            {loading ? "Submitting..." : "Submit Inspection Request"}
-          </button>
+          <div className="flex justify-between gap-4">
+            {/* Cancel Button - Left Side */}
+            <button
+              type="button"
+              onClick={() => navigate("/profile")}
+              className="flex-1 bg-brown-secondary text-white p-4 rounded-lg hover:bg-brown-secondary-600 transition-colors duration-200 font-bold text-xl shadow-lg min-h-[60px] flex items-center justify-center"
+            >
+              Cancel
+            </button>
+            
+            {/* Submit Button - Right Side */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-brown-primary text-white p-4 rounded-lg hover:bg-brown-primary-700 transition-colors duration-200 font-bold text-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-h-[60px] flex items-center justify-center"
+            >
+              {loading ? "Submitting..." : "Submit Inspection Request"}
+            </button>
+          </div>
         </div>
       </form>
     </div>

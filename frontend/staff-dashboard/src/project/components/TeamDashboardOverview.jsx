@@ -12,6 +12,13 @@ export default function TeamDashboardOverview() {
   const [error, setError] = useState(null);
   const [timeTracking, setTimeTracking] = useState({ active: false, taskId: null, startTime: null });
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
   // Get logged in team member data
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user'));
@@ -180,7 +187,7 @@ export default function TeamDashboardOverview() {
 
   return (
     <div className="bg-cream-light min-h-screen">
-      <TeamMemberHeader />
+      <TeamMemberHeader onLogout={handleLogout} />
       
       <div className="p-8 space-y-8">
         {/* Welcome Section */}

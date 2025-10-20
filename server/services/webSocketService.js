@@ -38,6 +38,26 @@ class WebSocketService {
         }
       });
 
+      // Handle joining specific rooms
+      socket.on('join_room', (data) => {
+        const { roomType, roomId } = data;
+        if (roomType && roomId) {
+          const roomName = `${roomType}_${roomId}`;
+          socket.join(roomName);
+          console.log(`Socket ${socket.id} joined room: ${roomName}`);
+        }
+      });
+
+      // Handle leaving specific rooms
+      socket.on('leave_room', (data) => {
+        const { roomType, roomId } = data;
+        if (roomType && roomId) {
+          const roomName = `${roomType}_${roomId}`;
+          socket.leave(roomName);
+          console.log(`Socket ${socket.id} left room: ${roomName}`);
+        }
+      });
+
       // Handle disconnect
       socket.on('disconnect', () => {
         if (socket.userId) {
@@ -52,14 +72,19 @@ class WebSocketService {
   sendToUser(userId, event, data) {
     const socketId = this.connectedUsers.get(userId);
     if (socketId) {
+      console.log(`📤 Sending "${event}" to user ${userId} (socket: ${socketId})`);
       this.io.to(socketId).emit(event, data);
       return true;
+    } else {
+      console.log(`❌ User ${userId} not found in connected users for event "${event}"`);
+      console.log('Connected users:', Array.from(this.connectedUsers.keys()));
+      return false;
     }
-    return false;
   }
 
   // Send notification to all users with specific role
   sendToRole(role, event, data) {
+    console.log(`📤 Sending "${event}" to all users with role "${role}"`);
     this.io.to(`role_${role}`).emit(event, data);
   }
 

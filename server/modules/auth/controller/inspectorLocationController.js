@@ -42,7 +42,7 @@ export const updateLocation = async (req, res) => {
 export const getAllLocations = async (req, res) => {
   try {
     const locations = await InspectorLocation.find({ status: { $ne: 'offline' } })
-      .populate('inspector_ID', 'name email phone role');
+      .populate('inspector_ID', 'username email phone role');
     res.status(200).json(locations);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -54,7 +54,7 @@ export const getInspectorLocation = async (req, res) => {
   try {
     const { inspectorId } = req.params;
     const location = await InspectorLocation.findOne({ inspector_ID: inspectorId })
-      .populate('inspector_ID', 'name email phone role');
+      .populate('inspector_ID', 'username email phone role');
     if (!location) return res.status(404).json({ message: 'Location not found.' });
     res.status(200).json(location);
   } catch (err) {

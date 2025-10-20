@@ -24,8 +24,7 @@ export const QuotationFormModal = ({
     estimateVersion: incomingEstimateVersion,
     version: incomingQuotationVersion,
   // Removed: status/locked/user dispatch/file meta per latest requirements
-  // Keeping remarks and line items only.
-  remarks: '',
+  // Remarks field removed per latest requirements.
     laborItems: [],
     materialItems: [],
     serviceItems: [],
@@ -154,7 +153,6 @@ export const QuotationFormModal = ({
           serviceItems,
           contingencyItems,
           taxes,
-          remarks: formData.remarks,
           createdBy: incomingCreatedBy || undefined,
           // Backend calculates version & totals again for integrity, but we send ours for potential preview usage
           subtotal,
@@ -243,19 +241,7 @@ export const QuotationFormModal = ({
             </div>
           </div>
 
-          {/* Remarks */}
-          <div>
-            <h4 className="text-sm font-semibold text-[#AAB396] mb-2">Remarks</h4>
-            <div className="bg-[#F7EED3] p-4 rounded-md border border-[#AAB396]">
-              <textarea
-                name="remarks"
-                value={formData.remarks}
-                onChange={handleChange}
-                rows={3}
-                className="mt-1 block w-full border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8] focus:outline-none focus:ring-1 focus:ring-[#674636]"
-              />
-            </div>
-          </div>
+          {/* Remarks removed per latest requirements */}
 
           {/* Labor Items */}
           <div>

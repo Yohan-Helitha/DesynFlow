@@ -222,7 +222,7 @@ async function seedDatabase() {
 
     // Create 5 sample reports
     const reports = [
-      { projectId: savedProjects[0]._id, submittedBy: savedTeams[0].leaderId, reportType: 'Weekly Progress Report', dateRange: { start: new Date('2023-11-01'), end: new Date('2023-11-07') }, summary: 'Design phase completed, moving to planning stage', includeProgress: true, includeIssues: false, includeResourceUsage: true, status: 'completed' },
+  { projectId: savedProjects[0]._id, submittedBy: savedTeams[0].leaderId, reportType: 'Weekly Progress Report', dateRange: { start: new Date('2023-11-01'), end: new Date('2023-11-07') }, summary: 'Design phase completed, moving to planning stage', includeProgress: true, includeIssues: false, includeMaterialList: true, status: 'completed' },
       { projectId: savedProjects[1]._id, submittedBy: savedTeams[1].leaderId, reportType: 'Project Status Report', dateRange: { start: new Date('2023-10-15'), end: new Date('2023-10-30') }, summary: 'Foundation work on schedule, electrical planning in progress', includeProgress: true, includeIssues: true, status: 'draft' },
       { projectId: savedProjects[2]._id, submittedBy: savedTeams[2].leaderId, reportType: 'Inspection Report', dateRange: { start: new Date('2023-09-01'), end: new Date('2023-09-07') }, summary: 'Inspection completed, minor issues found', includeProgress: false, includeIssues: true, status: 'completed' },
       { projectId: savedProjects[3]._id, submittedBy: savedTeams[3].leaderId, reportType: 'Lighting Progress Report', dateRange: { start: new Date('2023-09-10'), end: new Date('2023-09-17') }, summary: 'Lighting installation in progress', includeProgress: true, includeIssues: false, status: 'draft' },

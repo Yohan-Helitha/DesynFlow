@@ -130,7 +130,7 @@ const LoginPage = () => {
 
       {/* Right side (form) */}
       <div className="w-1/2 flex items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md p-10 bg-white shadow-lg rounded-lg">
+  <div className="w-full max-w-md p-10 bg-cream-light shadow-lg rounded-lg">
           <div className="text-center mb-6">
             <span className="text-4xl">🏠</span>
             <h2 className="text-2xl font-bold mt-2">Staff Portal</h2>
@@ -175,7 +175,7 @@ const LoginPage = () => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              className="w-full bg-brown-primary text-white py-2 rounded hover:bg-brown-primary-300"
             >
               Login 
             </button>

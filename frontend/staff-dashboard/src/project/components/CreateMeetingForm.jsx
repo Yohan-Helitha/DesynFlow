@@ -143,13 +143,13 @@ export default function CreateMeetingForm({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <div className="bg-cream-light rounded-lg p-6 w-full max-w-md mx-4 border border-brown-100">
         <h2 className="text-xl font-bold text-brown-primary mb-4">
           {isEdit ? 'Edit Meeting' : 'Create New Meeting'}
         </h2>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-brown/10 border border-red-brown text-red-brown px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
@@ -160,9 +160,9 @@ export default function CreateMeetingForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Project
             </label>
-            <div className="bg-gray-100 px-3 py-2 rounded border text-gray-700">
-              {project.projectName}
-            </div>
+            <div className="bg-cream-primary px-3 py-2 rounded border border-brown-100 text-brown-primary">
+                {project.projectName}
+              </div>
           </div>
 
           {/* Channel Selection */}
@@ -173,7 +173,7 @@ export default function CreateMeetingForm({
             <select
               value={form.channel}
               onChange={(e) => setForm({ ...form, channel: e.target.value, link: '' })}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
               required
             >
               <option value="">Select channel...</option>
@@ -199,7 +199,7 @@ export default function CreateMeetingForm({
                     ? "https://zoom.us/j/... or https://zoom.com/..." 
                     : "https://teams.microsoft.com/..."
                 }
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
                 required
               />
             </div>
@@ -214,7 +214,7 @@ export default function CreateMeetingForm({
               type="datetime-local"
               value={form.scheduledAt}
               onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
               required
             />
           </div>
@@ -229,7 +229,7 @@ export default function CreateMeetingForm({
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               placeholder="Meeting agenda, topics to discuss..."
               rows={3}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary"
+              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brown-primary bg-white"
             />
           </div>
 
@@ -238,14 +238,14 @@ export default function CreateMeetingForm({
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+              className="flex-1 border border-brown-100 bg-cream-primary text-brown-primary px-4 py-2 rounded hover:bg-cream-light"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 bg-brown-primary text-white px-4 py-2 rounded hover:bg-brown-dark disabled:opacity-50"
+              className="flex-1 bg-brown-primary text-white px-4 py-2 rounded hover:bg-brown-primary-300 disabled:opacity-50"
               disabled={loading}
             >
               {loading ? 'Saving...' : (isEdit ? 'Update Meeting' : 'Create Meeting')}

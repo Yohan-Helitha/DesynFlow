@@ -17,11 +17,11 @@ export default function DocumentList({ documents }) {
         const downloadUrl = `${filePath}`;
         
         return (
-          <li key={index} className="bg-white rounded shadow px-4 py-2 flex items-center justify-between">
+          <li key={index} className="bg-cream-primary rounded shadow px-4 py-2 flex items-center justify-between border border-brown-100">
             <div>
               <span className="font-semibold text-brown-primary">{displayName}</span>
               {isObject && attachment.uploadDate && (
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-brown-secondary">
                   Uploaded: {new Date(attachment.uploadDate).toLocaleDateString()}
                 </div>
               )}
@@ -30,7 +30,7 @@ export default function DocumentList({ documents }) {
               href={downloadUrl} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="text-blue-600 hover:underline"
+              className="text-brown-primary hover:underline"
               download={displayName}
             >
               Download
