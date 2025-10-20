@@ -1,10 +1,15 @@
 import { FaUsers, FaTasks, FaCalendarAlt, FaFileAlt, FaBoxOpen, FaChartBar } from "react-icons/fa";
 
 import { useEffect, useState } from "react";
+import Project3DModelCard from './Project3DModelCard';
+import ProjectModelViewer from '../../common/components/ProjectModelViewer';
 
 export default function ProjectOverview({ projectId, onBack }) {
   const [project, setProject] = useState(null);
   const [quotationDocuments, setQuotationDocuments] = useState([]);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerSrc, setViewerSrc] = useState('');
+  const [viewerRestriction, setViewerRestriction] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -57,6 +62,18 @@ export default function ProjectOverview({ projectId, onBack }) {
   if (loading) return <div className="text-center text-gray-500 p-8">Loading project...</div>;
   if (error) return <div className="text-center text-red-500 p-8">Error: {error}</div>;
   if (!project) return <div className="text-center text-gray-500 p-8">No project selected.</div>;
+
+  const openViewer = (src, restriction = false) => {
+    setViewerSrc(src);
+    setViewerRestriction(!!restriction);
+    setViewerOpen(true);
+  };
+
+  const closeViewer = () => {
+    setViewerOpen(false);
+    setViewerSrc('');
+    setViewerRestriction(false);
+  };
 
   return (
     <div className="bg-cream-primary min-h-screen p-8">
@@ -208,7 +225,37 @@ export default function ProjectOverview({ projectId, onBack }) {
                   const displayName = isObject ? attachment.originalName || filename : filename?.replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
                   const fileExtension = filename?.split('.').pop()?.toUpperCase();
                   const downloadUrl = `${isObject ? attachment.path : attachment}`;
-                  
+
+                  // Determine if this is a 3D model file
+                  const modelExtensions = ['glb', 'gltf', 'usdz', 'obj', 'fbx'];
+                  const ext = (filename?.split('.').pop() || '').toLowerCase();
+                  const isModel = modelExtensions.includes(ext);
+
+                  if (isModel) {
+                    // Render model card with view/delete actions
+                    const modelUrl = downloadUrl;
+                    const restriction = !!(isObject && attachment.restriction);
+                    const canDelete = !!(isObject && attachment.canDelete);
+                    return (
+                      <li key={`attachment-model-${i}`}>
+                        <Project3DModelCard
+                          modelUrl={modelUrl}
+                          restriction={restriction}
+                          canDelete={canDelete}
+                          onView={() => openViewer(modelUrl, restriction)}
+                          onDelete={() => {
+                            // Best-effort delete handler: call API if path/id available
+                            if (isObject && attachment._id) {
+                              fetch(`/api/attachments/${attachment._id}`, { method: 'DELETE' })
+                                .then(res => { if (res.ok) window.location.reload(); else console.error('Failed to delete'); })
+                                .catch(console.error);
+                            }
+                          }}
+                        />
+                      </li>
+                    );
+                  }
+
                   return (
                     <li
                           key={`attachment-${i}`}
@@ -313,6 +360,16 @@ export default function ProjectOverview({ projectId, onBack }) {
           </ul>
         </div>
       </div>
+
+      {/* Modal viewer overlay */}
+      {viewerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true">
+          <div className="bg-white rounded-lg shadow-lg w-[90%] max-w-4xl p-4 relative">
+            <button onClick={closeViewer} className="absolute right-3 top-3 bg-red-500 text-white rounded px-3 py-1">Close</button>
+            <ProjectModelViewer src={viewerSrc} restriction={viewerRestriction} width="100%" height="640px" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
