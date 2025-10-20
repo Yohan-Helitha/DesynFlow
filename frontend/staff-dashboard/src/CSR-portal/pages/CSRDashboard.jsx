@@ -6,11 +6,14 @@ import InspectorAssignment from '../components/InspectorAssignment';
 import AssignmentStatusManager from '../components/AssignmentStatusManager';
 import AssignmentHistory from '../components/AssignmentHistory';
 import CSRSidebar from '../components/CSRSidebar';
+import NotificationSystem from '../../components/NotificationSystem';
+import socketService from '../../services/socketService';
 
 const CSRDashboard = () => {
   const [activeSection, setActiveSection] = useState('requests');
   const [csr, setCsr] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState([]);
 
   // Fetch CSR profile and validate authentication
   const fetchCSR = async () => {
@@ -52,6 +55,54 @@ const CSRDashboard = () => {
   useEffect(() => {
     fetchCSR();
   }, []);
+
+  // Setup real-time notifications
+  useEffect(() => {
+    if (csr) {
+      // Connect to WebSocket
+      socketService.connect(csr._id, csr.role);
+      socketService.joinRoom('csr', csr._id);
+
+      // Listen for assignment notifications
+      socketService.onAssignmentAccepted((data) => {
+        console.log('Assignment accepted notification:', data);
+        setNotifications(prev => [...prev, {
+          id: Date.now(),
+          type: 'assignment_accepted',
+          ...data
+        }]);
+      });
+
+      socketService.onAssignmentDeclined((data) => {
+        console.log('Assignment declined notification:', data);
+        setNotifications(prev => [...prev, {
+          id: Date.now(),
+          type: 'assignment_declined',
+          ...data
+        }]);
+      });
+
+      socketService.onAssignmentCompleted((data) => {
+        console.log('Assignment completed notification:', data);
+        setNotifications(prev => [...prev, {
+          id: Date.now(),
+          type: 'assignment_completed',
+          ...data
+        }]);
+      });
+
+      // Cleanup on unmount
+      return () => {
+        socketService.leaveRoom('csr', csr._id);
+        socketService.disconnect();
+      };
+    }
+  }, [csr]);
+
+  // Remove notification
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  };
 
   const renderContent = () => {
     switch (activeSection) {
@@ -107,15 +158,7 @@ const CSRDashboard = () => {
               </h2>
             </div>
           )}
-          
-          {activeSection === 'payments' && (
-            <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
-              <h2 className="text-2xl font-bold text-dark-brown mb-2">
-                💰 Payment Management
-              </h2>        
-            </div>
-          )}
-          
+         
           {activeSection === 'assign' && (
             <div className="bg-cream-primary border border-brown-primary rounded-lg p-4 inline-block">
               <h2 className="text-2xl font-bold text-dark-brown mb-2">
@@ -146,6 +189,15 @@ const CSRDashboard = () => {
           {renderContent()}
         </div>
       </div>
+
+      {/* Notification System */}
+      {notifications.map((notification) => (
+        <NotificationSystem
+          key={notification.id}
+          notification={notification}
+          onClose={() => removeNotification(notification.id)}
+        />
+      ))}
     </div>
   );
 };

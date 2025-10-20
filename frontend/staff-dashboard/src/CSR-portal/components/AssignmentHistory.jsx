@@ -143,11 +143,19 @@ const AssignmentHistory = ({ csr, onAuthError }) => {
       socketService.connect(userId, userRole);
       socketService.joinRoom('csr', userId);
       
-      // Listen for assignment completion notifications
+      // Listen for assignment notifications
       socketService.onAssignmentCompleted((completionData) => {
         console.log('Assignment completed notification received in history:', completionData);
         
         // Refresh assignment history when an assignment is completed
+        fetchAssignmentHistory();
+      });
+
+      // Listen for assignment accepted notifications
+      socketService.onAssignmentAccepted((acceptedData) => {
+        console.log('Assignment accepted notification received in history:', acceptedData);
+        
+        // Refresh assignment history when an assignment is accepted
         fetchAssignmentHistory();
       });
 
