@@ -512,50 +512,60 @@ const generatePDFFile = async (report, form) => {
         currentY = addInfoRow(doc, 'Inspection Company:', 'DesynFlow Property Services', currentY);
         currentY += 15; // Reduced spacing
 
-        // Room Details
+        // Room Details - Only add if rooms exist
         if (form && form.floors && form.floors.length > 0) {
-          currentY = addSection(doc, 'PROPERTY LAYOUT & ROOM DETAILS', currentY, primaryColor);
-          
-          form.floors.forEach((floor, floorIndex) => {
-            doc.fillColor(secondaryColor)
-               .fontSize(13)
-               .font('Helvetica-Bold')
-               .text(`Floor ${floor.floor_number || (floorIndex + 1)}:`, 60, currentY);
-            currentY += 25;
-
+          let hasRooms = false;
+          // Check if any floor has rooms
+          for (const floor of form.floors) {
             if (floor.rooms && floor.rooms.length > 0) {
-              floor.rooms.forEach((room, roomIndex) => {
-                const roomName = room.room_name || `Room ${roomIndex + 1}`;
-                const dimensions = room.dimensions || {};
-                const length = dimensions.length || 'N/A';
-                const width = dimensions.width || 'N/A';
-                const height = dimensions.height || 'N/A';
-                const unit = dimensions.unit || 'feet';
-                
-                doc.rect(80, currentY, doc.page.width - 160, 30)
-                   .fillAndStroke('#FFFFFF', primaryColor)
-                   .lineWidth(1);
-                
-                doc.fillColor('#333333')
-                   .fontSize(11)
-                   .font('Helvetica-Bold')
-                   .text(`${roomName}:`, 90, currentY + 8);
-                
-                doc.font('Helvetica')
-                   .text(`${length} × ${width} × ${height} ${unit}`, 200, currentY + 8);
-                
-                currentY += 35;
-              });
-            } else {
-              doc.fillColor('#666666')
-                 .fontSize(10)
-                 .font('Helvetica-Oblique')
-                 .text('No room details available for this floor', 80, currentY);
-              currentY += 20;
+              hasRooms = true;
+              break;
             }
-            currentY += 10;
-          });
-          currentY += 15; // Reduced spacing
+          }
+          
+          if (hasRooms) {
+            currentY = addSection(doc, 'PROPERTY LAYOUT & ROOM DETAILS', currentY, primaryColor);
+            
+            form.floors.forEach((floor, floorIndex) => {
+              if (floor.rooms && floor.rooms.length > 0) {
+                doc.fillColor(secondaryColor)
+                   .fontSize(13)
+                   .font('Helvetica-Bold')
+                   .text(`Floor ${floor.floor_number || (floorIndex + 1)}:`, 60, currentY);
+                currentY += 25;
+
+                floor.rooms.forEach((room, roomIndex) => {
+                  const roomName = room.room_name || `Room ${roomIndex + 1}`;
+                  const dimensions = room.dimensions || {};
+                  const length = dimensions.length || 'N/A';
+                  const width = dimensions.width || 'N/A';
+                  const height = dimensions.height || 'N/A';
+                  const unit = dimensions.unit || 'feet';
+                  
+                  // Check if we need a new page
+                  if (currentY > doc.page.height - 100) {
+                    doc.addPage();
+                    currentY = 60;
+                  }
+                  
+                  doc.rect(80, currentY, doc.page.width - 160, 30)
+                     .fillAndStroke('#FFFFFF', primaryColor)
+                     .lineWidth(1);
+                  
+                  doc.fillColor('#333333')
+                     .fontSize(11)
+                     .font('Helvetica-Bold')
+                     .text(`${roomName}:`, 90, currentY + 8);
+                  
+                  doc.font('Helvetica')
+                     .text(`${length} × ${width} × ${height} ${unit}`, 200, currentY + 8);
+                  
+                  currentY += 35;
+                });
+                currentY += 15;
+              }
+            });
+          }
         }
 
         // Dynamic text sections
@@ -563,16 +573,16 @@ const generatePDFFile = async (report, form) => {
 
         // Findings
         currentY = addSection(doc, 'INSPECTION SUMMARY', currentY, primaryColor);
-        const findingsText = report.reportData.findings || 'Inspection completed with detailed room measurements';
+        const findingsText = report.reportData.findings || 'Inspection completed with detailed room measurements and property assessment.';
         currentY = addTextBox(doc, findingsText, currentY, lightGray, primaryColor, textOptions, 11);
 
         // Recommendations  
         currentY = addSection(doc, 'RECOMMENDATIONS', currentY, primaryColor);
-        const recommendationsText = report.reportData.recommendations || 'No specific recommendations - property ready for project planning';
+        const recommendationsText = report.reportData.recommendations || 'Property is suitable for interior design project planning. Room dimensions have been recorded for design purposes.';
         currentY = addTextBox(doc, recommendationsText, currentY, lightGray, primaryColor, textOptions, 11);
 
-        // Detailed Notes
-        if (report.reportData.inspectorNotes) {
+        // Detailed Notes - Only add if content exists
+        if (report.reportData.inspectorNotes && report.reportData.inspectorNotes.trim().length > 0) {
           currentY = addSection(doc, 'DETAILED INSPECTION NOTES', currentY, primaryColor);
           currentY = addTextBox(doc, report.reportData.inspectorNotes, currentY, '#FFFFFF', primaryColor, textOptions, 10);
         }
@@ -580,6 +590,11 @@ const generatePDFFile = async (report, form) => {
 
       // Add footer on the final page only
       const footerY = doc.page.height - 70;
+      
+      // Ensure footer doesn't overlap with content
+      if (currentY > footerY - 20) {
+        doc.addPage();
+      }
       
       // Add footer background
       doc.rect(0, footerY, doc.page.width, 70).fill(primaryColor);
@@ -616,8 +631,14 @@ const generatePDFFile = async (report, form) => {
     }
   });
 
-  // Helper function to add section headers
+  // Helper function to add section headers with page break handling
   function addSection(doc, title, yPos, color) {
+    // Check if we need a new page for the section
+    if (yPos > doc.page.height - 150) {
+      doc.addPage();
+      yPos = 60; // Reset Y position for new page
+    }
+    
     doc.fillColor(color)
        .fontSize(14)
        .font('Helvetica-Bold')
@@ -632,35 +653,55 @@ const generatePDFFile = async (report, form) => {
     return yPos + 35;
   }
 
-  // Helper function to add information rows
+  // Helper function to add information rows with page break handling
   function addInfoRow(doc, label, value, yPos) {
+    // Check if we need a new page
+    if (yPos > doc.page.height - 100) {
+      doc.addPage();
+      yPos = 60; // Reset Y position for new page
+    }
+    
     doc.fillColor('#333333')
        .fontSize(11)
        .font('Helvetica-Bold')
        .text(label, 60, yPos);
     
+    // Ensure value is not undefined or null
+    const displayValue = value || 'Not specified';
+    
     doc.font('Helvetica')
-       .text(value, 200, yPos, {
+       .text(displayValue, 200, yPos, {
          width: doc.page.width - 260,
          align: 'left'
        });
     
-    return yPos + 18; // Reduced from 20 to 18
+    return yPos + 20; // Consistent spacing
   }
 
-  // Helper function to add text boxes
+  // Helper function to add text boxes with better formatting
   function addTextBox(doc, text, yPos, fillColor, borderColor, textOptions, fontSize) {
+    // Ensure text is not empty
+    if (!text || text.trim().length === 0) {
+      text = 'No additional information provided.';
+    }
+    
     doc.fontSize(fontSize).font('Helvetica');
     const textHeight = doc.heightOfString(text, textOptions);
-    const boxHeight = Math.max(textHeight + 20, 40);
+    const boxHeight = Math.max(textHeight + 30, 50); // Increased padding for better appearance
+    
+    // Check if we need a new page
+    if (yPos + boxHeight > doc.page.height - 100) {
+      doc.addPage();
+      yPos = 60; // Reset Y position for new page
+    }
     
     doc.rect(60, yPos, doc.page.width - 120, boxHeight)
        .fillAndStroke(fillColor, borderColor)
        .lineWidth(1);
     
     doc.fillColor('#333333')
-       .text(text, 70, yPos + 10, textOptions);
+       .text(text, 70, yPos + 15, textOptions); // Increased top padding
     
-    return yPos + boxHeight + 15; // Reduced from 20 to 15
+    return yPos + boxHeight + 20; // Consistent spacing
   }
 };
