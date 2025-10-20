@@ -5,50 +5,6 @@ const InspectionStatusUpdates = ({ assignment, inspector, onStatusUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  // Handle inspection completion (when inspector clicks Available)
-  const handleCompleteInspection = async () => {
-    setLoading(true);
-    setMessage('');
-    
-    try {
-      const token = localStorage.getItem('authToken');
-      
-      // Update assignment status to completed
-      await axios.patch(
-        `/api/assignment/status/${assignment._id}`,
-        {
-          status: 'completed',
-          inspection_end_time: new Date(),
-          action_notes: 'Inspection completed by inspector'
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Update inspector status back to available
-      const inspectorId = inspector._id || inspector.id;
-      await axios.post(
-        '/api/inspector-location/update',
-        {
-          inspectorId: inspectorId,
-          status: 'available'
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      setMessage('✅ Inspection completed! You are now available for new assignments.');
-      
-      if (onStatusUpdate) {
-        onStatusUpdate('completed');
-      }
-      
-    } catch (error) {
-      console.error('Error completing inspection:', error);
-      setMessage('❌ Failed to complete inspection. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Handle pause inspection
   const handlePauseInspection = async () => {
     setLoading(true);
@@ -192,20 +148,18 @@ const InspectionStatusUpdates = ({ assignment, inspector, onStatusUpdate }) => {
         {assignment.status === 'in-progress' && (
           <div className="flex gap-3">
             <button
-              onClick={handleCompleteInspection}
-              disabled={loading}
-              className="flex-1 bg-green-primary text-cream-primary py-2 px-4 rounded-lg hover:bg-soft-green disabled:opacity-50 font-medium"
-            >
-              {loading ? 'Completing...' : '✅ Complete Inspection'}
-            </button>
-            
-            <button
               onClick={handlePauseInspection}
               disabled={loading}
               className="flex-1 bg-amber-500 text-cream-primary py-2 px-4 rounded-lg hover:bg-amber-600 disabled:opacity-50 font-medium"
             >
               {loading ? 'Pausing...' : '⏸️ Pause Inspection'}
             </button>
+            
+            <div className="flex-1 bg-blue-100 border-2 border-blue-300 border-dashed rounded-lg p-2 text-center">
+              <p className="text-blue-600 text-sm font-medium">
+                📝 Complete inspection by submitting report in "Collect Data" section
+              </p>
+            </div>
           </div>
         )}
 
@@ -219,13 +173,11 @@ const InspectionStatusUpdates = ({ assignment, inspector, onStatusUpdate }) => {
               {loading ? 'Resuming...' : '▶️ Resume Inspection'}
             </button>
             
-            <button
-              onClick={handleCompleteInspection}
-              disabled={loading}
-              className="flex-1 bg-green-primary text-cream-primary py-2 px-4 rounded-lg hover:bg-soft-green disabled:opacity-50 font-medium"
-            >
-              {loading ? 'Completing...' : '✅ Complete Inspection'}
-            </button>
+            <div className="flex-1 bg-blue-100 border-2 border-blue-300 border-dashed rounded-lg p-2 text-center">
+              <p className="text-blue-600 text-sm font-medium">
+                📝 Complete inspection by submitting report in "Collect Data" section
+              </p>
+            </div>
           </div>
         )}
 

@@ -814,7 +814,7 @@ const createSampleData = async (users) => {
         inspector_longitude: 79.8612,
         current_address: 'Colombo 03, Main Street',
         region: 'Colombo',
-        status: 'available'
+        status: 'busy' // Mike has existing assignments, so he's busy
       },
       {
         inspector_ID: inspectorUsers.find(u => u.username === 'priya_inspector')._id,
