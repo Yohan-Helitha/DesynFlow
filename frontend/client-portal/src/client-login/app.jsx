@@ -13,6 +13,7 @@ import InspectionRequestDashboard from '../inspection-request/pages/inspectionRe
 import InspectionRequestForm from '../inspection-request/pages/inspectionRequestForm';
 import PaymentForm from '../inspection-request/components/forms/paymentForm';
 import Profile from './components/Profile'; //
+import ProjectOverviewClient from './project/ProjectOverviewClient';
 // Public site pages
 import { Home } from '../web/pages/Home';
 import { Gallery } from '../web/pages/Gallery';
@@ -81,6 +82,15 @@ function App() {
           element={
             <ProtectedRoute>
               <InspectionRequestDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/project-summary" 
+          element={
+            <ProtectedRoute>
+              <ProjectOverviewClient />
             </ProtectedRoute>
           } 
         />

@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ activeSection, onSelect, onLogout }) => {
+  const navigate = useNavigate();
   return (
     <div className="w-64 bg-cream-primary shadow-lg p-6 flex flex-col justify-between border-r border-brown-primary-300">
       <div>
@@ -27,7 +29,7 @@ const Sidebar = ({ activeSection, onSelect, onLogout }) => {
             Inspection
           </li>
           <li
-            onClick={() => onSelect("project")}
+            onClick={() => { onSelect && onSelect("project"); navigate('/project-summary'); }}
             className={`cursor-pointer p-2 rounded ${
               activeSection === "project"
                 ? "bg-brown-primary-200 text-brown-primary"

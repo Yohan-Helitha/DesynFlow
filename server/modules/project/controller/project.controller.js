@@ -82,7 +82,6 @@ export const createProject = async (req, res) => {
 export const getProjects = async (req, res) => {
 
     try{
-
         const projects = await Project.find().populate('assignedTeamId milestones clientId');
         res.json(projects);
 
@@ -222,6 +221,72 @@ export const deleteProject = async (req, res) => {
         
         res.status(500).json({ message: 'Error deleting project', error: error.message });
     }
+};
 
+// Client-specific controllers with authentication and filtering
+export const getClientProjects = async (req, res) => {
+    try {
+        // Ensure user is authenticated and is a client
+        if (!req.user) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
 
+        // Filter projects by client ID
+        let query = {};
+        if (req.user.role === 'client') {
+            query = { clientId: req.user._id };
+        } else {
+            // If not a client, return all projects (for staff)
+            query = {};
+        }
+
+        const projects = await Project.find(query).populate('assignedTeamId milestones clientId');
+        res.json(projects);
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error getting client projects', error: error.message });
+    }
+};
+
+export const getClientProjectById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        let project = await Project.findById(id).populate('assignedTeamId milestones clientId');
+        
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        // If user is a client, ensure they can only access their own projects
+        if (req.user && req.user.role === 'client' && project.clientId._id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Access denied: You can only view your own projects' });
+        }
+
+        // If project has an assigned team, populate the team members with user details
+        if (project.assignedTeamId && project.assignedTeamId.members) {
+            const User = (await import('../../auth/model/user.model.js')).default;
+            
+            const populatedMembers = await Promise.all(
+                project.assignedTeamId.members.map(async (member) => {
+                    const user = await User.findById(member.userId, 'username email role');
+                    return {
+                        userId: user,
+                        role: member.role,
+                        availability: member.availability,
+                        workload: member.workload
+                    };
+                })
+            );
+            
+            // Create a new team object with populated members
+            const teamData = project.assignedTeamId.toJSON();
+            teamData.members = populatedMembers;
+            project = { ...project.toJSON(), assignedTeamId: teamData };
+        }
+
+        res.json(project);
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error getting client project', error: error.message });
+    }
 };

@@ -4,8 +4,11 @@ import {
   getProjects,
   getProjectById,
   updateProject,
-  deleteProject
+  deleteProject,
+  getClientProjects,
+  getClientProjectById
 } from '../controller/project.controller.js';
+import { authMiddleware } from '../../auth/middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -23,5 +26,9 @@ router.put('/projects/:id', updateProject);
 
 // Delete a project
 router.delete('/projects/:id', deleteProject);
+
+// Client-specific routes (authenticated)
+router.get('/client/projects', authMiddleware, getClientProjects);
+router.get('/client/projects/:id', authMiddleware, getClientProjectById);
 
 export default router;
