@@ -4,7 +4,8 @@ import {
   uploadPaymentReceipt,
   getClientInspectionRequests,
   getAllInspectionRequests,
-  updateInspectionRequestStatus
+  updateInspectionRequestStatus,
+  getClientProgressTracking
 } from '../controller/inspectionRequestController.js';
 import {
   createInspectorForm,
@@ -42,6 +43,14 @@ router.get(
   authMiddleware,
   roleMiddleware(['client']),
   getClientInspectionRequests
+);
+
+// Get client progress tracking data (NEW - for dashboard progress)
+router.get(
+  '/client/progress',
+  authMiddleware,
+  roleMiddleware(['client']),
+  getClientProgressTracking
 );
 
 // Get all inspection requests for CSR

@@ -11,10 +11,61 @@ const Profile = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [message, setMessage] = useState("");
   const [inspectionRequests, setInspectionRequests] = useState([]);
+  const [progressData, setProgressData] = useState(null); // NEW: Progress tracking data
 
   // Simple navigation handler
   const handleCreateInspectionRequest = () => {
     navigate("/inspection-request/new");
+  };
+
+  // NEW: Helper function to get status colors and icons
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'submitted':
+      case 'pending':
+        return { 
+          bgColor: 'bg-amber-100', 
+          textColor: 'text-amber-800', 
+          icon: '📋',
+          borderColor: 'border-amber-300' 
+        };
+      case 'assigned':
+        return { 
+          bgColor: 'bg-orange-100', 
+          textColor: 'text-orange-800', 
+          icon: '👤',
+          borderColor: 'border-orange-300' 
+        };
+      case 'in-progress':
+        return { 
+          bgColor: 'bg-yellow-100', 
+          textColor: 'text-yellow-800', 
+          icon: '🔄',
+          borderColor: 'border-yellow-300' 
+        };
+      case 'completed':
+        return { 
+          bgColor: 'bg-emerald-100', 
+          textColor: 'text-emerald-800', 
+          icon: '✅',
+          borderColor: 'border-emerald-300' 
+        };
+      case 'cancelled':
+        return { 
+          bgColor: 'bg-red-100', 
+          textColor: 'text-red-700', 
+          icon: '❌',
+          borderColor: 'border-red-300' 
+        };
+      case 'no_requests':
+      default:
+        return { 
+          bgColor: 'bg-stone-100', 
+          textColor: 'text-stone-700', 
+          icon: '⏳',
+          borderColor: 'border-stone-300' 
+        };
+    }
   };
 
   // Fetch user profile
@@ -44,9 +95,41 @@ const Profile = () => {
     }
   };
 
+  // NEW: Fetch progress tracking data for dashboard
+  const fetchProgressData = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        console.warn("No auth token found");
+        return;
+      }
+      const res = await axios.get(
+        "http://localhost:3000/api/inspection-request/client/progress",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProgressData(res.data.progressData);
+    } catch (err) {
+      console.error("Failed to fetch progress data:", err);
+      // If no requests exist, set default state
+      if (err.response?.status === 404 || err.response?.data?.progressData) {
+        setProgressData(err.response?.data?.progressData || {
+          inspectionRequest: { status: 'no_requests', message: 'No inspection requests yet' },
+          inspectionProgress: { status: 'no_requests', message: 'No inspection progress yet' },
+          reportProgress: { status: 'no_requests', message: 'No reports yet' }
+        });
+      }
+    }
+  };
+
   useEffect(() => {
-    fetchUser();
-    fetchInspections();
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      fetchUser();
+      fetchInspections();
+      fetchProgressData(); // NEW: Fetch progress data for dashboard
+    } else {
+      navigate("/login");
+    }
     
     // Check if we should automatically switch to inspection section
     if (window.location.hash === "#inspection") {
@@ -58,6 +141,7 @@ const Profile = () => {
     const handleStorageChange = (e) => {
       if (e.key === 'inspection-request-submitted') {
         fetchInspections();
+        fetchProgressData(); // NEW: Refresh progress data when new request submitted
         setActiveSection("inspection");
         localStorage.removeItem('inspection-request-submitted');
       }
@@ -69,6 +153,7 @@ const Profile = () => {
     const handleFocus = () => {
       if (localStorage.getItem('inspection-request-submitted')) {
         fetchInspections();
+        fetchProgressData(); // NEW: Refresh progress data on focus
         setActiveSection("inspection");
         localStorage.removeItem('inspection-request-submitted');
       }
@@ -138,12 +223,83 @@ const Profile = () => {
               Recent Activities
             </h2>
             <div className="grid grid-cols-2 gap-4">
+              {/* Inspection Request Progress */}
+              {progressData && (
+                <>
+                  <div className={`shadow-md p-4 rounded border ${getStatusStyle(progressData.inspectionRequest?.status).bgColor} ${getStatusStyle(progressData.inspectionRequest?.status).borderColor}`}>
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{getStatusStyle(progressData.inspectionRequest?.status).icon}</span>
+                      <h3 className={`font-semibold ${getStatusStyle(progressData.inspectionRequest?.status).textColor}`}>
+                        Inspection Request
+                      </h3>
+                    </div>
+                    <p className={`text-sm ${getStatusStyle(progressData.inspectionRequest?.status).textColor}`}>
+                      {progressData.inspectionRequest?.message || 'No inspection requests yet'}
+                    </p>
+                    {progressData.inspectionRequest?.details && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        {progressData.inspectionRequest.details}
+                      </p>
+                    )}
+                    {progressData.inspectionRequest?.date && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(progressData.inspectionRequest.date).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Inspection Progress */}
+                  <div className={`shadow-md p-4 rounded border ${getStatusStyle(progressData.inspectionProgress?.status).bgColor} ${getStatusStyle(progressData.inspectionProgress?.status).borderColor}`}>
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{getStatusStyle(progressData.inspectionProgress?.status).icon}</span>
+                      <h3 className={`font-semibold ${getStatusStyle(progressData.inspectionProgress?.status).textColor}`}>
+                        Inspection Progress
+                      </h3>
+                    </div>
+                    <p className={`text-sm ${getStatusStyle(progressData.inspectionProgress?.status).textColor}`}>
+                      {progressData.inspectionProgress?.message || 'No inspection progress yet'}
+                    </p>
+                    {progressData.inspectionProgress?.inspector && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        {progressData.inspectionProgress.inspector}
+                      </p>
+                    )}
+                    {progressData.inspectionProgress?.date && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(progressData.inspectionProgress.date).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Report Progress */}
+                  <div className={`shadow-md p-4 rounded border ${getStatusStyle(progressData.reportProgress?.status).bgColor} ${getStatusStyle(progressData.reportProgress?.status).borderColor}`}>
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{getStatusStyle(progressData.reportProgress?.status).icon}</span>
+                      <h3 className={`font-semibold ${getStatusStyle(progressData.reportProgress?.status).textColor}`}>
+                        Report Progress
+                      </h3>
+                    </div>
+                    <p className={`text-sm ${getStatusStyle(progressData.reportProgress?.status).textColor}`}>
+                      {progressData.reportProgress?.message || 'No reports yet'}
+                    </p>
+                    {progressData.reportProgress?.details && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        {progressData.reportProgress.details}
+                      </p>
+                    )}
+                    {progressData.reportProgress?.date && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(progressData.reportProgress.date).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+              
+              {/* Static sections for other project phases */}
               {[
-                "Inspection Request",
                 "Payment Progress",
-                "Inspection Progress",
-                "Report Progress",
-                "Requirements Finalized",
+                "Requirements Finalized", 
                 "3D Planning",
                 "Material Finalized",
               ].map((activity, index) => (
