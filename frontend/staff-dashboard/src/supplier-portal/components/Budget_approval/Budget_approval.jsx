@@ -18,7 +18,7 @@ function Budget_approval() {
     try {
       setLoading(true);
       // Fetch purchase orders with BudgetApproval origin
-      const response = await axios.get('http://localhost:3000/api/purchase-orders');
+      const response = await axios.get('/api/purchase-orders');
       const budgetOrders = response.data.filter(order => order.requestOrigin === 'BudgetApproval');
       setBudgetRequests(budgetOrders);
       setLoading(false);
@@ -137,89 +137,96 @@ function Budget_approval() {
           </div>
         </div>
 
-        {/* Sections */}
+        {/* Sections - Three Column Layout */}
         <div className="budget-sections">
-          {/* Approved Section */}
-          {groupedRequests.approved.length > 0 && (
-            <div className="budget-section">
-              <h3>✅ Approved ({groupedRequests.approved.length})</h3>
-              {groupedRequests.approved.map((request) => (
-                <div key={request._id} className="budget-card approved">
-                  <div>
-                    <p className="title">{request.name}</p>
-                    <p className="requester">By: {request.requesterName || 'Unknown'}</p>
-                    <p className="amount">LKR {(request.totalAmount || 0).toLocaleString()}</p>
-                    <p className="date">
-                      {request.financeApproval?.approvedAt 
-                        ? new Date(request.financeApproval.approvedAt).toLocaleDateString()
-                        : new Date(request.createdAt).toLocaleDateString()
-                      }
-                    </p>
+          {/* Left Column - Approved */}
+          <div className="budget-column">
+            {groupedRequests.approved.length > 0 && (
+              <div className="budget-section">
+                <h3>✅ Approved ({groupedRequests.approved.length})</h3>
+                {groupedRequests.approved.map((request) => (
+                  <div key={request._id} className="budget-card approved">
+                    <div>
+                      <p className="title">{request.name}</p>
+                      <p className="requester">By: {request.requesterName || 'Unknown'}</p>
+                      <p className="amount">LKR {(request.totalAmount || 0).toLocaleString()}</p>
+                      <p className="date">
+                        {request.financeApproval?.approvedAt 
+                          ? new Date(request.financeApproval.approvedAt).toLocaleDateString()
+                          : new Date(request.createdAt).toLocaleDateString()
+                        }
+                      </p>
+                    </div>
+                    <span className="status approved">Approved</span>
                   </div>
-                  <span className="status approved">Approved</span>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Processing Section */}
-          {groupedRequests.processing.length > 0 && (
-            <div className="budget-section">
-              <h3>⏳ Processing ({groupedRequests.processing.length})</h3>
-              {groupedRequests.processing.map((request) => (
-                <div key={request._id} className="budget-card processing">
-                  <div>
-                    <p className="title">{request.name}</p>
-                    <p className="requester">By: {request.requesterName || 'Unknown'}</p>
-                    <p className="amount">LKR {(request.totalAmount || 0).toLocaleString()}</p>
-                    <p className="date">{new Date(request.createdAt).toLocaleDateString()}</p>
+          {/* Middle Column - Processing & Rejected */}
+          <div className="budget-column">
+            {/* Processing Section */}
+            {groupedRequests.processing.length > 0 && (
+              <div className="budget-section">
+                <h3>⏳ Processing ({groupedRequests.processing.length})</h3>
+                {groupedRequests.processing.map((request) => (
+                  <div key={request._id} className="budget-card processing">
+                    <div>
+                      <p className="title">{request.name}</p>
+                      <p className="requester">By: {request.requesterName || 'Unknown'}</p>
+                      <p className="amount">LKR {(request.totalAmount || 0).toLocaleString()}</p>
+                      <p className="date">{new Date(request.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <span className="status processing">Processing</span>
                   </div>
-                  <span className="status processing">Processing</span>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          {/* Rejected Section */}
-          {groupedRequests.rejected.length > 0 && (
-            <div className="budget-section">
-              <h3>❌ Rejected ({groupedRequests.rejected.length})</h3>
-              {groupedRequests.rejected.map((request) => (
-                <div key={request._id} className="budget-card rejected">
-                  <div>
-                    <p className="title">{request.name}</p>
-                    <p className="requester">By: {request.requesterName || 'Unknown'}</p>
-                    <p className="amount">LKR {(request.totalAmount || 0).toLocaleString()}</p>
-                    <p className="date">
-                      {request.financeApproval?.approvedAt 
-                        ? new Date(request.financeApproval.approvedAt).toLocaleDateString()
-                        : new Date(request.createdAt).toLocaleDateString()
-                      }
-                    </p>
+            {/* Rejected Section */}
+            {groupedRequests.rejected.length > 0 && (
+              <div className="budget-section">
+                <h3>❌ Rejected ({groupedRequests.rejected.length})</h3>
+                {groupedRequests.rejected.map((request) => (
+                  <div key={request._id} className="budget-card rejected">
+                    <div>
+                      <p className="title">{request.name}</p>
+                      <p className="requester">By: {request.requesterName || 'Unknown'}</p>
+                      <p className="amount">LKR {(request.totalAmount || 0).toLocaleString()}</p>
+                      <p className="date">
+                        {request.financeApproval?.approvedAt 
+                          ? new Date(request.financeApproval.approvedAt).toLocaleDateString()
+                          : new Date(request.createdAt).toLocaleDateString()
+                        }
+                      </p>
+                    </div>
+                    <span className="status rejected">Rejected</span>
                   </div>
-                  <span className="status rejected">Rejected</span>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Draft Section */}
-          {groupedRequests.draft.length > 0 && (
-            <div className="budget-section">
-              <h3>📝 Draft ({groupedRequests.draft.length})</h3>
-              {groupedRequests.draft.map((request) => (
-                <div key={request._id} className="budget-card draft">
-                  <div>
-                    <p className="title">{request.name}</p>
-                    <p className="requester">By: {request.requesterName || 'Unknown'}</p>
-                    <p className="amount">LKR {(request.totalAmount || 0).toLocaleString()}</p>
-                    <p className="date">{new Date(request.createdAt).toLocaleDateString()}</p>
+          {/* Right Column - Draft */}
+          <div className="budget-column">
+            {groupedRequests.draft.length > 0 && (
+              <div className="budget-section">
+                <h3>📝 Draft ({groupedRequests.draft.length})</h3>
+                {groupedRequests.draft.map((request) => (
+                  <div key={request._id} className="budget-card draft">
+                    <div>
+                      <p className="title">{request.name}</p>
+                      <p className="requester">By: {request.requesterName || 'Unknown'}</p>
+                      <p className="amount">LKR {(request.totalAmount || 0).toLocaleString()}</p>
+                      <p className="date">{new Date(request.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <span className="status draft">Draft</span>
                   </div>
-                  <span className="status draft">Draft</span>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Empty State */}
           {filteredRequests.length === 0 && (

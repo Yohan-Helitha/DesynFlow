@@ -102,10 +102,10 @@ export const AddWarrantyModal = ({ onClose, onCreated }) => {
         setLoading(true);
         setError('');
         const [projRes, matRes] = await Promise.all([
-          axios.get('http://localhost:3000/api/projects', {
+          axios.get('/api/projects', {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('http://localhost:3000/api/materials', {
+          axios.get('/api/materials', {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -140,7 +140,7 @@ export const AddWarrantyModal = ({ onClose, onCreated }) => {
     }
     try {
       setWarrantiesLoading(true);
-      const res = await axios.get('http://localhost:3000/api/warranties', {
+      const res = await axios.get('/api/warranties', {
         params: { projectId },
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -247,7 +247,7 @@ export const AddWarrantyModal = ({ onClose, onCreated }) => {
         duration,
       };
       const res = await axios.post(
-        'http://localhost:3000/api/warranties',
+        '/api/warranties',
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

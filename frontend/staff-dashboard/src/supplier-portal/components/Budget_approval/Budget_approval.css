@@ -7,8 +7,9 @@ body {
 }
 
 .budget-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: auto;
+  padding: 20px;
 }
 
 /* Header */
@@ -16,12 +17,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .budget-header h2 {
-  font-size: 28px;
+  font-size: 24px;
   color: #333;
+  margin: 0;
 }
 
 .new-request-btn {
@@ -40,56 +42,93 @@ body {
   background: linear-gradient(135deg, #50352b, #704739);
 }
 
-/* Sections Layout */
+/* Three Column Sections Layout */
 .budget-sections {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 25px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.budget-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.budget-section {
+  padding: 0;
+  margin-bottom: 20px;
 }
 
 .budget-section h3 {
-  font-size: 20px;
-  margin-bottom: 15px;
+  font-size: 16px;
+  margin: 0 0 12px 0;
   color: #444;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Budget Cards */
+/* Compact Budget Cards */
 .budget-card {
   background: #fff;
-  padding: 18px 20px;
-  border-radius: 14px;
-  margin-bottom: 15px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-left: 3px solid transparent;
 }
 
 .budget-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.budget-card.approved {
+  border-left-color: #28a745;
+}
+
+.budget-card.processing {
+  border-left-color: #ffc107;
+}
+
+.budget-card.rejected {
+  border-left-color: #dc3545;
+}
+
+.budget-card.draft {
+  border-left-color: #6c757d;
 }
 
 .budget-card .title {
   font-weight: 600;
-  font-size: 16px;
-  margin: 0;
+  font-size: 14px;
+  margin: 0 0 4px 0;
   color: #333;
+  line-height: 1.3;
 }
 
 .budget-card .amount {
-  font-size: 14px;
+  font-size: 12px;
   color: #555;
-  margin-top: 4px;
+  margin: 2px 0;
+  font-weight: 500;
 }
 
-/* Status Tags */
+/* Compact Status Tags */
 .status {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
   font-weight: bold;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .status.approved {
@@ -112,20 +151,20 @@ body {
   color: #666;
 }
 
-/* New Dynamic Elements */
+/* Compact Controls */
 .budget-controls {
   display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
+  gap: 12px;
+  margin-bottom: 20px;
   align-items: center;
 }
 
 .search-input {
   flex: 1;
-  padding: 10px 15px;
+  padding: 8px 12px;
   border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 13px;
   transition: border-color 0.3s;
 }
 
@@ -135,55 +174,56 @@ body {
 }
 
 .status-filter {
-  padding: 10px 15px;
+  padding: 8px 12px;
   border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 13px;
   background: white;
   cursor: pointer;
 }
 
+/* Compact Stats */
 .budget-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  margin-bottom: 30px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .stat-item {
   background: white;
-  padding: 20px;
-  border-radius: 12px;
+  padding: 15px;
+  border-radius: 8px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .stat-number {
   display: block;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
   color: #674636;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #666;
   text-transform: uppercase;
   font-weight: 600;
 }
 
 .budget-card .requester {
-  font-size: 12px;
+  font-size: 11px;
   color: #888;
-  margin: 2px 0;
+  margin: 1px 0;
   font-style: italic;
 }
 
 .budget-card .date {
-  font-size: 11px;
+  font-size: 10px;
   color: #aaa;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .loading-message, .error-message {
@@ -199,29 +239,49 @@ body {
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   color: #666;
   grid-column: 1 / -1;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  margin-top: 20px;
 }
 
 .empty-state p {
-  margin: 10px 0;
-  font-size: 16px;
+  margin: 8px 0;
+  font-size: 14px;
 }
 
-/* Responsive updates */
+/* Responsive updates for three columns */
+@media (max-width: 1200px) {
+  .budget-sections {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  
+  .budget-container {
+    max-width: 1000px;
+  }
+}
+
 @media (max-width: 900px) {
   .budget-sections {
     grid-template-columns: 1fr;
+    gap: 15px;
   }
   
   .budget-stats {
     grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
   
   .budget-controls {
     flex-direction: column;
     align-items: stretch;
+  }
+  
+  .budget-container {
+    padding: 15px;
   }
 }
 
@@ -229,11 +289,14 @@ body {
   .budget-stats {
     grid-template-columns: 1fr;
   }
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .budget-sections {
-    grid-template-columns: 1fr;
+  
+  .budget-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .budget-header h2 {
+    text-align: center;
   }
 }

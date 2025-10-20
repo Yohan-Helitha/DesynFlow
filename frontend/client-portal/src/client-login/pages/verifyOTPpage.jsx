@@ -12,7 +12,7 @@ const VerifyOTPPage = () => {
 
   useEffect(() => {
     if (token) {
-      fetch(`http://localhost:3000/api/auth/verify-email?token=${token}`)
+      fetch(`http://localhost:4000/api/auth/verify-email?token=${token}`)
         .then(res => res.json())
         .then(data => data.message ? setMessage(data.message) : setError("Verification failed"))
         .catch(() => setError("Server error"))
@@ -24,7 +24,7 @@ const VerifyOTPPage = () => {
     e.preventDefault();
     if (!otp || otp.length !== 6) return setError("Enter 6-digit OTP");
     try {
-      const res = await fetch("http://localhost:3000/api/auth/verify-otp", {
+      const res = await fetch("http://localhost:4000/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, pin: otp }),
