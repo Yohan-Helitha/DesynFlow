@@ -99,9 +99,43 @@ export const getProjectById = async (req, res) => {
     try{
 
         const{ id } = req.params;
-        const project = await Project.findById(id).populate('assignedTeamId milestones clientId');
+        let project = await Project.findById(id).populate('assignedTeamId milestones clientId');
         if(!project){
             return res.status(404).json({ message: 'Project not found' });
+        }
+
+        // If project has an assigned team, populate the team members with user details
+        if (project.assignedTeamId && project.assignedTeamId.members) {
+            const User = (await import('../../auth/model/user.model.js')).default;
+            
+            console.log('Original team members:', project.assignedTeamId.members);
+            
+            const populatedMembers = await Promise.all(
+                project.assignedTeamId.members.map(async (member) => {
+                    console.log('Processing member:', member);
+                    console.log('Member userId:', member.userId);
+                    const user = await User.findById(member.userId, 'username email role');
+                    console.log('Found user:', user);
+                    return {
+                        userId: user,
+                        role: member.role,
+                        availability: member.availability,
+                        workload: member.workload
+                    };
+                })
+            );
+
+            console.log('Populated members:', populatedMembers);
+
+            // Create a new team object with populated members
+            const teamData = project.assignedTeamId.toJSON();
+            teamData.members = populatedMembers;
+            
+            // Update the project data
+            const projectData = project.toJSON();
+            projectData.assignedTeamId = teamData;
+            
+            return res.json(projectData);
         }
 
         res.json(project);
