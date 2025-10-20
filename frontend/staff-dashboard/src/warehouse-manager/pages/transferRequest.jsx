@@ -768,12 +768,6 @@ const TransferRequest = () => {
                   >
                     To Location
                   </li>
-                  <li
-                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${filterBy === "status" ? "bg-gray-200" : ""}`}
-                    onClick={() => { setFilterBy("status"); setSearchQuery(""); setShowFilter(false); }}
-                  >
-                    Status
-                  </li>
                 </ul>
               </div>
             )}
@@ -849,7 +843,6 @@ const TransferRequest = () => {
                 <th className="border border-gray-300 px-4 py-2 w-48">To Location</th>
                 <th className="border border-gray-300 px-4 py-2 w-24">Quantity</th>
                 <th className="border border-gray-300 px-4 py-2 w-56">Reason</th>
-                <th className="border border-gray-300 px-4 py-2 w-32">Status</th>
                 <th className="border border-gray-300 px-4 py-2 w-32">Required By</th>
               </tr>
             </thead>
@@ -881,16 +874,6 @@ const TransferRequest = () => {
                     <td className="border border-gray-300 px-4 py-2">{request.toLocation}</td>
                     <td className="border border-gray-300 px-4 py-2">{request.quantity}</td>
                     <td className="border border-gray-300 px-4 py-2">{request.reason}</td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        request.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        request.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {request.status}
-                      </span>
-                    </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {request.requiredBy ? new Date(request.requiredBy).toLocaleDateString() : "-"}
                     </td>
@@ -1081,7 +1064,7 @@ const TransferRequest = () => {
             Close
           </button>
           <button
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+            className="px-6 py-2.5 bg-amber-900 hover:bg-amber-800 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
             onClick={() => {
               closeModal();
               navigate(`/warehouse-manager/transfer-request/update/${selectedRequest._id}`);
