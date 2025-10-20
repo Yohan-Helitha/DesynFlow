@@ -126,34 +126,62 @@ export async function generateEstimateAndUpdateStatus(inspectionRequestId, dista
 
 // 4. Verify payment and update status in both tables
 export async function verifyPaymentAndUpdateStatus(inspectionRequestId, paymentAmount) {
-  const estimation = await InspectionEstimation.findOne({ inspectionRequestId });
-  if (!estimation) throw new Error('Estimation not found');
-  const verified = Number(paymentAmount) >= Number(estimation.estimatedCost || 0);
+  // Load the existing estimation (previous state)
+  const prevEstimation = await InspectionEstimation.findOne({ inspectionRequestId }).lean();
+  if (!prevEstimation) throw new Error('Estimation not found');
+
+  const prevStatus = String(prevEstimation.paymentStatus || '').toLowerCase();
+  const prevPaidAmount = Number(prevEstimation.paymentAmount) || 0;
+
+  // Normalize incoming amount to a number
+  const paid = Number(paymentAmount) || 0;
+  const verified = paid >= Number(prevEstimation.estimatedCost || 0);
   const nextPaymentStatus = verified ? 'verified' : 'rejected';
-  // Update payment fields on estimation only
+
+  // Update payment fields on estimation
   const updateDoc = {
-    paymentAmount: Number(paymentAmount),
+    paymentAmount: paid,
     paymentStatus: nextPaymentStatus,
   };
-  const prevEstimation = await InspectionEstimation.findOneAndUpdate(
+  const updatedEstimation = await InspectionEstimation.findOneAndUpdate(
     { inspectionRequestId },
     updateDoc,
     { new: true }
   );
-  // Optionally, advance request to next workflow status if desired; skipping by default
+
   // Finance summary balance adjustments
-  if (typeof paymentAmount === 'number') {
-    const prevStatus = prevEstimation?.paymentStatus;
-    if (prevStatus !== 'verified' && nextPaymentStatus === 'verified') {
-      await incrementIncome(paymentAmount);
-      await adjustBalance(paymentAmount);
+  // Cases to handle:
+  // - prev was not verified, now verified => add paid
+  // - prev was verified, now not verified => remove previously recorded amount
+  // - prev was verified, now verified but amount changed => adjust by delta
+  const prevWasVerified = prevStatus === 'verified';
+  const nextIsVerified = nextPaymentStatus === 'verified';
+
+  if (!prevWasVerified && nextIsVerified) {
+    // New verification -> add paid amount
+    if (paid > 0) {
+      await incrementIncome(paid);
+      await adjustBalance(paid);
     }
-    if (prevStatus === 'verified' && nextPaymentStatus !== 'verified') {
-      await decrementIncome(paymentAmount);
-      await adjustBalance(-paymentAmount);
+  } else if (prevWasVerified && !nextIsVerified) {
+    // Previously verified but now unverified -> remove previous income
+    if (prevPaidAmount > 0) {
+      await decrementIncome(prevPaidAmount);
+      await adjustBalance(-prevPaidAmount);
+    }
+  } else if (prevWasVerified && nextIsVerified) {
+    // Both verified -> handle amount change (delta)
+    const delta = paid - prevPaidAmount;
+    if (delta > 0) {
+      await incrementIncome(delta);
+      await adjustBalance(delta);
+    } else if (delta < 0) {
+      await decrementIncome(Math.abs(delta));
+      await adjustBalance(delta); // delta is negative
     }
   }
-  return { paymentStatus: nextPaymentStatus };
+
+  return { paymentStatus: nextPaymentStatus, paymentAmount: updatedEstimation.paymentAmount };
 }
 
 // Upload receipt URL and mark as 'uploaded'

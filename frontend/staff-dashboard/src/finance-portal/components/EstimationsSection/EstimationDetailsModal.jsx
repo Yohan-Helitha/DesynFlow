@@ -3,8 +3,8 @@ import React from 'react';
 export const EstimationDetailsModal = ({ estimation, onClose }) => {
   if (!estimation) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-[#FFF8E8] rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-hidden">
+      <div className="bg-[#FFF8E8] rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#AAB396]">
           <h3 className="text-lg font-medium text-[#674636]">Estimation Details</h3>
@@ -14,7 +14,7 @@ export const EstimationDetailsModal = ({ estimation, onClose }) => {
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4 text-[#674636]">
+  <div className="p-6 space-y-4 text-[#674636] break-words">
           <div>
             <span className="font-medium">Project ID:</span> {estimation.projectId}
           </div>

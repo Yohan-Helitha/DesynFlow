@@ -20,7 +20,14 @@ export const ViewHistoryModal = ({ historyData }) => {
   };
 
   // Filter and paginate data (null-safe string coercion)
-  const filteredData = (historyData || []).filter((item) => {
+  // Ensure newest-first ordering
+  const sortedHistory = (Array.isArray(historyData) ? historyData.slice() : []).sort((a, b) => {
+    const at = new Date(a.createdAt || a.createdDate || 0).getTime();
+    const bt = new Date(b.createdAt || b.createdDate || 0).getTime();
+    return bt - at;
+  });
+
+  const filteredData = (sortedHistory || []).filter((item) => {
     const q = (searchTerm || '').toLowerCase();
     const req = item?.inspectionRequest || {};
     const reqIdText = String(item?.inspectionRequestId ?? '').toLowerCase();

@@ -78,36 +78,50 @@ async function getLatestEstimate(req, res) {
 
 async function getProjectsWithInspections(req, res) {
   try {
-    // Get all projects with inspection data, focusing on projects without estimates created
-    const projects = await Project.find({ estimateCreated: false })
-        .populate({
-          path: 'inspectionId',
-          model: 'InspectionRequest',
-          // Include both client_name and email, plus address/city for site location
-          select: 'client_name email propertyLocation_address propertyLocation_city propertyType status createdAt',
-        })
+    // Get projects without estimations created yet. We'll include those whose linked inspection request is completed.
+    // Select projects that are Active and have no estimate created yet (first-time estimations)
+    const projects = await Project.find({ estimateCreated: false, status: 'Active' })
+      .populate({
+        path: 'inspectionId',
+        model: 'InspectionRequest',
+        // Include both client_name and email, plus address/city and status for site location and inspection status
+        select: 'client_name email propertyLocation_address propertyLocation_city propertyType status createdAt',
+      })
       .populate('projectManagerId', 'name email')
       .populate('clientId', 'name email')
       .sort({ createdAt: -1 });
 
-    // Filter out projects without valid inspection data, and enrich a human-friendly siteLocation string
-    const validProjects = projects
-      .filter(project => project.inspectionId)
-      .map(p => {
-        const i = p.inspectionId || {};
-        const address = i.propertyLocation_address || '';
-        const city = i.propertyLocation_city || '';
-        const siteLocation = address && city ? `${address}, ${city}` : (address || city || undefined);
-        // Attach derived fields without mutating mongoose docs
-        return {
-          ...(p.toObject ? p.toObject() : p),
-          inspectionId: {
-            ...(i.toObject ? i.toObject() : i),
-            client_name: i.client_name || i.email, // fallback to email if name missing
-            siteLocation // for convenience if frontend wants a single string
-          }
-        };
+    // Filter projects where the linked inspection has status 'completed' (case-insensitive).
+    // Be tolerant: if inspection is not populated but an ObjectId exists, attempt to fetch it.
+    const validProjects = [];
+    for (const p of projects) {
+      let inspection = p.inspectionId;
+
+      // If inspectionId is just an ObjectId, try to fetch the inspection doc explicitly
+      if (inspection && inspection._bsontype === 'ObjectID') {
+        try {
+          inspection = await InspectionRequest.findById(inspection).select('client_name email propertyLocation_address propertyLocation_city propertyType status createdAt').lean();
+        } catch (e) {
+          inspection = null;
+        }
+      }
+
+  // Now only include projects that are Active (we already filtered in DB). Keep inspection if present.
+
+      const i = inspection || {};
+      const address = i.propertyLocation_address || '';
+      const city = i.propertyLocation_city || '';
+      const siteLocation = address && city ? `${address}, ${city}` : (address || city || undefined);
+
+      validProjects.push({
+        ...(p.toObject ? p.toObject() : p),
+        inspectionId: {
+          ...(i.toObject ? i.toObject() : i),
+          client_name: i.client_name || i.email, // fallback to email if name missing
+          siteLocation // for convenience if frontend wants a single string
+        }
       });
+    }
 
     res.json(validProjects);
   } catch (err) {

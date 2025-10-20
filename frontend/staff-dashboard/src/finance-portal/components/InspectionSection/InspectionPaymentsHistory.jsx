@@ -53,7 +53,14 @@ export const InspectionPaymentsHistory = () => {
       const res = await fetch('/api/inspection-estimation/payment-status/filter');
       if (!res.ok) throw new Error('Failed to fetch inspection payments history');
       const data = await res.json();
-      setPendingPayments(data);
+      // Sort history newest-first by createdAt
+      const arr = Array.isArray(data) ? data : [];
+      arr.sort((a, b) => {
+        const at = new Date(a.createdAt || a.createdDate || 0).getTime();
+        const bt = new Date(b.createdAt || b.createdDate || 0).getTime();
+        return bt - at;
+      });
+      setPendingPayments(arr);
     } catch (err) {
       setError(err.message || 'Unknown error');
     } finally {

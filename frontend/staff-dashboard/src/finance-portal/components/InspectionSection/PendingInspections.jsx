@@ -39,7 +39,14 @@ export const PendingInspections = () => {
     fetch('/api/inspection-estimation/pending')
       .then((res) => res.json())
       .then((data) => {
-        setPendingInspections(Array.isArray(data) ? data : []);
+        // Ensure newest items appear first (sort by createdAt descending)
+        const arr = Array.isArray(data) ? data : [];
+        arr.sort((a, b) => {
+          const at = new Date(a.createdAt || a.createdDate || 0).getTime();
+          const bt = new Date(b.createdAt || b.createdDate || 0).getTime();
+          return bt - at;
+        });
+        setPendingInspections(arr);
         setLoading(false);
       })
       .catch((err) => {

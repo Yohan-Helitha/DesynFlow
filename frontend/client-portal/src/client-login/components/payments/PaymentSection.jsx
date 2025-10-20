@@ -203,12 +203,20 @@ export default function PaymentSection() {
   const token = useAuthToken();
 
   // Helpers
+  const getId = (v) => {
+    if (!v) return v;
+    if (typeof v === 'object') return v._id || v.id || String(v);
+    return v;
+  };
   const normStatus = (s) => String(s || '').toLowerCase();
   const isApproved = (s) => {
     const v = normStatus(s);
     return v === 'verified' || v === 'approved';
   };
-  const getProjectPayments = (projectId) => myPayments.filter(p => String(p.projectId) === String(projectId));
+  const getProjectPayments = (projectId) => {
+    const pid = String(getId(projectId));
+    return myPayments.filter(p => String(getId(p.projectId)) === pid);
+  };
   const getProjectPayment = (projectId, type) => getProjectPayments(projectId).find(p => String(p.type).toLowerCase() === String(type).toLowerCase());
   const getLatestPendingPayment = (projectId, type) => {
     const list = getProjectPayments(projectId).filter(p => String(p.type).toLowerCase() === String(type).toLowerCase() && !isApproved(p.status));
@@ -305,10 +313,13 @@ export default function PaymentSection() {
       const res = await axios.get('http://localhost:3000/api/projects', { headers: { Authorization: `Bearer ${token}` } });
       // Filter projects belonging to client if backend supports clientId on project
       const list = (res.data || []).filter(p => {
-        if (!me) return true;
-        if (p.clientId) return String(p.clientId) === String(me._id || me.id);
-        if (p.ownerId) return String(p.ownerId) === String(me._id || me.id);
-        return true; // leave for now if no client relation
+        if (!me) return true; // first run before me is loaded; we'll refetch later
+        const meId = String(getId(me?._id || me?.id));
+        const client = getId(p.clientId);
+        const owner = getId(p.ownerId);
+        if (client) return String(client) === meId;
+        if (owner) return String(owner) === meId;
+        return false; // hide unrelated projects
       });
       setProjects(list);
     } catch (err) {
@@ -522,7 +533,8 @@ export default function PaymentSection() {
               const finalStatus = normStatus(finalPayment?.status);
               const finalVerified = isApproved(finalStatus);
 
-              const eligibleForFinal = advVerified || approvedSum >= advanceAmt;
+              // Only allow final after a valid quotation exists and advance is verified or covered
+              const eligibleForFinal = quoteTotal > 0 && (advVerified || approvedSum >= advanceAmt);
 
               return (
                 <div key={pid} className="border rounded-lg bg-gray-50 p-4 space-y-4">
@@ -531,6 +543,9 @@ export default function PaymentSection() {
                       <p className="font-medium text-lg">{project.projectName || project.name || 'Project'}</p>
                       <p className="text-xs text-gray-500">Quotation Total: LKR {Number(quoteTotal).toLocaleString('en-LK')}</p>
                       <p className="text-xs text-gray-500">Approved Paid: LKR {Number(approvedSum).toLocaleString('en-LK')}</p>
+                      {quoteTotal <= 0 && (
+                        <p className="text-xs text-amber-700 mt-1">Quotation not available yet. Payments will be enabled once the quotation is issued.</p>
+                      )}
                     </div>
                     <div className="text-xs text-gray-500 text-right">
                       Project ID: <span className="font-mono">{String(pid).slice(-6)}</span>
@@ -560,7 +575,7 @@ export default function PaymentSection() {
                           : 'bg-brown-primary text-white hover:bg-brown-primary-700'
                       }`}
                     >
-                      {advVerified ? 'Verified' : advPayment ? 'Re-upload' : 'Upload Proof'}
+                      {advVerified ? 'Verified' : advanceAmt <= 0 ? 'Awaiting Quotation' : (advPayment ? 'Re-upload' : 'Upload Proof')}
                     </button>
                   </div>
 
@@ -581,14 +596,18 @@ export default function PaymentSection() {
                       </div>
                       <button
                         onClick={() => !finalVerified && finalDue > 0 && handleUploadProof(`${pid}-final`)}
-                        disabled={finalVerified || finalDue <= 0}
+                        disabled={finalVerified || finalDue <= 0 || quoteTotal <= 0}
                         className={`px-3 py-1.5 rounded text-sm ${
-                          finalVerified || finalDue <= 0
+                          finalVerified || finalDue <= 0 || quoteTotal <= 0
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-brown-primary text-white hover:bg-brown-primary-700'
                         }`}
                       >
-                        {finalVerified ? 'Verified' : finalPayment ? 'Re-upload' : 'Upload Proof'}
+                        {finalVerified
+                          ? 'Verified'
+                          : quoteTotal <= 0
+                          ? 'Awaiting Quotation'
+                          : (finalPayment ? 'Re-upload' : 'Upload Proof')}
                       </button>
                     </div>
                   )}
