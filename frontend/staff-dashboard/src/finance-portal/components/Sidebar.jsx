@@ -57,10 +57,6 @@ export const Sidebar = ({ onNavigate, currentSection }) => {
 
       {/* Settings & Logout */}
       <div className="p-4 border-t border-[#AAB396]">
-        <div className="flex items-center mb-4 cursor-pointer hover:bg-[#AAB396] hover:text-[#674636] p-2 rounded-md">
-          <Settings size={18} className="mr-3 text-[#F7EED3]" />
-          <span className="text-sm">Settings</span>
-        </div>
         <div className="flex items-center cursor-pointer hover:bg-[#AAB396] hover:text-[#674636] p-2 rounded-md">
           <LogOut size={18} className="mr-3 text-[#F7EED3]" />
           <span className="text-sm">Logout</span>

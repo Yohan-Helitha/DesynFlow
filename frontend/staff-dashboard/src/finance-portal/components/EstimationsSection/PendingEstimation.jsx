@@ -134,7 +134,7 @@ export const PendingEstimation = () => {
           <div className="w-10 h-10 rounded-full bg-[#F7EED3] flex items-center justify-center text-[#674636] mr-3">
             <Clock size={20} />
           </div>
-          <h2 className="text-xl font-semibold text-[#674636]">Projects Pending Estimations</h2>
+          <h2 className="text-xl font-semibold text-[#674636]">Active Projects Pending First Estimation</h2>
         </div>
         <div className="relative">
           <input

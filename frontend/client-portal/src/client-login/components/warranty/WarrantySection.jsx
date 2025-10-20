@@ -74,17 +74,33 @@ export const SubmitWarrantyClaimModal = ({ open, onClose, warranty, onSubmitted 
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Issue Description</label>
-            <textarea value={description} onChange={(e)=>setDescription(e.target.value)} rows={4} className="w-full border rounded p-2" placeholder="Describe the issue" />
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              className="w-full border rounded p-2"
+              placeholder="Describe the issue"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Proof (image/pdf)</label>
-            <input type="file" accept="image/*,application/pdf" onChange={(e)=>setFile(e.target.files?.[0]||null)} />
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
           </div>
           {error && <div className="text-red-600 text-sm">{error}</div>}
         </div>
         <div className="p-4 border-t flex justify-end space-x-2">
           <button onClick={onClose} className="px-4 py-2 rounded border">Cancel</button>
-          <button onClick={handleSubmit} disabled={submitting || !description} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{submitting ? 'Submitting...' : 'Submit Claim'}</button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !description}
+            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+          >
+            {submitting ? 'Submitting...' : 'Submit Claim'}
+          </button>
         </div>
       </div>
     </div>
@@ -94,23 +110,49 @@ export const SubmitWarrantyClaimModal = ({ open, onClose, warranty, onSubmitted 
 export const ViewClaimModal = ({ open, onClose, claim }) => {
   if (!open || !claim) return null;
   const created = claim.createdAt ? new Date(claim.createdAt).toLocaleString() : '';
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-lg rounded shadow-lg">
+        {/* Header */}
         <div className="p-4 border-b flex items-center justify-between">
           <h3 className="text-lg font-semibold">Claim Details</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
         </div>
-        <div className="p-4 space-y-2 text-sm">
-          <div><span className="text-gray-500">Status:</span> <StatusPill status={claim.status} /></div>
-          <div><span className="text-gray-500">Description:</span> <span className="break-words">{claim.issueDescription || '-'}</span></div>
-          <div><span className="text-gray-500">Submitted:</span> {created}</div>
+
+        {/* Body */}
+        <div className="p-4 space-y-4 text-sm text-left">
+          <div className="grid grid-cols-3 gap-3 items-center">
+            <span className="text-gray-500 col-span-1">Status:</span>
+            <div className="col-span-2"><StatusPill status={claim.status} /></div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 items-start">
+            <span className="text-gray-500 col-span-1">Description:</span>
+            <span className="col-span-2 break-words">{claim.issueDescription || '-'}</span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 items-center">
+            <span className="text-gray-500 col-span-1">Submitted:</span>
+            <span className="col-span-2">{created}</span>
+          </div>
+
           {claim.proofUrl && (
-            <div className="mt-2">
-              <a className="text-blue-600 underline" href={`http://localhost:3000${claim.proofUrl}`} target="_blank" rel="noreferrer">View Proof</a>
+            <div className="grid grid-cols-3 gap-3 items-center mt-2">
+              <span className="text-gray-500 col-span-1">Proof:</span>
+              <a
+                className="col-span-2 text-blue-600 underline"
+                href={`http://localhost:3000${claim.proofUrl}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View Proof
+              </a>
             </div>
           )}
         </div>
+
+        {/* Footer */}
         <div className="p-4 border-t flex justify-end">
           <button onClick={onClose} className="px-4 py-2 rounded border">Close</button>
         </div>
@@ -119,14 +161,14 @@ export const ViewClaimModal = ({ open, onClose, claim }) => {
   );
 };
 
+
 const WarrantyRow = ({ w, onSubmitClaim }) => {
   const claimable = useMemo(() => {
     const now = new Date();
     const end = new Date(w.warrantyEnd || w.endDate);
     const start = new Date(w.warrantyStart || w.startDate);
-    // Active or expired within last 90 days
-    const withinWindow = (now - end) <= 90*24*3600*1000;
-    return (w.status === 'Active' || (w.status === 'Expired' && withinWindow));
+    const withinWindow = (now - end) <= 90 * 24 * 3600 * 1000;
+    return w.status === 'Active' || (w.status === 'Expired' && withinWindow);
   }, [w]);
 
   return (
@@ -136,14 +178,30 @@ const WarrantyRow = ({ w, onSubmitClaim }) => {
       <td className="px-4 py-2 text-sm">{w.startDate} → {w.endDate}</td>
       <td className="px-4 py-2 text-sm"><StatusPill status={w.status} /></td>
       <td className="px-4 py-2 text-right">
-        <button onClick={() => onSubmitClaim(w)} disabled={!claimable} className={`px-3 py-1 rounded text-sm ${claimable ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}>Submit Claim</button>
+        <button
+          onClick={() => onSubmitClaim(w)}
+          disabled={!claimable}
+          className={`px-3 py-1 rounded text-sm ${claimable ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
+        >
+          Submit Claim
+        </button>
       </td>
     </tr>
   );
 };
 
+function ViewClaimButton({ claim }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button onClick={() => setOpen(true)} className="px-3 py-1 rounded text-sm bg-gray-100 hover:bg-gray-200">View</button>
+      <ViewClaimModal open={open} onClose={() => setOpen(false)} claim={claim} />
+    </>
+  );
+}
+
 export default function WarrantySection() {
-  const [tab, setTab] = useState('items'); // items | claims
+  const [tab, setTab] = useState('items');
   const [warranties, setWarranties] = useState([]);
   const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -156,11 +214,15 @@ export default function WarrantySection() {
   const fetchWarranties = async () => {
     setLoading(true); setError('');
     try {
-      // get current user id first
       const me = await axios.get('http://localhost:3000/api/user/me', { headers: { Authorization: `Bearer ${token}` } });
       const meId = me.data?._id || me.data?.id;
       const res = await axios.get('http://localhost:3000/api/warranties', { params: { clientId: meId }, headers: { Authorization: `Bearer ${token}` } });
-      setWarranties(res.data || []);
+      // Sort newest-first when possible
+      const arr = Array.isArray(res.data) ? res.data.slice() : [];
+      if (arr.some((it) => it && (it.createdAt || it.createdDate))) {
+        arr.sort((a, b) => new Date(b.createdAt || b.createdDate || 0) - new Date(a.createdAt || a.createdDate || 0));
+      }
+      setWarranties(arr || []);
     } catch (e) { setError(e?.response?.data?.error || e?.message || 'Failed to load warranties'); }
     finally { setLoading(false); }
   };
@@ -168,16 +230,19 @@ export default function WarrantySection() {
   const fetchClaims = async () => {
     setLoading(true); setError('');
     try {
-      // get current user id first
       const me = await axios.get('http://localhost:3000/api/user/me', { headers: { Authorization: `Bearer ${token}` } });
       const meId = me.data?._id || me.data?.id;
       const res = await axios.get('http://localhost:3000/api/claims', { params: { clientId: meId }, headers: { Authorization: `Bearer ${token}` } });
-      setClaims(res.data || []);
+      const arr = Array.isArray(res.data) ? res.data.slice() : [];
+      if (arr.some((it) => it && (it.createdAt || it.createdDate))) {
+        arr.sort((a, b) => new Date(b.createdAt || b.createdDate || 0) - new Date(a.createdAt || a.createdDate || 0));
+      }
+      setClaims(arr || []);
     } catch (e) { setError(e?.response?.data?.error || e?.message || 'Failed to load claims'); }
     finally { setLoading(false); }
   };
 
-  useEffect(() => { if (tab === 'items') fetchWarranties(); else fetchClaims(); /* eslint-disable-next-line */ }, [tab]);
+  useEffect(() => { if (tab === 'items') fetchWarranties(); else fetchClaims(); }, [tab]);
 
   const onSubmitted = () => { setShowSubmit(false); setActiveWarranty(null); setTab('claims'); };
 
@@ -186,8 +251,8 @@ export default function WarrantySection() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Warranty</h2>
         <div className="flex space-x-2">
-          <button onClick={()=>setTab('items')} className={`px-3 py-2 rounded ${tab==='items'?'bg-yellow-200':'hover:bg-gray-200'}`}>Your Items</button>
-          <button onClick={()=>setTab('claims')} className={`px-3 py-2 rounded ${tab==='claims'?'bg-yellow-200':'hover:bg-gray-200'}`}>Your Claims</button>
+          <button onClick={() => setTab('items')} className={`px-3 py-2 rounded ${tab === 'items' ? 'bg-yellow-200' : 'hover:bg-gray-200'}`}>Your Items</button>
+          <button onClick={() => setTab('claims')} className={`px-3 py-2 rounded ${tab === 'claims' ? 'bg-yellow-200' : 'hover:bg-gray-200'}`}>Your Claims</button>
         </div>
       </div>
 
@@ -207,7 +272,7 @@ export default function WarrantySection() {
             </thead>
             <tbody>
               {warranties.map(w => (
-                <WarrantyRow key={w._id} w={w} onSubmitClaim={(wr)=>{ setActiveWarranty(wr); setShowSubmit(true); }} />
+                <WarrantyRow key={w._id} w={w} onSubmitClaim={(wr) => { setActiveWarranty(wr); setShowSubmit(true); }} />
               ))}
               {!loading && warranties.length === 0 && (
                 <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-500">No warranty items found</td></tr>
@@ -237,13 +302,11 @@ export default function WarrantySection() {
                   <td className="px-4 py-2 text-sm">{c?.warrantyId?.itemId?.materialName || '-'}</td>
                   <td className="px-4 py-2 text-sm"><StatusPill status={c.status} /></td>
                   <td className="px-4 py-2 text-sm">{c.createdAt ? new Date(c.createdAt).toLocaleString() : '-'}</td>
-                  <td className="px-4 py-2 text-right">
-                    <ViewClaimButton claim={c} />
-                  </td>
+                  <td className="px-4 py-2 text-right"><ViewClaimButton claim={c} /></td>
                 </tr>
               ))}
               {!loading && claims.length === 0 && (
-                <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-500">No claims submitted yet</td></tr>
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-500">No claims submitted yet</td></tr>
               )}
             </tbody>
           </table>
@@ -251,17 +314,12 @@ export default function WarrantySection() {
         </div>
       )}
 
-      <SubmitWarrantyClaimModal open={showSubmit} onClose={()=>{ setShowSubmit(false); setActiveWarranty(null); }} warranty={activeWarranty} onSubmitted={onSubmitted} />
+      <SubmitWarrantyClaimModal
+        open={showSubmit}
+        onClose={() => { setShowSubmit(false); setActiveWarranty(null); }}
+        warranty={activeWarranty}
+        onSubmitted={onSubmitted}
+      />
     </div>
-  );
-}
-
-function ViewClaimButton({ claim }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <button onClick={()=>setOpen(true)} className="px-3 py-1 rounded text-sm bg-gray-100 hover:bg-gray-200">View</button>
-      <ViewClaimModal open={open} onClose={()=>setOpen(false)} claim={claim} />
-    </>
   );
 }

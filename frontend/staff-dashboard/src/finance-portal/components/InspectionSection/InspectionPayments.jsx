@@ -57,7 +57,14 @@ export const InspectionPayments = () => {
       const res = await fetch('/api/inspection-estimation/payment-pending');
       if (!res.ok) throw new Error('Failed to fetch pending payments');
       const data = await res.json();
-      setPendingPayments(data);
+      // Ensure newest payments appear first
+      const arr = Array.isArray(data) ? data : [];
+      arr.sort((a, b) => {
+        const at = new Date(a.createdAt || a.createdDate || 0).getTime();
+        const bt = new Date(b.createdAt || b.createdDate || 0).getTime();
+        return bt - at;
+      });
+      setPendingPayments(arr);
     } catch (err) {
       setError(err.message || 'Unknown error');
     } finally {

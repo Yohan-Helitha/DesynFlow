@@ -7,7 +7,7 @@ const materialSchema = new Schema({
   category: { type: String, required: true },
   type: { type: String, required: true },
   unit: { type: String, required: true },
-  warrantyPeriod: { type: String }, // nullable for raw materials
+  warrantyPeriod: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 

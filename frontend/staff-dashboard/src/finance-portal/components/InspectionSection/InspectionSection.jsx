@@ -24,7 +24,15 @@ export const InspectionSection = ({ initialTab }) => {
           if (!res.ok) throw new Error('Failed to fetch estimation history');
           return res.json();
         })
-        .then(data => setEstimationHistory(data))
+        .then(data => {
+          const arr = Array.isArray(data) ? data : [];
+          arr.sort((a, b) => {
+            const at = new Date(a.createdAt || a.createdDate || 0).getTime();
+            const bt = new Date(b.createdAt || b.createdDate || 0).getTime();
+            return bt - at;
+          });
+          setEstimationHistory(arr);
+        })
         .catch(err => setEstimationError(err.message))
         .finally(() => setLoadingEstimation(false));
     }

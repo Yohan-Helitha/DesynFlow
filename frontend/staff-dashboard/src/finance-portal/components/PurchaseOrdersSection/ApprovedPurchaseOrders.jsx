@@ -130,8 +130,7 @@ export const ApprovedPurchaseOrders = () => {
       return (
         (po.name && String(po.name).toLowerCase().includes(q)) ||
         (po._id && String(po._id).toLowerCase().includes(q)) ||
-        (po.status && String(po.status).toLowerCase().includes(q)) ||
-        getProjectDisplay(po).toLowerCase().includes(q)
+        (po.status && String(po.status).toLowerCase().includes(q))
       )
     })
     .sort((a, b) => {
@@ -180,7 +179,7 @@ export const ApprovedPurchaseOrders = () => {
           <table className="min-w-full divide-y divide-[#AAB396]">
             <thead className="bg-[#F7EED3]">
               <tr>
-                {[{ key: 'name', label: 'Order Name' }, { key: 'projectName', label: 'Project Name' }, { key: 'status', label: 'Status' }, { key: 'totalAmount', label: 'Total Amount' }, { key: 'updatedAt', label: 'Updated At' }].map(({ key, label }) => (
+                {[{ key: 'name', label: 'Order Name' }, { key: 'status', label: 'Status' }, { key: 'totalAmount', label: 'Total Amount' }, { key: 'updatedAt', label: 'Updated At' }].map(({ key, label }) => (
                   <th
                     key={key}
                     className="px-6 py-3 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
@@ -199,7 +198,6 @@ export const ApprovedPurchaseOrders = () => {
               {paginated.map((po) => (
                 <tr key={po._id} className="hover:bg-[#F7EED3]">
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.name || po._id}</td>
-                  <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{getProjectDisplay(po)}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.status}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">LKR {(Number(po.totalAmount)||0).toLocaleString()}</td>
                   <td className="px-6 py-4 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">{po.updatedAt ? new Date(po.updatedAt).toLocaleString() : '-'}</td>
@@ -210,7 +208,7 @@ export const ApprovedPurchaseOrders = () => {
               ))}
               {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-[#AAB396]">No purchase orders found</td>
+                  <td colSpan={5} className="px-6 py-4 text-center text-[#AAB396]">No purchase orders found</td>
                 </tr>
               )}
             </tbody>

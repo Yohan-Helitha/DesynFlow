@@ -37,6 +37,16 @@ const Sidebar = ({ activeSection, onSelect, onLogout }) => {
             Project
           </li>
           <li
+            onClick={() => onSelect("payments")}
+            className={`cursor-pointer p-2 rounded ${
+              activeSection === "payments"
+                ? "bg-brown-primary-200 text-brown-primary"
+                : "hover:bg-cream-medium text-brown-secondary"
+            }`}
+          >
+            Payments
+          </li>
+          <li
             onClick={() => onSelect("warranty")}
             className={`cursor-pointer p-2 rounded ${
               activeSection === "warranty"
