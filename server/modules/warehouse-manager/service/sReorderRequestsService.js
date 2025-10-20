@@ -1,5 +1,6 @@
 import sReorderRequests from "../model/sReorderRequestsModel.js";
 import AuditLog from "../model/auditLogModel.js";
+import { notifySReorderStatusChange } from './FnotificationService.js';
 
 // Get all stock reorder requests
 export const getAllsReorderRequestsService = async () => {
@@ -84,6 +85,22 @@ export const updatesReorderRequestsService = async (id, data) => {
         keyInfo: JSON.stringify(keyInfo),
         createdBy: data.warehouseManagerName || "System"
     });
+
+    // If status changed to Checked or Restocked, create notification
+    if (data.status && (data.status === 'Checked' || data.status === 'Restocked')) {
+        try {
+            await notifySReorderStatusChange({
+                stockReorderRequestId: rawData.stockReorderRequestId || rawData.stockID || rawData.stockReorderRequestId,
+                materialId: rawData.materialId,
+                materialName: rawData.materialName,
+                status: data.status,
+                inventoryId: rawData.inventoryId,
+                inventoryName: rawData.inventoryName
+            });
+        } catch (err) {
+            console.error('Failed to create sReorder status notification', err);
+        }
+    }
 
     return s_reorder_request;
 };

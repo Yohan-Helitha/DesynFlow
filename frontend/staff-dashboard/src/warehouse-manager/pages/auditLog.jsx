@@ -101,9 +101,9 @@ const AuditLogs = () => {
   };
 
   return (
-    <div>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
-      <div className="m-6">
+      <div className="m-6 ">
         <h1 className="text-2xl font-bold mt-6 mb-10">Audit Logs</h1>
 
         {/* Search + Filter */}

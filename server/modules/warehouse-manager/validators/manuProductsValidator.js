@@ -49,6 +49,9 @@ export const validateManuProductInsert = (data) => {
     if (current <= reorder) {
       errors.currentLevel = "Current level must be more than reorder level";
     }
+    if(currentLevel != restockLevel){
+      errors.currentLevel = "Current level must be equal to restock level";
+    }
   }
 
   return errors;

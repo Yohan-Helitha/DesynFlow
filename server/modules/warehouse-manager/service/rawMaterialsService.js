@@ -118,25 +118,6 @@ const keyInfo = {
         createdBy: userId || "WM001"
     });
 
-    if (data.currentLevel <= raw_materials.restockLevel) {
-        const existingAlert = await ThresholdAlert.findOne({
-            materialId: raw_materials.materialId,
-            inventoryId: raw_materials.inventoryId,
-            status: "Pending"
-        });
-
-        if (!existingAlert) {
-            await ThresholdAlert.create({
-                materialId: raw_materials.materialId,
-                materialName: raw_materials.materialName,
-                currentLevel: raw_materials.currentLevel,
-                restockLevel: raw_materials.restockLevel,
-                inventoryId: raw_materials.inventoryId,
-                inventoryName: raw_materials.inventoryName || "Unknown"
-            });
-        }
-    }
-
     return raw_materials;
 };
 

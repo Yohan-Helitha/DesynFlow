@@ -118,27 +118,7 @@ const keyInfo = {
     keyInfo: JSON.stringify(keyInfo),
     createdBy: userId || "WM001"
   });
-
-  // Auto-create threshold alert if needed
-  if (data.currentLevel <= manu_product.restockLevel) {
-    const existingAlert = await ThresholdAlert.findOne({
-      materialId: manu_product.materialId,
-      inventoryId: manu_product.inventoryId,
-      status: "Pending"
-    });
-
-    if (!existingAlert) {
-      await ThresholdAlert.create({
-        materialId: manu_product.materialId,
-        materialName: manu_product.materialName,
-        currentLevel: manu_product.currentLevel,
-        restockLevel: manu_product.restockLevel,
-        inventoryId: manu_product.inventoryId,
-        inventoryName: manu_product.inventoryName || "Unknown"
-      });
-    }
-  }
-
+  
   return manu_product;
 };
 
