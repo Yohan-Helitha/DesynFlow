@@ -4,7 +4,7 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (for better Docker layer caching)
 COPY package*.json ./
 
 # Configure npm for robust installs
@@ -14,16 +14,22 @@ RUN npm config set registry https://registry.npmjs.org/ \
  && npm config set fetch-retry-mintimeout 20000 \
  && npm cache clean --force
 
-# Install dependencies including Tailwind CSS
-RUN if [ -f package-lock.json ]; then npm ci --unsafe-perm; else npm install --unsafe-perm; fi
-RUN npm install -D tailwindcss postcss autoprefixer --unsafe-perm
-RUN npx tailwindcss init -p
+# Install all dependencies from package.json (this includes our new React 19 compatible deps)
+RUN npm install --include=dev --unsafe-perm
+
+# Initialize Tailwind CSS (only if config doesn't exist)
+RUN npx tailwindcss init -p || true
 
 # Copy source code
 COPY . .
 
-# Expose port 3000
-EXPOSE 3000
+# Set environment variables for hot reload
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+ENV FAST_REFRESH=true
 
-# Start development server
+# Expose port 5174 (React's default Vite port)
+EXPOSE 5174
+
+# Start development server with hot reload enabled
 CMD ["npm", "start"]

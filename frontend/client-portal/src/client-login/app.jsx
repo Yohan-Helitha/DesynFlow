@@ -13,6 +13,11 @@ import InspectionRequestDashboard from '../inspection-request/pages/inspectionRe
 import InspectionRequestForm from '../inspection-request/pages/inspectionRequestForm';
 import PaymentForm from '../inspection-request/components/forms/paymentForm';
 import Profile from './components/Profile'; //
+// Public site pages
+import { Home } from '../web/pages/Home';
+import { Gallery } from '../web/pages/Gallery';
+import { AboutUs } from '../web/pages/AboutUS';
+import { ContactUs } from '../web/pages/ContactUS';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -24,13 +29,28 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Redirect authenticated users away from auth pages like /login
+const RedirectIfAuth = ({ children }) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    window.location.href = '/dashboard';
+    return null;
+  }
+  return children;
+};
+
 function App() {
   return (
     <Router>
       <Routes>
-        {/* ===== Authentication Routes (Public) ===== */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/login" element={<LoginPage />} />
+  {/* ===== Public Site Routes (Home is default) ===== */}
+  <Route path="/" element={<Home />} />
+  <Route path="/gallery" element={<Gallery />} />
+  <Route path="/about-us" element={<AboutUs />} />
+  <Route path="/contact-us" element={<ContactUs />} />
+
+  {/* ===== Authentication Routes (Public) ===== */}
+  <Route path="/login" element={<RedirectIfAuth><LoginPage /></RedirectIfAuth>} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -51,7 +71,7 @@ function App() {
           path="/dashboard" 
           element={
             <ProtectedRoute>
-              <InspectionRequestDashboard />
+              <Profile />
             </ProtectedRoute>
           } 
         />
