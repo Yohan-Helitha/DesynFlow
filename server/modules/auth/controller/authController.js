@@ -1,4 +1,5 @@
 import User from "../model/user.model.js";
+import Supplier from "../../supplier/model/supplier.model.js"; // Added for supplier authentication
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -42,30 +43,61 @@ export const loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
     const cleanEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: cleanEmail });
+    
+    // First try User collection (existing logic - unchanged)
+    let user = await User.findOne({ email: cleanEmail });
+    let userType = 'user';
+    
+    // If not found in User collection, try Supplier collection
+    if (!user) {
+      user = await Supplier.findOne({ email: cleanEmail });
+      userType = 'supplier';
+    }
+    
     if (!user) return res.status(400).json({ message: "Invalid email or password" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    // Check if user is active
+    // Check if user/supplier is active
     if (!user.isActive) return res.status(400).json({ message: "Account is deactivated" });
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
+    // Generate JWT token with userType info
+    const token = jwt.sign({ 
+      id: user._id, 
+      role: userType === 'supplier' ? 'supplier' : user.role,
+      userType 
+    }, JWT_SECRET, { expiresIn: "1h" });
     
-    // Return token and user info (excluding sensitive data)
-    res.json({ 
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        phone: user.phone,
-        isVerified: user.isVerified
-      }
-    });
+    // Return token and user info based on type
+    if (userType === 'supplier') {
+      res.json({ 
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          role: 'supplier',
+          name: user.contactName,
+          companyName: user.companyName,
+          phone: user.phone,
+          userType: 'supplier'
+        }
+      });
+    } else {
+      // Original user response (unchanged)
+      res.json({ 
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          phone: user.phone,
+          isVerified: user.isVerified,
+          userType: 'user'
+        }
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaBell, FaSearch, FaClipboardList, FaCheckCircle, FaTimesCircle, FaBox, FaSyncAlt, FaHourglassHalf, FaFileAlt, FaTimes, FaUserTie, FaTruck } from 'react-icons/fa';
 
 const API_BASE = "/api/purchase-orders"; // correct backend port
+import { fetchCurrentSupplier, normalizeStatus, getMaterialName } from '../../utils/supplierUtils';
 
 function OrderDetailsSup() {
   const [orders, setOrders] = useState([]);
@@ -38,7 +39,17 @@ function OrderDetailsSup() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(API_BASE);
+      // Ensure we are operating as the authenticated supplier
+      const supplier = await fetchCurrentSupplier();
+      if (!supplier || !supplier._id) {
+        // If no supplier found for current user, redirect to login
+        navigate('/login');
+        return;
+      }
+
+      // Use supplier-scoped endpoint. Backend should return orders for authenticated supplier.
+      // We prefer a dedicated "mine" endpoint that infers supplier from auth token.
+      const res = await axios.get(`${API_BASE}/mine`);
       setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error fetching orders:", err);
@@ -54,18 +65,16 @@ function OrderDetailsSup() {
     // Auto-refresh removed - users can manually refresh if needed
   }, []);
 
-  const notifications = orders.filter((o) => o.status?.toLowerCase() === "draft");
-  const approvedOrders = orders.filter((o) => o.status?.toLowerCase() === "approved");
+  // Use normalized status comparisons
+  const notifications = orders.filter((o) => normalizeStatus(o.status) === "draft");
+  const approvedOrders = orders.filter((o) => normalizeStatus(o.status) === "approved");
 
   // Filter orders by search term and status
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = (order.supplierId?.companyName || order.supplierId || "").toString().toLowerCase()
-      .includes((searchTerm || "").toLowerCase()) ||
-      (order.items || []).some(item => 
-        (item.materialId?.materialName || item.materialName || "").toString().toLowerCase()
-          .includes((searchTerm || "").toLowerCase())
-      );
-    const matchesStatus = selectedStatus === "all" || order.status?.toLowerCase() === selectedStatus;
+    const supplierName = order.supplierId?.companyName || order.supplierId || "";
+    const matchesSearch = supplierName.toString().toLowerCase().includes((searchTerm || "").toLowerCase()) ||
+      (order.items || []).some(item => getMaterialName(item).toString().toLowerCase().includes((searchTerm || "").toLowerCase()));
+    const matchesStatus = selectedStatus === "all" || normalizeStatus(order.status) === selectedStatus;
     return matchesSearch && matchesStatus;
   });
 
@@ -195,7 +204,7 @@ function OrderDetailsSup() {
             <Link to="/procurement-officer/order_details_sup">My Orders</Link>
           </li>
           <li>
-            <Link to="/procurement-officer/sample_order_list">Sample Orders</Link>
+            <Link to="/procurement-officer/sample_order_list_sup">Sample Orders</Link>
           </li>
           <li>
             <span className="profile-settings-disabled">Profile Settings</span>

@@ -1,8 +1,7 @@
 # Use official Node.js image
-FROM node:22
+FROM node:22-slim
 
-
-# Install system dependencies for Puppeteer
+# Install system dependencies for Puppeteer and development tools
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     fonts-liberation \
@@ -41,27 +40,31 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     wget \
     xdg-utils \
+    curl \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
-# Configure npm for more robust installs and install nodemon globally
+# Configure npm for more robust installs
 RUN npm config set registry https://registry.npmjs.org/ \
  && npm config set fetch-retries 5 \
  && npm config set fetch-retry-factor 10 \
  && npm config set fetch-retry-mintimeout 20000 \
  && npm config set strict-ssl true \
- && npm cache clean --force \
- && npm install -g nodemon
+ && npm cache clean --force
 
-# Install dependencies (always use npm install to handle new dependencies)
-RUN npm install --include=dev --unsafe-perm
+# Install global dependencies once (in the image)
+RUN npm install -g nodemon
 
-# Copy source code
+# Copy package files first (for better Docker layer caching)
+COPY package*.json ./
+
+# Install dependencies in a separate layer (cached unless package.json changes)
+RUN npm install --include=dev --unsafe-perm && npm cache clean --force
+
+# Copy source code (this layer changes frequently)
 COPY . .
 
 # Set the PORT environment variable explicitly
@@ -70,5 +73,5 @@ ENV PORT=4000
 # Expose the port your app runs on
 EXPOSE 4000
 
-# Command to run the app
-CMD ["node", "server.js"]
+# Command to run the app (development mode with nodemon)
+CMD ["npm", "run", "dev"]

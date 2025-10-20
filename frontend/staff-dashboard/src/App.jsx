@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Toaster, toast } from 'sonner'
 import StaffLogin from './staff-login/staffLogin'
+import SupplierLogin from './staff-login/supplierLogin'
 import CSRDashboard from './CSR-portal/pages/CSRDashboard'
 import InspectorDashboard from './inspector-portal/pages/InspectorDashboard'
 import RequestTable from './CSR-portal/component/requestTable'
@@ -68,6 +69,12 @@ function App() {
             {/* Staff Login as default route */}
             <Route path="/" element={<StaffLogin />} />
             <Route path="/login" element={<StaffLogin />} />
+            
+            {/* Supplier Login Route */}
+            <Route path="/supplier-login" element={<SupplierLogin />} />
+            
+            {/* Supplier Dashboard Route */}
+            <Route path="/supplier-dashboard" element={<DashboardSup />} />
             
             {/* Role-based Dashboard Routes */}
             <Route path="/csr-dashboard" element={<CSRDashboard />} />

@@ -31,25 +31,59 @@ const LoginPage = () => {
     e.preventDefault();
     if (!validate()) return;
 
+    console.log('🔐 Starting login process...', { email, password: '***' });
+
     try {
-      const response = await fetch("http://localhost:4000/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      
+      console.log('📡 Response received:', { status: response.status, ok: response.ok });
+      
       const data = await response.json();
+      console.log('📄 Response data:', data);
 
       if (response.ok) {
         if (data.require2FA) {
+          console.log('🔒 2FA required, redirecting to OTP...');
           navigate(`/verify-otp?email=${email}`);
         } else {
-          if (data.token) localStorage.setItem("authToken", data.token);
-          navigate("/profile"); // ✅ Navigate to profile page after successful login
+          // Store token and user data if provided
+          if (data.token) {
+            localStorage.setItem("authToken", data.token);
+            console.log('🎫 Token stored successfully');
+          }
+          if (data.user) {
+            localStorage.setItem("user", JSON.stringify(data.user));
+            console.log('👤 User data stored:', data.user);
+            
+            // Store supplier-specific ID if user is a supplier
+            if (data.user.role === "supplier" && data.user.id) {
+              localStorage.setItem("supplierUserId", data.user.id);
+            }
+          }
+
+          // Role-based navigation
+          const userRole = data.user?.role;
+          console.log('🎭 User role detected:', userRole);
+          
+          if (userRole === "supplier") {
+            console.log('🏢 Redirecting to supplier dashboard...');
+            navigate("/supplier-dashboard");
+          } else {
+            // If role doesn't match any staff role, show error
+            console.log('❌ Role not recognized:', userRole);
+            setError("Access denied. This portal is for staff members only.");
+          }
         }
       } else {
+        console.log('❌ Response not OK:', data);
         setError(data.message || "Login failed");
       }
     } catch (err) {
+      console.error('🚨 Login error:', err);
       setError("Server error, please try again.");
     }
   };
@@ -83,8 +117,8 @@ const LoginPage = () => {
         <div className="w-full max-w-md p-10 bg-white shadow-lg rounded-lg">
           <div className="text-center mb-6">
             <span className="text-4xl">🏠</span>
-            <h2 className="text-2xl font-bold mt-2">InteriDesign</h2>
-            <p className="text-gray-500 mt-1">Login to your account</p>
+            <h2 className="text-2xl font-bold mt-2">Supplier Portal</h2>
+            <p className="text-gray-500 mt-1">Login to your supplier account</p>
           </div>
 
           {error && <div className="text-red-600 mb-4">{error}</div>}
@@ -142,7 +176,7 @@ const LoginPage = () => {
             </button>
           </div>
 
-          {/* Supplier Login Button */}
+          {/* Client Login Button */}
           <div className="text-center mt-4">
             <div className="flex items-center justify-center mb-3">
               <div className="border-t border-gray-300 flex-grow mr-3"></div>
@@ -151,14 +185,14 @@ const LoginPage = () => {
             </div>
             <button
               type="button"
-              onClick={() => window.open('http://localhost:5173/supplier-login', '_blank')}
-              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 flex items-center justify-center space-x-2"
+              onClick={() => window.open('http://localhost:5174', '_blank')}
+              className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 flex items-center justify-center space-x-2"
             >
-              <span>🏢</span>
-              <span>Supplier Login</span>
+              <span>👤</span>
+              <span>Client Login</span>
             </button>
             <p className="text-xs text-gray-500 mt-2">
-              Are you a supplier? Access your supplier portal here
+              Are you a client? Access your client portal here
             </p>
           </div>
         </div>

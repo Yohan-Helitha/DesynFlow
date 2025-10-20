@@ -16,6 +16,7 @@ import {
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar, FaUserTie, FaTruck } from 'react-icons/fa';
+import { fetchCurrentSupplier, normalizeStatus, getMaterialName } from '../../utils/supplierUtils';
 
 ChartJS.register(
   CategoryScale,
@@ -368,238 +369,41 @@ function Dashboard_sup() {
       setLoading(true);
 
       try {
-        // Fetch all suppliers data instead of specific supplier
-        const suppliersResponse = await fetch("/api/suppliers");
-        const suppliersData = await suppliersResponse.json();
-        
-        // Sort suppliers by creation date - newest first
-        const suppliers = suppliersData.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
-          return dateB - dateA; // Newest first
-        });
-        
-        if (!suppliers || suppliers.length === 0) {
-          setLoading(false);
+        // Ensure supplier is authenticated and available
+        const supplier = await fetchCurrentSupplier();
+        if (!supplier || !supplier._id) {
+          navigate('/login');
           return;
         }
 
-        // Fetch all sample requests
-        const samplesResponse = await fetch("/api/samples/all");
-        const allSamples = await samplesResponse.json();
-        setRequests(Array.isArray(allSamples) ? allSamples : []);
+        // Fetch a supplier-scoped dashboard payload from the backend
+        // Backend should return profile, orders, materials, earnings and requests for this supplier
+        const res = await axios.get('/api/suppliers/me/dashboard');
+        const payload = res.data || {};
 
-        // Fetch all orders from all suppliers
-        const ordersResponse = await fetch("/api/purchase-orders");
-        const ordersData = await ordersResponse.json();
-        
-        // Sort orders by creation date - newest first
-        const allOrders = ordersData.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a._id.substring(0, 8), 16) * 1000);
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b._id.substring(0, 8), 16) * 1000);
-          return dateB - dateA; // Newest first
-        });
+        const orders = Array.isArray(payload.orders) ? payload.orders : [];
+        const materials = Array.isArray(payload.materials) ? payload.materials : [];
+        const earnings = payload.earnings || { thisMonth: 0, lastMonth: 0, totalEarnings: 0, pendingEarnings: 0, growthRate: 0 };
+        const requestsData = Array.isArray(payload.requests) ? payload.requests : [];
 
-        // Fetch all materials from all suppliers
-        const materialsResponse = await fetch("/api/materials");
-        const materials = await materialsResponse.json();
+        const chartData = generateSupplierChartData(orders, materials, earnings);
 
-        // Fetch all supplier ratings
-        let allSupplierRatings = [];
-        try {
-          const ratingsPromises = suppliers.map(supplier => 
-            fetch(`/api/supplier-ratings/${supplier._id}`)
-              .then(res => res.ok ? res.json() : [])
-              .catch(() => [])
-          );
-          const ratingsResults = await Promise.all(ratingsPromises);
-          allSupplierRatings = ratingsResults.flat();
-        } catch (err) { console.log('Ratings not available:', err); }
-
-        // Aggregate order statistics from all suppliers with more comprehensive status mapping
-        const orderStats = {
-          active: allOrders.filter(o => 
-            o.status === 'active' || 
-            o.status === 'processing' || 
-            o.status === 'In Progress' || 
-            o.status === 'SentToSupplier' ||
-            o.status === 'InProgress'
-          ).length,
-          completed: allOrders.filter(o => 
-            o.status === 'completed' || 
-            o.status === 'delivered' || 
-            o.status === 'Delivered' ||
-            o.status === 'Closed'
-          ).length,
-          pending: allOrders.filter(o => 
-            o.status === 'pending' || 
-            o.status === 'Draft' ||
-            o.status === 'PendingFinanceApproval' ||
-            o.status === 'Approved'
-          ).length,
-          rejected: allOrders.filter(o => 
-            o.status === 'rejected' || 
-            o.status === 'Rejected' ||
-            o.status === 'cancelled'
-          ).length
-        };
-
-        const completedOrders = allOrders.filter(o => o.status === 'completed');
-        const avgResponseTime = completedOrders.length > 0 ? 
-          completedOrders.reduce((sum, order) => {
-            const created = new Date(order.createdAt);
-            const responded = new Date(order.respondedAt || order.updatedAt || created);
-            const diffHours = Math.abs(responded - created) / (1000 * 60 * 60);
-            return sum + (diffHours > 0 ? diffHours : 12);
-          }, 0) / completedOrders.length : 12;
-
-        // Calculate average rating across all suppliers
-        const totalSupplierRating = suppliers.reduce((sum, supplier) => sum + (supplier.rating || 0), 0);
-        const avgSupplierRating = suppliers.length > 0 ? totalSupplierRating / suppliers.length : 0;
-        
-        const latestAverageRating = allSupplierRatings.length > 0 ? 
-          allSupplierRatings.reduce((sum, rating) => sum + (rating.weightedScore || 0), 0) / allSupplierRatings.length : avgSupplierRating;
-
-        // Enhanced performance calculations with real-time metrics
-        const onTimeOrders = completedOrders.filter(o => {
-          if (o.deliveredOnTime === true) return true;
-          if (o.deliveredOnTime === false) return false;
-          // Fallback: compare delivery date with expected date
-          const deliveryDate = new Date(o.deliveredDate || o.completedDate || o.updatedAt);
-          const expectedDate = new Date(o.expectedDelivery || o.dueDate || deliveryDate);
-          return deliveryDate <= expectedDate;
-        });
-
-        const performance = {
-          onTimeDelivery: completedOrders.length > 0 ? 
-            Math.round((onTimeOrders.length / completedOrders.length) * 100) : 95,
-          qualityScore: latestAverageRating > 0 ? Math.round(latestAverageRating * 20) : 
-            Math.round(avgSupplierRating * 20) || 85,
-          responseTime: Math.round(avgResponseTime),
-          totalOrders: allOrders.length,
-          successRate: allOrders.length > 0 ? 
-            Math.round(((orderStats.completed + orderStats.active) / allOrders.length) * 100) : 0,
-          customerSatisfaction: Math.round((latestAverageRating || avgSupplierRating || 4.2) * 20)
-        };
-
-        const now = new Date();
-        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-
-        // Calculate earnings from all suppliers with enhanced tracking
-        const thisMonthOrders = allOrders.filter(o => {
-          const orderDate = new Date(o.createdAt);
-          return orderDate >= thisMonthStart && (
-            o.status === 'completed' || 
-            o.status === 'Delivered' || 
-            o.status === 'approved' ||
-            o.status === 'Closed'
-          );
-        });
-
-        const lastMonthOrders = allOrders.filter(o => {
-          const orderDate = new Date(o.createdAt);
-          return orderDate >= lastMonthStart && orderDate <= lastMonthEnd && (
-            o.status === 'completed' || 
-            o.status === 'Delivered' || 
-            o.status === 'approved' ||
-            o.status === 'Closed'
-          );
-        });
-
-        // Calculate pending earnings from approved but not yet completed orders
-        const pendingEarnings = allOrders.filter(o => 
-          o.status === 'approved' || 
-          o.status === 'processing' || 
-          o.status === 'InProgress'
-        ).reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0);
-
-        const earnings = {
-          thisMonth: thisMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || parseFloat(o.amount) || 0), 0),
-          lastMonth: lastMonthOrders.reduce((sum, o) => sum + (parseFloat(o.totalAmount) || parseFloat(o.amount) || 0), 0),
-          totalEarnings: allOrders.filter(o => 
-            o.status === 'completed' || 
-            o.status === 'Delivered' || 
-            o.status === 'approved' ||
-            o.status === 'Closed'
-          ).reduce((sum, o) => sum + (parseFloat(o.totalAmount) || parseFloat(o.amount) || 0), 0),
-          pendingEarnings,
-          growthRate: 0 // Will be calculated below
-        };
-
-        // Calculate growth rate
-        if (earnings.lastMonth > 0) {
-          earnings.growthRate = ((earnings.thisMonth - earnings.lastMonth) / earnings.lastMonth * 100);
-        } else if (earnings.thisMonth > 0) {
-          earnings.growthRate = 100; // 100% growth if starting from 0
-        }
-
-        // Get recent orders from all suppliers
-        const recentOrders = allOrders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5).map(order => ({
-          id: order._id,
-          date: order.createdAt,
-          status: order.status,
-          amount: parseFloat(order.totalAmount) || 0,
-          items: order.items?.length || 1
-        }));
-
-        // Enhanced materials analytics
-        const allMaterials = Array.isArray(materials) ? materials : [];
-        const uniqueMaterialTypes = [...new Set(allMaterials.map(m => m.category || m.materialType || 'General'))];
-        const lowStockMaterials = allMaterials.filter(m => (m.currentStock || 0) < (m.minThreshold || 10));
-        
-        // Calculate material demand based on recent orders
-        const materialDemand = {};
-        allOrders.forEach(order => {
-          if (order.items && Array.isArray(order.items)) {
-            order.items.forEach(item => {
-              const materialName = item.materialId?.materialName || item.materialType || item.name;
-              if (materialName) {
-                materialDemand[materialName] = (materialDemand[materialName] || 0) + (item.quantity || 1);
-              }
-            });
-          }
-        });
-
-        const chartData = generateSupplierChartData(allOrders, allMaterials, earnings);
-
-        setSupplierData({
-          profile: {
-            name: `All Suppliers (${suppliers.length})`,
-            email: `${suppliers.length} Active Suppliers`,
-            rating: parseFloat(latestAverageRating) || avgSupplierRating || 4.2,
-            totalOrders: allOrders.length
-          },
-          orders: orderStats,
-          materials: allMaterials.slice(0,8),
-          materialsStats: {
-            totalMaterials: allMaterials.length,
-            materialCategories: uniqueMaterialTypes.length,
-            lowStockCount: lowStockMaterials.length,
-            topDemandMaterial: Object.keys(materialDemand).length > 0 ? 
-              Object.keys(materialDemand).reduce((a, b) => materialDemand[a] > materialDemand[b] ? a : b) : 'N/A'
-          },
-          performance,
-          recentOrders,
-          notifications: allSamples.slice(0,3),
-          earnings,
+        // Map payload into supplierData shape expected by the UI
+        setSupplierData(prev => ({
+          ...prev,
+          profile: payload.profile || { name: supplier.companyName || supplier.name || 'Supplier', email: supplier.email || '' , rating: supplier.rating || 0, totalOrders: orders.length },
+          orders: payload.ordersStats || prev.orders,
+          materials: materials.slice(0,8),
+          materialsStats: payload.materialsStats || prev.materialsStats,
+          performance: payload.performance || prev.performance,
+          recentOrders: payload.recentOrders || prev.recentOrders,
+          notifications: requestsData.slice(0,3),
+          earnings: earnings,
           chartData
-        });
+        }));
 
       } catch (error) {
         console.error("Error fetching supplier dashboard data:", error);
-        setRequests([]);
-        setSupplierData(prevData => ({
-          ...prevData,
-          profile: { name: "Data Loading Error", email: "", rating: 0, totalOrders: 0 },
-          orders: { active: 0, completed: 0, pending: 0, rejected: 0 },
-          materials: [],
-          materialsStats: { totalMaterials: 0, materialCategories: 0, lowStockCount: 0, topDemandMaterial: 'N/A' },
-          performance: { onTimeDelivery: 0, qualityScore: 0, responseTime: 0, totalOrders: 0, successRate: 0, customerSatisfaction: 0 },
-          recentOrders: [],
-          earnings: { thisMonth: 0, lastMonth: 0, totalEarnings: 0, pendingEarnings: 0, growthRate: 0 },
-        }));
       } finally {
         setLoading(false);
       }

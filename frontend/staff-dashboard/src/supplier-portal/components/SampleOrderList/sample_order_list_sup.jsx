@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import "./sample_order_list_sup.css";
 import "../Dashboard_sup/Dashboard_sup.css";
 
+import { fetchCurrentSupplier, normalizeStatus, getMaterialName } from '../../utils/supplierUtils';
+
 function SampleOrderListSup() {
   const [sampleOrders, setSampleOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,47 +26,20 @@ function SampleOrderListSup() {
   const fetchSampleOrders = async () => {
     try {
       setLoading(true);
-      
-      // Get logged-in user's email from localStorage (same as other components)
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      console.log("Logged in user:", user);
-      
-      if (!user.email) {
-        console.error("User email not found in localStorage");
-        alert("Error: User email not found. Please log in again.");
+      // Fetch the currently authenticated supplier (server infers from auth)
+      const supplier = await fetchCurrentSupplier();
+      if (!supplier || !supplier._id) {
+        // Redirect to login if supplier not available / unauthorized
+        console.error('No supplier associated with current user');
+        window.alert('Session expired or unauthorized. Please log in again.');
         setLoading(false);
         return;
       }
 
-      // Fetch all suppliers and find the one matching the logged-in user's email
-      const suppliersResponse = await axios.get("/api/suppliers");
-      const suppliers = suppliersResponse.data;
-      console.log("All suppliers:", suppliers);
+      // Fetch sample orders for the authenticated supplier via supplier-scoped endpoint
+      const response = await axios.get('/api/samples/mine');
 
-      // Find supplier by email (same logic as other components)
-      const supplier = suppliers.find(s => s.email === user.email);
-      console.log("Matched supplier:", supplier);
-
-      if (!supplier) {
-        console.error("No supplier found matching user email:", user.email);
-        console.log("Available supplier emails:", suppliers.map(s => s.email));
-        
-        // For now, show all samples if no specific supplier is found (like Dashboard_sup does)
-        console.log("Showing all samples since no specific supplier found");
-        const allSamplesResponse = await axios.get("/api/samples/all");
-        setSampleOrders(allSamplesResponse.data);
-        setLoading(false);
-        return;
-      }
-
-      console.log("Fetching samples for supplier ID:", supplier._id);
-
-      // Fetch sample orders for this supplier
-      const response = await axios.get(`/api/samples/${supplier._id}`);
-      console.log("Sample orders response:", response.data);
-
-      // Show ALL sample orders (Requested, Approved, Rejected, Dispatched)
-      setSampleOrders(response.data);
+      setSampleOrders(response.data || []);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching sample orders:", error);
