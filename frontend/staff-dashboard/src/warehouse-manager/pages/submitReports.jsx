@@ -173,8 +173,9 @@ const SubmitReports = () => {
     const normalized = relativePath.replace(/\\/g, '/');
     const path = normalized.startsWith('/') ? normalized : `/${normalized}`;
 
-    // Construct full URL pointing at backend static uploads (served at /uploads)
-    return `http://localhost:4000${path}`;
+    // Return a site-relative path (browser will use current origin). This avoids hard-coding localhost:4000
+    // and prevents ERR_CONNECTION_REFUSED when the backend isn't running at that address.
+    return path;
   };
 
   // Fetch reports
@@ -259,7 +260,7 @@ const SubmitReports = () => {
             <div key={r._id} className="bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-amber-200 overflow-hidden">
               
               {/* Card Header */}
-              <div className="bg-gradient-to-r from-amber-700 to-amber-600 p-4">
+              <div className="bg-amber-800 p-4">
                 <div className="flex items-center gap-3">
                   <div className="bg-white/20 p-2 rounded-lg">
                     <FileText className="w-5 h-5 text-white" />
@@ -309,10 +310,20 @@ const SubmitReports = () => {
                 
                 {/* Action Button */}
                 <div className="flex justify-center">
-                  <a 
-                    href={getFileUrl(r.reportFileUrl)} 
-                    target="_blank" 
-                    rel="noreferrer" 
+                  <a
+                    href={getFileUrl(r.reportFileUrl)}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => {
+                      // open via window.open as a reliable fallback. Build full URL using current origin.
+                      const path = getFileUrl(r.reportFileUrl);
+                      const fullUrl = `${window.location.origin}${path}`;
+                      try {
+                        window.open(fullUrl, '_blank');
+                      } catch (err) {
+                        console.error('window.open failed', err);
+                      }
+                    }}
                     className="w-full flex items-center justify-center gap-2 bg-amber-900 hover:bg-amber-800 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-colors duration-200 shadow-sm hover:shadow-md"
                   >
                     <Eye className="w-4 h-4" />
