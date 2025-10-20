@@ -784,16 +784,9 @@ const createSampleData = async (users) => {
     const createdRequests = await InspectionRequest.insertMany(sampleRequests);
     console.log(`✅ Created ${createdRequests.length} sample inspection requests`);
 
-    // Create assignments for mike_inspector
-    const sampleAssignments = createdRequests.map(request => ({
-      InspectionRequest_ID: request._id,
-      inspector_ID: inspectorUser._id,
-      assignAt: new Date(),
-      status: 'assigned'
-    }));
-
-    const createdAssignments = await Assignment.insertMany(sampleAssignments);
-    console.log(`✅ Created ${createdAssignments.length} assignments for ${inspectorUser.username}`);
+    // Don't create assignments initially - let CSR assign them through the interface
+    // This allows testing of the assignment creation process
+    console.log(`✅ Created ${createdRequests.length} inspection requests available for assignment`);
 
     // Create sample inspector locations for map visualization
     console.log('\n📍 Creating sample inspector locations for map display...');
@@ -810,11 +803,11 @@ const createSampleData = async (users) => {
     const sampleInspectorLocations = [
       {
         inspector_ID: inspectorUsers.find(u => u.username === 'mike_inspector')._id,
-        inspector_latitude: 6.9271,
-        inspector_longitude: 79.8612,
-        current_address: 'Colombo 03, Main Street',
+        inspector_latitude: 6.9147, // Updated to match his current location coordinates (789 Business District, Colombo 02)
+        inspector_longitude: 79.8747,
+        current_address: '789 Business District, Colombo 02, Sri Lanka', // Match the location shown in inspector portal
         region: 'Colombo',
-        status: 'busy' // Mike has existing assignments, so he's busy
+        status: 'available' // Mike has completed/declined all assignments, so he's available
       },
       {
         inspector_ID: inspectorUsers.find(u => u.username === 'priya_inspector')._id,

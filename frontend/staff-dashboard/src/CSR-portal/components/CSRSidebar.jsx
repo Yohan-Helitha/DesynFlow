@@ -8,12 +8,7 @@ const CSRSidebar = ({ activeSection, onSelect, onLogout }) => {
       icon: '📋', 
       description: 'View and manage client inspection requests'
     },
-    { 
-      id: 'payments', 
-      name: 'Payment Management', 
-      icon: '💰', 
-      description: 'Handle inspection costs and payments'
-    },
+   
     { 
       id: 'assign', 
       name: 'Inspector Assignment', 
