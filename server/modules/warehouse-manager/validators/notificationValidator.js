@@ -1,4 +1,4 @@
-export const validateWarehouseNotification = (data) => {
+export const validateNotificationInsert = (data) => {
   const errors = {};
   if (!data.type) errors.type = "Type is required";
   if (!data.title) errors.title = "Title is required";

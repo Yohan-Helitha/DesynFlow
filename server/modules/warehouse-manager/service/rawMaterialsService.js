@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import RawMaterials from '../model/rawMaterialsModel.js';
 import AuditLog from '../model/auditLogModel.js';
 import ThresholdAlert from '../model/thresholdAlertModel.js';
-import { notifyThresholdAlert } from './FnotificationService.js';
 import { validateRawMaterialsUpdate } from '../validators/rawMaterialsValidator.js';
 
 // Get all raw materials
@@ -118,39 +117,6 @@ const keyInfo = {
         keyInfo: JSON.stringify(keyInfo),
         createdBy: userId || "WM001"
     });
-
-    // Trigger notification when current level is at or below the configured reorder level
-    if (typeof data.currentLevel !== 'undefined' && data.currentLevel <= raw_materials.reorderLevel) {
-        const existingAlert = await ThresholdAlert.findOne({
-            materialId: raw_materials.materialId,
-            inventoryId: raw_materials.inventoryId,
-            status: "Pending"
-        });
-
-        if (!existingAlert) {
-            await ThresholdAlert.create({
-                materialId: raw_materials.materialId,
-                materialName: raw_materials.materialName,
-                currentLevel: raw_materials.currentLevel,
-                restockLevel: raw_materials.restockLevel,
-                inventoryId: raw_materials.inventoryId,
-                inventoryName: raw_materials.inventoryName || "Unknown"
-            });
-        }
-        // Always notify the warehouse so repeated updates produce new notifications
-        try {
-            await notifyThresholdAlert({
-                materialId: raw_materials.materialId,
-                materialName: raw_materials.materialName,
-                currentLevel: raw_materials.currentLevel,
-                reorderLevel: raw_materials.reorderLevel,
-                inventoryId: raw_materials.inventoryId,
-                inventoryName: raw_materials.inventoryName
-            });
-        } catch (err) {
-            console.error('Failed to create threshold notification', err);
-        }
-    }
 
     return raw_materials;
 };
