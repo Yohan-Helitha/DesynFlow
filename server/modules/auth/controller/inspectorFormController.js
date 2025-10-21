@@ -133,7 +133,7 @@ export const generateReportFromForm = async (req, res) => {
     const report = new AuthInspectionReport({
       inspectorId: form.inspector_ID,  // Use correct field name from schema
       generatedBy: form.inspector_ID,  // Also required by schema
-      title: `Inspection Report - ${new Date().toLocaleDateString()}`,
+      title: `Inspection Report - ${new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Colombo' })} at ${new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Colombo' })}`,
       reportData: {
         clientName: inspectionRequest?.client_name || 'N/A',
         propertyAddress: inspectionRequest?.propertyLocation_address || 'N/A',
@@ -385,7 +385,7 @@ Recommendations: ${form.recommendations || 'No recommendations provided'}
     const report = new AuthInspectionReport({
       inspectorId: form.inspector_ID,  // Use correct field name from schema
       generatedBy: form.inspector_ID,  // Also required by schema
-      title: `Inspection Report - ${form.InspectionRequest_ID?.client_name || 'Client'} - ${new Date().toLocaleDateString()}`,
+      title: `Inspection Report - ${form.InspectionRequest_ID?.client_name || 'Client'} - ${new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Colombo' })} at ${new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Colombo' })}`,
       reportData: {
         clientName: form.InspectionRequest_ID?.client_name || 'N/A',
         propertyAddress: form.InspectionRequest_ID?.propertyLocation_address || 'N/A',
@@ -533,11 +533,15 @@ const generatePDFFile = async (report, form) => {
       currentY = addInfoRow(doc, 'Report ID:', report._id.toString().slice(-8).toUpperCase(), currentY);
       currentY = addInfoRow(doc, 'Report Title:', report.title || 'Inspection Report', currentY);
       currentY = addInfoRow(doc, 'Status:', (report.status || 'completed').toUpperCase(), currentY);
-      currentY = addInfoRow(doc, 'Generated Date:', report.submittedAt ? new Date(report.submittedAt).toLocaleDateString('en-US', { 
+      currentY = addInfoRow(doc, 'Generated Date & Time:', report.submittedAt ? new Date(report.submittedAt).toLocaleString('en-US', { 
         weekday: 'long',
         year: 'numeric', 
         month: 'long', 
-        day: 'numeric' 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: 'Asia/Colombo'
       }) : 'Date not recorded', currentY);
       currentY += 15; // Reduced spacing
 
@@ -655,12 +659,14 @@ const generatePDFFile = async (report, form) => {
          .font('Helvetica')
          .text('This report is confidential and prepared exclusively for the named client.', 60, footerY + 10);
       
-      doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { 
+      doc.text(`Generated on: ${new Date().toLocaleString('en-US', { 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: 'Asia/Colombo'
       })}`, 60, footerY + 25);
       
       doc.text('DesynFlow Property Services | Professional Inspection Solutions', 60, footerY + 40);

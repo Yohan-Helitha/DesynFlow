@@ -3,9 +3,12 @@ import axios from 'axios';
 
 const InspectorReports = () => {
   const [reports, setReports] = useState([]);
+  const [filteredReports, setFilteredReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filterDate, setFilterDate] = useState('');
+  const [filterType, setFilterType] = useState('inspection'); // 'inspection' or 'submission'
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -15,6 +18,7 @@ const InspectorReports = () => {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         setReports(res.data);
+        setFilteredReports(res.data); // Initially show all reports
       } catch (err) {
         console.error('Error fetching reports:', err);
         setError('Failed to fetch reports');
@@ -24,6 +28,36 @@ const InspectorReports = () => {
     };
     fetchReports();
   }, []);
+
+  // Filter reports based on selected date and filter type
+  useEffect(() => {
+    if (!filterDate) {
+      setFilteredReports(reports);
+      return;
+    }
+
+    const filtered = reports.filter(report => {
+      let dateToCheck;
+      
+      if (filterType === 'inspection') {
+        dateToCheck = report.reportData?.inspectionDate;
+      } else {
+        dateToCheck = report.submittedAt || report.generatedAt;
+      }
+
+      if (!dateToCheck) return false;
+
+      const reportDate = new Date(dateToCheck).toLocaleDateString('en-CA'); // YYYY-MM-DD format
+      return reportDate === filterDate;
+    });
+
+    setFilteredReports(filtered);
+  }, [reports, filterDate, filterType]);
+
+  const clearFilter = () => {
+    setFilterDate('');
+    setFilteredReports(reports);
+  };
 
   const handleDownload = (report) => {
     if (report.pdfPath) {
@@ -44,7 +78,22 @@ const InspectorReports = () => {
       await axios.delete(`/api/auth-reports/${reportId}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      setReports(reports.filter(r => r._id !== reportId));
+      const updatedReports = reports.filter(r => r._id !== reportId);
+      setReports(updatedReports);
+      setFilteredReports(updatedReports.filter(report => {
+        if (!filterDate) return true;
+        
+        let dateToCheck;
+        if (filterType === 'inspection') {
+          dateToCheck = report.reportData?.inspectionDate;
+        } else {
+          dateToCheck = report.submittedAt || report.generatedAt;
+        }
+        
+        if (!dateToCheck) return false;
+        const reportDate = new Date(dateToCheck).toLocaleDateString('en-CA');
+        return reportDate === filterDate;
+      }));
     } catch (err) {
       console.error('Error deleting report:', err);
       alert('Failed to delete report');
@@ -73,9 +122,59 @@ const InspectorReports = () => {
         <p className="text-brown-secondary mt-1">View, download and manage your inspection reports</p>
       </div>
 
-      {reports.length === 0 ? (
+      {/* Date Filter Section */}
+      <div className="bg-cream-light rounded-lg p-4 border border-brown-primary-300">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="flex items-center space-x-2">
+            <label className="text-brown-primary font-medium">Filter by:</label>
+            <select 
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="border border-brown-primary-300 rounded px-3 py-1 bg-white text-brown-primary focus:outline-none focus:ring-2 focus:ring-brown-primary"
+            >
+              <option value="inspection">Inspection Date</option>
+              <option value="submission">Submission Date</option>
+            </select>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <label className="text-brown-primary font-medium">Date:</label>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="border border-brown-primary-300 rounded px-3 py-1 bg-white text-brown-primary focus:outline-none focus:ring-2 focus:ring-brown-primary"
+            />
+          </div>
+
+          {filterDate && (
+            <button
+              onClick={clearFilter}
+              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors text-sm"
+            >
+              Clear Filter
+            </button>
+          )}
+
+          <div className="text-sm text-brown-secondary">
+            Showing {filteredReports.length} of {reports.length} reports
+          </div>
+        </div>
+      </div>
+
+      {filteredReports.length === 0 ? (
         <div className="bg-cream-light rounded-lg p-8 text-center border border-brown-primary-300">
-          <p className="text-brown-primary-300">No reports found. Complete inspection forms to generate reports.</p>
+          <p className="text-brown-primary-300">
+            {filterDate ? 'No reports found for the selected date.' : 'No reports found. Complete inspection forms to generate reports.'}
+          </p>
+          {filterDate && (
+            <button
+              onClick={clearFilter}
+              className="mt-2 text-brown-primary underline hover:text-brown-secondary"
+            >
+              Clear filter to see all reports
+            </button>
+          )}
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow border border-brown-primary-300 overflow-x-auto">
@@ -100,7 +199,7 @@ const InspectorReports = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-brown-primary-200">
-              {reports.map(report => (
+              {filteredReports.map(report => (
                 <tr key={report._id} className="hover:bg-cream-light">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-brown-primary">
                     {report.reportData?.inspectionDate ? new Date(report.reportData.inspectionDate).toLocaleDateString('en-US') : 'N/A'}
