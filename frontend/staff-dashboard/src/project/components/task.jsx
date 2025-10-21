@@ -20,7 +20,9 @@ const TaskBoard = () => {
   // Get leader ID from logged-in user
   const getLeaderId = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user.id || user._id;
+    const id = user.id || user._id;
+    console.log('Getting leader ID:', id, 'from user:', user);
+    return id;
   };
   
   const leaderId = getLeaderId();
@@ -149,16 +151,25 @@ const TaskBoard = () => {
   const fetchProject = async () => {
     console.log('fetchProject called, leaderId:', leaderId);
     
+    if (!leaderId) {
+      console.error('No leader ID found in localStorage');
+      setLoading(false);
+      return;
+    }
+    
     try {
       // Get team data first using populated endpoint
       const teamRes = await fetch(`/api/teams/populated`);
+      if (!teamRes.ok) {
+        throw new Error(`Failed to fetch teams: ${teamRes.status}`);
+      }
       const teamData = await teamRes.json();
       console.log('All teams:', teamData);
       
       const teamObj = Array.isArray(teamData)
         ? teamData.find(t => {
             const teamLeaderId = t.leaderId?._id || t.leaderId;
-            console.log('Checking team:', t.teamName, 'leaderId:', teamLeaderId, 'matches:', teamLeaderId === leaderId);
+            console.log('Checking team:', t.teamName, 'leaderId:', teamLeaderId, 'target leaderId:', leaderId, 'matches:', teamLeaderId === leaderId);
             return teamLeaderId === leaderId;
           })
         : null;
@@ -168,20 +179,24 @@ const TaskBoard = () => {
       if (teamObj) {
         // Get projects for this team
         const projRes = await fetch(`/api/projects`);
+        if (!projRes.ok) {
+          throw new Error(`Failed to fetch projects: ${projRes.status}`);
+        }
         const projData = await projRes.json();
         console.log('All projects:', projData);
         
         const teamProjects = projData.filter(
-          p => p.assignedTeamId._id === teamObj._id
+          p => p.assignedTeamId && p.assignedTeamId._id === teamObj._id
         );
         
         console.log('Filtered projects for team:', teamProjects);
         
         if (teamProjects.length > 0) {
+          console.log('Setting project:', teamProjects[0]);
           setProject(teamProjects[0]); // Use first project
         } else {
           // No projects found for this team
-          console.log('No projects found for team');
+          console.log('No projects found for team:', teamObj.teamName);
           setLoading(false);
         }
       } else {
@@ -297,7 +312,7 @@ const TaskBoard = () => {
         },
         body: JSON.stringify({ 
           status: newStatus,
-          progressPercentage: newStatus === 'Done' ? 100 : newStatus === 'In Progress' ? 50 : 0
+          progressPercentage: newStatus === 'Completed' ? 100 : newStatus === 'In Progress' ? 50 : 0
         }),
       });
 
@@ -308,8 +323,11 @@ const TaskBoard = () => {
             t._id === task._id ? updatedTask : t
           )
         );
+        
+        // Refresh project data to update progress when task status changes
+        fetchProject();
       } else {
-        alert('Failed to update task status');
+        alert('Error updating task status');
       }
     } catch (error) {
       console.error('Error updating task status:', error);
@@ -431,6 +449,9 @@ const TaskBoard = () => {
         if (response.ok) {
           const createdTask = await response.json();
           setTasks(prevTasks => [createdTask, ...prevTasks]);
+          
+          // Refresh project data to see status changes (Active -> In Progress)
+          fetchProject();
         } else {
           alert('Failed to create task');
           return;
@@ -586,7 +607,28 @@ const TaskBoard = () => {
   return (
     <div className="p-6 bg-cream-primary min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-brown-primary">Task Management</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-brown-primary">Task Management</h2>
+          {project && (
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-lg text-gray-700">Project: {project.projectName}</span>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                project.status === 'Active' 
+                  ? 'bg-green-100 text-green-800' 
+                  : project.status === 'In Progress' 
+                    ? 'bg-blue-100 text-blue-800'
+                    : project.status === 'Completed'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-gray-100 text-gray-800'
+              }`}>
+                {project.status}
+              </span>
+              <span className="text-sm text-gray-600">
+                Progress: {project.progress || 0}%
+              </span>
+            </div>
+          )}
+        </div>
         <div className="flex gap-3">
           <button 
             className="bg-brown-primary hover:bg-brown-secondary text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"

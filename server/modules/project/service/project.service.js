@@ -50,23 +50,39 @@ export const deleteProjectService = async (id) => {
 // Calculate and update project progress based on completed tasks
 export const updateProjectProgressService = async (projectId) => {
   try {
+    console.log('🔄 updateProjectProgressService called for project:', projectId);
+    
     // Get all tasks for this project
     const tasks = await Task.find({ projectId });
+    console.log('📋 Found tasks:', tasks.length, 'for project');
     
     if (tasks.length === 0) {
       // No tasks, set progress to 0
+      console.log('❌ No tasks found, setting progress to 0');
       await Project.findByIdAndUpdate(projectId, { progress: 0 });
       return 0;
     }
     
+    // Log each task's status and weight for debugging
+    tasks.forEach((task, index) => {
+      console.log(`📝 Task ${index + 1}: "${task.name}" - Status: ${task.status}, Weight: ${task.weight}`);
+    });
+    
     // Calculate total weight and completed weight
     const totalWeight = tasks.reduce((sum, task) => sum + (task.weight || 0), 0);
     const completedWeight = tasks
-      .filter(task => task.status === 'Done')
+      .filter(task => task.status === 'Done' || task.status === 'Completed')
       .reduce((sum, task) => sum + (task.weight || 0), 0);
+    
+    console.log('⚖️ Weight calculation:', {
+      totalWeight,
+      completedWeight,
+      completedTasks: tasks.filter(task => task.status === 'Done' || task.status === 'Completed').length
+    });
     
     // Calculate progress percentage
     const progress = totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
+    console.log('📊 Calculated progress:', progress + '%');
     
     // Determine new status based on tasks and progress
     let newStatus;
@@ -86,11 +102,19 @@ export const updateProjectProgressService = async (projectId) => {
       newStatus = project.status;
     }
     
+    console.log('🔄 Status update:', {
+      currentStatus: project.status,
+      newStatus,
+      progress
+    });
+    
     // Update project progress and status
     await Project.findByIdAndUpdate(projectId, { 
       progress,
       status: newStatus
     });
+    
+    console.log('✅ Project updated successfully with progress:', progress + '%', 'and status:', newStatus);
     
     return progress;
   } catch (error) {

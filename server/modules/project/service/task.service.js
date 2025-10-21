@@ -33,14 +33,18 @@ export const getTaskByIdService = async (taskId) => {
 
 // Update task status and completion percentage
 export const updateTaskStatusService = async (taskId, status, progressPercentage) => {
+  console.log('🔄 updateTaskStatusService called:', { taskId, status, progressPercentage });
+  
   const update = { status };
   if (progressPercentage !== undefined) update.progressPercentage = progressPercentage;
-  if (status === 'Done') update.completedAt = new Date();
+  if (status === 'Done' || status === 'Completed') update.completedAt = new Date();
   
   const updatedTask = await Task.findByIdAndUpdate(taskId, update, { new: true });
+  console.log('✅ Task updated:', updatedTask.name, 'to status:', updatedTask.status);
   
   // Update project progress when task status changes
   if (updatedTask && updatedTask.projectId) {
+    console.log('🔄 Calling updateProjectProgressService for project:', updatedTask.projectId);
     await updateProjectProgressService(updatedTask.projectId);
   }
   
