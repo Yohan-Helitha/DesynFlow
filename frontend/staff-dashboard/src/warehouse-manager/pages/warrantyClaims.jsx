@@ -8,11 +8,16 @@ const WarrantyClaims = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBy, setFilterBy] = useState("all");
   const [showFilter, setShowFilter] = useState(false);
+  const [selectedClaim, setSelectedClaim] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({});
 
   // Fetch claims from backend (should return merged warranty/claim data)
   const getClaims = async () => {
     try {
       const data = await fetchWarrantyClaims();
+      console.log("Fetched warranty claims data:", data);
       setClaims(data);
     } catch (err) {
       console.error("Failed to fetch warranty claims:", err);
@@ -22,6 +27,11 @@ const WarrantyClaims = () => {
   useEffect(() => {
     getClaims();
   }, []);
+
+  // Debug effect for modal state
+  useEffect(() => {
+    console.log("Modal state changed - showModal:", showModal, "selectedClaim:", selectedClaim);
+  }, [showModal, selectedClaim]);
 
   // Filtering logic
   const filteredClaims = claims.filter((claim) => {
@@ -44,12 +54,8 @@ const WarrantyClaims = () => {
   });
 
   // Action handlers
-  const [selectedClaim, setSelectedClaim] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({});
-
   const handleView = (claim) => {
+    console.log("Opening modal with claim data:", claim);
     setSelectedClaim(claim);
     setEditData(claim);
     setShowModal(true);
@@ -210,7 +216,7 @@ const WarrantyClaims = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center p-4">
+                  <td colSpan="7" className="text-center p-4">
                     No warranty claims found.
                   </td>
                 </tr>
@@ -221,7 +227,7 @@ const WarrantyClaims = () => {
 
         {/* Modal for details & edit */}
         {showModal && selectedClaim && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" style={{zIndex: 9999}}>
             <div className="bg-white rounded-xl shadow-xl w-full max-w-lg relative max-h-[90vh] overflow-hidden flex flex-col">
               {/* Header */}
               <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -243,12 +249,17 @@ const WarrantyClaims = () => {
                 {/* Warranty ID */}
                 <div>
                   <label className="text-xs text-gray-500">Warranty ID</label>
-                  <div className="font-medium text-gray-900">{selectedClaim.warrantyId}</div>
+                  <div className="font-medium text-gray-900">{selectedClaim.warrantyId?._id ? String(selectedClaim.warrantyId._id).slice(-8) : "-"}</div>
                 </div>
                 {/* Material ID */}
                 <div>
                   <label className="text-xs text-gray-500">Material ID</label>
-                  <div className="font-medium text-gray-900">{selectedClaim.itemId ? String(selectedClaim.itemId) : (selectedClaim.warranty && selectedClaim.warranty.itemId ? String(selectedClaim.warranty.itemId) : "-")}</div>
+                  <div className="font-medium text-gray-900">{selectedClaim.warrantyId?.itemId?._id ? String(selectedClaim.warrantyId.itemId._id).slice(-8) : "-"}</div>
+                </div>
+                {/* Material Name */}
+                <div>
+                  <label className="text-xs text-gray-500">Material Name</label>
+                  <div className="font-medium text-gray-900">{selectedClaim.warrantyId?.itemId?.materialName || "Unknown Material"}</div>
                 </div>
                 {/* Issue Description */}
                 <div>

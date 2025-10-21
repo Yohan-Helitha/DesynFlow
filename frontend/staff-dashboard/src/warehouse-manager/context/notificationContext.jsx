@@ -5,12 +5,24 @@ const NotificationContext = createContext(null);
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [apiAvailable, setApiAvailable] = useState(true);
   const pollingRef = useRef(null);
+  const failureCount = useRef(0);
 
   const fetchNotifications = async () => {
     try {
+      // Skip if API is not available
+      if (!apiAvailable) return;
+      
       const res = await fetch('/api/warehouse/notifications?recipient=warehouse&limit=200');
-      if (!res.ok) throw new Error('Failed to fetch');
+      if (!res.ok) {
+        if (res.status === 404) {
+          // API endpoint doesn't exist, disable polling
+          setApiAvailable(false);
+          return;
+        }
+        throw new Error('Failed to fetch');
+      }
       const payload = await res.json();
       let items = [];
       if (Array.isArray(payload)) items = payload;
@@ -19,25 +31,49 @@ export const NotificationProvider = ({ children }) => {
       else items = [];
 
       setNotifications(items.map((it) => ({ ...it, id: it._id || it.id || (it._id && it._id.toString()) }))); 
+      failureCount.current = 0; // Reset failure count on success
     } catch (err) {
-      console.error('fetchNotifications error', err);
+      failureCount.current += 1;
+      if (failureCount.current >= 3) {
+        console.warn('Notification API unavailable, disabling polling');
+        setApiAvailable(false);
+      }
+      // Don't log every error to reduce console spam
+      if (failureCount.current <= 1) {
+        console.error('fetchNotifications error', err);
+      }
     }
   };
 
   const fetchUnreadCount = async () => {
     try {
+      // Skip if API is not available
+      if (!apiAvailable) return;
+      
       const res = await fetch('/api/warehouse/notifications/unread-count?recipient=warehouse');
-      if (!res.ok) throw new Error('Failed');
+      if (!res.ok) {
+        if (res.status === 404) {
+          // API endpoint doesn't exist, disable polling
+          setApiAvailable(false);
+          return;
+        }
+        throw new Error('Failed');
+      }
       const data = await res.json();
       const count = typeof data.data === 'number' ? data.data : (data.count || data.unreadCount || 0);
       setUnreadCount(count);
     } catch (err) {
-      console.error('fetchUnreadCount error', err);
+      // Don't log every error to reduce console spam
+      if (failureCount.current <= 1) {
+        console.error('fetchUnreadCount error', err);
+      }
     }
   };
 
   const refreshNotifications = async () => {
-    await Promise.all([fetchNotifications(), fetchUnreadCount()]);
+    if (apiAvailable) {
+      await Promise.all([fetchNotifications(), fetchUnreadCount()]);
+    }
   };
 
   // Mark a single notification as read (server) and persist read id locally for quick UI
@@ -100,10 +136,14 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     refreshNotifications();
 
-    // polling
-    pollingRef.current = setInterval(() => {
-      refreshNotifications();
-    }, 5000);
+    // polling - only if API is available
+    if (apiAvailable) {
+      pollingRef.current = setInterval(() => {
+        if (apiAvailable) {
+          refreshNotifications();
+        }
+      }, 10000); // Increased interval to 10 seconds to reduce load
+    }
 
     const onFocus = () => refreshNotifications();
     window.addEventListener('focus', onFocus);
@@ -113,7 +153,7 @@ export const NotificationProvider = ({ children }) => {
       window.removeEventListener('focus', onFocus);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [apiAvailable]);
 
   return (
     <NotificationContext.Provider value={{ notifications, unreadCount, refreshNotifications, markNotificationAsRead, markAsRead, removeNotification }}>
