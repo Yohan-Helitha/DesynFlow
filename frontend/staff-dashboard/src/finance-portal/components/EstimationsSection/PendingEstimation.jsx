@@ -25,6 +25,11 @@ export const PendingEstimation = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        console.log('Fetched projects:', data);
+        if (data.length > 0) {
+          console.log('First project structure:', data[0]);
+          console.log('First project inspectionId:', data[0].inspectionId);
+        }
         setProjects(data);
       } catch (err) {
         console.error('Error fetching projects:', err);
@@ -57,16 +62,18 @@ export const PendingEstimation = () => {
   const filteredProjects = projects
     .filter((project) => {
       const searchLower = searchTerm.toLowerCase();
+      const inspection = project.inspectionId || {};
+      const client = project.clientId || {};
+      const hasInspectionData = inspection._id || inspection.client_name || inspection.email;
+      
+      const clientName = hasInspectionData 
+        ? (inspection.client_name || inspection.clientName || inspection.email || '')
+        : (client.name || client.email || '');
+      
       return (
         project.projectName?.toLowerCase().includes(searchLower) ||
-        (project.inspectionId?.client_name || project.inspectionId?.email || '')
-          .toLowerCase()
-          .includes(searchLower) ||
-        (project.inspectionId?.siteLocation || `${project.inspectionId?.propertyLocation_address || ''} ${project.inspectionId?.propertyLocation_city || ''}`)
-          .toLowerCase()
-          .includes(searchLower) ||
-        project.status?.toLowerCase().includes(searchLower) ||
-        project.inspectionId?.propertyType?.toLowerCase().includes(searchLower)
+        clientName.toLowerCase().includes(searchLower) ||
+        project.status?.toLowerCase().includes(searchLower)
       );
     })
     .sort((a, b) => {
@@ -167,32 +174,14 @@ export const PendingEstimation = () => {
                 </th>
                 <th
                   className="px-4 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('inspectionId.clientName')}
+                  onClick={() => handleSort('inspectionId.client_name')}
                 >
                   <div className="flex items-center">
                     Client Name
                     <ArrowUpDown size={14} className="ml-1" />
                   </div>
                 </th>
-                <th
-                  className="px-4 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('inspectionId.propertyType')}
-                >
-                  <div className="flex items-center">
-                    Property Type
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                <th
-                  className="px-4 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('inspectionId.siteLocation')}
-                >
-                  <div className="flex items-center">
-                    Site Location
-                    <ArrowUpDown size={14} className="ml-1" />
-                  </div>
-                </th>
-                {/* Removed Project Status and Inspection Status columns */}
+                {/* Removed Property Type and Site Location columns - no inspection data available */}
                 <th
                   className="px-4 py-2 text-left text-xs font-medium text-[#674636] uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('createdAt')}
@@ -208,42 +197,47 @@ export const PendingEstimation = () => {
               </tr>
             </thead>
             <tbody className="bg-[#FFF8E8] divide-y divide-[#AAB396]">
-              {paginatedProjects.map((project) => (
-                <tr key={project._id} className="hover:bg-[#F7EED3]">
-                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    {project.projectName || 'N/A'}
-                  </td>
-                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    {project.inspectionId?.client_name || project.inspectionId?.email || 'N/A'}
-                  </td>
-                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    {project.inspectionId?.propertyType || 'N/A'}
-                  </td>
-                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    {project.inspectionId?.siteLocation
-                      || (project.inspectionId?.propertyLocation_address || project.inspectionId?.propertyLocation_city
-                        ? `${project.inspectionId?.propertyLocation_address || ''}${project.inspectionId?.propertyLocation_city ? ', ' + project.inspectionId.propertyLocation_city : ''}`
-                        : 'N/A')}
-                  </td>
-                  {/* Removed Project Status and Inspection Status cells */}
-                  <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-2 text-right text-sm flex space-x-2">
-                    <button
-                      onClick={() => handleViewProject(project)}
-                      className="text-[#FFF8E8] hover:bg-[#AAB396] bg-[#674636] px-3 py-1 rounded-md"
-                      title="Generate Estimation"
-                    >
-                      <Plus size={16} className="inline mr-1" />
-                      Generate
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {paginatedProjects.map((project) => {
+                // Helper to safely access client data
+                const inspection = project.inspectionId || {};
+                const client = project.clientId || {};
+                
+                // Check if inspectionId has actual data (not just empty object)
+                const hasInspectionData = inspection._id || inspection.client_name || inspection.email;
+                
+                // Use inspection data if available, otherwise fall back to client data
+                const clientName = hasInspectionData 
+                  ? (inspection.client_name || inspection.clientName || inspection.email || 'N/A')
+                  : (client.name || client.email || 'N/A');
+                
+                return (
+                  <tr key={project._id} className="hover:bg-[#F7EED3]">
+                    <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                      {project.projectName || 'N/A'}
+                    </td>
+                    <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                      {clientName}
+                    </td>
+                    {/* Removed Property Type and Site Location cells - no inspection data available */}
+                    <td className="px-4 py-2 text-xs font-mono text-[#674636] whitespace-pre-line break-words max-w-xs">
+                      {new Date(project.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2 text-right text-sm flex space-x-2">
+                      <button
+                        onClick={() => handleViewProject(project)}
+                        className="text-[#FFF8E8] hover:bg-[#AAB396] bg-[#674636] px-3 py-1 rounded-md"
+                        title="Generate Estimation"
+                      >
+                        <Plus size={16} className="inline mr-1" />
+                        Generate
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
               {paginatedProjects.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-2 text-center text-[#AAB396]">
+                  <td colSpan={4} className="px-4 py-2 text-center text-[#AAB396]">
                     No projects pending estimations found
                   </td>
                 </tr>

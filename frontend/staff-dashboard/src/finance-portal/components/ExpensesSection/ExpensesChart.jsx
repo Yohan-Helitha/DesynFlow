@@ -14,8 +14,19 @@ export const ExpensesChart = () => {
   const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setError('Authentication token not found');
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
-    fetch('/api/finance/in-progress-expenses')
+    fetch('/api/finance/in-progress-expenses', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    })
       .then(res => res.json())
       .then(data => {
         console.log('Raw chart data from API:', data); // Debug log
@@ -131,18 +142,28 @@ export const ExpensesChart = () => {
 
   const sendRiskNotification = async () => {
     if (!selected) return;
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setFeedback({ type: 'error', text: 'Authentication token not found' });
+      return;
+    }
+    
     try {
       setSending(true);
       setFeedback(null);
       const res = await fetch('/api/finance-notifications/risk-alert', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           projectId: selected.projectId,
           projectName: selected.projectName,
           categories: riskInfo.risky,
           message: customMessage || `Budget risk detected for ${selected.projectName}.`,
           notify: notifyTarget,
+          projectManagerIds: selected.projectManagerId ? [selected.projectManagerId] : [],
         })
       });
       if (!res.ok) {
