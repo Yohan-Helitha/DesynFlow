@@ -195,6 +195,7 @@ export default function PaymentSection() {
   const [me, setMe] = useState(null);
   const [inspectionPayments, setInspectionPayments] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [quotations, setQuotations] = useState([]); // fetched quotations
   const [myPayments, setMyPayments] = useState([]); // fetched payment records
   const [selectedFileUrl, setSelectedFileUrl] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -227,6 +228,15 @@ export default function PaymentSection() {
     const sum = list.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
     return sum;
   };
+  const getProjectQuotation = (projectId) => {
+    const pid = String(getId(projectId));
+    // Find the latest 'Sent' or 'Confirmed' quotation for this project
+    const projectQuotations = quotations
+      .filter(q => String(getId(q.projectId)) === pid)
+      .filter(q => q.status === 'Sent' || q.status === 'Confirmed' || q.status === 'Locked')
+      .sort((a, b) => (b.version || 0) - (a.version || 0)); // Latest version first
+    return projectQuotations.length > 0 ? projectQuotations[0] : null;
+  };
 
   // Persist selected tab in localStorage
   useEffect(() => {
@@ -245,6 +255,7 @@ export default function PaymentSection() {
       await fetchMe();
     })();
     fetchProjects();
+    fetchQuotations();
     fetchMyPayments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -328,6 +339,20 @@ export default function PaymentSection() {
     }
   };
 
+  const fetchQuotations = async () => {
+    try {
+      const res = await axios.get('http://localhost:3000/api/quotations', { headers: { Authorization: `Bearer ${token}` } });
+      setQuotations(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        console.warn('Quotations endpoint not found (404)');
+        setQuotations([]);
+        return;
+      }
+      console.error('Failed to fetch quotations', err?.response?.status, err?.message);
+    }
+  };
+
   const handleUploadProof = (paymentId) => {
     // Guard: if this is a project payment and it's already approved, block upload
     if (String(paymentId).includes('-')) {
@@ -346,7 +371,8 @@ export default function PaymentSection() {
         // Project payments
         const [pid, ptype] = String(selectedPaymentId).split('-');
         const proj = projects.find(p => String(p._id) === String(pid));
-        const quoteTotal = proj?.quotation?.grandTotal || proj?.grandTotal || proj?.total || 0;
+        const quotation = getProjectQuotation(pid);
+        const quoteTotal = quotation?.grandTotal || 0;
         const advanceRate = typeof proj?.advanceRate === 'number' ? proj.advanceRate : 0.3;
         const advanceAmt = Math.round((proj?.advanceAmount ?? (quoteTotal * advanceRate)));
         const approvedSum = (() => {
@@ -366,9 +392,12 @@ export default function PaymentSection() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
         } else {
+          // Capitalize the type for backend validation (Advance or Final)
+          const typeCapitalized = ptype.charAt(0).toUpperCase() + ptype.slice(1);
+          console.log('Creating new payment:', { projectId: pid, type: typeCapitalized, amount, receiptUrl: url });
           await axios.post(
             'http://localhost:3000/api/payments',
-            { projectId: pid, type: ptype, amount, receiptUrl: url },
+            { projectId: pid, type: typeCapitalized, amount, receiptUrl: url },
             { headers: { Authorization: `Bearer ${token}` } }
           );
         }
@@ -390,9 +419,11 @@ export default function PaymentSection() {
       }
       fetchInspectionPayments();
       fetchProjects();
+      fetchQuotations();
       fetchMyPayments();
     } catch (err) {
-      console.error(err?.response?.data || err.message);
+      console.error('Payment upload error:', err?.response?.data || err.message);
+      alert(`Payment upload failed: ${err?.response?.data?.error || err?.response?.data?.message || err.message}`);
     }
   };
 
@@ -525,7 +556,8 @@ export default function PaymentSection() {
           ) : (
             projects.map((project) => {
               const pid = project._id;
-              const quoteTotal = project.quotation?.grandTotal || project.grandTotal || project.total || 0;
+              const quotation = getProjectQuotation(pid);
+              const quoteTotal = quotation?.grandTotal || 0;
               const advanceRate = typeof project.advanceRate === 'number' ? project.advanceRate : 0.3;
               const advanceAmt = Math.round((project.advanceAmount ?? (quoteTotal * advanceRate)));
               const approvedSum = (() => {
