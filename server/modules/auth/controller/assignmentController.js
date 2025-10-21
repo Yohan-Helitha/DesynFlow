@@ -28,7 +28,7 @@ export const assignInspector = async (req, res) => {
     
     // Check if inspector is available
     console.log(`🔍 Checking availability for inspector: ${inspectorId}`);
-    const location = await InspectorLocation.findOne({ inspector_ID: inspectorId });
+    const location = await InspectorLocation.findById(inspectorId);
     
     if (!location) {
       console.log(`❌ Inspector location not found for ID: ${inspectorId}`);
@@ -88,7 +88,7 @@ export const assignInspector = async (req, res) => {
     // Create assignment (only if within 35km)
     const assignment = new Assignment({
       InspectionRequest_ID: inspectionRequestId,
-      inspector_ID: inspectorId,
+      inspector_ID: location.inspector_ID, // Use the actual inspector user ID, not the location ID
       assignAt: new Date(),
       status: 'assigned'
     });
@@ -148,7 +148,7 @@ export const assignInspector = async (req, res) => {
     
     // Send notification to inspector
     const notificationSent = webSocketService.sendToUser(
-      inspectorId, 
+      location.inspector_ID, 
       'new_assignment', 
       {
         type: 'NEW_ASSIGNMENT',
@@ -159,7 +159,7 @@ export const assignInspector = async (req, res) => {
       }
     );
     
-    console.log(`Assignment notification sent to inspector ${inspectorId}:`, notificationSent);
+    console.log(`Assignment notification sent to inspector ${location.inspector_ID}:`, notificationSent);
     
     res.status(201).json({ 
       message: 'Inspector assigned and location updated to property successfully.', 
