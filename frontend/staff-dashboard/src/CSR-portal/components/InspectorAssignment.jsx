@@ -310,7 +310,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
   // Handle inspector selection from map
   const handleInspectorClick = (inspector) => {
     setSelectedInspectorFromMap(inspector);
-    setSelectedInspectorFromDropdown(inspector.inspector_ID?._id || inspector.inspector_ID); // Sync with dropdown
+    setSelectedInspectorFromDropdown(inspector._id); // Sync with dropdown
   };
 
   // Clear search
@@ -352,9 +352,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
   };
 
   const handleAssign = async () => {
-    const finalInspector = selectedInspectorFromMap || inspectors.find(i => 
-      (i.inspector_ID?._id || i.inspector_ID) === selectedInspectorFromDropdown
-    );
+    const finalInspector = selectedInspectorFromMap || inspectors.find(i => i._id === selectedInspectorFromDropdown);
     
     if (!selectedRequest || !finalInspector) {
       alert('❌ Please select both request and inspector');
@@ -376,36 +374,18 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
 
     try {
       const token = localStorage.getItem('authToken');
-      
-      // Extract the correct inspector user ID
-      const inspectorUserId = selectedInspectorFromMap ? 
-        (finalInspector.inspector_ID?._id || finalInspector.inspector_ID) :
-        selectedInspectorFromDropdown;
-      
-      if (!inspectorUserId) {
-        alert('❌ Inspector user ID not found. Please try again.');
-        return;
-      }
-      
-      console.log('🔧 Assigning inspector:', {
-        inspectorUserId,
-        finalInspector,
-        selectedInspectorFromMap,
-        selectedInspectorFromDropdown
-      });
-      
       await axios.post(
         '/api/assignment/assign',
         {
           inspectionRequestId: selectedRequest._id,
-          inspectorId: inspectorUserId,
+          inspectorId: finalInspector._id,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
       // ✅ PHASE 1: Track pending assignment
       const newPendingAssignment = {
-        inspectorId: inspectorUserId,
+        inspectorId: finalInspector._id,
         requestId: selectedRequest._id,
         assignedAt: new Date(),
         status: 'pending'
@@ -416,7 +396,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
       // Update inspector action status to "Assigned (Waiting)"
       setInspectorActions(prev => ({
         ...prev,
-        [inspectorUserId]: {
+        [finalInspector._id]: {
           action: 'assigned',
           reason: 'Waiting for response',
           timestamp: new Date()
@@ -682,7 +662,7 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
           >
             <option value="">-- Choose Inspector --</option>
             {inspectors.map(inspector => (
-              <option key={inspector._id} value={inspector.inspector_ID?._id || inspector.inspector_ID}>
+              <option key={inspector._id} value={inspector._id}>
                 {inspector.inspector_ID?.username ? 
                   inspector.inspector_ID.username.replace('_inspector', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ' Inspector'
                   : 'Inspector Name Missing'} - {inspector.current_address} ({inspector.status})
