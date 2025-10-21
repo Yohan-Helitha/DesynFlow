@@ -116,14 +116,29 @@ export const requestPasswordReset = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 min expiry
     await user.save();
 
-    // Send OTP via email
-    await sendEmail({
-      to: user.email,
-      subject: "Password Reset OTP",
-      html: `<p>Your OTP for resetting password is: <b>${otp}</b></p>`,
-    });
-
-    res.json({ message: "OTP has been sent to your email." });
+    // Send OTP via email (with graceful handling for development)
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Password Reset OTP",
+        html: `<p>Your OTP for resetting password is: <b>${otp}</b></p>`,
+      });
+      
+      // Check if SMTP is configured for response message
+      const hasSmtpConfig = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
+      const message = hasSmtpConfig 
+        ? "OTP has been sent to your email." 
+        : `Development Mode: OTP is ${otp} (Check server console)`;
+        
+      res.json({ message });
+    } catch (emailError) {
+      console.error('Email sending failed, but continuing with OTP generation:', emailError.message);
+      // Still return success but mention the issue
+      res.json({ 
+        message: `OTP generated: ${otp} (Email service unavailable - use this OTP directly)`,
+        developmentOtp: otp // Include OTP in response for development
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

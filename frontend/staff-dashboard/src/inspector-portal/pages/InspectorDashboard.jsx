@@ -5,6 +5,8 @@ import LocationManagement from '../components/LocationManagement';
 import AssignedJobs from '../components/AssignedJobs';
 import DynamicInspectionForm from './DynamicInspectionForm'; // Use dynamic form for all cases
 import InspectorReports from '../components/InspectorReports';
+import NotificationSystem from '../../components/NotificationSystem';
+import socketService from '../../services/socketService';
 
 const InspectorDashboard = () => {
   const [activeSection, setActiveSection] = useState('location');
@@ -12,6 +14,7 @@ const InspectorDashboard = () => {
   const [message, setMessage] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState([]);
 
   // Fetch inspector profile
   const fetchInspector = async () => {
@@ -53,6 +56,46 @@ const InspectorDashboard = () => {
   useEffect(() => {
     fetchInspector();
   }, []);
+
+  // Setup real-time notifications
+  useEffect(() => {
+    if (inspector) {
+      // Connect to WebSocket
+      socketService.connect(inspector._id, inspector.role);
+      socketService.joinRoom('inspector', inspector._id);
+
+      // Listen for new assignment notifications
+      socketService.onAssignmentCreated((data) => {
+        console.log('New assignment notification:', data);
+        setNotifications(prev => [...prev, {
+          id: Date.now(),
+          type: 'new_assignment',
+          ...data
+        }]);
+      });
+
+      // Listen for assignment updates
+      socketService.onAssignmentUpdated((data) => {
+        console.log('Assignment updated notification:', data);
+        setNotifications(prev => [...prev, {
+          id: Date.now(),
+          type: 'assignment_updated',
+          ...data
+        }]);
+      });
+
+      // Cleanup on unmount
+      return () => {
+        socketService.leaveRoom('inspector', inspector._id);
+        socketService.disconnect();
+      };
+    }
+  }, [inspector]);
+
+  // Remove notification
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -131,6 +174,15 @@ const InspectorDashboard = () => {
           {renderContent()}
         </div>
       </div>
+
+      {/* Notification System */}
+      {notifications.map((notification) => (
+        <NotificationSystem
+          key={notification.id}
+          notification={notification}
+          onClose={() => removeNotification(notification.id)}
+        />
+      ))}
     </div>
   );
 };

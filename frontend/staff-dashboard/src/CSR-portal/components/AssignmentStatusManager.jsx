@@ -133,7 +133,7 @@ const AssignmentStatusManager = ({ csr, onAuthError }) => {
       socketService.connect(userId, userRole);
       socketService.joinRoom('csr', userId);
       
-      // Listen for assignment completion notifications
+      // Listen for assignment notifications
       socketService.onAssignmentCompleted((completionData) => {
         console.log('Assignment completed notification received:', completionData);
         
@@ -147,6 +147,38 @@ const AssignmentStatusManager = ({ csr, onAuthError }) => {
         setTimeout(() => {
           setMessage('');
         }, 5000);
+      });
+
+      // Listen for assignment accepted notifications
+      socketService.onAssignmentAccepted((acceptedData) => {
+        console.log('Assignment accepted notification received:', acceptedData);
+        
+        // Show notification message
+        setMessage(`✅ Assignment accepted by ${acceptedData.inspectorName} for ${acceptedData.propertyAddress}`);
+        
+        // Refresh assignments list
+        fetchAssignments();
+        
+        // Clear message after 5 seconds
+        setTimeout(() => {
+          setMessage('');
+        }, 5000);
+      });
+
+      // Listen for assignment declined notifications  
+      socketService.onAssignmentDeclined((declinedData) => {
+        console.log('Assignment declined notification received:', declinedData);
+        
+        // Show notification message
+        setMessage(`❌ Assignment declined by ${declinedData.inspectorName} for ${declinedData.propertyAddress}${declinedData.declineReason ? ': ' + declinedData.declineReason : ''}`);
+        
+        // Refresh assignments list
+        fetchAssignments();
+        
+        // Clear message after 8 seconds (longer for decline messages)
+        setTimeout(() => {
+          setMessage('');
+        }, 8000);
       });
     } else {
       // Fallback: Set up real-time polling if no WebSocket

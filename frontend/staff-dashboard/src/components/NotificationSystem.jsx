@@ -38,6 +38,12 @@ const NotificationToast = ({ notification, onClose, onAction }) => {
           icon: '🏁',
           title: 'Assignment Completed'
         };
+      case 'assignment_updated':
+        return {
+          bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
+          icon: '📝',
+          title: 'Assignment Updated'
+        };
       default:
         return {
           bg: 'bg-gradient-to-r from-gray-500 to-gray-600',

@@ -181,6 +181,11 @@ export async function verifyPaymentAndUpdateStatus(inspectionRequestId, paymentA
     }
   }
 
+  // Update InspectionRequest status based on payment verification result
+  const idStr = String(inspectionRequestId);
+  const inspectionRequestStatus = nextPaymentStatus === 'verified' ? 'verified' : 'sent';
+  await InspectionRequest.findByIdAndUpdate(idStr, { status: inspectionRequestStatus });
+
   return { paymentStatus: nextPaymentStatus, paymentAmount: updatedEstimation.paymentAmount };
 }
 
