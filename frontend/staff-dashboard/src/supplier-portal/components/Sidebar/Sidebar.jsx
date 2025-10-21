@@ -9,6 +9,17 @@ function Sidebar() {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  // Handle logout
+  const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('supplierUserId');
+    
+    // Redirect to login page
+    window.location.href = '/login';
+  };
+
   // Close sidebar on Escape key for accessibility
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -53,6 +64,11 @@ function Sidebar() {
           </li>
           <li>
             <Link to="/procurement-officer/sample_order_list">Sample Requests</Link>
+          </li>
+          <li>
+            <button onClick={handleLogout} className="logout-btn">
+              <FaTimes /> Logout
+            </button>
           </li>
         </ul>
       </aside>

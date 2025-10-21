@@ -8,13 +8,19 @@ function Sample_order_details() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/samples/${id}`)
-      .then(res => res.json())
+    fetch(`/api/samples/single/${id}`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Sample not found');
+        }
+        return res.json();
+      })
       .then(data => {
         setSample(data);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error fetching sample:', error);
         setSample(null);
         setLoading(false);
       });
@@ -28,8 +34,8 @@ function Sample_order_details() {
       <h2>Sample Order Details</h2>
       <div className="details-card">
         <p><b>Supplier:</b> {sample.supplierId?.companyName || sample.supplierId}</p>
-        <p><b>Material:</b> {sample.materialId?.name || sample.materialId}</p>
-        <p><b>Requested By:</b> {sample.requestedBy?.name || sample.requestedBy}</p>
+        <p><b>Material:</b> {sample.materialId?.materialName || sample.materialId}</p>
+        <p><b>Requested By:</b> {sample.requestedBy?.username || sample.requestedBy?.email || sample.requestedBy}</p>
         <p><b>Status:</b> {sample.status}</p>
         <p><b>Note:</b> {sample.reviewNote || '-'}</p>
         <p><b>Date:</b> {new Date(sample.createdAt).toLocaleString()}</p>

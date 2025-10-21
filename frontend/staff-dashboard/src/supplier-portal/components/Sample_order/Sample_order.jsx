@@ -8,10 +8,21 @@ function Sample_order() {
   const [materials, setMaterials] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  // Get logged-in user's ID
+  const getCurrentUserId = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      return user?.id || user?._id || null;
+    } catch (error) {
+      console.error('Error getting current user ID:', error);
+      return null;
+    }
+  };
+
   const [formData, setFormData] = useState({
     supplierId: "",
     materialId: "",
-    requestedBy: "670e8b4e1234567890abcdef", // Default procurement officer ID
+    requestedBy: getCurrentUserId(),
     reviewNote: ""
   });
 
@@ -122,13 +133,21 @@ function Sample_order() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate user is logged in
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      alert('Please log in to submit a sample request.');
+      return;
+    }
+    
     setSubmitting(true);
     
     // Only send ObjectIds for materialId, supplierId, requestedBy
     const payload = {
       supplierId: formData.supplierId,
       materialId: formData.materialId,
-      requestedBy: formData.requestedBy,
+      requestedBy: currentUserId,
       reviewNote: formData.reviewNote
     };
     
@@ -156,7 +175,7 @@ function Sample_order() {
         setFormData({
           supplierId: "",
           materialId: "",
-          requestedBy: "64f3a9e1b2c3d4567890",
+          requestedBy: getCurrentUserId(),
           reviewNote: ""
         });
         

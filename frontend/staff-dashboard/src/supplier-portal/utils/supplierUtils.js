@@ -6,24 +6,32 @@ export async function fetchCurrentSupplier() {
   try {
     // Get user from localStorage
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const authToken = localStorage.getItem('authToken');
     
     console.log('fetchCurrentSupplier - userData from localStorage:', userData);
+    console.log('fetchCurrentSupplier - authToken present:', !!authToken);
     
     if (!userData.id && !userData.email) {
       console.error('No user data found in localStorage:', userData);
       throw new Error('No authenticated user found');
     }
     
-    // Send user data in headers for backend to identify supplier
+    if (!authToken) {
+      console.error('No auth token found in localStorage');
+      throw new Error('Authentication token not found. Please log in again.');
+    }
+    
+    // Send both auth token and user data in headers
     const headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`
     };
     
     if (userData.email) {
       headers['x-user-data'] = JSON.stringify(userData);
     }
     
-    console.log('Making request to /api/suppliers/me with headers:', headers);
+    console.log('Making request to /api/suppliers/me with headers:', { ...headers, Authorization: '***' });
     
     const res = await axios.get('/api/suppliers/me', { headers });
     console.log('fetchCurrentSupplier - response:', res.data);

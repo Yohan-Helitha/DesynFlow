@@ -16,6 +16,17 @@ function Sample_order_list() {
     document.body.classList.toggle('sidebar-open', !sidebarOpen);
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('supplierUserId');
+    
+    // Redirect to login page
+    window.location.href = '/login';
+  };
+
   // Cleanup body class on unmount
   useEffect(() => {
     return () => {
@@ -72,6 +83,11 @@ function Sample_order_list() {
           <li className="active">
             <Link to="/procurement-officer/sample_order_list">Sample Requests</Link>
           </li>
+          <li>
+            <button onClick={handleLogout} className="logout-btn">
+              <FaTimes /> Logout
+            </button>
+          </li>
         </ul>
       </aside>
 
@@ -118,12 +134,12 @@ function Sample_order_list() {
                 <tr key={s._id || idx}>
                   <td>{s.supplierId?.companyName || s.supplierId?.name || "Unknown"}</td>
                   <td>{s.materialId?.materialName || s.materialId?.name || "Unknown"}</td>
-                  <td>{s.requestedBy?.name || s.requestedBy?.email || "Unknown"}</td>
+                  <td>{s.requestedBy?.username || s.requestedBy?.email || "Unknown"}</td>
                   <td><span className={`status-badge ${s.status.toLowerCase()}`}>{s.status}</span></td>
                   <td>{s.reviewNote || "-"}</td>
                   <td>{new Date(s.createdAt).toLocaleString()}</td>
                   <td>
-                    <a href={`/Sample_order_details/${s._id}`} className="details-link">View Details</a>
+                    <a href={`/sample_order_details/${s._id}`} className="details-link">View Details</a>
                   </td>
                 </tr>
             ))}
