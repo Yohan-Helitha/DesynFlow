@@ -174,27 +174,121 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
       });
       
       const requests = response.data;
-      const matchingRequest = requests.find(req => 
-        req.propertyLocation_address?.toLowerCase().includes(address.toLowerCase()) ||
-        req.property_full_address?.toLowerCase().includes(address.toLowerCase())
-      );
+      console.log(`🔍 [DEBUG] Searching in ${requests.length} inspection requests for: "${address}"`);
       
-      if (matchingRequest && isValidCoordinate(matchingRequest.property_latitude, matchingRequest.property_longitude)) {
-        console.log('✅ Found matching address in database with valid coordinates:', matchingRequest.propertyLocation_address);
-        return {
+      // Try multiple matching strategies
+      const searchTerm = address.toLowerCase().trim();
+      
+      let matchingRequest = requests.find(req => {
+        const addr1 = req.propertyLocation_address?.toLowerCase() || '';
+        const addr2 = req.property_full_address?.toLowerCase() || '';
+        const city = req.propertyLocation_city?.toLowerCase() || '';
+        
+        // Strategy 1: Exact match
+        if (addr1.includes(searchTerm) || addr2.includes(searchTerm)) {
+          console.log(`✅ [DEBUG] Found exact match in addresses:`, {
+            address: address,
+            matched_address: req.propertyLocation_address,
+            matched_full_address: req.property_full_address
+          });
+          return true;
+        }
+        
+        // Strategy 2: Match by combining address and city
+        const combinedAddress = `${addr1} ${city}`.trim();
+        const combinedFullAddress = `${addr2} ${city}`.trim();
+        
+        if (combinedAddress.includes(searchTerm) || combinedFullAddress.includes(searchTerm)) {
+          console.log(`✅ [DEBUG] Found combined address match:`, {
+            address: address,
+            combined: combinedAddress,
+            combinedFull: combinedFullAddress
+          });
+          return true;
+        }
+        
+        // Strategy 3: Flexible Colombo district matching (01, 02, 03 etc.)
+        if (searchTerm.includes('business district') && addr1.includes('business district')) {
+          console.log(`✅ [DEBUG] Found business district match:`, {
+            address: address,
+            matched_address: req.propertyLocation_address
+          });
+          return true;
+        }
+        
+        // Strategy 4: Partial word matching for major landmarks
+        const searchWords = searchTerm.replace(/[,]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+        const addressWords = (addr1 + ' ' + addr2 + ' ' + city).toLowerCase().replace(/[,]/g, ' ').split(/\s+/);
+        
+        const matchedWords = searchWords.filter(word => 
+          addressWords.some(addressWord => 
+            addressWord.includes(word) || word.includes(addressWord) ||
+            (word.length > 3 && addressWord.length > 3 && 
+             (word.startsWith(addressWord.slice(0, 3)) || addressWord.startsWith(word.slice(0, 3))))
+          )
+        );
+        
+        if (matchedWords.length >= Math.min(2, searchWords.length)) {
+          console.log(`✅ [DEBUG] Found partial word match:`, {
+            address: address,
+            searchWords: searchWords,
+            matchedWords: matchedWords,
+            matched_address: req.propertyLocation_address
+          });
+          return true;
+        }
+        
+        return false;
+      });
+      
+      console.log(`🔍 [DEBUG] Search result:`, {
+        searchTerm: searchTerm,
+        matchingRequest: matchingRequest ? {
+          address: matchingRequest.propertyLocation_address,
+          full_address: matchingRequest.property_full_address,
           latitude: matchingRequest.property_latitude,
           longitude: matchingRequest.property_longitude,
-          display_name: matchingRequest.property_full_address || matchingRequest.propertyLocation_address,
-          address: {
-            city: matchingRequest.propertyLocation_city,
-            country: 'Sri Lanka'
-          },
-          source: 'database'
-        };
+          hasValidCoordinates: isValidCoordinate(matchingRequest.property_latitude, matchingRequest.property_longitude)
+        } : null
+      });
+      
+      if (matchingRequest) {
+        console.log('🔍 [DEBUG] Found matching request details:', {
+          address: matchingRequest.propertyLocation_address,
+          full_address: matchingRequest.property_full_address,
+          latitude: matchingRequest.property_latitude,
+          longitude: matchingRequest.property_longitude,
+          latitude_type: typeof matchingRequest.property_latitude,
+          longitude_type: typeof matchingRequest.property_longitude,
+          hasValidCoordinates: isValidCoordinate(matchingRequest.property_latitude, matchingRequest.property_longitude)
+        });
+        
+        if (isValidCoordinate(matchingRequest.property_latitude, matchingRequest.property_longitude)) {
+          console.log('✅ [DEBUG] Found matching address in database with valid coordinates:', matchingRequest.propertyLocation_address);
+          return {
+            latitude: matchingRequest.property_latitude,
+            longitude: matchingRequest.property_longitude,
+            display_name: matchingRequest.property_full_address || matchingRequest.propertyLocation_address,
+            address: {
+              city: matchingRequest.propertyLocation_city,
+              country: 'Sri Lanka'
+            },
+            source: 'database'
+          };
+        } else {
+          console.log('⚠️ [DEBUG] Found matching address but coordinates are invalid, trying external geocoding for:', matchingRequest.propertyLocation_address);
+          // Fall back to geocoding the found address (more accurate than the search term)
+          const addressToGeocode = matchingRequest.property_full_address || 
+                                   `${matchingRequest.propertyLocation_address}, ${matchingRequest.propertyLocation_city}` ||
+                                   address;
+          return await geocodeAddress(addressToGeocode);
+        }
+      } else {
+        console.log('❌ [DEBUG] No matching request found in database');
       }
       
       // If not found in database, fallback to external geocoding
-      console.log('📡 Address not found in database, trying external geocoding...');
+      console.log('📡 [DEBUG] Address not found in database, trying external geocoding for original search term...');
       return await geocodeAddress(address);
       
     } catch (error) {
@@ -206,25 +300,73 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
   // Geocode address to coordinates using Nominatim (OpenStreetMap)
   const geocodeAddress = async (address) => {
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Sri Lanka')}&limit=1&addressdetails=1`
-      );
-      const data = await response.json();
+      console.log(`🌐 [DEBUG] Attempting external geocoding for: "${address}"`);
       
-      if (data && data.length > 0) {
-        const location = data[0];
-        return {
-          latitude: parseFloat(location.lat),
-          longitude: parseFloat(location.lon),
-          display_name: location.display_name,
-          address: location.address,
-          source: 'external'
-        };
-      } else {
-        throw new Error('Address not found');
+      // Try multiple address formats for better success rate
+      const addressVariations = [
+        `${address}, Sri Lanka`,
+        `${address}, Colombo, Sri Lanka`,
+        address.replace(/business district/i, 'Fort'), // Business District is often in Fort area
+        address.replace(/colombo 02/i, 'Fort, Colombo'), // Colombo 02 is Fort
+        `Colombo 02, Sri Lanka`, // Just the area
+        `Fort, Colombo, Sri Lanka` // Alternative name for Colombo 02
+      ];
+      
+      for (let i = 0; i < addressVariations.length; i++) {
+        const testAddress = addressVariations[i];
+        console.log(`🔍 [DEBUG] Trying variation ${i + 1}: "${testAddress}"`);
+        
+        try {
+          const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(testAddress)}&limit=1&addressdetails=1`;
+          console.log(`🔗 [DEBUG] Geocoding URL: ${geocodeUrl}`);
+          
+          const response = await fetch(geocodeUrl);
+          
+          if (!response.ok) {
+            console.log(`❌ [DEBUG] HTTP error: ${response.status} ${response.statusText}`);
+            continue;
+          }
+          
+          const data = await response.json();
+          console.log(`📡 [DEBUG] Geocoding response for "${testAddress}":`, data);
+          
+          if (data && data.length > 0) {
+            const location = data[0];
+            const lat = parseFloat(location.lat);
+            const lon = parseFloat(location.lon);
+            
+            // Validate coordinates are in Sri Lanka bounds
+            if (lat >= 5.9 && lat <= 9.9 && lon >= 79.4 && lon <= 81.9) {
+              console.log(`✅ [DEBUG] Geocoding successful with variation "${testAddress}":`, {
+                original_address: address,
+                used_variation: testAddress,
+                latitude: lat,
+                longitude: lon,
+                display_name: location.display_name
+              });
+              
+              return {
+                latitude: lat,
+                longitude: lon,
+                display_name: location.display_name,
+                address: location.address,
+                source: 'external'
+              };
+            } else {
+              console.log(`❌ [DEBUG] Coordinates outside Sri Lanka bounds: ${lat}, ${lon}`);
+            }
+          }
+        } catch (fetchError) {
+          console.log(`❌ [DEBUG] Fetch error for "${testAddress}":`, fetchError.message);
+          continue;
+        }
       }
+      
+      console.log(`❌ [DEBUG] All geocoding attempts failed for: "${address}"`);
+      throw new Error('Address not found in any geocoding service');
+      
     } catch (error) {
-      console.error('Geocoding error:', error);
+      console.error('❌ [DEBUG] Geocoding error:', error);
       throw error;
     }
   };
