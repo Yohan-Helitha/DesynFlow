@@ -11,12 +11,10 @@ export const GenerateEstimateModal = ({ inspection, onClose, onDataChanged }) =>
     let cost = '';
     const num = parseFloat(value);
     if (!isNaN(num)) {
-      if (num <= 50) {
-        cost = num * 1;
-      } else {
-        cost = 50 * 1 + (num - 50) * 2;
-      }
-      cost = Math.round(cost * 100) / 100;
+      // Calculate cost in LKR using fixed per-km rate
+      // Per product spec / test guides: LKR 50 per km
+      const RATE_PER_KM = 50;
+      cost = Math.round(num * RATE_PER_KM);
     }
     setEstimatedCost(cost !== '' ? cost : '');
   };
@@ -55,7 +53,7 @@ export const GenerateEstimateModal = ({ inspection, onClose, onDataChanged }) =>
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#674636]">Estimated Cost ($)</label>
+            <label className="block text-sm font-medium text-[#674636]">Estimated Cost (LKR)</label>
             <input
               type="number"
               value={estimatedCost}
