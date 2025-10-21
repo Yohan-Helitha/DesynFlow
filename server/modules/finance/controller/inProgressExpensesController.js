@@ -36,6 +36,7 @@ export const getInProgressProjectExpenses = async (req, res) => {
       results.push({
         projectId: project._id,
         projectName: project.projectName,
+        projectManagerId: project.projectManagerId, // Include project manager ID
         expensesByCategory,
         budgetByCategory
       });

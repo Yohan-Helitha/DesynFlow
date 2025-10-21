@@ -62,7 +62,14 @@ export const createNotificationsForRole = async ({
   priority = 'medium' 
 }) => {
   try {
+    console.log('=== createNotificationsForRole called ===');
+    console.log('Looking for users with role:', role);
     const users = await User.find({ role, isActive: true });
+    console.log('Found users:', users.length);
+    if (users.length > 0) {
+      console.log('User IDs:', users.map(u => u._id));
+      console.log('User details:', users.map(u => ({ id: u._id, name: u.name, email: u.email, role: u.role })));
+    }
     const userIds = users.map(user => user._id);
     return await createNotificationsForUsers({ 
       userIds, 
@@ -193,7 +200,12 @@ export const notifyProjectManagers = async ({
   priority = 'medium',
   projectManagerIds = null
 }) => {
+  console.log('=== notifyProjectManagers called ===');
+  console.log('projectManagerIds:', projectManagerIds);
+  console.log('projectManagerIds length:', projectManagerIds?.length);
+  
   if (projectManagerIds && projectManagerIds.length > 0) {
+    console.log('Notifying specific project managers:', projectManagerIds);
     return await createNotificationsForUsers({
       userIds: projectManagerIds,
       eventType,
@@ -205,7 +217,8 @@ export const notifyProjectManagers = async ({
     });
   }
   
-  return await createNotificationsForRole({
+  console.log('Notifying all project managers with role "project manager"');
+  const result = await createNotificationsForRole({
     role: 'project manager',
     eventType,
     title,
@@ -214,4 +227,6 @@ export const notifyProjectManagers = async ({
     metadata,
     priority
   });
+  console.log('Notifications created for project managers:', result.length);
+  return result;
 };

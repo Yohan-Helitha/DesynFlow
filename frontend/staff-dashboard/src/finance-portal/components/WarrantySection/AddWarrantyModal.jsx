@@ -62,35 +62,84 @@ export const AddWarrantyModal = ({ onClose, onCreated }) => {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   };
   const addMonths = (date, months) => {
+    console.log('addMonths called with date:', date, 'months:', months);
     const d = new Date(date);
+    console.log('Initial date object:', d);
     const targetMonth = d.getMonth() + months;
+    console.log('Target month index:', targetMonth);
     d.setMonth(targetMonth);
+    console.log('After setMonth:', d);
     // handle month overflow (e.g., Jan 31 + 1 month → Mar 3); set to last day of previous month
     if (d.getMonth() !== (targetMonth % 12 + 12) % 12) {
       d.setDate(0);
+      console.log('Month overflow corrected:', d);
     }
+    console.log('Final date:', d);
     return d;
   };
   const getWarrantyMonths = (m) => {
     const core = getCoreMaterial(m);
     if (!core) return 12;
-    // Numbers in known fields first
-    if (typeof core.warrantyPeriodMonths === 'number') return core.warrantyPeriodMonths;
-    if (typeof core.warrantyMonths === 'number') return core.warrantyMonths;
-    if (core.warranty && typeof core.warranty.periodMonths === 'number') return core.warranty.periodMonths;
-    if (core.warranty && typeof core.warranty.months === 'number') return core.warranty.months;
-    if (typeof core.warrantyPeriod === 'number') return core.warrantyPeriod; // assume months
-    if (typeof core.warrantyPeriodDays === 'number') return Math.ceil(core.warrantyPeriodDays / 30);
-    // Try parsing string warrantyPeriod like "12 months", "1 year", "365 days"
-    if (typeof core.warrantyPeriod === 'string') {
-      const s = core.warrantyPeriod.toLowerCase();
-      const num = parseFloat(s.match(/\d+(?:\.\d+)?/)?.[0] || '0');
-      if (s.includes('year')) return Math.round(num * 12);
-      if (s.includes('month')) return Math.round(num);
-      if (s.includes('day')) return Math.ceil(num / 30);
-      // fallback if only a number given
-      if (!isNaN(num) && num > 0) return Math.round(num);
+    
+    // Check for numeric fields first
+    if (typeof core.warrantyPeriodMonths === 'number' && core.warrantyPeriodMonths > 0) {
+      console.log('Found warrantyPeriodMonths:', core.warrantyPeriodMonths);
+      return core.warrantyPeriodMonths;
     }
+    if (typeof core.warrantyMonths === 'number' && core.warrantyMonths > 0) {
+      console.log('Found warrantyMonths:', core.warrantyMonths);
+      return core.warrantyMonths;
+    }
+    if (core.warranty && typeof core.warranty.periodMonths === 'number' && core.warranty.periodMonths > 0) {
+      console.log('Found warranty.periodMonths:', core.warranty.periodMonths);
+      return core.warranty.periodMonths;
+    }
+    if (core.warranty && typeof core.warranty.months === 'number' && core.warranty.months > 0) {
+      console.log('Found warranty.months:', core.warranty.months);
+      return core.warranty.months;
+    }
+    if (typeof core.warrantyPeriod === 'number' && core.warrantyPeriod > 0) {
+      console.log('Found warrantyPeriod (number):', core.warrantyPeriod);
+      return core.warrantyPeriod;
+    }
+    if (typeof core.warrantyPeriodDays === 'number' && core.warrantyPeriodDays > 0) {
+      console.log('Found warrantyPeriodDays:', core.warrantyPeriodDays);
+      return Math.ceil(core.warrantyPeriodDays / 30);
+    }
+    
+    // Try parsing string warrantyPeriod like "12 months", "1 year", "365 days", or just "12"
+    if (typeof core.warrantyPeriod === 'string') {
+      const s = core.warrantyPeriod.trim().toLowerCase();
+      console.log('Parsing warrantyPeriod string:', s);
+      
+      // Extract numeric value
+      const numMatch = s.match(/\d+(?:\.\d+)?/);
+      if (numMatch) {
+        const num = parseFloat(numMatch[0]);
+        console.log('Extracted number:', num);
+        
+        if (s.includes('year')) {
+          console.log('Contains "year", converting to months:', num * 12);
+          return Math.round(num * 12);
+        }
+        if (s.includes('month')) {
+          console.log('Contains "month", using as is:', num);
+          return Math.round(num);
+        }
+        if (s.includes('day')) {
+          console.log('Contains "day", converting to months:', num / 30);
+          return Math.ceil(num / 30);
+        }
+        
+        // If just a number with no unit, assume months
+        if (!isNaN(num) && num > 0) {
+          console.log('No unit found, assuming months:', num);
+          return Math.round(num);
+        }
+      }
+    }
+    
+    console.log('No warranty period found, defaulting to 12 months');
     return 12;
   };
 
@@ -127,6 +176,26 @@ export const AddWarrantyModal = ({ onClose, onCreated }) => {
       mounted = false;
     };
   }, []);
+
+  // Build normalized list of materials (unique core Material ids)
+  const normalizedMaterials = useMemo(() => {
+    const map = new Map();
+    for (const m of materials) {
+      const core = getCoreMaterial(m);
+      if (!core) continue;
+      const id = String(core._id || core.id || core.materialId || '');
+      if (!id) continue;
+      if (!map.has(id)) {
+        map.set(id, {
+          id,
+          label: getMaterialLabel(core),
+          months: getWarrantyMonths(core),
+          doc: core,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [materials]);
 
   // When project changes, auto set clientId and fetch warranties for that project
   const onProjectChange = async (projectId) => {
@@ -171,42 +240,53 @@ export const AddWarrantyModal = ({ onClose, onCreated }) => {
 
   // When material changes, calculate endDate from startDate + warranty months
   const onMaterialChange = (itemId) => {
-    const mat = materials.find((m) => String(m._id) === String(itemId));
-    const months = getWarrantyMonths(mat);
+    console.log('=== onMaterialChange called ===');
+    console.log('Selected itemId:', itemId);
+    
+    // Find from normalizedMaterials (which has the correct core material)
+    const normalizedMat = normalizedMaterials.find((n) => String(n.id) === String(itemId));
+    console.log('Found normalized material:', normalizedMat);
+    
+    if (!normalizedMat) {
+      console.error('Material not found in normalizedMaterials');
+      setFormData((prev) => ({ ...prev, itemId }));
+      return;
+    }
+    
+    const months = normalizedMat.months; // Already calculated in normalizedMaterials
+    console.log('Warranty months from normalized material:', months);
+    
     const start = formData.startDate ? new Date(formData.startDate) : new Date();
+    console.log('Start date:', start);
     const end = addMonths(start, months);
+    console.log('End date (after adding months):', end);
+    console.log('End date formatted:', toDateInput(end));
     setFormData((prev) => ({ ...prev, itemId, endDate: toDateInput(end) }));
   };
 
   // If start date changes (we keep it auto today, but in case), recompute endDate
   useEffect(() => {
     if (!formData.itemId || !formData.startDate) return;
-    const mat = materials.find((m) => String(m._id) === String(formData.itemId));
-    const months = getWarrantyMonths(mat);
+    console.log('=== useEffect recalculating endDate ===');
+    console.log('formData.itemId:', formData.itemId);
+    console.log('formData.startDate:', formData.startDate);
+    
+    // Find from normalizedMaterials
+    const normalizedMat = normalizedMaterials.find((n) => String(n.id) === String(formData.itemId));
+    console.log('Found normalized material in useEffect:', normalizedMat);
+    
+    if (!normalizedMat) {
+      console.error('Material not found in useEffect');
+      return;
+    }
+    
+    const months = normalizedMat.months;
+    console.log('Using warranty months:', months);
     const end = addMonths(new Date(formData.startDate), months);
+    console.log('Calculated end date:', toDateInput(end));
     setFormData((prev) => ({ ...prev, endDate: toDateInput(end) }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.startDate, formData.itemId]);
-
-  // Build normalized list of materials (unique core Material ids)
-  const normalizedMaterials = useMemo(() => {
-    const map = new Map();
-    for (const m of materials) {
-      const core = getCoreMaterial(m);
-      if (!core) continue;
-      const id = String(core._id || core.id || core.materialId || '');
-      if (!id) continue;
-      if (!map.has(id)) {
-        map.set(id, {
-          id,
-          label: getMaterialLabel(core),
-          months: getWarrantyMonths(core),
-          doc: core,
-        });
-      }
-    }
-    return Array.from(map.values());
-  }, [materials]);
+  }, [formData.startDate, formData.itemId, normalizedMaterials]);
 
   // Derive available materials based on blockedItemIds and selected project
   const availableMaterials = useMemo(() => {
@@ -396,19 +476,33 @@ export const AddWarrantyModal = ({ onClose, onCreated }) => {
 function MaterialWarrantyHint({ material }) {
   const months = useMemo(() => {
     if (!material) return null;
-    if (typeof material.warrantyPeriodMonths === 'number') return material.warrantyPeriodMonths;
-    if (typeof material.warrantyMonths === 'number') return material.warrantyMonths;
-    if (material.warranty && typeof material.warranty.periodMonths === 'number') return material.warranty.periodMonths;
-    if (material.warranty && typeof material.warranty.months === 'number') return material.warranty.months;
-    if (typeof material.warrantyPeriod === 'number') return material.warrantyPeriod;
-    if (typeof material.warrantyPeriodDays === 'number') return Math.ceil(material.warrantyPeriodDays / 30);
+    
+    // Check numeric fields
+    if (typeof material.warrantyPeriodMonths === 'number' && material.warrantyPeriodMonths > 0) 
+      return material.warrantyPeriodMonths;
+    if (typeof material.warrantyMonths === 'number' && material.warrantyMonths > 0) 
+      return material.warrantyMonths;
+    if (material.warranty && typeof material.warranty.periodMonths === 'number' && material.warranty.periodMonths > 0) 
+      return material.warranty.periodMonths;
+    if (material.warranty && typeof material.warranty.months === 'number' && material.warranty.months > 0) 
+      return material.warranty.months;
+    if (typeof material.warrantyPeriod === 'number' && material.warrantyPeriod > 0) 
+      return material.warrantyPeriod;
+    if (typeof material.warrantyPeriodDays === 'number' && material.warrantyPeriodDays > 0) 
+      return Math.ceil(material.warrantyPeriodDays / 30);
+    
+    // Parse string
     if (typeof material.warrantyPeriod === 'string') {
-      const s = material.warrantyPeriod.toLowerCase();
-      const num = parseFloat(s.match(/\d+(?:\.\d+)?/)?.[0] || '0');
-      if (s.includes('year')) return Math.round(num * 12);
-      if (s.includes('month')) return Math.round(num);
-      if (s.includes('day')) return Math.ceil(num / 30);
-      if (!isNaN(num) && num > 0) return Math.round(num);
+      const s = material.warrantyPeriod.trim().toLowerCase();
+      const numMatch = s.match(/\d+(?:\.\d+)?/);
+      if (numMatch) {
+        const num = parseFloat(numMatch[0]);
+        if (s.includes('year')) return Math.round(num * 12);
+        if (s.includes('month')) return Math.round(num);
+        if (s.includes('day')) return Math.ceil(num / 30);
+        // Just a number, assume months
+        if (!isNaN(num) && num > 0) return Math.round(num);
+      }
     }
     return null;
   }, [material]);

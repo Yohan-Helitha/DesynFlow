@@ -107,6 +107,11 @@ export const sendRiskAlert = async (req, res) => {
       projectManagerIds = []
     } = req.body || {};
 
+    console.log('=== sendRiskAlert called ===');
+    console.log('Request body:', req.body);
+    console.log('notify:', notify);
+    console.log('projectManagerIds:', projectManagerIds);
+
     if (!projectId || !projectName || !message) {
       return res.status(400).json({ error: 'projectId, projectName and message are required' });
     }
@@ -121,20 +126,23 @@ export const sendRiskAlert = async (req, res) => {
     const created = [];
 
     if (notify === 'finance-managers' || notify === 'both') {
+      console.log('Sending to finance managers...');
       const notes = await notificationService.notifyFinanceManagers({
-        eventType: 'budget-risk',
+        eventType: 'budget_threshold_exceeded',
         title,
         message,
         relatedEntity,
         metadata,
         priority
       });
+      console.log('Finance manager notifications created:', notes.length);
       created.push(...notes);
     }
 
     if (notify === 'project-managers' || notify === 'both') {
+      console.log('Sending to project managers...');
       const notes = await notificationService.notifyProjectManagers({
-        eventType: 'budget-risk',
+        eventType: 'budget_threshold_exceeded',
         title,
         message,
         relatedEntity,
@@ -142,9 +150,11 @@ export const sendRiskAlert = async (req, res) => {
         priority,
         projectManagerIds
       });
+      console.log('Project manager notifications created:', notes.length);
       created.push(...notes);
     }
 
+    console.log('Total notifications created:', created.length);
     res.status(201).json({ message: 'Risk alert sent', count: created.length });
   } catch (error) {
     console.error('Error sending risk alert notification:', error);
