@@ -22,6 +22,27 @@ function SampleOrderListSup() {
   // Toggle sidebar function
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const authToken = localStorage.getItem('authToken');
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!authToken) {
+      throw new Error('Authentication token not found. Please log in again.');
+    }
+    
+    const headers = {
+      'Authorization': `Bearer ${authToken}`,
+      'Content-Type': 'application/json'
+    };
+    
+    if (userData.email) {
+      headers['x-user-data'] = JSON.stringify(userData);
+    }
+    
+    return headers;
+  };
+
   // Fetch all sample orders for the supplier
   const fetchSampleOrders = async () => {
     try {
@@ -36,8 +57,11 @@ function SampleOrderListSup() {
         return;
       }
 
+      // Get auth token and user data for the API call
+      const headers = getAuthHeaders();
+
       // Fetch sample orders for the authenticated supplier via supplier-scoped endpoint
-      const response = await axios.get('/api/samples/mine');
+      const response = await axios.get('/api/samples/mine', { headers });
 
       setSampleOrders(response.data || []);
       setLoading(false);
@@ -57,10 +81,12 @@ function SampleOrderListSup() {
   const handleApprove = async (orderId) => {
     try {
       setProcessingId(orderId);
+      const headers = getAuthHeaders();
+      
       await axios.patch(`/api/samples/${orderId}/review`, { 
         status: "Approved",
         reviewNote: "Sample approved by supplier"
-      });
+      }, { headers });
       
       // Refresh the list
       await fetchSampleOrders();
@@ -79,10 +105,12 @@ function SampleOrderListSup() {
   const handleDispatch = async (orderId) => {
     try {
       setProcessingId(orderId);
+      const headers = getAuthHeaders();
+      
       await axios.patch(`/api/samples/${orderId}/review`, { 
         status: "Dispatched",
         reviewNote: "Sample dispatched by supplier"
-      });
+      }, { headers });
       
       // Refresh the list
       await fetchSampleOrders();
@@ -112,10 +140,12 @@ function SampleOrderListSup() {
 
     try {
       setProcessingId(selectedOrderId);
+      const headers = getAuthHeaders();
+      
       await axios.patch(`/api/samples/${selectedOrderId}/review`, { 
         status: "Rejected",
         reviewNote: rejectReason
-      });
+      }, { headers });
       
       // Refresh the list
       await fetchSampleOrders();
@@ -152,6 +182,17 @@ function SampleOrderListSup() {
     setShowRejectModal(false);
     setRejectReason('');
     setSelectedOrderId(null);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('supplierUserId');
+    
+    // Redirect to login page
+    window.location.href = '/supplier-login';
   };
 
   // Filter orders based on selected status
@@ -191,6 +232,11 @@ function SampleOrderListSup() {
           </li>
           <li>
             <span className="profile-settings-disabled">Profile Settings</span>
+          </li>
+          <li>
+            <button onClick={handleLogout} className="logout-btn">
+              <FaTimes /> Logout
+            </button>
           </li>
         </ul>
       </aside>

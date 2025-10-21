@@ -323,16 +323,6 @@ export default function MyTasksTab() {
             <FaTasks /> My Tasks
           </h1>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')}
-              className="bg-brown-primary text-white px-4 py-2 rounded-lg hover:bg-brown-secondary flex items-center gap-2"
-            >
-              <FaCalendarAlt />
-              {viewMode === 'list' ? 'Calendar View' : 'List View'}
-            </button>
-            <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
-              <FaPlus /> Create Task
-            </button>
           </div>
         </div>
 

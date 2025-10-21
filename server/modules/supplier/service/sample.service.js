@@ -52,7 +52,7 @@ const reviewSample = async (id, { status, reviewNote }) => {
   }, { new: true })
     .populate('supplierId', 'companyName name')
     .populate('materialId', 'materialName name')
-    .populate('requestedBy', 'name email');
+    .populate('requestedBy', 'username email');
 
   // Create notification for procurement team
   try {
@@ -92,7 +92,7 @@ const getSamples = async (supplierId) => {
   return await Sample.find({ supplierId })
     .populate('supplierId', 'companyName name')
     .populate('materialId', 'materialName name')
-    .populate('requestedBy', 'name email')
+    .populate('requestedBy', 'username email')
     .sort({ createdAt: -1 });
 };
 
@@ -100,13 +100,21 @@ const getAllSamples = async () => {
   return await Sample.find({})
     .populate('supplierId', 'companyName name')
     .populate('materialId', 'materialName name')
-    .populate('requestedBy', 'name email')
+    .populate('requestedBy', 'username email')
     .sort({ createdAt: -1 });
+};
+
+const getSampleById = async (id) => {
+  return await Sample.findById(id)
+    .populate('supplierId', 'companyName name')
+    .populate('materialId', 'materialName name')
+    .populate('requestedBy', 'username email');
 };
 
 export default {
   uploadSample,
   reviewSample,
   getSamples,
-  getAllSamples
+  getAllSamples,
+  getSampleById
 };

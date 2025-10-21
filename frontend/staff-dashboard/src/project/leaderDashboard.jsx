@@ -44,13 +44,54 @@ export default function LeaderDashboard() {
   const [viewModelUrl, setViewModelUrl] = useState(null);
   const [designRestriction, setDesignRestriction] = useState(false);
 
+  // Function to refresh tasks data
+  const refreshTasks = async () => {
+    if (projects.length > 0) {
+      const ongoing = projects.find(p => !["Completed","Cancelled"].includes(p.status));
+      if (ongoing) {
+        try {
+          // Refresh both tasks and project data
+          const [tasksRes, projectRes] = await Promise.all([
+            fetch(`/api/tasks/project/${ongoing._id}`),
+            fetch(`/api/projects/${ongoing._id}`)
+          ]);
+          
+          if (tasksRes.ok) {
+            const tasksData = await tasksRes.json();
+            setTasks(tasksData);
+            console.log('Tasks refreshed:', tasksData.length);
+          }
+          
+          if (projectRes.ok) {
+            const updatedProject = await projectRes.json();
+            // Update the specific project in the projects array
+            setProjects(prev => prev.map(p => p._id === updatedProject._id ? updatedProject : p));
+            console.log('Project refreshed with progress:', updatedProject.progress);
+          }
+        } catch (error) {
+          console.warn('Error refreshing data:', error);
+        }
+      }
+    }
+  };
+
+  // Listen for focus events to refresh data when user switches tabs
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshTasks();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [projects]);
+
   // Function to calculate project progress based on completed tasks
   const calculateProjectProgress = (projectTasks) => {
     if (!projectTasks || projectTasks.length === 0) return 0;
     
     const totalWeight = projectTasks.reduce((sum, task) => sum + (task.weight || 0), 0);
     const completedWeight = projectTasks
-      .filter(task => task.status === 'Done')
+      .filter(task => task.status === 'Done' || task.status === 'Completed')
       .reduce((sum, task) => sum + (task.weight || 0), 0);
     
     return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
@@ -218,10 +259,14 @@ export default function LeaderDashboard() {
       {projects.map(project => {
         // Filter tasks for this specific project
         const projectTasks = tasks.filter(task => task.projectId === project._id || task.projectId._id === project._id);
+        // Use project's progress from backend if available, otherwise calculate
+        const backendProgress = project.progress || 0;
         const calculatedProgress = calculateProjectProgress(projectTasks);
+        const displayProgress = Math.max(backendProgress, calculatedProgress); // Use the higher value
+        
         const totalWeight = projectTasks.reduce((sum, task) => sum + (task.weight || 0), 0);
         const completedWeight = projectTasks
-          .filter(task => task.status === 'Done')
+          .filter(task => task.status === 'Done' || task.status === 'Completed')
           .reduce((sum, task) => sum + (task.weight || 0), 0);
         
         return (
@@ -231,12 +276,23 @@ export default function LeaderDashboard() {
               <MilestoneList milestones={project.timeline} tasks={projectTasks} projectId={project._id} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-brown-primary mb-2">Progress</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-semibold text-brown-primary">Progress</h3>
+                <button
+                  onClick={refreshTasks}
+                  className="text-sm bg-brown-primary text-white px-3 py-1 rounded hover:bg-brown-secondary"
+                >
+                  Refresh
+                </button>
+              </div>
               <ProgressBar 
-                progress={calculatedProgress} 
+                progress={displayProgress} 
                 completedWeight={completedWeight}
                 totalWeight={totalWeight}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Progress: {displayProgress}% ({completedWeight} / {totalWeight} weight completed)
+              </p>
             </div>
           </div>
         );
