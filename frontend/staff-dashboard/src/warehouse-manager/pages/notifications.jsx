@@ -18,12 +18,22 @@ const Notifications = () => {
     unreadCount = 0
   } = useNotifications();
 
-  const getProductType = (id) => {
+  const getProductType = (id, notificationData) => {
     if (!id) return "Unknown";
+    
+    // Check notification data for material type first
+    if (notificationData?.materialType === 'stock_reorder') {
+      return "Stock Reorder Request";
+    }
+    if (notificationData?.materialType === 'raw_material') {
+      return "Raw Material";
+    }
+    
+    // Fallback to ID-based detection
     if (id.startsWith("MP")) return "Manufactured Product";
     if (id.startsWith("RM")) return "Raw Material";
     if (id.startsWith("TR")) return "Transfer Request";
-    if (id.startsWith("SRR")) return "Stock Restocked Notification";
+    if (id.startsWith("SRR")) return "Stock Reorder Request";
     return "Unknown";
   };
 
@@ -82,14 +92,29 @@ const Notifications = () => {
   };
 
   const listItems = useMemo(() => {
-    const items = (notifications || [])
+    let items = (notifications || [])
       .map((n) => ({
         ...n,
-        productType: n.data?.materialId ? getProductType(n.data.materialId) : getProductType(n.relatedId),
+        productType: getProductType(n.data?.materialId || n.relatedId, n.data),
       }))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    // Filter by activeSubTab
+    if (activeSubTab === 'manufactured') {
+      items = items.filter(item => {
+        const materialId = item.data?.materialId || item.relatedId;
+        return materialId && materialId.startsWith('MP');
+      });
+    } else if (activeSubTab === 'raw') {
+      items = items.filter(item => {
+        const materialId = item.data?.materialId || item.relatedId;
+        return materialId && materialId.startsWith('RM');
+      });
+    }
+    // 'all' shows everything, no additional filtering needed
+    
     return items;
-  }, [notifications]);
+  }, [notifications, activeSubTab]);
 
   const unreadItems = listItems.filter(i => !isNotificationRead(i.id));
   const readItems = listItems.filter(i => isNotificationRead(i.id));

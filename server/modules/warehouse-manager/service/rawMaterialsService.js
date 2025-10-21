@@ -3,6 +3,7 @@ import RawMaterials from '../model/rawMaterialsModel.js';
 import AuditLog from '../model/auditLogModel.js';
 import ThresholdAlert from '../model/thresholdAlertModel.js';
 import { validateRawMaterialsUpdate } from '../validators/rawMaterialsValidator.js';
+import { createRawMaterialReorderLevelNotification } from './notificationService.js';
 
 // Get all raw materials
 export const getAllRawMaterialsService = async () => {
@@ -49,6 +50,17 @@ export const addRawMaterialsService = async (data, userId) => {
 
     await raw_materials.save();
 
+    // Check if the new raw material's current level is at or below reorder level
+    if (raw_materials.currentLevel <= raw_materials.reorderLevel) {
+        try {
+            await createRawMaterialReorderLevelNotification(raw_materials);
+            console.log(`Raw material reorder notification created for new material ${raw_materials.materialId}`);
+        } catch (notificationError) {
+            console.error('Failed to create reorder notification for new raw material:', notificationError);
+            // Don't fail the creation if notification creation fails
+        }
+    }
+
     // Convert Mongoose document to plain object (if needed)
 const rawData = raw_materials.toObject ? raw_materials.toObject() : raw_materials;
 
@@ -87,9 +99,35 @@ export const updateRawMaterialsService = async (id, data, userId) => {
         throw { status: 400, errors };
     }
 
+    // Get the current raw material before update to compare levels
+    const currentRawMaterial = await RawMaterials.findById(id);
+    if (!currentRawMaterial) return null;
+
     const raw_materials = await RawMaterials.findByIdAndUpdate(id, { ...data }, { new: true });
     
     if (!raw_materials) return null;
+
+    // Check if currentLevel was updated and if it meets or falls below reorder level
+    if (data.currentLevel !== undefined) {
+        const newCurrentLevel = raw_materials.currentLevel;
+        const reorderLevel = raw_materials.reorderLevel;
+        const previousCurrentLevel = currentRawMaterial.currentLevel;
+
+        // Trigger notification if:
+        // 1. Current level <= reorder level AND
+        // 2. Either this is the first time it hits reorder level OR the level decreased
+        if (newCurrentLevel <= reorderLevel && 
+            (previousCurrentLevel > reorderLevel || newCurrentLevel < previousCurrentLevel)) {
+            
+            try {
+                await createRawMaterialReorderLevelNotification(raw_materials);
+                console.log(`Raw material reorder notification created for material ${raw_materials.materialId}`);
+            } catch (notificationError) {
+                console.error('Failed to create reorder notification for raw material:', notificationError);
+                // Don't fail the update if notification creation fails
+            }
+        }
+    }
 
     // Convert Mongoose document to plain object (if needed)
 const rawData = raw_materials.toObject ? raw_materials.toObject() : raw_materials;

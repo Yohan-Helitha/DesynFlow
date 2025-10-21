@@ -52,7 +52,11 @@ export const addsReorderRequestsService = async (data, warehouseManagerName) => 
 };
 
 // Update stock reorder request
-export const updatesReorderRequestsService = async (id, data) => {
+export const updatesReorderRequestsService = async (id, data, updatedBy = "System User") => {
+    // Get the current request to compare status changes
+    const currentRequest = await sReorderRequests.findById(id);
+    if (!currentRequest) return null;
+
     let s_reorder_request = await sReorderRequests.findByIdAndUpdate(id, {
         ...data,
         updatedAt: Date.now()
@@ -63,9 +67,9 @@ export const updatesReorderRequestsService = async (id, data) => {
     const rawData = s_reorder_request.toObject ? s_reorder_request.toObject() : s_reorder_request;
 
     const keyInfo = {
-        StockReorderRequestID: rawData.stockID,
+        StockReorderRequestID: rawData.stockReorderRequestId,
         InventoryName: rawData.inventoryName,
-        InventoryAddress: rawData.InventoryAddress,
+        InventoryAddress: rawData.inventoryAddress,
         InventoryContact: rawData.inventoryContact,
         MaterialID: rawData.materialId,
         MaterialName: rawData.materialName,
@@ -83,23 +87,31 @@ export const updatesReorderRequestsService = async (id, data) => {
         entity: "Stock Reorder Request",
         action: "update",
         keyInfo: JSON.stringify(keyInfo),
-        createdBy: data.warehouseManagerName || "System"
+        createdBy: updatedBy
     });
 
-    // If status changed to Checked or Restocked, create notification
-    if (data.status && (data.status === 'Checked' || data.status === 'Restocked')) {
+    // Check if status was updated and create notification for warehouse manager
+    // Only send notifications if the updater is a procurement officer
+    if (data.status && data.status !== currentRequest.status && updatedBy === 'Procurement Officer') {
         try {
             await notifySReorderStatusChange({
-                stockReorderRequestId: rawData.stockReorderRequestId || rawData.stockID || rawData.stockReorderRequestId,
+                stockReorderRequestId: rawData.stockReorderRequestId,
                 materialId: rawData.materialId,
                 materialName: rawData.materialName,
                 status: data.status,
                 inventoryId: rawData.inventoryId,
-                inventoryName: rawData.inventoryName
+                inventoryName: rawData.inventoryName,
+                quantity: rawData.quantity,
+                expectedDate: rawData.expectedDate,
+                updatedBy: updatedBy
             });
+            console.log(`Status change notification sent for request ${rawData.stockReorderRequestId}: ${currentRequest.status} → ${data.status} (Updated by: ${updatedBy})`);
         } catch (err) {
             console.error('Failed to create sReorder status notification', err);
+            // Don't fail the update if notification creation fails
         }
+    } else if (data.status && data.status !== currentRequest.status) {
+        console.log(`Status change detected for request ${rawData.stockReorderRequestId}: ${currentRequest.status} → ${data.status}, but notification not sent (Updated by: ${updatedBy})`);
     }
 
     return s_reorder_request;

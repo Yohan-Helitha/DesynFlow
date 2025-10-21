@@ -452,8 +452,7 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
     type: "",
     unit: "",
     expectedDate: "",
-    warehouseManagerName: loggedInUserId || "",
-    status: "Pending"
+    warehouseManagerName: loggedInUserId || ""
   });
 
   const [availableInventories, setAvailableInventories] = useState([]);
@@ -489,8 +488,7 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
             type: data.type || "",
             unit: data.unit || "",
             expectedDate: data.expectedDate || "",
-            warehouseManagerName: data.warehouseManagerName || loggedInUserId || "",
-            status: data.status || "Pending"
+            warehouseManagerName: data.warehouseManagerName || loggedInUserId || ""
           });
         }
       } catch (err) {
@@ -913,24 +911,6 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
                     )}
                   </div>
 
-                  {/* Status */}
-                  <div>
-                    <label className={labelClass}>
-                      Status <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleChange}
-                      className={inputClass("status")}
-                      required
-                      disabled={isSubmitting}
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="Checked">Checked</option>
-                      <option value="Restocked">Restocked</option>
-                    </select>
-                  </div>
                 </div>
               </div>
 

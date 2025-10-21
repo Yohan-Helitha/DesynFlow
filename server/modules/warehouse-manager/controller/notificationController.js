@@ -4,20 +4,62 @@ import {
   addNotificationService,
   updateNotificationService,
   deleteNotificationService,
+  getUnreadCountService,
+  markAllAsReadService
 } from "../service/notificationService.js";
 
 // Get all warehouse notifications
 export const getAllNotifications = async (req, res) => {
   try {
-    const notifications = await getAllNotificationsService();
-
-    if (!notifications || notifications.length === 0) {
-      return res.status(404).json({ message: "No warehouse notifications found" });
+    const { recipient = 'warehouse', limit = 200 } = req.query;
+    let notifications = await getAllNotificationsService();
+    
+    // Filter by recipient if specified
+    if (recipient) {
+      notifications = notifications.filter(n => n.recipient === recipient);
+    }
+    
+    // Limit results
+    if (limit) {
+      notifications = notifications.slice(0, parseInt(limit));
     }
 
-    return res.status(200).json({ notifications: notifications || [] });
+    if (!notifications || notifications.length === 0) {
+      return res.status(200).json({ data: [] });
+    }
+
+    return res.status(200).json({ data: notifications });
   } catch (err) {
     console.error("Error fetching notifications:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get unread count for warehouse notifications
+export const getUnreadCount = async (req, res) => {
+  try {
+    const { recipient = 'warehouse' } = req.query;
+    const count = await getUnreadCountService(recipient);
+    
+    return res.status(200).json({ data: count });
+  } catch (err) {
+    console.error("Error fetching unread count:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Mark all notifications as read
+export const markAllAsRead = async (req, res) => {
+  try {
+    const { recipient = 'warehouse' } = req.query;
+    const result = await markAllAsReadService(recipient);
+    
+    return res.status(200).json({ 
+      message: "All notifications marked as read",
+      modifiedCount: result.modifiedCount 
+    });
+  } catch (err) {
+    console.error("Error marking all as read:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };

@@ -58,7 +58,13 @@ export const updatesReorderRequests = async (req, res) => {
         //     return res.status(400).json({ message: "Validation errors", errors });
         // }
 
-        const s_reorder_requests = await updatesReorderRequestsService(req.params.id, req.body);
+        // Determine who is updating (could be procurement officer, warehouse manager, etc.)
+        const updatedBy = req.user?.role === 'procurement_officer' ? 'Procurement Officer' : 
+                          req.user?.role === 'warehouse_manager' ? 'Warehouse Manager' :
+                          req.user?.firstName && req.user?.lastName ? `${req.user.firstName} ${req.user.lastName}` :
+                          req.userId || 'System User';
+
+        const s_reorder_requests = await updatesReorderRequestsService(req.params.id, req.body, updatedBy);
         if (!s_reorder_requests) {
             return res.status(404).json({ message: "Unable to update Stock Reorder Request" });
         }
