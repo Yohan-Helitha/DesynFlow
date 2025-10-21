@@ -616,7 +616,7 @@ const AddRawMaterialsForm = ({ loggedInUserId }) => {
 
     const payload = {
       ...formData,
-      createdBy: loggedInUserId || "WM001",
+      createdBy: "Carol Jude",
       month: monthNames[now.getMonth()],
       year: now.getFullYear(),
       createdAt: now.toISOString(),

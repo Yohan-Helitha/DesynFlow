@@ -452,7 +452,7 @@ const UpdateSReorderRequestForm = ({ loggedInUserId }) => {
     type: "",
     unit: "",
     expectedDate: "",
-    warehouseManagerName: loggedInUserId || ""
+    warehouseManagerName: "Carol Jude"
   });
 
   const [availableInventories, setAvailableInventories] = useState([]);

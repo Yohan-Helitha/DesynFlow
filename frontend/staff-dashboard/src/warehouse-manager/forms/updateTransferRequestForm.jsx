@@ -462,8 +462,8 @@ const UpdateTransferRequestForm = ({ loggedInUserId }) => {
 
     const payload = {
       ...formData,
-      requestedBy: loggedInUserId || "WM001",
-      approvedBy: loggedInUserId || "M002",
+      requestedBy: "Carol Jude",
+      approvedBy: "Alex Wareham",
     };
 
     try {

@@ -386,7 +386,7 @@ const AddTransferRequestForm = ({ loggedInUserId }) => {
     const payload = {
       ...formData,
       Status: "Pending",
-      createdBy: loggedInUserId || "WM001",
+      createdBy: "Carol Jude",
       approvedBy: "",
     };
 

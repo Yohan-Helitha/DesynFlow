@@ -461,7 +461,7 @@ const AddStockMovementForm = ({ loggedInUserId }) => {
 
     const payload = {
       ...formData,
-      createdBy: loggedInUserId || "WM001",
+      createdBy: "Carol Jude",
     };
 
     try {

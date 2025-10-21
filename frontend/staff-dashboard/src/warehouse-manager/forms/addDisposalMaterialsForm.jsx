@@ -331,7 +331,7 @@ const AddDisposalMaterialsForm = ({ loggedInUserId }) => {
     try {
       await addDisposalMaterial({
         ...formData,
-        requestedBy: loggedInUserId || "WM001",
+        requestedBy: "Carol Jude",
         approvedBy: "Manager001",
         createdAt: new Date().toISOString(),
       });

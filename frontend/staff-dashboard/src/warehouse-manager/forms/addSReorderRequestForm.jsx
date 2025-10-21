@@ -248,7 +248,7 @@ const AddSReorderRequestForm = ({ loggedInUserId }) => {
     type: "",
     unit: "",
     expectedDate: "",
-    warehouseManagerName: loggedInUserId || "WM001",
+    warehouseManagerName: "Carol Jude",
     status: "Pending",
   });
 

@@ -878,10 +878,6 @@ const DisposalMaterials = () => {
             <p className="text-sm font-semibold text-amber-800 truncate">{selectedDisposal.requestedBy}</p>
             <p className="text-xs text-amber-600">Requested By</p>
           </div>
-          <div className="bg-green-50 rounded-lg p-3 text-center border border-green-200">
-            <p className="text-sm font-semibold text-green-800 truncate">{selectedDisposal.approvedBy}</p>
-            <p className="text-xs text-green-600">Approved By</p>
-          </div>
         </div>
 
         {/* Material Info */}

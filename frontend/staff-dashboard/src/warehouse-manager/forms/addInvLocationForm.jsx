@@ -232,7 +232,7 @@ const AddInvLocationForm = ({ loggedInUserId }) => {
     country: '',
     capacity: '',
     inventoryContact: '',
-    warehouseManagerName: ''
+    warehouseManagerName: "Carol Jude"
   });
   const [errors, setErrors] = useState({});
   const [locations, setLocations] = useState([]);
