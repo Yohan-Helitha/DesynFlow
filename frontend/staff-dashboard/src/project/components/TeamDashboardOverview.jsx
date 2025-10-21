@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { FaTasks, FaCheckCircle, FaClock, FaCalendarAlt, FaChartLine, FaProjectDiagram, FaPlay, FaStop } from 'react-icons/fa';
+import { FaTasks, FaCheckCircle, FaClock, FaCalendarAlt, FaChartLine, FaProjectDiagram, FaPlay, FaStop, FaFileAlt, FaUsers } from 'react-icons/fa';
 import TeamMemberHeader from './TeamMemberHeader';
 import ProgressBar from './ProgressBar';
+import DocumentList from './DocumentList';
 
 export default function TeamDashboardOverview() {
   const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [team, setTeam] = useState(null);
+  const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timeTracking, setTimeTracking] = useState({ active: false, taskId: null, startTime: null });
@@ -83,6 +85,24 @@ export default function TeamDashboardOverview() {
         }
       }
       setTasks(allTasks);
+
+      // 4. Get meetings for all team projects
+      const allMeetings = [];
+      for (const project of teamProjects) {
+        try {
+          const meetingsRes = await fetch(`/api/meetings/project/${project._id}`);
+          if (meetingsRes.ok) {
+            const projectMeetings = await meetingsRes.json();
+            allMeetings.push(...projectMeetings.map(meeting => ({ 
+              ...meeting, 
+              projectName: project.projectName 
+            })));
+          }
+        } catch (error) {
+          console.warn(`Error fetching meetings for project ${project._id}:`, error);
+        }
+      }
+      setMeetings(allMeetings);
 
       setLoading(false);
     } catch (err) {
@@ -348,6 +368,79 @@ export default function TeamDashboardOverview() {
             </div>
           ) : (
             <p className="text-gray-500">No projects assigned to your team.</p>
+          )}
+        </div>
+
+        {/* Documents Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-brown-primary mb-4 flex items-center gap-2">
+            <FaFileAlt /> Documents
+          </h3>
+          {projects.length > 0 ? (
+            <div className="space-y-6">
+              {projects.map(project => (
+                <div key={project._id + '-docs'} className="border-b border-gray-200 last:border-b-0 pb-4 last:pb-0">
+                  <h4 className="font-medium text-brown-primary mb-3">{project.projectName}</h4>
+                  <DocumentList documents={project.attachments} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No projects with documents available.</p>
+          )}
+        </div>
+
+        {/* Meetings Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-brown-primary mb-4 flex items-center gap-2">
+            <FaUsers /> Meetings
+          </h3>
+          {meetings.length > 0 ? (
+            <div className="space-y-3">
+              {meetings.map((meet, idx) => (
+                <div key={meet._id || idx} className="bg-cream-light rounded-lg p-4 border border-brown-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs bg-brown-primary text-white px-2 py-1 rounded">
+                          {meet.channel}
+                        </span>
+                        <p className="font-semibold text-brown-primary">
+                          {meet.channel} Meeting
+                        </p>
+                        {meet.projectName && (
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {meet.projectName}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mb-1">
+                        📅 {new Date(meet.scheduledAt).toLocaleString()}
+                      </p>
+                      {meet.notes && (
+                        <p className="text-sm text-gray-700 bg-white p-2 rounded border">
+                          {meet.notes}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      {meet.link && (
+                        <a 
+                          href={meet.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="bg-brown-primary text-white px-3 py-1 rounded text-sm hover:bg-brown-dark transition-colors"
+                        >
+                          Join Meeting
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No meetings scheduled for your projects.</p>
           )}
         </div>
 
