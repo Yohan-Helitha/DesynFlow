@@ -15,7 +15,7 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar, FaUserTie, FaTruck } from 'react-icons/fa';
+import { FaBell, FaBox, FaMoneyBillWave, FaClipboardList, FaTimes, FaCheckCircle, FaChartLine, FaStar, FaTruck } from 'react-icons/fa';
 import { fetchCurrentSupplier, normalizeStatus, getMaterialName } from '../../utils/supplierUtils';
 
 ChartJS.register(
@@ -204,11 +204,27 @@ function Dashboard_sup() {
     }
   }, []);
 
-  // Fetch pending approval orders
+  // Fetch pending approval orders for supplier
   const fetchPendingOrders = async () => {
     try {
-      const response = await axios.get("/api/purchase-orders");
-      const allOrders = response.data;
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const authToken = localStorage.getItem('authToken');
+      
+      let allOrders = [];
+      
+      if (user.role === 'supplier' || user.userType === 'supplier') {
+        // Fetch orders specific to this supplier
+        const response = await axios.get("/api/supplier-purchase-orders/my-purchase-orders", {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+        allOrders = response.data;
+      } else {
+        // For staff members, fetch all orders
+        const response = await axios.get("/api/purchase-orders");
+        allOrders = response.data;
+      }
       
       // Sort all orders by creation date - newest first
       const sortedOrders = allOrders.sort((a, b) => {
@@ -378,7 +394,30 @@ function Dashboard_sup() {
 
         // Fetch a supplier-scoped dashboard payload from the backend
         // Backend should return profile, orders, materials, earnings and requests for this supplier
-        const res = await axios.get('/api/suppliers/me/dashboard');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const authToken = localStorage.getItem('authToken');
+        
+        if (!authToken) {
+          console.warn('No authentication token found');
+          navigate('/login');
+          return;
+        }
+        
+        let res;
+        if (user.role === 'supplier' || user.userType === 'supplier') {
+          // Use supplier-specific dashboard endpoint with authentication
+          res = await axios.get('/api/supplier-auth/dashboard', {
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+        } else {
+          // For staff members accessing supplier dashboard, redirect to login
+          console.warn('Non-supplier user attempting to access supplier dashboard');
+          navigate('/login');
+          return;
+        }
         const payload = res.data || {};
 
         const orders = Array.isArray(payload.orders) ? payload.orders : [];
@@ -404,6 +443,18 @@ function Dashboard_sup() {
 
       } catch (error) {
         console.error("Error fetching supplier dashboard data:", error);
+        
+        // If authentication fails, redirect to login
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          console.warn('Authentication failed, redirecting to login');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          navigate('/login');
+          return;
+        }
+        
+        // For other errors, show user-friendly message
+        alert('Failed to load dashboard data. Please refresh the page or contact support if the problem persists.');
       } finally {
         setLoading(false);
       }
@@ -434,28 +485,6 @@ function Dashboard_sup() {
           </button>
         </div>
 
-        {/* Dashboard Toggle Section */}
-        <div className="dashboard-toggle">
-          <h3>View Mode</h3>
-          <div className="toggle-buttons">
-            <div 
-              onClick={() => navigate('/procurement-officer')}
-              className="toggle-btn"
-              title="Procurement Officer Dashboard"
-            >
-              <FaUserTie />
-              <span>Procurement View</span>
-            </div>
-            <div 
-              className="toggle-btn active"
-              title="Supplier Dashboard View"
-            >
-              <FaTruck />
-              <span>Supplier View</span>
-            </div>
-          </div>
-        </div>
-
         <ul className="nav">
           <li>
             <Link to="/procurement-officer/dashboard_sup">Dashboard</Link>
@@ -465,9 +494,6 @@ function Dashboard_sup() {
           </li>
           <li>
             <Link to="/procurement-officer/sample_order_list_sup">Sample Orders</Link>
-          </li>
-          <li>
-            <span className="profile-settings-disabled">Profile Settings</span>
           </li>
         </ul>
       </aside>
@@ -508,12 +534,6 @@ function Dashboard_sup() {
               <span className="notif-text">Pending Approvals</span>
             </button>
           </div>
-        </div>
-
-        {/* Floating Dashboard Toggle Button */}
-        <div className="floating-toggle-btn" onClick={() => navigate('/procurement-officer')}>
-          <FaUserTie className="toggle-icon" />
-          <span>Switch to Procurement View</span>
         </div>
 
         {/* Supplier Stats Overview */}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import "./Sample_order_list.css";
 import { Link, useNavigate } from "react-router-dom";
-import { FaBox, FaTimes, FaUserTie, FaTruck, FaEye } from 'react-icons/fa';
+import { FaBox, FaTimes, FaTruck, FaEye } from 'react-icons/fa';
 
 function Sample_order_list() {
   const [samples, setSamples] = useState([]);
@@ -31,13 +31,25 @@ function Sample_order_list() {
 
   const fetchSamples = () => {
     setLoading(true);
-    fetch("/api/samples/all")
+    
+    // Check if user is a supplier
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isSupplier = user.role === 'supplier' || user.userType === 'supplier';
+    
+    // Use different endpoints based on user role
+    const endpoint = isSupplier ? "/api/samples/mine" : "/api/samples/all";
+    const headers = isSupplier ? {
+      'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+    } : {};
+    
+    fetch(endpoint, { headers })
       .then(res => res.json())
       .then(data => {
         setSamples(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error fetching samples:', error);
         setSamples([]);
         setLoading(false);
       });
@@ -56,29 +68,6 @@ function Sample_order_list() {
           <button className="close-btn" onClick={toggleSidebar}>
             <FaTimes />
           </button>
-        </div>
-
-        {/* Dashboard Toggle Section */}
-        <div className="dashboard-toggle">
-          <h3>View Mode</h3>
-          <div className="toggle-buttons">
-            <div 
-              onClick={() => navigate('/procurement-officer')}
-              className={`toggle-btn ${isProcurementView ? 'active' : ''}`}
-              title="Procurement Officer Dashboard"
-            >
-              <FaUserTie />
-              <span>Procurement Officer</span>
-            </div>
-            <div 
-              onClick={() => navigate('/procurement-officer/dashboard_sup')}
-              className={`toggle-btn ${!isProcurementView ? 'active' : ''}`}
-              title="Supplier Dashboard"
-            >
-              <FaTruck />
-              <span>Supplier Portal</span>
-            </div>
-          </div>
         </div>
 
         {isProcurementView ? (

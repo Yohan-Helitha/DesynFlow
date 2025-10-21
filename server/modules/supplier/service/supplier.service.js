@@ -1,7 +1,34 @@
 import Supplier from '../model/supplier.model.js';
 
 const createSupplier = async (data) => {
-  const supplier = new Supplier(data);
+  // First create a user account for the supplier
+  const User = (await import('../../auth/model/user.model.js')).default;
+  
+  // Check if user with this email already exists
+  const existingUser = await User.findOne({ email: data.email });
+  if (existingUser) {
+    throw new Error('A user with this email already exists');
+  }
+  
+  // Create user account with supplier role
+  const userData = {
+    username: data.contactName,
+    email: data.email,
+    password: data.password,
+    role: 'supplier',
+    phone: data.phone
+  };
+  
+  const user = new User(userData);
+  const savedUser = await user.save();
+  
+  // Create supplier profile linked to the user
+  const supplierData = {
+    ...data,
+    userId: savedUser._id
+  };
+  
+  const supplier = new Supplier(supplierData);
   const savedSupplier = await supplier.save();
   
   // If materials with pricing are provided, also create entries in MaterialCatalog

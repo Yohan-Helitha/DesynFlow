@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Order_details_sup.css";
 import { Link, useNavigate } from "react-router-dom";
-import { FaBell, FaSearch, FaClipboardList, FaCheckCircle, FaTimesCircle, FaBox, FaSyncAlt, FaHourglassHalf, FaFileAlt, FaTimes, FaUserTie, FaTruck } from 'react-icons/fa';
+import { FaBell, FaSearch, FaClipboardList, FaCheckCircle, FaTimesCircle, FaBox, FaSyncAlt, FaHourglassHalf, FaFileAlt, FaTimes, FaTruck } from 'react-icons/fa';
 
 const API_BASE = "/api/purchase-orders"; // correct backend port
+const SUPPLIER_API_BASE = "/api/supplier-purchase-orders"; // supplier-specific endpoint
 import { fetchCurrentSupplier, normalizeStatus, getMaterialName } from '../../utils/supplierUtils';
 
 function OrderDetailsSup() {
@@ -39,18 +40,23 @@ function OrderDetailsSup() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      // Ensure we are operating as the authenticated supplier
-      const supplier = await fetchCurrentSupplier();
-      if (!supplier || !supplier._id) {
-        // If no supplier found for current user, redirect to login
-        navigate('/login');
-        return;
+      
+      // Check if user is a supplier
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (user.role === 'supplier' || user.userType === 'supplier') {
+        // Fetch orders specific to this supplier
+        const res = await axios.get(`${SUPPLIER_API_BASE}/my-purchase-orders`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+        setOrders(Array.isArray(res.data) ? res.data : []);
+      } else {
+        // For staff members, fetch all orders (unchanged logic)
+        const res = await axios.get(`${API_BASE}`);
+        setOrders(Array.isArray(res.data) ? res.data : []);
       }
-
-      // Use supplier-scoped endpoint. Backend should return orders for authenticated supplier.
-      // We prefer a dedicated "mine" endpoint that infers supplier from auth token.
-      const res = await axios.get(`${API_BASE}/mine`);
-      setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error fetching orders:", err);
       setOrders([]);
@@ -175,25 +181,6 @@ function OrderDetailsSup() {
           <button className="close-btn" onClick={toggleSidebar}>
             <FaTimes />
           </button>
-        </div>
-
-        {/* Dashboard Toggle Section */}
-        <div className="dashboard-toggle">
-          <h3>View Mode</h3>
-          <div className="toggle-buttons">
-            <div 
-              onClick={() => navigate('/procurement-officer')}
-              className="toggle-btn"
-              title="Procurement Officer Dashboard"
-            >
-              <FaUserTie />
-              <span>Procurement Officer</span>
-            </div>
-            <div className="toggle-btn active" title="Supplier Dashboard">
-              <FaTruck />
-              <span>Supplier Portal</span>
-            </div>
-          </div>
         </div>
 
         <ul className="sidebar-nav">

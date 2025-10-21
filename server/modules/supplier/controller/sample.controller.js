@@ -1,10 +1,33 @@
 import SampleService from '../service/sample.service.js';
 
+// Procurement officer creates sample request
+export const createSampleRequest = async (req, res) => {
+  try {
+    // For procurement officers creating sample requests
+    const sample = await SampleService.uploadSample(req.body);
+    res.status(201).json(sample);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 // Supplier uploads sample
 export const uploadSample = async (req, res) => {
   try {
+    // Add supplier ID from authenticated user
+    req.body.supplierId = req.supplier.id;
     const sample = await SampleService.uploadSample(req.body);
     res.status(201).json(sample);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Get samples for authenticated supplier
+export const getSupplierSamples = async (req, res) => {
+  try {
+    const samples = await SampleService.getSamples(req.supplier.id);
+    res.status(200).json(samples);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

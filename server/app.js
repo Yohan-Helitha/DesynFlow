@@ -18,6 +18,8 @@ import materialRouter from "./modules/supplier/routes/material.routes.js";
 import sampleRouter from "./modules/supplier/routes/sample.routes.js";
 import dashboardRouter from "./modules/supplier/routes/dashboard.routes.js";
 import supplierNotificationRouter from "./modules/supplier/routes/notification.routes.js";
+import supplierAuthRouter from "./modules/supplier/routes/supplierAuth.routes.js";
+import supplierPurchaseOrderRouter from "./modules/supplier/routes/supplierPurchaseOrder.routes.js";
 
 import './modules/project/model/project.model.js';
 import './modules/project/model/task.model.js';
@@ -119,6 +121,8 @@ app.use('/uploads', express.static('uploads', {
 
 // Mount supplier routes
 app.use("/api/suppliers", supplierRouter);
+app.use("/api/supplier-auth", supplierAuthRouter);
+app.use("/api/supplier-purchase-orders", supplierPurchaseOrderRouter);
 app.use("/api/supplierRating", supplierRatingRouter);
 app.use("/api/supplier-ratings", supplierRatingRouter); // Alternative naming for frontend
 app.use("/supplierRating", supplierRatingRouter); // Legacy path

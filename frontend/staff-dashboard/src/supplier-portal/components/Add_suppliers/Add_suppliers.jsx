@@ -31,6 +31,8 @@ function Add_suppliers() {
     contactName: "",
     email: "",
     phone: "",
+    password: "",
+    confirmPassword: "",
     materialTypes: "",
     deliveryRegions: "",
     materials: []
@@ -45,6 +47,7 @@ function Add_suppliers() {
   });
   const [materialError, setMaterialError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -170,6 +173,17 @@ function Add_suppliers() {
       return;
     }
 
+    // Validate password
+    if (!formData.password || formData.password.length < 6) {
+      setPasswordError('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
     if (formData.materials.length === 0) {
         console.log("Please add at least one material with its price.");
       return;
@@ -184,6 +198,9 @@ function Add_suppliers() {
         .map((region) => region.trim()),
       // Keep the full materials array with all details for backend processing
     };
+
+    // Remove confirmPassword from the data sent to backend
+    delete formattedData.confirmPassword;
 
     try {
       const response = await axios.post("/api/suppliers", formattedData);
@@ -272,6 +289,42 @@ function Add_suppliers() {
           {phoneError && (
             <div className="phone-error-message">
               {phoneError}
+            </div>
+          )}
+        </div>
+
+        {/* Password Section */}
+        <div className="password-section">
+          <h3 className="password-section-title">Account Security</h3>
+          <div className="password-fields-container">
+            <div className="password-field">
+              <label>Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter password (min. 6 characters)"
+                required
+                className={passwordError ? 'password-input-error' : 'password-input-normal'}
+              />
+            </div>
+            <div className="password-field">
+              <label>Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter password"
+                required
+                className={passwordError ? 'password-input-error' : 'password-input-normal'}
+              />
+            </div>
+          </div>
+          {passwordError && (
+            <div className="password-error-message">
+              {passwordError}
             </div>
           )}
         </div>

@@ -342,12 +342,6 @@ function Dashboard_proc() {
           </div>
         </div>
 
-        {/* Floating Dashboard Toggle Button */}
-        <div className="floating-toggle-btn" onClick={() => navigate('/procurement-officer/dashboard_sup')}>
-          <FaTruck className="toggle-icon" />
-          <span>Switch to Supplier View</span>
-        </div>
-
         {/* Dashboard Stats Cards */}
         <div className="dashboard-stats">
           <div className="stats-row">

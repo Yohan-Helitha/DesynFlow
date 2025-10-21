@@ -17,7 +17,7 @@ function Budget_approval() {
   const fetchBudgetRequests = async () => {
     try {
       setLoading(true);
-      // Fetch purchase orders with BudgetApproval origin
+      // Fetch all purchase orders for procurement officers
       const response = await axios.get('/api/purchase-orders');
       const budgetOrders = response.data.filter(order => order.requestOrigin === 'BudgetApproval');
       setBudgetRequests(budgetOrders);

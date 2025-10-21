@@ -8,9 +8,26 @@ function Sample_order_details() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/samples/${id}`)
-      .then(res => res.json())
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const authToken = localStorage.getItem('authToken');
+    
+    // Set up headers for authentication if user is supplier
+    const headers = {};
+    if (user.role === 'supplier' || user.userType === 'supplier') {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    
+    fetch(`/api/samples/${id}`, { headers })
+      .then(res => {
+        if (!res.ok) throw new Error('Not authorized or sample not found');
+        return res.json();
+      })
       .then(data => {
+        // Additional check: if user is supplier, verify the sample belongs to them
+        if ((user.role === 'supplier' || user.userType === 'supplier') && 
+            data.supplierId && data.supplierId !== user.id && data.supplierId._id !== user.id) {
+          throw new Error('Unauthorized access to sample');
+        }
         setSample(data);
         setLoading(false);
       })

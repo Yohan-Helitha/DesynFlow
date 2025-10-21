@@ -26,20 +26,24 @@ function SampleOrderListSup() {
   const fetchSampleOrders = async () => {
     try {
       setLoading(true);
-      // Fetch the currently authenticated supplier (server infers from auth)
-      const supplier = await fetchCurrentSupplier();
-      if (!supplier || !supplier._id) {
-        // Redirect to login if supplier not available / unauthorized
-        console.error('No supplier associated with current user');
-        window.alert('Session expired or unauthorized. Please log in again.');
-        setLoading(false);
-        return;
+      
+      // Check if user is a supplier
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (user.role === 'supplier' || user.userType === 'supplier') {
+        // Fetch samples specific to this supplier
+        const response = await axios.get('/api/samples/my-samples', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+        setSampleOrders(response.data || []);
+      } else {
+        // For staff members, fetch all samples (unchanged logic)
+        const response = await axios.get('/api/samples/all');
+        setSampleOrders(response.data || []);
       }
-
-      // Fetch sample orders for the authenticated supplier via supplier-scoped endpoint
-      const response = await axios.get('/api/samples/mine');
-
-      setSampleOrders(response.data || []);
+      
       setLoading(false);
     } catch (error) {
       console.error("Error fetching sample orders:", error);
