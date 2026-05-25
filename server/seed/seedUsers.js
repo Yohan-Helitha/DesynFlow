@@ -14,7 +14,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Sample users for each role
-const sampleUsers = [
+export const sampleUsers = [
   // Client
   {
     username: 'john_client',

@@ -516,11 +516,14 @@ const InspectorAssignment = ({ selectedProperty, selectedInspector, csr, onAuthE
 
     try {
       const token = localStorage.getItem('authToken');
+
+      // `finalInspector` here is an InspectorLocation doc. The assignment API expects a User _id.
+      const inspectorUserId = finalInspector?.inspector_ID?._id || finalInspector?.inspector_ID || finalInspector?._id;
       await axios.post(
         '/api/assignment/assign',
         {
           inspectionRequestId: selectedRequest._id,
-          inspectorId: finalInspector._id,
+          inspectorId: inspectorUserId,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );

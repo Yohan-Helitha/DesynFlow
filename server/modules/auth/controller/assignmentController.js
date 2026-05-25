@@ -3,6 +3,7 @@ import InspectorLocation from '../model/inspectorLocation.model.js';
 import InspectionRequest from '../model/inspectionRequest.model.js';
 import User from '../model/user.model.js';
 import webSocketService from '../../../services/webSocketService.js';
+import mongoose from 'mongoose';
 
 // Calculate distance between two coordinates using Haversine formula (for 35km validation)
 const calculateDistance = (lat1, lng1, lat2, lng2) => {
@@ -25,10 +26,23 @@ export const assignInspector = async (req, res) => {
     if (!inspectionRequestId || !inspectorId) {
       return res.status(400).json({ message: 'Missing required fields.' });
     }
+
+    // The frontend may send either a User _id or an InspectorLocation _id.
+    // Normalize to inspector user id and load the corresponding location.
+    let inspectorUserId = inspectorId;
     
     // Check if inspector is available
     console.log(`🔍 Checking availability for inspector: ${inspectorId}`);
-    const location = await InspectorLocation.findOne({ inspector_ID: inspectorId });
+    let location = await InspectorLocation.findOne({ inspector_ID: inspectorUserId });
+
+    if (!location && mongoose.Types.ObjectId.isValid(inspectorId)) {
+      const locationById = await InspectorLocation.findById(inspectorId);
+      if (locationById) {
+        location = locationById;
+        inspectorUserId = locationById.inspector_ID;
+        console.log(`ℹ️  Normalized inspectorId from location _id to user _id: ${inspectorUserId}`);
+      }
+    }
     
     if (!location) {
       console.log(`❌ Inspector location not found for ID: ${inspectorId}`);
@@ -88,7 +102,7 @@ export const assignInspector = async (req, res) => {
     // Create assignment (only if within 35km)
     const assignment = new Assignment({
       InspectionRequest_ID: inspectionRequestId,
-      inspector_ID: inspectorId,
+      inspector_ID: inspectorUserId,
       assignAt: new Date(),
       status: 'assigned'
     });
