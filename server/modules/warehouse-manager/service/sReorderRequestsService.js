@@ -1,6 +1,6 @@
 import sReorderRequests from "../model/sReorderRequestsModel.js";
 import AuditLog from "../model/auditLogModel.js";
-import { notifySReorderStatusChange } from './notificationService.js';
+import { addNotificationService, notifySReorderStatusChange } from './notificationService.js';
 
 // Get all stock reorder requests
 export const getAllsReorderRequestsService = async () => {
@@ -21,6 +21,38 @@ export const addsReorderRequestsService = async (data, warehouseManagerName) => 
     });
 
     await s_reorder_request.save();
+
+    // Notify warehouse manager UI
+    try {
+        const raw = s_reorder_request.toObject ? s_reorder_request.toObject() : s_reorder_request;
+        await addNotificationService(
+            {
+                type: 'reorder',
+                title: 'New Reorder Request Submitted',
+                message: `Reorder request ${raw.stockReorderRequestId} submitted for ${raw.materialName} (${raw.materialId}).`,
+                relatedId: raw.stockReorderRequestId,
+                recipient: 'warehouse',
+                isRead: false,
+                data: {
+                    stockReorderRequestId: raw.stockReorderRequestId,
+                    inventoryId: raw.inventoryId,
+                    inventoryName: raw.inventoryName,
+                    inventoryAddress: raw.inventoryAddress,
+                    inventoryContact: raw.inventoryContact,
+                    materialId: raw.materialId,
+                    materialName: raw.materialName,
+                    quantity: raw.quantity,
+                    unit: raw.unit,
+                    expectedDate: raw.expectedDate,
+                    status: raw.status,
+                    type: raw.type,
+                },
+            },
+            warehouseManagerName || 'System'
+        );
+    } catch (err) {
+        console.error('Failed to create reorder submission notification', err);
+    }
 
     const rawData = s_reorder_request.toObject ? s_reorder_request.toObject() : s_reorder_request;
 

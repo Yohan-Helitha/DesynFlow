@@ -1,23 +1,38 @@
 import {
   getAllNotificationsService,
+  getUnreadCountService,
   getNotificationByIdService,
   addNotificationService,
   updateNotificationService,
+  markNotificationAsReadService,
+  markAllAsReadService,
   deleteNotificationService,
 } from "../service/notificationService.js";
 
 // Get all warehouse notifications
 export const getAllNotifications = async (req, res) => {
   try {
-    const notifications = await getAllNotificationsService();
-
-    if (!notifications || notifications.length === 0) {
-      return res.status(404).json({ message: "No warehouse notifications found" });
-    }
+    const { recipient, limit, unreadOnly } = req.query;
+    const notifications = await getAllNotificationsService({
+      recipient,
+      limit,
+      unreadOnly,
+    });
 
     return res.status(200).json({ notifications: notifications || [] });
   } catch (err) {
     console.error("Error fetching notifications:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUnreadCount = async (req, res) => {
+  try {
+    const { recipient } = req.query;
+    const count = await getUnreadCountService({ recipient });
+    return res.status(200).json({ count });
+  } catch (err) {
+    console.error("Error fetching unread count:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -92,6 +107,30 @@ export const deleteNotification = async (req, res) => {
     return res.status(200).json({ notification });
   } catch (err) {
     console.error("Error deleting notification:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const notification = await markNotificationAsReadService(req.params.id, req.userId);
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    return res.status(200).json({ notification });
+  } catch (err) {
+    console.error("Error marking notification as read:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const markAllAsRead = async (req, res) => {
+  try {
+    const { recipient } = req.query;
+    const result = await markAllAsReadService({ recipient, userId: req.userId });
+    return res.status(200).json({ ...result });
+  } catch (err) {
+    console.error("Error marking all notifications as read:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };

@@ -28,24 +28,45 @@ const connectDB = async () => {
   }
 };
 
-const seedCollection = async (Model, docs, name) => {
-  const count = await Model.countDocuments();
-  if (count > 0) {
-    console.log(`ℹ️  ${name} already present (${count}). Skipping.`);
-    return { skipped: true, inserted: 0 };
-  }
-                                                          
-  try {
-    await Model.create(docs);
-    console.log(`  • ${name} seeded (${docs.length})`);
-    return { skipped: false, inserted: docs.length };
-  } catch (err) {
-    if (err && err.code === 11000) {
-      console.warn(`⚠️ Duplicate key when seeding ${name}:`, err.keyValue || err.message);
-      return { skipped: false, inserted: 0 };
+const seedCollection = async (Model, docs, name, options = {}) => {
+  const { uniqueBy = null } = options;
+
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const doc of docs) {
+    try {
+      if (uniqueBy) {
+        const query = typeof uniqueBy === 'function'
+          ? uniqueBy(doc)
+          : uniqueBy.reduce((acc, key) => {
+              acc[key] = doc[key];
+              return acc;
+            }, {});
+
+        const exists = await Model.findOne(query).lean();
+        if (exists) {
+          skipped += 1;
+          continue;
+        }
+      }
+
+      // Insert sequentially so counter-based IDs (IN001/IN002...) don't race.
+      await Model.create(doc);
+      inserted += 1;
+    } catch (err) {
+      // If a unique index hits (e.g., inventoryId/materialId), skip and continue.
+      if (err && err.code === 11000) {
+        console.warn(`⚠️ Duplicate key when seeding ${name}:`, err.keyValue || err.message);
+        skipped += 1;
+        continue;
+      }
+      throw err;
     }
-    throw err;
   }
+
+  console.log(`  • ${name} seeded (inserted: ${inserted}, skipped: ${skipped})`);
+  return { inserted, skipped };
 };
 
 // Seed warehouse manager user
@@ -405,15 +426,15 @@ const seedWarehouse = async () => {
     // Insert documents using Model.create (ensures middleware runs)
     console.log('🌱 Seeding warehouse data...');
 
-    await seedCollection(InvLocation, invs, 'InvLocations');
-    await seedCollection(ManuProduct, manus, 'ManuProducts');
-    await seedCollection(RawMaterial, raws, 'RawMaterials');
-    await seedCollection(StockMovement, movements, 'StockMovements');
-    await seedCollection(TransferRequest, transfers, 'TransferRequests');
-    await seedCollection(DisposalMaterial, disposals, 'DisposalMaterials');
-    await seedCollection(SReorderRequest, srrs, 'SReorderRequests');
-    await seedCollection(ThresholdAlert, alerts, 'ThresholdAlerts');
-    await seedCollection(AuditLog, logs, 'AuditLogs');
+    await seedCollection(InvLocation, invs, 'InvLocations', { uniqueBy: ['inventoryName'] });
+    await seedCollection(ManuProduct, manus, 'ManuProducts', { uniqueBy: ['materialName', 'inventoryName'] });
+    await seedCollection(RawMaterial, raws, 'RawMaterials', { uniqueBy: ['materialName', 'inventoryName'] });
+    await seedCollection(StockMovement, movements, 'StockMovements', { uniqueBy: ['materialId', 'fromLocation', 'toLocation', 'quantity'] });
+    await seedCollection(TransferRequest, transfers, 'TransferRequests', { uniqueBy: ['materialId', 'fromLocation', 'toLocation', 'quantity'] });
+    await seedCollection(DisposalMaterial, disposals, 'DisposalMaterials', { uniqueBy: ['materialId', 'inventoryName', 'quantity'] });
+    await seedCollection(SReorderRequest, srrs, 'SReorderRequests', { uniqueBy: ['inventoryName', 'materialId', 'quantity'] });
+    await seedCollection(ThresholdAlert, alerts, 'ThresholdAlerts', { uniqueBy: ['materialId', 'inventoryName'] });
+    await seedCollection(AuditLog, logs, 'AuditLogs', { uniqueBy: ['entity', 'action', 'keyInfo'] });
 
     console.log('\n✅ Warehouse seeding complete');
   } catch (err) {

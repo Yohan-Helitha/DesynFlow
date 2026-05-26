@@ -176,7 +176,7 @@ app.use("/api/warehouse/threshold_alert", thresholdAlertRoute);
 app.use("/api/warehouse/warranty_claims", warrantyClaimsRoute);
 app.use("/api/warehouse/submit-reports", submitReportsRoute);
 app.use("/api/warehouse/material-requests", materialRequestRoute);
-app.use("/api/warehouse/notifications", notificationRoute);
+app.use("/api/warehouse/notifications", warehouseNotificationRoute);
 
 //finance module routes
 

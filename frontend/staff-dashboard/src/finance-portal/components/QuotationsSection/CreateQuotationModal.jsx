@@ -415,8 +415,14 @@ export const QuotationFormModal = ({
                       value={item.unitPrice || 0}
                       min={0}
                       aria-label="Material Unit Price"
-                      readOnly
-                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8] cursor-not-allowed"
+                      onChange={e => {
+                        const val = Math.max(0, Number(e.target.value));
+                        const copy = [...formData.materialItems];
+                        copy[idx].unitPrice = val;
+                        copy[idx].total = (copy[idx].quantity || 0) * val;
+                        setFormData({ ...formData, materialItems: copy });
+                      }}
+                      className="border border-[#AAB396] rounded-md px-2 py-1 text-sm text-[#674636] bg-[#FFF8E8]"
                     />
                   </div>
                   <div className="flex flex-col">

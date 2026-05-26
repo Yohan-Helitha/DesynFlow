@@ -28,19 +28,23 @@ export const PendingQuotations = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch materials for modal dropdown
+  // Fetch materials for modal dropdown (scoped to selected project)
   useEffect(() => {
     async function getMaterials() {
+      if (!showCreateModal) return;
+      const projectId = selectedQuotation?.projectId;
+      if (!projectId) return;
       try {
-        const data = await fetchMaterials();
-        setMaterials(data);
+        setMaterials([]);
+        const data = await fetchMaterials(projectId);
+        setMaterials(Array.isArray(data) ? data : []);
       } catch (err) {
-        // Optionally handle error
         console.error('Failed to load materials', err);
+        setMaterials([]);
       }
     }
     getMaterials();
-  }, []);
+  }, [showCreateModal, selectedQuotation?.projectId]);
 
   useEffect(() => {
     async function fetchQuotations() {
