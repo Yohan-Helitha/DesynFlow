@@ -6,6 +6,66 @@ import MaterialCatalog from '../../supplier/model/materialCatalog.model.js';
 import Project from '../../project/model/project.model.js'; // Ensure Project model is registered
 import mongoose from 'mongoose';
 
+async function attachQuotationPdfToProject({ projectId, pdfUrl, originalName }) {
+  if (!projectId || !pdfUrl) return;
+
+  const project = await Project.findById(projectId).select('attachments projectName');
+  if (!project) return;
+
+  const filename = String(pdfUrl).split('/').pop();
+  if (!filename) return;
+
+  const existing = Array.isArray(project.attachments) ? project.attachments : [];
+  const next = existing.filter((a) => {
+    if (!a) return false;
+    if (typeof a === 'string') {
+      return a !== pdfUrl;
+    }
+    return a.path !== pdfUrl && a.filename !== filename;
+  });
+
+  next.push({
+    filename,
+    originalName: originalName || filename,
+    path: pdfUrl,
+    uploadDate: new Date(),
+  });
+
+  project.attachments = next;
+  await project.save();
+}
+
+async function replaceQuotationPdfAttachment({ projectId, oldPdfUrl, newPdfUrl, originalName }) {
+  if (!projectId || !newPdfUrl) return;
+
+  const project = await Project.findById(projectId).select('attachments projectName');
+  if (!project) return;
+
+  const newFilename = String(newPdfUrl).split('/').pop();
+  if (!newFilename) return;
+
+  const existing = Array.isArray(project.attachments) ? project.attachments : [];
+  const next = existing.filter((a) => {
+    if (!a) return false;
+    if (typeof a === 'string') {
+      return a !== oldPdfUrl && a !== newPdfUrl;
+    }
+    const p = a.path;
+    const f = a.filename;
+    return p !== oldPdfUrl && p !== newPdfUrl && f !== newFilename;
+  });
+
+  next.push({
+    filename: newFilename,
+    originalName: originalName || newFilename,
+    path: newPdfUrl,
+    uploadDate: new Date(),
+  });
+
+  project.attachments = next;
+  await project.save();
+}
+
 // Fallback: in case hot-reload or import order caused model not to register
 if (!mongoose.models.Project) {
   // Re-register using the schema from the imported module (Project.modelName === 'Project')
@@ -89,6 +149,19 @@ export const createQuotation = async (req, res) => {
       });
       quotation.fileUrl = url;
       await quotation.save();
+
+      // Attach quotation PDF to project documents so PM + Leader can see it
+      try {
+        const projectDoc = await Project.findById(projectId).select('projectName');
+        const projectName = projectDoc?.projectName || 'Project';
+        await attachQuotationPdfToProject({
+          projectId,
+          pdfUrl: url,
+          originalName: `${projectName} - Quotation (Estimate v${estimateVersion}, Quotation v${version}).pdf`,
+        });
+      } catch (attachErr) {
+        console.warn('[quotation] PDF generated, but failed to attach to project:', attachErr?.message || attachErr);
+      }
     } catch (pdfErr) {
       // Log and continue without blocking creation
       console.warn('[quotation] PDF generation failed:', pdfErr?.message || pdfErr);
@@ -294,6 +367,8 @@ export const updateQuotation = async (req, res) => {
 
     // Regenerate PDF and update fileUrl (replace proof with new location)
     try {
+      const previousFileUrl = quotation.fileUrl;
+
       // Attempt to remove previous PDF to prevent clutter (non-fatal)
       if (quotation.fileUrl) {
         try {
@@ -337,6 +412,20 @@ export const updateQuotation = async (req, res) => {
       quotation.fileUrl = url;
       await quotation.save();
       console.log('[quotation] Updated quotation fileUrl in DB:', quotation._id, '→', url);
+
+      // Update project documents to point at the newly generated PDF
+      try {
+        const projectDoc = await Project.findById(projectIdStr).select('projectName');
+        const projectName = projectDoc?.projectName || 'Project';
+        await replaceQuotationPdfAttachment({
+          projectId: projectIdStr,
+          oldPdfUrl: previousFileUrl,
+          newPdfUrl: url,
+          originalName: `${projectName} - Quotation (Estimate v${quotation.estimateVersion}, Quotation v${quotation.version}).pdf`,
+        });
+      } catch (attachErr) {
+        console.warn('[quotation] PDF regenerated, but failed to update project attachments:', attachErr?.message || attachErr);
+      }
     } catch (pdfErr) {
       console.warn('[quotation] Failed to regenerate PDF on update:', pdfErr?.message || pdfErr);
     }
